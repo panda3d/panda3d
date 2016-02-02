@@ -519,6 +519,9 @@ read_environment_variables() {
       _variables[variable] = value;
     }
   }
+#elif defined(__EMSCRIPTEN__)
+  // Emscripten has no environment vars.  Don't even try.
+
 #elif defined(HAVE_PROC_SELF_ENVIRON)
   // In some cases, we may have a file called /proc/self/environ
   // that may be read to determine all of our environment variables.

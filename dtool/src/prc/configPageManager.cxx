@@ -104,6 +104,7 @@ reload_implicit_pages() {
   // spaces.  Pull them out and store them in _prc_patterns.
   _prc_patterns.clear();
 
+#ifdef PRC_PATTERNS
   string prc_patterns = PRC_PATTERNS;
   if (!prc_patterns.empty()) {
     vector_string pat_list;
@@ -119,10 +120,12 @@ reload_implicit_pages() {
       _prc_patterns.push_back(glob);
     }
   }
+#endif  // PRC_PATTERNS
 
   // Similarly for PRC_ENCRYPTED_PATTERNS.
   _prc_encrypted_patterns.clear();
 
+#ifdef PRC_ENCRYPTED_PATTERNS
   string prc_encrypted_patterns = PRC_ENCRYPTED_PATTERNS;
   if (!prc_encrypted_patterns.empty()) {
     vector_string pat_list;
@@ -136,10 +139,12 @@ reload_implicit_pages() {
       _prc_encrypted_patterns.push_back(glob);
     }
   }
+#endif  // PRC_ENCRYPTED_PATTERNS
 
   // And again for PRC_EXECUTABLE_PATTERNS.
   _prc_executable_patterns.clear();
 
+#ifdef PRC_EXECUTABLE_PATTERNS
   string prc_executable_patterns = PRC_EXECUTABLE_PATTERNS;
   if (!prc_executable_patterns.empty()) {
     vector_string pat_list;
@@ -153,6 +158,7 @@ reload_implicit_pages() {
       _prc_executable_patterns.push_back(glob);
     }
   }
+#endif  // PRC_EXECUTABLE_PATTERNS
 
   // Now build up the search path for .prc files.
   _search_path.clear();
@@ -160,6 +166,7 @@ reload_implicit_pages() {
   // PRC_DIR_ENVVARS lists one or more environment variables separated
   // by spaces.  Pull them out, and each of those contains the name of
   // a single directory to search.  Add it to the search path.
+#ifdef PRC_DIR_ENVVARS
   string prc_dir_envvars = PRC_DIR_ENVVARS;
   if (!prc_dir_envvars.empty()) {
     vector_string prc_dir_envvar_list;
@@ -175,11 +182,13 @@ reload_implicit_pages() {
       }
     }
   }
-  
+#endif  // PRC_DIR_ENVVARS
+
   // PRC_PATH_ENVVARS lists one or more environment variables separated
   // by spaces.  Pull them out, and then each one of those contains a
   // list of directories to search.  Add each of those to the search
   // path.
+#ifdef PRC_PATH_ENVVARS
   string prc_path_envvars = PRC_PATH_ENVVARS;
   if (!prc_path_envvars.empty()) {
     vector_string prc_path_envvar_list;
@@ -201,7 +210,8 @@ reload_implicit_pages() {
       }
     }
   }
-  
+#endif  // PRC_PATH_ENVVARS
+
   // PRC_PATH2_ENVVARS is a special variable that is rarely used; it
   // exists primarily to support the Cygwin-based "ctattach" tools
   // used by the Walt Disney VR Studio.  This defines a set of
@@ -210,6 +220,7 @@ reload_implicit_pages() {
   // Panda-style filenames, not Windows-style filenames; and the path
   // separator is always a space character, regardless of
   // DEFAULT_PATHSEP.
+#ifdef PRC_PATH2_ENVVARS
   string prc_path2_envvars = PRC_PATH2_ENVVARS;
   if (!prc_path2_envvars.empty()) {
     vector_string prc_path_envvar_list;
@@ -230,7 +241,9 @@ reload_implicit_pages() {
       }
     }
   }
-  
+#endif  // PRC_PATH2_ENVVARS
+
+#ifdef DEFAULT_PRC_DIR
   if (_search_path.is_empty()) {
     // If nothing's on the search path (PRC_DIR and PRC_PATH were not
     // defined), then use the DEFAULT_PRC_DIR.
@@ -243,6 +256,7 @@ reload_implicit_pages() {
       }
     }
   }
+#endif  // DEFAULT_PRC_DIR
 
   // Now find all of the *.prc files (or whatever matches
   // PRC_PATTERNS) on the path.

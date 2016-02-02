@@ -2253,11 +2253,11 @@ PRC_PARAMETERS=[
     ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
     ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
     ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
-    ("PRC_PATH2_ENVVARS",              '""',                     '""'),
+    ("PRC_PATH2_ENVVARS",              'UNDEF',                  'UNDEF'),
     ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
     ("PRC_ENCRYPTED_PATTERNS",         '"*.prc.pe"',             '"*.prc.pe"'),
     ("PRC_ENCRYPTION_KEY",             '""',                     '""'),
-    ("PRC_EXECUTABLE_PATTERNS",        '""',                     '""'),
+    ("PRC_EXECUTABLE_PATTERNS",        'UNDEF',                  'UNDEF'),
     ("PRC_EXECUTABLE_ARGS_ENVVAR",     '"PANDA_PRC_XARGS"',      '"PANDA_PRC_XARGS"'),
     ("PRC_PUBLIC_KEYS_FILENAME",       '""',                     '""'),
     ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
@@ -2348,6 +2348,14 @@ def WriteConfigSettings():
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
         dtool_config["HAVE_NET"] = 'UNDEF'
         dtool_config["LINK_ALL_STATIC"] = '1'
+
+        # There are no environment vars either, or default prc files.
+        prc_parameters["DEFAULT_PRC_DIR"] = 'UNDEF'
+        prc_parameters["PRC_DIR_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATH_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATH2_ENVVARS"] = 'UNDEF'
+        prc_parameters["PRC_PATTERNS"] = 'UNDEF'
+        prc_parameters["PRC_ENCRYPTED_PATTERNS"] = 'UNDEF'
 
     if (GetOptimize() <= 2 and GetTarget() == "windows"):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
