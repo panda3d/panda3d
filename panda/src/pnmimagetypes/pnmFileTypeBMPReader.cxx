@@ -191,37 +191,45 @@ BMPreadinfoheader(
         {
         case 12:
                 classv = C_OS2;
-
-                cx = GetShort(fp);
-                cy = GetShort(fp);
-                cPlanes = GetShort(fp);
-                cBitCount = GetShort(fp);
-
                 break;
-        case 40:
+        case 40:  // BITMAPINFOHEADER
                 classv = C_WIN;
-
-                cx = GetLong(fp);
-                cy = GetLong(fp);
-                cPlanes = GetShort(fp);
-                cBitCount = GetShort(fp);
-
-                /*
-                 * We've read 16 bytes so far, need to read 24 more
-                 * for the required total of 40.
-                 */
-
-                GetLong(fp);
-                GetLong(fp);
-                GetLong(fp);
-                GetLong(fp);
-                GetLong(fp);
-                GetLong(fp);
-
+                break;
+        case 52:  // BITMAPV2INFOHEADER
+                classv = C_WINV2;
+                break;
+        case 56:  // BITMAPV3INFOHEADER
+                classv = C_WINV3;
+                break;
+        case 108:  // BITMAPV4HEADER
+                classv = C_WINV4;
+                break;
+        case 124:  // BITMAPV5HEADER
+                classv = C_WINV5;
                 break;
         default:
                 pm_error("%s: unknown cbFix: %d", ifname, cbFix);
                 break;
+        }
+
+        if (classv == C_OS2) {
+                cx = GetShort(fp);
+                cy = GetShort(fp);
+        } else {
+                cx = GetLong(fp);
+                cy = GetLong(fp);
+        }
+        cPlanes = GetShort(fp);
+        cBitCount = GetShort(fp);
+
+        /*
+         * We've read 16 bytes so far, need to read more
+         * for the required total.
+         */
+        if (classv != C_OS2) {
+            for (int i = 0; i < cbFix - 16; i += 4) {
+                GetLong(fp);
+            }
         }
 
         if (cPlanes != 1)
@@ -235,6 +243,16 @@ BMPreadinfoheader(
         {
         case C_WIN:
                 pm_message("Windows BMP, %dx%dx%d"
+                           ,cx
+                           ,cy
+                           ,cBitCount);
+                break;
+        case C_WINV2:
+        case C_WINV3:
+        case C_WINV4:
+        case C_WINV5:
+                pm_message("Windows BMP V%d, %dx%dx%d"
+                           ,(classv - C_WINV2 + 2)
                            ,cx
                            ,cy
                            ,cBitCount);
@@ -288,7 +306,7 @@ BMPreadrgbtable(
                 R[i] = (pixval) GetByte(fp);
                 nbyte += 3;
 
-                if (classv == C_WIN)
+                if (classv != C_OS2)
                 {
                         (void) GetByte(fp);
                         nbyte++;
@@ -307,6 +325,7 @@ BMPreadrow(
         istream           *fp,
         unsigned long  *ppos,   /* number of bytes read from fp */
         pixel          *row,
+        xelval         *alpha_row,
         unsigned long   cx,
         unsigned short  cBitCount,
         int             indexed,
@@ -335,6 +354,10 @@ BMPreadrow(
                   b = GetByte(fp);
                   g = GetByte(fp);
                   r = GetByte(fp);
+                  if (cBitCount > 24) {
+                    *(alpha_row++) = GetByte(fp);
+                    ++nbyte;
+                  }
                   nbyte += 3;
                   PPM_ASSIGN(*row, r, g, b);
                 } else {
@@ -369,7 +392,7 @@ BMPreadrow(
 }
 
 static void
-BMPreadbits(xel *array,
+BMPreadbits(xel *array, xelval *alpha_array,
         istream           *fp,
         unsigned long  *ppos,   /* number of bytes read from fp */
         unsigned long   offBits,
@@ -386,7 +409,7 @@ BMPreadbits(xel *array,
 
         readto(fp, ppos, offBits);
 
-        if(cBitCount > 24)
+        if(cBitCount > 24 && cBitCount != 32)
         {
                 pm_error("%s: cannot handle cBitCount: %d"
                          ,ifname
@@ -400,7 +423,7 @@ BMPreadbits(xel *array,
         for (y = (long)cy - 1; y >= 0; y--)
         {
                 int rc;
-                rc = BMPreadrow(fp, ppos, array + y*cx, cx, cBitCount, indexed, R, G, B);
+                rc = BMPreadrow(fp, ppos, array + y*cx, alpha_array + y*cx, cx, cBitCount, indexed, R, G, B);
                 if(rc == -1)
                 {
                         pm_error("%s: couldn't read row %d"
@@ -472,7 +495,11 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     }
   }
 
-  _num_channels = 3;
+  if (cBitCount > 24) {
+    _num_channels = 4;
+  } else {
+    _num_channels = 3;
+  }
   _x_size = (int)cx;
   _y_size = (int)cy;
   _maxval = 255;
@@ -498,8 +525,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 //               below.
 ////////////////////////////////////////////////////////////////////
 int PNMFileTypeBMP::Reader::
-read_data(xel *array, xelval *) {
-  BMPreadbits(array, _file, &pos, offBits, _x_size, _y_size,
+read_data(xel *array, xelval *alpha_array) {
+  BMPreadbits(array, alpha_array, _file, &pos, offBits, _x_size, _y_size,
               cBitCount, classv, indexed, R, G, B);
 
   if (pos != BMPlenfile(classv, cBitCount, _x_size, _y_size)) {

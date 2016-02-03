@@ -8358,7 +8358,7 @@ get_external_image_format(Texture *tex) const {
 #endif
 
   case Texture::F_alpha:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
     return GL_ALPHA;
 #else
     return GL_RED;
@@ -8403,7 +8403,7 @@ get_external_image_format(Texture *tex) const {
 
   case Texture::F_luminance:
   case Texture::F_sluminance:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
     return GL_LUMINANCE;
 #else
     return GL_RED;
@@ -8411,7 +8411,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
   case Texture::F_sluminance_alpha:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
     return GL_LUMINANCE_ALPHA;
 #else
     return GL_RG;
@@ -8989,14 +8989,14 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
 
   case Texture::F_alpha:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
     return force_sized ? GL_ALPHA8 : GL_ALPHA;
 #else
     return force_sized ? GL_R8 : GL_RED;
 #endif
 
   case Texture::F_luminance:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float) {
       return GL_LUMINANCE16F_ARB;
@@ -9014,7 +9014,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float || tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE_ALPHA16F_ARB;
@@ -11553,7 +11553,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 #endif
 
-#if !defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES_2)
+#if !defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES)
     // Do we need to apply a swizzle mask to emulate these deprecated
     // texture formats?
     switch (tex->get_format()) {

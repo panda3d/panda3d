@@ -2614,14 +2614,10 @@ class HierarchyException(Exception):
 # __dev__ is not defined at import time, call this after it's defined
 def recordFunctorCreationStacks():
     global Functor
-    from panda3d.direct import get_config_showbase
-    config = get_config_showbase()
-    # off by default, very slow
-    if __dev__ and config.GetBool('record-functor-creation-stacks', 0):
-        if not hasattr(Functor, '_functorCreationStacksRecorded'):
-            Functor = recordCreationStackStr(Functor)
-            Functor._functorCreationStacksRecorded = True
-            Functor.__call__ = Functor._exceptionLoggedCreationStack__call__
+    if not hasattr(Functor, '_functorCreationStacksRecorded'):
+        Functor = recordCreationStackStr(Functor)
+        Functor._functorCreationStacksRecorded = True
+        Functor.__call__ = Functor._exceptionLoggedCreationStack__call__
 
 def formatTimeCompact(seconds):
     # returns string in format '1d3h22m43s'
