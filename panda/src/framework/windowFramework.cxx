@@ -1283,6 +1283,9 @@ load_image_as_model(const Filename &filename) {
   // Yes, it is an image file; make a texture out of it.
   tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
   tex->set_magfilter(SamplerState::FT_linear);
+  tex->set_wrap_u(SamplerState::WM_clamp);
+  tex->set_wrap_v(SamplerState::WM_clamp);
+  tex->set_wrap_w(SamplerState::WM_clamp);
 
   // Ok, now make a polygon to show the texture.
   bool has_alpha = true;
