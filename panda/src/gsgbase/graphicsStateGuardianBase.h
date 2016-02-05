@@ -128,6 +128,8 @@ PUBLISHED:
 
   virtual bool get_supports_texture_srgb() const=0;
 
+  virtual bool get_supports_hlsl() const=0;
+
 public:
   // These are some general interface functions; they're defined here
   // mainly to make it easy to call these from code in some directory
@@ -224,10 +226,6 @@ public:
                           int light_id) { }
   virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id) { }
-
-  // This function creates a shadow mapping buffer. This is not put in ShaderGenerator
-  // because that would cause circular dependencies.
-  virtual PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host)=0;
 
 PUBLISHED:
   static GraphicsStateGuardianBase *get_default_gsg();

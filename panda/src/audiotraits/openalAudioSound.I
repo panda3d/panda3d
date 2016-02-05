@@ -14,7 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_calibrated_clock
-//       Access: public
+//       Access: Public
 //  Description: Sets the sound's calibrated clock.
 //
 //               OpenAL is not very accurate at reporting how much
@@ -36,7 +36,7 @@ set_calibrated_clock(double rtc, double t, double accel) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_calibrated_clock
-//       Access: public
+//       Access: Public
 //  Description: Returns the value of the calibrated clock.
 ////////////////////////////////////////////////////////////////////
 INLINE double OpenALAudioSound::

@@ -1,16 +1,17 @@
-from otp.ai.AIBaseGlobal import *
+#from otp.ai.AIBaseGlobal import *
 from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
 from ConnectionRepository import *
+from panda3d.core import ConfigVariableDouble, ConfigVariableInt, ConfigVariableBool
 
 ASYNC_REQUEST_DEFAULT_TIMEOUT_IN_SECONDS = 8.0
 ASYNC_REQUEST_INFINITE_RETRIES = -1
 ASYNC_REQUEST_DEFAULT_NUM_RETRIES = 0
 
 if __debug__:
-    _overrideTimeoutTimeForAllAsyncRequests = config.GetFloat("async-request-timeout", -1.0)
-    _overrideNumRetriesForAllAsyncRequests = config.GetInt("async-request-num-retries", -1)
-    _breakOnTimeout = config.GetBool("async-request-break-on-timeout", False)
+    _overrideTimeoutTimeForAllAsyncRequests = ConfigVariableDouble("async-request-timeout", -1.0)
+    _overrideNumRetriesForAllAsyncRequests = ConfigVariableInt("async-request-num-retries", -1)
+    _breakOnTimeout = ConfigVariableBool("async-request-break-on-timeout", False)
 
 class AsyncRequest(DirectObject):
     """
@@ -51,10 +52,10 @@ class AsyncRequest(DirectObject):
         """
         assert AsyncRequest.notify.debugCall()
         if __debug__:
-            if _overrideTimeoutTimeForAllAsyncRequests >= 0.0:
-                timeoutTime = _overrideTimeoutTimeForAllAsyncRequests
-            if _overrideNumRetriesForAllAsyncRequests >= 0:
-                numRetries = _overrideNumRetriesForAllAsyncRequests
+            if _overrideTimeoutTimeForAllAsyncRequests.getValue() >= 0.0:
+                timeoutTime = _overrideTimeoutTimeForAllAsyncRequests.getValue()
+            if _overrideNumRetriesForAllAsyncRequests.getValue() >= 0:
+                numRetries = _overrideNumRetriesForAllAsyncRequests.getValue()
         AsyncRequest._asyncRequests[id(self)] = self
         self.deletingMessage = "AsyncRequest-deleting-%s"%(id(self,))
         self.air = air

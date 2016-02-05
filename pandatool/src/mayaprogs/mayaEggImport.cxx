@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <string.h> 
+#include <string.h>
 #include <sys/types.h>
 
 #include "dtoolbase.h"
@@ -47,7 +47,7 @@
 #include "mayaEggLoader.h"
 #include "notifyCategoryProxy.h"
 
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 class MayaEggImporter : public MPxFileTranslator
 {
@@ -55,15 +55,15 @@ public:
   MayaEggImporter () {};
   virtual         ~MayaEggImporter () {};
   static void*    creator();
-  
+
   MStatus         reader ( const MFileObject& file,
                            const MString& optionsString,
                            FileAccessMode mode);
-  
+
   MStatus         writer ( const MFileObject& file,
                            const MString& optionsString,
                            FileAccessMode mode );
-  
+
   bool            haveReadMethod () const { return true; }
   bool            haveWriteMethod () const { return false; }
   MString         defaultExtension () const { return "egg"; }
@@ -104,15 +104,15 @@ MStatus MayaEggImporter::reader ( const MFileObject& file,
       if (theOption.length() < 1) {
         continue;
       }
-      
+
       if (theOption[0] == flagModel && theOption.length() > 1) {
         model = atoi(theOption[1].asChar()) ? true:false;
       } else if (theOption[0] == flagAnim && theOption.length() > 1) {
         anim = atoi(theOption[1].asChar()) ? true:false;
-      } 
+      }
     }
   }
-  
+
   if ((mode != kImportAccessMode)&&(mode != kOpenAccessMode))
     return MS::kFailure;
 
@@ -145,7 +145,7 @@ MPxFileTranslator::MFileKind MayaEggImporter::identifyFile (
 {
   const char * name = fileName.name().asChar();
   int   nameLength = strlen(name);
-  
+
   if ((nameLength > 4) && !strcmp(name+nameLength-4, ".egg"))
     return kCouldBeMyFileType;
   else
@@ -155,11 +155,11 @@ MPxFileTranslator::MFileKind MayaEggImporter::identifyFile (
 EXPCL_MISC MStatus initializePlugin( MObject obj )
 {
   MFnPlugin plugin( obj, "Alias", "3.0", "Any");
-  
+
   // Register the translator with the system
   return plugin.registerFileTranslator( "Panda3D Egg Import", "none",
                                         MayaEggImporter::creator,
-                                        
+
                                         "eggImportOptions",
                                         "merge=1;model=1;anim=0;");
 }

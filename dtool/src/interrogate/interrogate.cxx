@@ -506,9 +506,15 @@ main(int argc, char **argv) {
     build_c_wrappers = true;
   }
 
-  // Get all of the .h files.
-  for (i = 1; i < argc; ++i) 
-  {
+  // Add all of the .h files we are explicitly including to the parser.
+  for (i = 1; i < argc; ++i) {
+    Filename filename = Filename::from_os_specific(argv[i]);
+    filename.make_absolute();
+    parser._explicit_files.insert(filename);
+  }
+
+  // Now go through them again and feed them into the C++ parser.
+  for (i = 1; i < argc; ++i) {
     Filename filename = Filename::from_os_specific(argv[i]);
     if (!parser.parse_file(filename)) {
       cerr << "Error parsing file: '" << argv[i] << "'\n";

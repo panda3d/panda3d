@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_mass
-//      Access : Public
-// Description : Set the mass in slugs (or kilograms).
+//     Function: set_mass
+//       Access: Public
+//  Description: Set the mass in slugs (or kilograms).
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_mass(PN_stdfloat m) {
@@ -24,9 +24,9 @@ set_mass(PN_stdfloat m) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_position
-//      Access : Public
-// Description : Vector position assignment.  This is also used as
+//     Function: set_position
+//       Access: Public
+//  Description: Vector position assignment.  This is also used as
 //               the center of mass.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
@@ -36,9 +36,9 @@ set_position(const LPoint3 &pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_position
-//      Access : Public
-// Description : Piecewise position assignment
+//     Function: set_position
+//       Access: Public
+//  Description: Piecewise position assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_position(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
@@ -47,9 +47,9 @@ set_position(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : reset_position
-//      Access : Public
-// Description : use this to place an object in a completely new
+//     Function: reset_position
+//       Access: Public
+//  Description: use this to place an object in a completely new
 //               position, that has nothing to do with its last
 //               position.
 ////////////////////////////////////////////////////////////////////
@@ -62,9 +62,9 @@ reset_position(const LPoint3 &pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : reset_orientation
-//      Access : Public
-// Description : set the orientation while clearing the rotation
+//     Function: reset_orientation
+//       Access: Public
+//  Description: set the orientation while clearing the rotation
 //               velocity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
@@ -75,9 +75,9 @@ reset_orientation(const LOrientation &orientation) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_last_position
-//      Access : Public
-// Description : Last position assignment
+//     Function: set_last_position
+//       Access: Public
+//  Description: Last position assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_last_position(const LPoint3 &pos) {
@@ -85,9 +85,9 @@ set_last_position(const LPoint3 &pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_velocity
-//      Access : Public
-// Description : Vector velocity assignment
+//     Function: set_velocity
+//       Access: Public
+//  Description: Vector velocity assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_velocity(const LVector3 &vel) {
@@ -96,9 +96,9 @@ set_velocity(const LVector3 &vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_velocity
-//      Access : Public
-// Description : Piecewise velocity assignment
+//     Function: set_velocity
+//       Access: Public
+//  Description: Piecewise velocity assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_velocity(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
@@ -107,10 +107,10 @@ set_velocity(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_local_torque
-//      Access : Public
-// Description : Adds an torque force (i.e. an instantanious change
-//               in velocity).  This is a quicker way to get the 
+//     Function: add_local_torque
+//       Access: Public
+//  Description: Adds an torque force (i.e. an instantanious change
+//               in velocity).  This is a quicker way to get the
 //               angular velocity, add a vector to it and set that
 //               value to be the new angular velocity.
 ////////////////////////////////////////////////////////////////////
@@ -121,10 +121,10 @@ add_local_torque(const LRotation &torque) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_local_impulse
-//      Access : Public
-// Description : Adds an impulse force (i.e. an instantanious change
-//               in velocity).  This is a quicker way to get the 
+//     Function: add_local_impulse
+//       Access: Public
+//  Description: Adds an impulse force (i.e. an instantanious change
+//               in velocity).  This is a quicker way to get the
 //               velocity, add a vector to it and set that value to
 //               be the new velocity.
 ////////////////////////////////////////////////////////////////////
@@ -135,10 +135,10 @@ add_local_impulse(const LVector3 &impulse) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_torque
-//      Access : Public
-// Description : Adds an torque force (i.e. an instantanious change
-//               in velocity).  This is a quicker way to get the 
+//     Function: add_torque
+//       Access: Public
+//  Description: Adds an torque force (i.e. an instantanious change
+//               in velocity).  This is a quicker way to get the
 //               angular velocity, add a vector to it and set that
 //               value to be the new angular velocity.
 ////////////////////////////////////////////////////////////////////
@@ -149,10 +149,10 @@ add_torque(const LRotation &torque) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_impulse
-//      Access : Public
-// Description : Adds an impulse force (i.e. an instantanious change
-//               in velocity).  This is a quicker way to get the 
+//     Function: add_impulse
+//       Access: Public
+//  Description: Adds an impulse force (i.e. an instantanious change
+//               in velocity).  This is a quicker way to get the
 //               velocity, add a vector to it and set that value to
 //               be the new velocity.
 ////////////////////////////////////////////////////////////////////
@@ -163,9 +163,9 @@ add_impulse(const LVector3 &impulse) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_active
-//      Access : Public
-// Description : Process Flag assignment
+//     Function: set_active
+//       Access: Public
+//  Description: Process Flag assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_active(bool flag) {
@@ -173,9 +173,9 @@ set_active(bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_terminal_velocity
-//      Access : Public
-// Description : tv assignment
+//     Function: set_terminal_velocity
+//       Access: Public
+//  Description: tv assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_terminal_velocity(PN_stdfloat tv) {
@@ -183,9 +183,9 @@ set_terminal_velocity(PN_stdfloat tv) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_mass
-//      Access : Public
-// Description : Get the mass in slugs (or kilograms).
+//     Function: get_mass
+//       Access: Public
+//  Description: Get the mass in slugs (or kilograms).
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat PhysicsObject::
 get_mass() const {
@@ -193,9 +193,9 @@ get_mass() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_position
-//      Access : Public
-// Description : Position Query
+//     Function: get_position
+//       Access: Public
+//  Description: Position Query
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3 PhysicsObject::
 get_position() const {
@@ -203,9 +203,9 @@ get_position() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_last_position
-//      Access : Public
-// Description : Get the position of the physics object at the start
+//     Function: get_last_position
+//       Access: Public
+//  Description: Get the position of the physics object at the start
 //               of the most recent do_physics.
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3 PhysicsObject::
@@ -214,9 +214,9 @@ get_last_position() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_velocity
-//      Access : Public
-// Description : Velocity Query per second
+//     Function: get_velocity
+//       Access: Public
+//  Description: Velocity Query per second
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3 PhysicsObject::
 get_velocity() const {
@@ -224,9 +224,9 @@ get_velocity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_implicit_velocity
-//      Access : Public
-// Description : Velocity Query over the last dt
+//     Function: get_implicit_velocity
+//       Access: Public
+//  Description: Velocity Query over the last dt
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3 PhysicsObject::
 get_implicit_velocity() const {
@@ -234,9 +234,9 @@ get_implicit_velocity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_active
-//      Access : Public
-// Description : Process Flag Query
+//     Function: get_active
+//       Access: Public
+//  Description: Process Flag Query
 ////////////////////////////////////////////////////////////////////
 INLINE bool PhysicsObject::
 get_active() const {
@@ -244,9 +244,9 @@ get_active() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_terminal_velocity
-//      Access : Public
-// Description : tv query
+//     Function: get_terminal_velocity
+//       Access: Public
+//  Description: tv query
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat PhysicsObject::
 get_terminal_velocity() const {
@@ -254,9 +254,9 @@ get_terminal_velocity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_orientation
-//      Access : Public
-// Description :
+//     Function: set_orientation
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_orientation(const LOrientation &orientation) {
@@ -265,9 +265,9 @@ set_orientation(const LOrientation &orientation) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_rotation
-//      Access : Public
-// Description : set rotation as a quaternion delta per second.
+//     Function: set_rotation
+//       Access: Public
+//  Description: set rotation as a quaternion delta per second.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_rotation(const LRotation &rotation) {
@@ -276,9 +276,9 @@ set_rotation(const LRotation &rotation) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_orientation
-//      Access : Public
-// Description : get current orientation.
+//     Function: get_orientation
+//       Access: Public
+//  Description: get current orientation.
 ////////////////////////////////////////////////////////////////////
 INLINE LOrientation PhysicsObject::
 get_orientation() const {
@@ -286,9 +286,9 @@ get_orientation() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_rotation
-//      Access : Public
-// Description : get rotation per second.
+//     Function: get_rotation
+//       Access: Public
+//  Description: get rotation per second.
 ////////////////////////////////////////////////////////////////////
 INLINE LRotation PhysicsObject::
 get_rotation() const {
@@ -296,9 +296,9 @@ get_rotation() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_oriented
-//      Access : Public
-// Description : Set flag to determine whether this object should do
+//     Function: set_oriented
+//       Access: Public
+//  Description: Set flag to determine whether this object should do
 //               any rotation or orientation calculations.  Optimization.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
@@ -307,9 +307,9 @@ set_oriented(bool flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_oriented
-//      Access : Public
-// Description : See set_oriented().
+//     Function: get_oriented
+//       Access: Public
+//  Description: See set_oriented().
 ////////////////////////////////////////////////////////////////////
 INLINE bool PhysicsObject::
 get_oriented() const {

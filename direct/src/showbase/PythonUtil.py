@@ -325,7 +325,10 @@ def adjust(command = None, dim = 1, parent = None, **kw):
     10.0
     """
     # Make sure we enable Tk
-    from direct.tkwidgets import Valuator
+    # Don't use a regular import, to prevent ModuleFinder from picking
+    # it up as a dependency when building a .p3d package.
+    import importlib
+    Valuator = importlib.import_module('direct.tkwidgets.Valuator')
     # Set command if specified
     if command:
         kw['command'] = lambda x: apply(command, x)
@@ -1300,7 +1303,7 @@ class Enum:
         _checkValidIdentifier = staticmethod(_checkValidIdentifier)
 
     def __init__(self, items, start=0):
-        if type(items) == types.StringType:
+        if isinstance(items, str):
             items = items.split(',')
 
         self._stringTable = {}
@@ -1312,7 +1315,7 @@ class Enum:
         i = start
         for item in items:
             # remove leading/trailing whitespace
-            item = string.strip(item)
+            item = item.strip()
             # is there anything left?
             if len(item) == 0:
                 continue
@@ -2611,14 +2614,10 @@ class HierarchyException(Exception):
 # __dev__ is not defined at import time, call this after it's defined
 def recordFunctorCreationStacks():
     global Functor
-    from panda3d.direct import get_config_showbase
-    config = get_config_showbase()
-    # off by default, very slow
-    if __dev__ and config.GetBool('record-functor-creation-stacks', 0):
-        if not hasattr(Functor, '_functorCreationStacksRecorded'):
-            Functor = recordCreationStackStr(Functor)
-            Functor._functorCreationStacksRecorded = True
-            Functor.__call__ = Functor._exceptionLoggedCreationStack__call__
+    if not hasattr(Functor, '_functorCreationStacksRecorded'):
+        Functor = recordCreationStackStr(Functor)
+        Functor._functorCreationStacksRecorded = True
+        Functor.__call__ = Functor._exceptionLoggedCreationStack__call__
 
 def formatTimeCompact(seconds):
     # returns string in format '1d3h22m43s'

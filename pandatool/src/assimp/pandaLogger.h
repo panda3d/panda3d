@@ -29,8 +29,12 @@ public:
   static void set_default();
 
 protected:
-  INLINE bool attachStream(Assimp::LogStream*, unsigned int) {};
-  INLINE bool detatchStream(Assimp::LogStream*, unsigned int) {}; // sic
+  INLINE bool attachStream(Assimp::LogStream*, unsigned int) {
+    return false;
+  };
+  INLINE bool detatchStream(Assimp::LogStream*, unsigned int) {
+    return false;
+  };
 
   void OnDebug(const char *message);
   void OnError(const char *message);

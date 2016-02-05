@@ -57,6 +57,8 @@ PUBLISHED:
   INLINE operator const DSearchPath & () const;
   INLINE const DSearchPath &get_value() const;
   INLINE const DSearchPath &get_default_value() const;
+  MAKE_PROPERTY(value, get_value);
+  MAKE_PROPERTY(default_value, get_default_value);
 
   INLINE bool clear_local_value();
 

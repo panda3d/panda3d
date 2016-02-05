@@ -1,10 +1,10 @@
 /*
-  MaxEgg.cpp 
+  MaxEgg.cpp
   Created by Steven "Sauce" Osman, 01/??/03
   Modified by Ken Strickland, 02/25/03
   Carnegie Mellon University, Entertainment Technology Center
 
-  This file implements the classes that are used in the Panda 3D file 
+  This file implements the classes that are used in the Panda 3D file
   exporter for 3D Studio Max.
 */
 
@@ -265,7 +265,7 @@ const double meshVerts[252][3] = {
     {0.259722, -0.299638, 3.11175},
     {0.0207683, 0.0, 3.20912}
 };
-  
+
 
 //Disable the forcing int to true or false performance warning
 #pragma warning(disable: 4800)
@@ -303,26 +303,26 @@ IObjParam *MaxEggPlugin::iObjParams;
    dialog box that appears at the beginning of the conversion process.
  */
 
-INT_PTR CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message, 
-                                          WPARAM wParam, LPARAM lParam ) 
+INT_PTR CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message,
+                                          WPARAM wParam, LPARAM lParam )
 {
   MaxOptionsDialog *tempEgg;
   int sel, res;
 
   //We pass in our plugin through the lParam variable. Let's convert it back.
-  MaxEggPlugin *imp = (MaxEggPlugin*)GetWindowLongPtr(hWnd,GWLP_USERDATA); 
+  MaxEggPlugin *imp = (MaxEggPlugin*)GetWindowLongPtr(hWnd,GWLP_USERDATA);
   if ( !imp && message != WM_INITDIALOG ) return FALSE;
 
-  switch(message) 
+  switch(message)
     {
     // When we start, center the window.
     case WM_INITDIALOG:
       // this line is very necessary to pass the plugin as the lParam
-      SetWindowLongPtr(hWnd,GWLP_USERDATA,lParam); 
+      SetWindowLongPtr(hWnd,GWLP_USERDATA,lParam);
       SetDlgFont( hWnd, imp->iObjParams->GetAppHFont() );
       MaxEggPlugin::hMaxEggParams = hWnd;
       return TRUE; break;
-    
+
     case WM_MOUSEACTIVATE:
       imp->iObjParams->RealizeParamPanel();
       return TRUE; break;
@@ -332,28 +332,28 @@ INT_PTR CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message,
     case WM_MOUSEMOVE:
       imp->iObjParams->RollupMouseMessage(hWnd,message,wParam,lParam);
       return TRUE; break;
-     
+
     // A control was modified
     case WM_COMMAND:
       //The modified control is found in the lower word of the wParam long.
       switch( LOWORD(wParam) ) {
         case IDC_OVERWRITE_CHECK:
-          imp->autoOverwrite = 
+          imp->autoOverwrite =
             (IsDlgButtonChecked(hWnd, IDC_OVERWRITE_CHECK) == BST_CHECKED);
           return TRUE; break;
         case IDC_PVIEW_CHECK:
-          imp->pview = 
+          imp->pview =
             (IsDlgButtonChecked(hWnd, IDC_PVIEW_CHECK) == BST_CHECKED);
           return TRUE; break;
         case IDC_LOGGING:
-          imp->logOutput = 
+          imp->logOutput =
             (IsDlgButtonChecked(hWnd, IDC_LOGGING) == BST_CHECKED);
           return TRUE; break;
         case IDC_ADD_EGG:
           tempEgg = new MaxOptionsDialog();
           tempEgg->SetMaxInterface(imp->iObjParams);
           tempEgg->SetAnimRange();
-          res = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_EGG_DETAILS), 
+          res = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_EGG_DETAILS),
                                hWnd, MaxOptionsDialogProc, (LPARAM)tempEgg);
           if (res == TRUE) {
             imp->SaveCheckState();
@@ -369,7 +369,7 @@ INT_PTR CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message,
             if (tempEgg) {
                 tempEgg->SetAnimRange();
                 tempEgg->CullBadNodes();
-                DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_EGG_DETAILS), 
+                DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_EGG_DETAILS),
                                hWnd, MaxOptionsDialogProc, (LPARAM)tempEgg);
             }
             imp->SaveCheckState();
@@ -413,7 +413,7 @@ void MaxEggPlugin::AddEgg(MaxOptionsDialog *newEgg) {
         delete [] eggList;
         eggList = newList;
     }
-    
+
     eggList[numEggs++] = newEgg;
 }
 
@@ -431,18 +431,18 @@ void MaxEggPlugin::BeginEditParams( IObjParam *ip, ULONG flags,Animatable *prev 
     for (int i=0; i<numEggs; i++) {
         eggList[i]->SetMaxInterface(ip);
     }
-    
+
     if ( !hMaxEggParams ) {
-        hMaxEggParams = ip->AddRollupPage(hInstance, 
+        hMaxEggParams = ip->AddRollupPage(hInstance,
                                           MAKEINTRESOURCE(IDD_PANEL),
-                                          MaxEggPluginOptionsDlgProc, 
-                                          GetString(IDS_PARAMS), 
+                                          MaxEggPluginOptionsDlgProc,
+                                          GetString(IDS_PARAMS),
                                           (LPARAM)this );
         ip->RegisterDlgWnd(hMaxEggParams);
     } else {
         SetWindowLongPtr( hMaxEggParams, GWLP_USERDATA, (LPARAM)this );
     }
-    
+
     UpdateUI();
 }
 
@@ -471,7 +471,7 @@ void MaxEggPlugin::UpdateUI() {
 
     if (ListView_GetColumnWidth(lv, 1) <= 0 || ListView_GetColumnWidth(lv, 1) > 10000) {
         // Columns have not been setup, so initialize the control
-        ListView_SetExtendedListViewStyleEx(lv, LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT, 
+        ListView_SetExtendedListViewStyleEx(lv, LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT,
                                             LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT);
 
         pCol.fmt = LVCFMT_LEFT;
@@ -509,11 +509,11 @@ void MaxEggPlugin::UpdateUI() {
     }
 
     // Set the "Overwrite Existing Files" and "Pview" checkboxes
-    CheckDlgButton(hMaxEggParams, IDC_OVERWRITE_CHECK, 
+    CheckDlgButton(hMaxEggParams, IDC_OVERWRITE_CHECK,
                    autoOverwrite ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hMaxEggParams, IDC_PVIEW_CHECK, 
+    CheckDlgButton(hMaxEggParams, IDC_PVIEW_CHECK,
                    pview ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(hMaxEggParams, IDC_LOGGING, 
+    CheckDlgButton(hMaxEggParams, IDC_LOGGING,
                    logOutput ? BST_CHECKED : BST_UNCHECKED);
 }
 
@@ -602,32 +602,32 @@ void MaxEggPlugin::BuildMesh()
     mesh.setSmoothFlags(0);
     mesh.setNumTVerts (0);
     mesh.setNumTVFaces (0);
-    
-    for (i=0; i<252; i++) 
+
+    for (i=0; i<252; i++)
         mesh.setVert(i, meshVerts[i][0]*10, meshVerts[i][1]*10, meshVerts[i][2]*10);
     for (i=0; i<84; i++) {
         mesh.faces[i].setEdgeVisFlags(1, 1, 0);
         mesh.faces[i].setSmGroup(0);
         mesh.faces[i].setVerts(i*3, i*3+1, i*3+2);
     }
-    
+
     mesh.InvalidateGeomCache();
     mesh.BuildStripsAndEdges();
-    
+
     meshBuilt = TRUE;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // The creation callback - sets the initial position of the helper in the scene.
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
-class MaxEggPluginCreateMouseCallBack: public CreateMouseCallBack 
+class MaxEggPluginCreateMouseCallBack: public CreateMouseCallBack
 {
 public:
     int proc( ViewExp *vpt,int msg, int point, int flags, IPoint2 m, Matrix3& mat );
 };
 
-int MaxEggPluginCreateMouseCallBack::proc(ViewExp *vpt,int msg, int point, int flags, IPoint2 m, Matrix3& mat ) 
+int MaxEggPluginCreateMouseCallBack::proc(ViewExp *vpt,int msg, int point, int flags, IPoint2 m, Matrix3& mat )
 {
     if (msg==MOUSE_POINT||msg==MOUSE_MOVE) {
         switch(point) {
@@ -640,21 +640,21 @@ int MaxEggPluginCreateMouseCallBack::proc(ViewExp *vpt,int msg, int point, int f
             break;
         }
     } else if (msg == MOUSE_ABORT) {
-        return CREATE_ABORT; 
+        return CREATE_ABORT;
     }
     return CREATE_CONTINUE;
 }
 
 static MaxEggPluginCreateMouseCallBack MaxEggCreateMouseCB;
 
-CreateMouseCallBack* MaxEggPlugin::GetCreateMouseCallBack() 
+CreateMouseCallBack* MaxEggPlugin::GetCreateMouseCallBack()
 { return &MaxEggCreateMouseCB; }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //Boilerplate functions for dealing with the display of the plugin
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
-void MaxEggPlugin::GetMat(TimeValue t, INode* inode, ViewExp* vpt, Matrix3& tm) 
+void MaxEggPlugin::GetMat(TimeValue t, INode* inode, ViewExp* vpt, Matrix3& tm)
 {
     tm = inode->GetObjectTM(t);
     tm.NoScale();
@@ -667,7 +667,7 @@ void MaxEggPlugin::GetDeformBBox(TimeValue t, Box3& box, Matrix3 *tm, BOOL useSe
     box = mesh.getBoundingBox(tm);
 }
 
-void MaxEggPlugin::GetLocalBoundBox(TimeValue t, INode* inode, ViewExp* vpt, Box3& box ) 
+void MaxEggPlugin::GetLocalBoundBox(TimeValue t, INode* inode, ViewExp* vpt, Box3& box )
 {
     Matrix3 m = inode->GetObjectTM(t);
     Point3 pt;
@@ -683,11 +683,11 @@ void MaxEggPlugin::GetWorldBoundBox(TimeValue t, INode* inode, ViewExp* vpt, Box
     GetMat(t,inode,vpt,tm);
     nv = mesh.getNumVerts();
     box.Init();
-    for (i=0; i<nv; i++) 
+    for (i=0; i<nv; i++)
         box += tm*mesh.getVert(i);
 }
 
-int MaxEggPlugin::HitTest(TimeValue t, INode *inode, int type, int crossing, int flags, IPoint2 *p, ViewExp *vpt) 
+int MaxEggPlugin::HitTest(TimeValue t, INode *inode, int type, int crossing, int flags, IPoint2 *p, ViewExp *vpt)
 {
     HitRegion hitRegion;
     DWORD savedLimits;
@@ -699,22 +699,22 @@ int MaxEggPlugin::HitTest(TimeValue t, INode *inode, int type, int crossing, int
     GetMat(t,inode,vpt,m);
     gw->setTransform(m);
     gw->clearHitCode();
-    if (mesh.select( gw, mtl, &hitRegion, flags & HIT_ABORTONHIT )) 
+    if (mesh.select( gw, mtl, &hitRegion, flags & HIT_ABORTONHIT ))
         return TRUE;
     return FALSE;
 }
 
-int MaxEggPlugin::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags) 
+int MaxEggPlugin::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags)
 {
     Matrix3 m;
     GraphicsWindow *gw = vpt->getGW();
     Material *mtl = gw->getMaterial();
-    
+
     GetMat(t,inode,vpt,m);
     gw->setTransform(m);
     DWORD rlim = gw->getRndLimits();
     gw->setRndLimits(GW_WIREFRAME|GW_BACKCULL);
-    if (inode->Selected()) 
+    if (inode->Selected())
         gw->setColor( LINE_COLOR, GetSelColor());
     else if(!inode->IsFrozen())
         gw->setColor( LINE_COLOR, GetUIColor(COLOR_TAPE_OBJ));
@@ -722,7 +722,7 @@ int MaxEggPlugin::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags)
     return 0;
 }
 
-RefResult MaxEggPlugin::NotifyRefChanged(Interval changeInt, RefTargetHandle hTarget, PartID& partID, RefMessage message ) 
+RefResult MaxEggPlugin::NotifyRefChanged(Interval changeInt, RefTargetHandle hTarget, PartID& partID, RefMessage message )
 {
     UpdateUI();
     return REF_SUCCEED;
@@ -733,22 +733,22 @@ ObjectState MaxEggPlugin::Eval(TimeValue time)
     return ObjectState(this);
 }
 
-Interval MaxEggPlugin::ObjectValidity(TimeValue t) 
+Interval MaxEggPlugin::ObjectValidity(TimeValue t)
 {
     Interval ivalid;
     ivalid.SetInfinite();
     return ivalid;
 }
 
-RefTargetHandle MaxEggPlugin::Clone(RemapDir& remap) 
+RefTargetHandle MaxEggPlugin::Clone(RemapDir& remap)
 {
     MaxEggPlugin* newob = new MaxEggPlugin();
     return(newob);
 }
 
-///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // Loading and saving the plugin
-///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 IOResult MaxEggPlugin::Save(ISave *isave) {
     SaveCheckState();
@@ -757,14 +757,14 @@ IOResult MaxEggPlugin::Save(ISave *isave) {
     ChunkSave(isave,   CHUNK_OVERWRITE_FLAG,  autoOverwrite);
     ChunkSave(isave,   CHUNK_PVIEW_FLAG,      pview);
     ChunkSave(isave,   CHUNK_LOG_OUTPUT,      logOutput);
-    
+
     return IO_OK;
 }
 
 IOResult MaxEggPlugin::Load(ILoad *iload) {
     IOResult res = iload->OpenChunk();
     MaxOptionsDialog *temp;
-    
+
     while (res == IO_OK) {
         switch(iload->CurChunkID()) {
         case CHUNK_OVERWRITE_FLAG: autoOverwrite = ChunkLoadBool(iload); break;
@@ -780,7 +780,7 @@ IOResult MaxEggPlugin::Load(ILoad *iload) {
         iload->CloseChunk();
         res = iload->OpenChunk();
     }
-    
+
     return IO_OK;
 }
 
@@ -795,7 +795,7 @@ extern ClassDesc* GetMaxEggPluginDesc();
 HINSTANCE hInstance;
 int controlsInit = FALSE;
 
-// This function is called by Windows when the DLL is loaded.  This 
+// This function is called by Windows when the DLL is loaded.  This
 // function may also be called many times during time critical operations
 // like rendering.  Therefore developers need to be careful what they
 // do inside this function.  In the code below, note how after the DLL is
@@ -843,7 +843,7 @@ __declspec( dllexport ) ClassDesc* LibClassDesc(int i)
         }
 }
 
-// This function returns a pre-defined constant indicating the version of 
+// This function returns a pre-defined constant indicating the version of
 // the system under which it was compiled.  It is used to allow the system
 // to catch obsolete DLLs.
 __declspec( dllexport ) ULONG LibVersion()

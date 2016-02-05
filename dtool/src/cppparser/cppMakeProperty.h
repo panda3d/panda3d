@@ -20,7 +20,7 @@
 #include "cppDeclaration.h"
 #include "cppIdentifier.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPMakeProperty
 // Description : This is a MAKE_PROPERTY() declaration appearing
 //               within a class body.  It means to generate a property
@@ -34,6 +34,11 @@ public:
                   CPPFunctionGroup *getter, CPPFunctionGroup *setter,
                   CPPScope *current_scope, const CPPFile &file);
 
+  CPPMakeProperty(CPPIdentifier *ident,
+                  CPPFunctionGroup *hasser, CPPFunctionGroup *getter,
+                  CPPFunctionGroup *setter, CPPFunctionGroup *clearer,
+                  CPPScope *current_scope, const CPPFile &file);
+
   virtual string get_simple_name() const;
   virtual string get_local_name(CPPScope *scope = NULL) const;
   virtual string get_fully_scoped_name() const;
@@ -45,8 +50,10 @@ public:
   virtual CPPMakeProperty *as_make_property();
 
   CPPIdentifier *_ident;
-  CPPFunctionGroup *_getter;
-  CPPFunctionGroup *_setter;
+  CPPFunctionGroup *_has_function;
+  CPPFunctionGroup *_get_function;
+  CPPFunctionGroup *_set_function;
+  CPPFunctionGroup *_clear_function;
 };
 
 #endif

@@ -14,9 +14,9 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::get_sdk
-//      Access: Public
-// Description: Returns a pointer to the NxPhysicsSDK.
+//     Function: PhysxManager::get_sdk
+//       Access: Public
+//  Description: Returns a pointer to the NxPhysicsSDK.
 ////////////////////////////////////////////////////////////////////
 INLINE NxPhysicsSDK *PhysxManager::
 get_sdk() const {
@@ -25,9 +25,9 @@ get_sdk() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::vec3_to_nxVec3
-//      Access: Public
-// Description: Converts from LVector3f to NxVec3.
+//     Function: PhysxManager::vec3_to_nxVec3
+//       Access: Public
+//  Description: Converts from LVector3f to NxVec3.
 ////////////////////////////////////////////////////////////////////
 INLINE NxVec3 PhysxManager::
 vec3_to_nxVec3(const LVector3f &v) {
@@ -36,9 +36,9 @@ vec3_to_nxVec3(const LVector3f &v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::nxVec3_to_vec3
-//      Access: Public
-// Description: Converts from NxVec3 to LVector3f.
+//     Function: PhysxManager::nxVec3_to_vec3
+//       Access: Public
+//  Description: Converts from NxVec3 to LVector3f.
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f PhysxManager::
 nxVec3_to_vec3(const NxVec3 &v) {
@@ -47,9 +47,9 @@ nxVec3_to_vec3(const NxVec3 &v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::vec3_to_nxExtVec3
-//      Access: Public
-// Description: Converts from LVector3f to NxExtendedVec3.
+//     Function: PhysxManager::vec3_to_nxExtVec3
+//       Access: Public
+//  Description: Converts from LVector3f to NxExtendedVec3.
 ////////////////////////////////////////////////////////////////////
 INLINE NxExtendedVec3 PhysxManager::
 vec3_to_nxExtVec3(const LVector3f &v) {
@@ -58,9 +58,9 @@ vec3_to_nxExtVec3(const LVector3f &v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::nxExtVec3_to_vec3
-//      Access: Public
-// Description: Converts from NxExtendedVec3 to LVector3f.
+//     Function: PhysxManager::nxExtVec3_to_vec3
+//       Access: Public
+//  Description: Converts from NxExtendedVec3 to LVector3f.
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f PhysxManager::
 nxExtVec3_to_vec3(const NxExtendedVec3 &v) {
@@ -69,9 +69,9 @@ nxExtVec3_to_vec3(const NxExtendedVec3 &v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::point3_to_nxVec3
-//      Access: Public
-// Description: Converts from LPoint3f to NxVec3.
+//     Function: PhysxManager::point3_to_nxVec3
+//       Access: Public
+//  Description: Converts from LPoint3f to NxVec3.
 ////////////////////////////////////////////////////////////////////
 INLINE NxVec3 PhysxManager::
 point3_to_nxVec3(const LPoint3f &p) {
@@ -80,9 +80,9 @@ point3_to_nxVec3(const LPoint3f &p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::nxVec3_to_point3
-//      Access: Public
-// Description: Converts from NxVec3 to LPoint3f.
+//     Function: PhysxManager::nxVec3_to_point3
+//       Access: Public
+//  Description: Converts from NxVec3 to LPoint3f.
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f PhysxManager::
 nxVec3_to_point3(const NxVec3 &p) {
@@ -91,9 +91,9 @@ nxVec3_to_point3(const NxVec3 &p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::point3_to_nxExtVec3
-//      Access: Public
-// Description: Converts from LPoint3f to NxExtendedVec3.
+//     Function: PhysxManager::point3_to_nxExtVec3
+//       Access: Public
+//  Description: Converts from LPoint3f to NxExtendedVec3.
 ////////////////////////////////////////////////////////////////////
 INLINE NxExtendedVec3 PhysxManager::
 point3_to_nxExtVec3(const LPoint3f &p) {
@@ -102,9 +102,9 @@ point3_to_nxExtVec3(const LPoint3f &p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::nxExtVec3_to_point3
-//      Access: Public
-// Description: Converts from NxExtendedVec3 to LPoint3f.
+//     Function: PhysxManager::nxExtVec3_to_point3
+//       Access: Public
+//  Description: Converts from NxExtendedVec3 to LPoint3f.
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f PhysxManager::
 nxExtVec3_to_point3(const NxExtendedVec3 &p) {
@@ -113,9 +113,9 @@ nxExtVec3_to_point3(const NxExtendedVec3 &p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::quat_to_nxQuat
-//      Access: Public
-// Description: Converts from LQuaternionf to NxQuat.
+//     Function: PhysxManager::quat_to_nxQuat
+//       Access: Public
+//  Description: Converts from LQuaternionf to NxQuat.
 ////////////////////////////////////////////////////////////////////
 INLINE NxQuat PhysxManager::
 quat_to_nxQuat(const LQuaternionf &q) {
@@ -126,9 +126,9 @@ quat_to_nxQuat(const LQuaternionf &q) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::nxQuat_to_quat
-//      Access: Public
-// Description: Converts from NxQuat to LQuaternionf.
+//     Function: PhysxManager::nxQuat_to_quat
+//       Access: Public
+//  Description: Converts from NxQuat to LQuaternionf.
 ////////////////////////////////////////////////////////////////////
 INLINE LQuaternionf PhysxManager::
 nxQuat_to_quat(const NxQuat &q) {
@@ -137,9 +137,9 @@ nxQuat_to_quat(const NxQuat &q) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::mat4_to_nxMat34
-//      Access: Public
-// Description: Converts from LMatrix4f to NxMat34.
+//     Function: PhysxManager::mat4_to_nxMat34
+//       Access: Public
+//  Description: Converts from LMatrix4f to NxMat34.
 ////////////////////////////////////////////////////////////////////
 INLINE NxMat34 PhysxManager::
 mat4_to_nxMat34(const LMatrix4f &m) {
@@ -150,9 +150,9 @@ mat4_to_nxMat34(const LMatrix4f &m) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::nxMat34_to_mat4
-//      Access: Public
-// Description: Converts from NxMat34 to LMatrix4f.
+//     Function: PhysxManager::nxMat34_to_mat4
+//       Access: Public
+//  Description: Converts from NxMat34 to LMatrix4f.
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix4f PhysxManager::
 nxMat34_to_mat4(const NxMat34 &m) {
@@ -161,9 +161,9 @@ nxMat34_to_mat4(const NxMat34 &m) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::mat3_to_nxMat33
-//      Access: Public
-// Description: Converts from LMatrix3f to NxMat33.
+//     Function: PhysxManager::mat3_to_nxMat33
+//       Access: Public
+//  Description: Converts from LMatrix3f to NxMat33.
 ////////////////////////////////////////////////////////////////////
 INLINE NxMat33 PhysxManager::
 mat3_to_nxMat33(const LMatrix3f &m) {
@@ -174,9 +174,9 @@ mat3_to_nxMat33(const LMatrix3f &m) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: PhysxManager::nxMat33_to_mat3
-//      Access: Public
-// Description: Converts from NxMat33 to LMatrix3f.
+//     Function: PhysxManager::nxMat33_to_mat3
+//       Access: Public
+//  Description: Converts from NxMat33 to LMatrix3f.
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix3f PhysxManager::
 nxMat33_to_mat3(const NxMat33 &m) {
@@ -191,7 +191,7 @@ nxMat33_to_mat3(const NxMat33 &m) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::update_vec3_from_nxVec3
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxManager::
 update_vec3_from_nxVec3(LVector3f &v, const NxVec3 &nVec) {
@@ -204,7 +204,7 @@ update_vec3_from_nxVec3(LVector3f &v, const NxVec3 &nVec) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::update_point3_from_nxVec3
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxManager::
 update_point3_from_nxVec3(LPoint3f &p, const NxVec3 &nVec) {
@@ -218,7 +218,7 @@ update_point3_from_nxVec3(LPoint3f &p, const NxVec3 &nVec) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::ls
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxManager::
 ls() const {
@@ -229,7 +229,7 @@ ls() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::ls
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysxManager::
 ls(ostream &out, int indent_level) const {

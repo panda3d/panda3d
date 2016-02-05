@@ -1,10 +1,6 @@
-#ifndef OBSTACLE_AVOIDANCE_H
-#define OBSTACLE_AVOIDANCE_H
-
-////////////////////////////////////////////////////////////////////////
-// Filename    : obstacleAvoidance.h
-// Created by  : Deepak, John, Navin
-// Date        :  10 Nov 2009
+// Filename: obstacleAvoidance.h
+// Created by: Deepak, John, Navin (10Nov09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -15,6 +11,9 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+
+#ifndef OBSTACLE_AVOIDANCE_H
+#define OBSTACLE_AVOIDANCE_H
 
 #include "aiCharacter.h"
 #include "boundingSphere.h"

@@ -36,7 +36,7 @@ class DirectMySQLdbConnection(Connection):
             client_flag |= CLIENT.MULTI_STATEMENTS
         if client_version >= (5, 0):
             client_flag |= CLIENT.MULTI_RESULTS
-            
+
         kwargs2['client_flag'] = client_flag
 
         ### DCR: skip over the Connection __init__
@@ -45,7 +45,7 @@ class DirectMySQLdbConnection(Connection):
 
         self.encoders = dict([ (k, v) for k, v in conv.items()
                                if type(k) is not int ])
-        
+
         self._server_version = tuple([ int(n) for n in self.get_server_info().split('.')[:2] ])
 
         db = proxy(self)

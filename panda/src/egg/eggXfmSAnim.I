@@ -154,11 +154,7 @@ get_order() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &EggXfmSAnim::
 get_standard_order() {
-  if (temp_hpr_fix) {
-    return _standard_order_hpr_fix;
-  } else {
-    return _standard_order_legacy;
-  }
+  return _standard_order;
 }
 
 ////////////////////////////////////////////////////////////////////

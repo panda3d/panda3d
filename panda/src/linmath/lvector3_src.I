@@ -14,15 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVector3::Default Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector3)::
-FLOATNAME(LVector3)() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Copy Constructor
 //       Access: Published
 //  Description:
@@ -31,27 +22,6 @@ INLINE_LINMATH FLOATNAME(LVector3)::
 FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVector3::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
-operator = (const FLOATNAME(LVecBase3) &copy) {
-  FLOATNAME(LVecBase3)::operator = (copy);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector3::Copy Fill Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
-operator = (FLOATTYPE fill_value) {
-  FLOATNAME(LVecBase3)::operator = (fill_value);
-  return *this;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Constructor
@@ -220,6 +190,19 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 }
 
 #ifndef FLOATTYPE_IS_INT
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector3::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
+normalized() const {
+  return FLOATNAME(LVecBase3)::normalized();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::project
 //       Access: Published
@@ -276,7 +259,7 @@ angle_deg(const FLOATNAME(LVector3) &other) const {
 //               normalized.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
-signed_angle_rad(const FLOATNAME(LVector3) &other, 
+signed_angle_rad(const FLOATNAME(LVector3) &other,
                  const FLOATNAME(LVector3) &ref) const {
   FLOATTYPE angle = angle_rad(other);
   if (cross(other).dot(ref) < 0.0f) {
@@ -288,7 +271,7 @@ signed_angle_rad(const FLOATNAME(LVector3) &other,
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector::signed_angle_deg
 //       Access: Published
-//  Description: Returns the signed angle between two vectors. 
+//  Description: Returns the signed angle between two vectors.
 //               The angle is positive if the rotation from this
 //               vector to other is clockwise when looking in the
 //               direction of the ref vector.
@@ -452,7 +435,6 @@ back(CoordinateSystem cs) {
 //               forward, and up components, in whatever way the
 //               coordinate system represents that vector.
 ////////////////////////////////////////////////////////////////////
-//INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
     CoordinateSystem cs) {

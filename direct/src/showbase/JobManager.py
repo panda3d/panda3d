@@ -64,7 +64,7 @@ class JobManager:
         elif pri > self._highestPriority:
             self._highestPriority = pri
         self.notify.debug('added job: %s' % job.getJobName())
-        
+
     def remove(self, job):
         jobId = job._getJobId()
         # look up the job's priority
@@ -213,7 +213,7 @@ class JobManager:
                     if __debug__:
                         job._pstats.stop()
                     break
-                
+
                 if len(self._pri2jobId2job) == 0:
                     # there's nothing left to do, all the jobs are done!
                     break

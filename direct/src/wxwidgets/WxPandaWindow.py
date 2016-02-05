@@ -146,11 +146,11 @@ else:
                         attribList.append(32)
 
                 kw['attribList'] = attribList
-                
+
             base.startWx()
             wxgl.GLCanvas.__init__(self, *args, **kw)
             self.visible = False
-                
+
             # Can't share the GSG when a new wxgl.GLContext is created
             # automatically.
             gsg = None
@@ -298,7 +298,7 @@ else:
 
                 # Don't upcall() in this case.
                 return
-            
+
             elif cbType == CallbackGraphicsWindow.RCTEndFlip:
                 self.SwapBuffers()
 
@@ -322,7 +322,7 @@ else:
             # ensure an idle event comes in later, and check the size
             # again then.
             wx.WakeUpIdle()
-            
+
             event.Skip()
 
         def onPaint(self, event):

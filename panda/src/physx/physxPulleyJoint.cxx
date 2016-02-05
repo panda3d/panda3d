@@ -21,7 +21,7 @@ TypeHandle PhysxPulleyJoint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxPulleyJoint::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxPulleyJoint::
 link(NxJoint *jointPtr) {
@@ -39,7 +39,7 @@ link(NxJoint *jointPtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxPulleyJoint::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxPulleyJoint::
 unlink() {
@@ -52,10 +52,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxPulleyJoint::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the joint object to a 
-//                descriptor.
+//     Function: PhysxPulleyJoint::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the joint object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxPulleyJoint::
 save_to_desc(PhysxPulleyJointDesc &jointDesc) const {
@@ -65,10 +65,10 @@ save_to_desc(PhysxPulleyJointDesc &jointDesc) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxPulleyJoint::load_from_desc
-//       Access : Published
-//  Description : Loads the entire state of the joint from a 
-//                descriptor with a single call.
+//     Function: PhysxPulleyJoint::load_from_desc
+//       Access: Published
+//  Description: Loads the entire state of the joint from a
+//               descriptor with a single call.
 ////////////////////////////////////////////////////////////////////
 void PhysxPulleyJoint::
 load_from_desc(const PhysxPulleyJointDesc &jointDesc) {
@@ -80,7 +80,7 @@ load_from_desc(const PhysxPulleyJointDesc &jointDesc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxPulleyJoint::set_motor
 //       Access: Published
-//  Description: Sets motor parameters for the joint. 
+//  Description: Sets motor parameters for the joint.
 //
 //               For a positive velTarget, the motor pulls the first
 //               body towards its pulley, for a negative velTarget,
@@ -93,18 +93,18 @@ load_from_desc(const PhysxPulleyJointDesc &jointDesc) {
 //               velocity, the motor will actually try to brake. If
 //               you set this to infinity then the motor will keep
 //               speeding up, unless there is some sort of
-//               resistance on the attached bodies. 
+//               resistance on the attached bodies.
 //
 //               maxForce - the maximum force the motor can exert.
 //               Zero disables the motor. Default is 0, should
 //               be >= 0. Setting this to a very large value if
 //               velTarget is also very large may not be a good
-//               idea. 
+//               idea.
 //
 //               freeSpin - if this flag is set, and if the joint
 //               is moving faster than velTarget, then neither
 //               braking nor additional acceleration will result.
-//               default: false. 
+//               default: false.
 //
 //               This automatically enables the motor.
 ////////////////////////////////////////////////////////////////////
@@ -151,7 +151,7 @@ get_flag(PhysxPulleyJointFlag flag) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxPulleyJoint::get_motor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxMotorDesc PhysxPulleyJoint::
 get_motor() const {
@@ -159,7 +159,7 @@ get_motor() const {
   nassertr(_error_type == ET_ok, false);
 
   PhysxMotorDesc value;
-  _ptr->getMotor(value._desc);  
+  _ptr->getMotor(value._desc);
   return value;
 }
 

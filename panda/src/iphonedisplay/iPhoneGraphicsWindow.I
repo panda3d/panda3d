@@ -1,4 +1,4 @@
-// Filename: iPhoneGraphicsWindow.h
+// Filename: iPhoneGraphicsWindow.I
 // Created by:  drose (08Apr09)
 //
 ////////////////////////////////////////////////////////////////////

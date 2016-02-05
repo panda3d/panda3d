@@ -99,7 +99,7 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
 
   virtual PT(AudioSound) get_sound(const string&, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *,  bool positional = false, int mode=SM_heuristic);
-    
+
   virtual int getSpeakerSetup();
   virtual void setSpeakerSetup(SpeakerModeCategory cat);
 
@@ -114,7 +114,7 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   virtual void stop_all_sounds();
 
   virtual void update();
-  
+
   // This controls the "set of ears" that listens to 3D spacialized sound
   // px, py, pz are position coordinates. Can be 0.0f to ignore.
   // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters).
@@ -122,7 +122,7 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   // ux, uy and uz are the respective components of a unit up-vector
   // These changes will NOT be invoked until audio_3d_update() is called.
   virtual void audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
-                                                PN_stdfloat vx, PN_stdfloat xy, PN_stdfloat xz, 
+                                                PN_stdfloat vx, PN_stdfloat xy, PN_stdfloat xz,
                                                 PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz,
                                                 PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz);
 
@@ -131,7 +131,7 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
                                                 PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz,
                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
-          
+
   // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
   // Fmod uses meters internally, so give a float in Units-per meter
   // Don't know what Miles uses.
@@ -167,7 +167,7 @@ private:
   FMOD::DSP *make_dsp(const FilterProperties::FilterConfig &conf);
   void update_dsp_chain(FMOD::DSP *head, FilterProperties *config);
   virtual bool configure_filters(FilterProperties *config);
-  
+
  private:
   // This global lock protects all access to FMod library interfaces.
   static ReMutex _lock;
@@ -191,19 +191,19 @@ private:
   // DLS info for MIDI files
   string _dlsname;
   FMOD_CREATESOUNDEXINFO _midi_info;
-  
+
   bool _is_valid;
   bool _active;
-  
+
   // The set of all sounds.  Needed only to implement stop_all_sounds.
   typedef pset<FmodAudioSound *> SoundSet;
   SoundSet _all_sounds;
 
   FMOD_OUTPUTTYPE _saved_outputtype;
 
-  ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
   //These are needed for Panda's Pointer System. DO NOT ERASE!
-  ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
  public:
   static TypeHandle get_class_type() {
@@ -217,16 +217,16 @@ private:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {
-    init_type(); 
+    init_type();
     return get_class_type();
   }
 
  private:
   static TypeHandle _type_handle;
 
-  ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
   //DONE
-  ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 };
 

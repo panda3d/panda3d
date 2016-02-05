@@ -1031,6 +1031,10 @@ EggMaterial *EggSaver::
 get_egg_material(Material *mat) {
   if (mat != (Material *)NULL) {
     EggMaterial temp(mat->get_name());
+    if (mat->has_base_color()) {
+      temp.set_base(mat->get_base_color());
+    }
+
     if (mat->has_ambient()) {
       temp.set_amb(mat->get_ambient());
     }
@@ -1047,7 +1051,20 @@ get_egg_material(Material *mat) {
       temp.set_emit(mat->get_emission());
     }
 
-    temp.set_shininess(mat->get_shininess());
+    if (mat->has_roughness()) {
+      temp.set_roughness(mat->get_roughness());
+    } else {
+      temp.set_shininess(mat->get_shininess());
+    }
+
+    if (mat->has_metallic()) {
+      temp.set_metallic(mat->get_metallic());
+    }
+
+    if (mat->has_refractive_index()) {
+      temp.set_ior(mat->get_refractive_index());
+    }
+
     temp.set_local(mat->get_local());
 
     return _materials.create_unique_material(temp, ~EggMaterial::E_mref_name);

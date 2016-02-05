@@ -17,9 +17,9 @@
 #include <stdlib.h>
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleEmitter
-//      Access : Protected
-// Description : constructor
+//     Function: BaseParticleEmitter
+//       Access: Protected
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter::
 BaseParticleEmitter() {
@@ -32,9 +32,9 @@ BaseParticleEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleEmitter
-//      Access : Protected
-// Description : copy constructor
+//     Function: BaseParticleEmitter
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter::
 BaseParticleEmitter(const BaseParticleEmitter &copy) {
@@ -47,18 +47,18 @@ BaseParticleEmitter(const BaseParticleEmitter &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleEmitter
-//      Access : Protected
-// Description : destructor
+//     Function: BaseParticleEmitter
+//       Access: Protected
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter::
 ~BaseParticleEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : generate
-//      Access : Public
-// Description : parent generation function
+//     Function: generate
+//       Access: Public
+//  Description: parent generation function
 ////////////////////////////////////////////////////////////////////
 void BaseParticleEmitter::
 generate(LPoint3& pos, LVector3& vel) {
@@ -85,10 +85,10 @@ generate(LPoint3& pos, LVector3& vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleEmitter::
 output(ostream &out) const {
@@ -98,10 +98,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleEmitter::
 write(ostream &out, int indent) const {

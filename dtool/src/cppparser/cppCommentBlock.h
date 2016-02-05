@@ -21,7 +21,7 @@
 
 #include <list>
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPCommentBlock
 // Description : This represents a comment appearing in the source
 //               code.  The CPPPreprocessor collects these, and saves

@@ -48,6 +48,12 @@ ConfigVariableBool gl_support_rescale_normal
             "it even if it appears to be available.  (This appears to be "
             "buggy on some drivers.)"));
 
+ConfigVariableBool gl_support_texture_lod
+  ("gl-support-texture-lod", true,
+   PRC_DESC("Configure this true to enable the use of minmax LOD settings "
+            "and texture LOD bias settings.  Set this to false if you "
+            "suspect a driver bug."));
+
 ConfigVariableBool gl_ignore_filters
   ("gl-ignore-filters", false,
    PRC_DESC("Configure this true to disable any texture filters at all (forcing "
@@ -269,6 +275,10 @@ ConfigVariableBool gl_vertex_array_objects
             "vertex arrays.  This only has effect when vertex-arrays "
             "and vertex-buffers are both set.  This should usually be "
             "true unless you suspect a bug in the implementation. "));
+
+ConfigVariableBool gl_fixed_vertex_attrib_locations
+  ("gl-fixed-vertex-attrib-locations", false,
+   PRC_DESC("Experimental feature."));
 
 ConfigVariableBool gl_support_primitive_restart_index
   ("gl-support-primitive-restart-index", true,

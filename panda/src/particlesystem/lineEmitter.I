@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_endpoint1
-//      Access : Public
-// Description : endpoint assignment
+//     Function: set_endpoint1
+//       Access: Public
+//  Description: endpoint assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void LineEmitter::
 set_endpoint1(const LPoint3& point) {
@@ -23,9 +23,9 @@ set_endpoint1(const LPoint3& point) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_endpoint2
-//      Access : Public
-// Description : endpoint assignment
+//     Function: set_endpoint2
+//       Access: Public
+//  Description: endpoint assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void LineEmitter::
 set_endpoint2(const LPoint3& point) {
@@ -33,9 +33,9 @@ set_endpoint2(const LPoint3& point) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_endpoint1
-//      Access : Public
-// Description : endpoint accessor
+//     Function: get_endpoint1
+//       Access: Public
+//  Description: endpoint accessor
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3 LineEmitter::
 get_endpoint1() const {
@@ -43,9 +43,9 @@ get_endpoint1() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_endpoint2
-//      Access : Public
-// Description : endpoint accessor
+//     Function: get_endpoint2
+//       Access: Public
+//  Description: endpoint accessor
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3 LineEmitter::
 get_endpoint2() const {

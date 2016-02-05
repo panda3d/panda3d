@@ -1,4 +1,4 @@
-// Filename: PolylightNode.cxx
+// Filename: polylightNode.cxx
 // Created by:  sshodhan (02Jun04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ LColor PolylightNode::flicker() const {
   r = color[0];
   g = color[1];
   b = color[2];
-  
+
   if (_flicker_type == FRANDOM) {
     //srand((int)ClockObject::get_global_clock()->get_frame_time());
     variation = (rand()%100);  // a value between 0-99
@@ -133,7 +133,7 @@ LColor PolylightNode::flicker() const {
         variation *= _scale;
       }*/
   }
-  
+
   //variation += _offset;
   //variation *= _scale;
 
@@ -141,7 +141,7 @@ LColor PolylightNode::flicker() const {
   r += r * variation;
   g += g * variation;
   b += b * variation;
- 
+
   /* CLAMPING
   if (fabs(r - color[0]) > 0.5 || fabs(g - color[1]) > 0.5 || fabs(b - color[2]) > 0.5) {
     r = color[0];
@@ -170,7 +170,7 @@ LColor PolylightNode::flicker() const {
 ////////////////////////////////////////////////////////////////////
 int PolylightNode::
 compare_to(const PolylightNode &other) const {
-  
+
   if (_enabled != other._enabled) {
     return _enabled ? 1 :-1;
   }
@@ -306,7 +306,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightNode::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PolylightNode::
 output(ostream &out) const {

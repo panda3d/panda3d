@@ -1,4 +1,4 @@
-// Filename: graphicswindowProc.h
+// Filename: graphicsWindowProc.h
 // Created by:  Bei Yang (Mar 2010)
 //
 ////////////////////////////////////////////////////////////////////

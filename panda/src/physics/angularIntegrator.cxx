@@ -18,27 +18,27 @@ ConfigVariableDouble AngularIntegrator::_max_angular_dt
 ("default_max_angular_dt", 1.0f / 30.0f);
 
 ////////////////////////////////////////////////////////////////////
-//    Function : AngularIntegrator
-//      Access : protected
-// Description : constructor
+//     Function: AngularIntegrator
+//       Access: Protected
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 AngularIntegrator::
 AngularIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~AngularIntegrator
-//      Access : public, virtual
-// Description : destructor
+//     Function: ~AngularIntegrator
+//       Access: Public, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 AngularIntegrator::
 ~AngularIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : Integrate
-//      Access : public
-// Description : high-level integration.  API.
+//     Function: Integrate
+//       Access: Public
+//  Description: high-level integration.  API.
 ////////////////////////////////////////////////////////////////////
 void AngularIntegrator::
 integrate(Physical *physical, AngularForceVector& forces,
@@ -53,10 +53,10 @@ integrate(Physical *physical, AngularForceVector& forces,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularIntegrator::
 output(ostream &out) const {
@@ -66,10 +66,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularIntegrator::
 write(ostream &out, unsigned int indent) const {

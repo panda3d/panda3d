@@ -42,6 +42,7 @@ public:
 
 PUBLISHED:
   INLINE Geom *get_geom() const;
+  MAKE_PROPERTY(geom, get_geom);
 
 public:
   // This cannot be a PT(Geom), because the geom and the GSG

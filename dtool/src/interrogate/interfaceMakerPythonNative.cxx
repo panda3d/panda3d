@@ -45,17 +45,16 @@ extern std::string EXPORT_IMPORT_PREFIX;
 
 #define CLASS_PREFIX "Dtool_"
 
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // Name Remapper...
 //      Snagged from ffi py code....
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 struct RenameSet {
   const char *_from;
   const char *_to;
   int function_type;
 };
 
-///////////////////////////////////////////////////////////////////////////////////////
 RenameSet methodRenameDictionary[] = {
   { "operator =="   , "__eq__",                 0 },
   { "operator !="   , "__ne__",                 0 },
@@ -108,14 +107,11 @@ RenameSet methodRenameDictionary[] = {
   { NULL, NULL, -1 }
 };
 
-///////////////////////////////////////////////////////////////////////////////////////
 RenameSet classRenameDictionary[] = {
   // No longer used, now empty.
   { NULL, NULL, -1 }
 };
 
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
 const char *pythonKeywords[] = {
   "and",
   "as",
@@ -152,7 +148,6 @@ const char *pythonKeywords[] = {
   NULL
 };
 
-///////////////////////////////////////////////////////////////////////////////////////
 std::string
 checkKeyword(std::string &cppName) {
   for (int x = 0; pythonKeywords[x] != NULL; x++) {
@@ -163,8 +158,6 @@ checkKeyword(std::string &cppName) {
   return cppName;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
 std::string
 classNameFromCppName(const std::string &cppName, bool mangle) {
   if (!mangle_names) {
@@ -220,8 +213,6 @@ classNameFromCppName(const std::string &cppName, bool mangle) {
   return className;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
 std::string
 methodNameFromCppName(const std::string &cppName, const std::string &className, bool mangle) {
   if (!mangle_names) {
@@ -671,8 +662,6 @@ write_function_slot(ostream &out, int indent_level, const SlottedFunctions &slot
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructType *inclass, const std::string &upcast_seed, bool can_downcast) {
   if (inclass == NULL) {
@@ -713,10 +702,9 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//  Function : write_python_instance
-//
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: write_python_instance
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_python_instance(ostream &out, int indent_level, const string &return_expr,
                       bool owns_memory, const InterrogateType &itype, bool is_const) {
@@ -911,12 +899,11 @@ write_prototypes(ostream &out_code, ostream *out_h) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-//  Function : write_prototypes_class_external
-//
-//   Description :  Output enough enformation to a declartion of a externally
+////////////////////////////////////////////////////////////////////
+//     Function: write_prototypes_class_external
+//  Description: Output enough enformation to a declartion of a externally
 //                 generated dtool type object
-/////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_prototypes_class_external(ostream &out, Object *obj) {
   std::string class_name = make_safe_name(obj->_itype.get_scoped_name());
@@ -934,10 +921,9 @@ write_prototypes_class_external(ostream &out, Object *obj) {
   out << "Define_Module_Class_Forward(" << _def->module_name << ", " << class_name << ", " << class_name << "_localtype, " << classNameFromCppName(preferred_name, false) << ");\n";
 }
 
-///////////////////////////////////////// ////////////////////////////////////////////////////
-// Function : write_prototypes_class
-//
-/////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: write_prototypes_class
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_prototypes_class(ostream &out_code, ostream *out_h, Object *obj) {
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
@@ -1045,44 +1031,17 @@ write_class_details(ostream &out, Object *obj) {
   Properties::const_iterator pit;
   for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
     Property *property = (*pit);
-    const InterrogateElement &ielem = property->_ielement;
-    string expected_params;
 
-    if (property->_getter != NULL) {
-      std::string fname = "PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *)";
-      write_function_for_name(out, obj, property->_getter->_remaps,
-                              fname, expected_params, true,
-                              AT_no_args, RF_pyobject | RF_err_null);
-    }
-
-    if (property->_setter != NULL) {
-      std::string fname = "int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *)";
-      write_function_for_name(out, obj, property->_setter->_remaps,
-                              fname, expected_params, true,
-                              AT_single_arg, RF_int);
-    }
+    write_getset(out, obj, property);
   }
 
   // Write the constructors.
-  if (obj->_constructors.size() == 0) {
-    // There is no constructor - write one that simply outputs an error.
-    out << "static int Dtool_Init_" + ClassName + "(PyObject *, PyObject *, PyObject *) {\n"
-        << "#ifdef NDEBUG\n"
-        << "  Dtool_Raise_TypeError(\"cannot init constant class\");\n"
-        << "#else\n"
-        << "  Dtool_Raise_TypeError(\"cannot init constant class " << cClassName << "\");\n"
-        << "#endif\n"
-        << "  return -1;\n"
-        << "}\n\n";
+  for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
+    Function *func = (*fi);
+    std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
 
-  } else {
-    for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
-      Function *func = (*fi);
-      std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
-
-      string expected_params;
-      write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
-    }
+    string expected_params;
+    write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
   }
 
   CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
@@ -1170,11 +1129,10 @@ write_class_details(ostream &out, Object *obj) {
   }
 }
 
-////////////////////////////////////////////////////////////
-/// Function : write_class_declarations
+////////////////////////////////////////////////////////////////////
+//     Function: write_class_declarations
 //
-//
-////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
   const InterrogateType &itype = obj->_itype;
@@ -1296,9 +1254,9 @@ write_sub_module(ostream &out, Object *obj) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Function : write_module_support
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: write_module_support
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   out << "//********************************************************************\n";
@@ -1485,9 +1443,9 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////
-///// Function : write_module
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: write_module
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   InterfaceMakerPython::write_module(out, out_h, def);
@@ -1538,9 +1496,9 @@ write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       << "#endif\n"
       << "\n";
 }
-/////////////////////////////////////////////////////////////////////////////////////////////
-// Function :write_module_class
-/////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: write_module_class
+////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_module_class(ostream &out, Object *obj) {
   bool has_local_repr = false;
@@ -1764,19 +1722,15 @@ write_module_class(ostream &out, Object *obj) {
     }
   }
 
-  std::vector<std::string> bases;
+  std::vector<CPPType*> bases;
   for (di = 0; di < num_derivations; di++) {
     TypeIndex d_type_Index = obj->_itype.get_derivation(di);
     if (!interrogate_type_is_unpublished(d_type_Index)) {
       const InterrogateType &d_itype = idb->get_type(d_type_Index);
       if (is_cpp_type_legal(d_itype._cpptype)) {
-        bases.push_back(make_safe_name(d_itype.get_scoped_name().c_str()));
+        bases.push_back(d_itype._cpptype);
       }
     }
-  }
-
-  if (bases.empty()) {
-    bases.push_back("DTOOL_SUPER_BASE");
   }
 
   {
@@ -2651,7 +2605,7 @@ write_module_class(ostream &out, Object *obj) {
       ++num_getset;
 
       string name1 = methodNameFromCppName(ielem.get_name(), "", false);
-      string name2 = methodNameFromCppName(ielem.get_name(), "", true);
+      //string name2 = methodNameFromCppName(ielem.get_name(), "", true);
 
       string getter = "&Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter";
       string setter = "NULL";
@@ -2672,13 +2626,13 @@ write_module_class(ostream &out, Object *obj) {
       // Extra void* argument; we don't make use of it.
       out << "NULL},\n";
 
-      if (name1 != name2 && name1 != "__dict__") {
+      /*if (name1 != name2 && name1 != "__dict__") {
         // Add alternative spelling.
         out << "  {(char *)\"" << name2 << "\", " << getter << ", " << setter
             << ", (char *)\n"
             << "    \"Alias of " << name1 << ", for consistency with old naming conventions.\",\n"
             << "    NULL},\n";
-      }
+      }*/
     }
 
     out << "  {NULL},\n";
@@ -3032,18 +2986,28 @@ write_module_class(ostream &out, Object *obj) {
   out << "    initdone = true;\n";
 
   // Add bases.
+  out << "    // Dependent objects\n";
   if (bases.size() > 0) {
-    out << "    // Dependent objects\n";
     string baseargs;
-    for (vector<string>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
-      baseargs += ", (PyTypeObject *)Dtool_Ptr_" + *bi;
-      string safe_name = make_safe_name(*bi);
+    for (vector<CPPType*>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
+      string safe_name = make_safe_name((*bi)->get_local_name(&parser));
 
-      out << "    assert(Dtool_Ptr_" << safe_name << " != NULL);\n"
-          << "    Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit(NULL);\n";
+      if (isExportThisRun(*bi)) {
+        baseargs += ", (PyTypeObject *)&Dtool_" + safe_name;
+        out << "    Dtool_PyModuleClassInit_" << safe_name << "(NULL);\n";
+
+      } else {
+        baseargs += ", (PyTypeObject *)Dtool_Ptr_" + safe_name;
+
+        out << "    assert(Dtool_Ptr_" << safe_name << " != NULL);\n"
+            << "    assert(Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit != NULL);\n"
+            << "    Dtool_Ptr_" << safe_name << "->_Dtool_ModuleClassInit(NULL);\n";
+      }
     }
 
     out << "    Dtool_" << ClassName << "._PyType.tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
+  } else {
+    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_Ptr_DTOOL_SUPER_BASE;\n";
   }
 
   int num_nested = obj->_itype.number_of_nested_types();
@@ -3242,9 +3206,10 @@ write_prototype_for(ostream &out, InterfaceMaker::Function *func) {
   std::string fname = "PyObject *" + func->_name + "(PyObject *self, PyObject *args)";
   write_prototype_for_name(out, func, fname);
 }
-
 ////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonNative::write_prototype_for_name
+//       Access: Private
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
 write_prototype_for_name(ostream &out, InterfaceMaker::Function *func, const std::string &function_namename) {
@@ -3392,33 +3357,14 @@ write_function_for_name(ostream &out, Object *obj,
   for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
     remap = (*ri);
     if (is_remap_legal(remap)) {
-      int max_num_args = remap->_parameters.size();
+      int min_num_args = remap->get_min_num_args();
+      int max_num_args = remap->get_max_num_args();
       if (remap->_has_this) {
         has_this = true;
-
-        if (remap->_type != FunctionRemap::T_constructor) {
-          max_num_args--;
-        }
       }
 
       if (!remap->_has_this || remap->_const_method) {
         all_nonconst = false;
-      }
-
-      int min_num_args = 0;
-      FunctionRemap::Parameters::const_iterator pi;
-      pi = remap->_parameters.begin();
-      if (remap->_has_this && pi != remap->_parameters.end()) {
-        ++pi;
-      }
-      for (; pi != remap->_parameters.end(); ++pi) {
-        ParameterRemap *param = (*pi)._remap;
-        if (param->get_default_value() != (CPPExpression *)NULL) {
-          // We've reached the first parameter that takes a default value.
-          break;
-        } else {
-          ++min_num_args;
-        }
       }
 
       max_required_args = max(max_num_args, max_required_args);
@@ -3471,7 +3417,7 @@ write_function_for_name(ostream &out, Object *obj,
     max_required_args = collapse_default_remaps(map_sets, max_required_args);
   }
 
-  if (map_sets.size() > 1) {
+  if (map_sets.size() > 1 && (args_type == AT_varargs || args_type == AT_keyword_args)) {
     switch (args_type) {
     case AT_keyword_args:
       indent(out, 2) << "int parameter_count = (int)PyTuple_Size(args);\n";
@@ -3715,18 +3661,8 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
           continue;
         }
 
-        int max_num_args = remap->_parameters.size();
-        int min_num_args = 0;
-        FunctionRemap::Parameters::const_iterator pi;
-        for (pi = remap->_parameters.begin(); pi != remap->_parameters.end(); ++pi) {
-          ParameterRemap *param = (*pi)._remap;
-          if (param->get_default_value() != (CPPExpression *)NULL) {
-            // We've reached the first parameter that takes a default value.
-            break;
-          } else {
-            ++min_num_args;
-          }
-        }
+        int min_num_args = remap->get_min_num_args();
+        int max_num_args = remap->get_max_num_args();
 
         // Coerce constructor should take at least one argument.
         nassertd(max_num_args > 0) continue;
@@ -3753,18 +3689,8 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
       if (is_remap_legal(remap) && remap->_flags & FunctionRemap::F_coerce_constructor) {
         nassertd(!remap->_has_this) continue;
 
-        int max_num_args = remap->_parameters.size();
-        int min_num_args = 0;
-        FunctionRemap::Parameters::const_iterator pi;
-        for (pi = remap->_parameters.begin(); pi != remap->_parameters.end(); ++pi) {
-          ParameterRemap *param = (*pi)._remap;
-          if (param->get_default_value() != (CPPExpression *)NULL) {
-            // We've reached the first parameter that takes a default value.
-            break;
-          } else {
-            ++min_num_args;
-          }
-        }
+        int min_num_args = remap->get_min_num_args();
+        int max_num_args = remap->get_max_num_args();
 
         // Coerce constructor should take at least one argument.
         nassertd(max_num_args > 0) continue;
@@ -3985,7 +3911,7 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
 //               special default handling mechanism.  Or something.
 //
 //               Please don't hate me.
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 int InterfaceMakerPythonNative::
 collapse_default_remaps(std::map<int, std::set<FunctionRemap *> > &map_sets,
                         int max_required_args) {
@@ -4106,11 +4032,10 @@ abort_iteration:
   return max_required_args;
 }
 
-////////////////////////////////////////////////////////
-// Function : GetParnetDepth
-//
+////////////////////////////////////////////////////////////////////
+//     Function: GetParnetDepth
 // Support Function used to Sort the name based overrides.. For know must be complex to simple
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 int get_type_sort(CPPType *type) {
   int answer = 0;
 //  printf("    %s\n",type->get_local_name().c_str());
@@ -4172,12 +4097,17 @@ int get_type_sort(CPPType *type) {
   return answer;
 }
 
-////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //  The Core sort function for remap calling orders..
-//////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 bool RemapCompareLess(FunctionRemap *in1, FunctionRemap *in2) {
   assert(in1 != NULL);
   assert(in2 != NULL);
+
+  if (in1->_const_method != in2->_const_method) {
+    // Non-const methods should come first.
+    return in2->_const_method;
+  }
 
   if (in1->_parameters.size() != in2->_parameters.size()) {
     return (in1->_parameters.size() > in2->_parameters.size());
@@ -4735,13 +4665,17 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "str";
 
       } else if (TypeManager::is_wchar_pointer(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)" << param_name << ", NULL);\n"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString(" << param_name << ", NULL);\n"
           << "#else"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
           << "wchar_t *" << param_name << "_str = (wchar_t *)alloca(sizeof(wchar_t) * (" + param_name + "_len + 1));\n"
@@ -4759,14 +4693,18 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "unicode";
 
       } else if (TypeManager::is_wstring(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
           << "Py_ssize_t " << param_name << "_len;\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString("
           << param_name << ", &" << param_name << "_len);\n"
           << "#else\n"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
@@ -4784,14 +4722,18 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         expected_params += "unicode";
 
       } else if (TypeManager::is_const_ptr_to_basic_string_wchar(orig_type)) {
+        indent(out, indent_level) << "#if PY_VERSION_HEX >= 0x03020000\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#else\n";
         indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        indent(out, indent_level) << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
         extra_convert
           << "#if PY_VERSION_HEX >= 0x03030000\n"
           << "Py_ssize_t " << param_name << "_len;\n"
-          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString((PyObject *)"
+          << "wchar_t *" << param_name << "_str = PyUnicode_AsWideCharString("
           << param_name << ", &" << param_name << "_len);\n"
           << "#else\n"
           << "Py_ssize_t " << param_name << "_len = PyUnicode_GET_SIZE(" << param_name << ");\n"
@@ -5929,6 +5871,10 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level)
         << "return DTool_PyInit_Finalize(self, (void *)" << return_expr << ", &" << CLASS_PREFIX << make_safe_name(itype.get_scoped_name()) << ", true, false);\n";
 
+    } else if (TypeManager::is_bool(orig_type)) {
+      // It's an error return boolean, I guess.  Return 0 on success.
+      indent(out, indent_level) << "return (" << return_expr << ") ? 0 : -1;\n";
+
     } else if (TypeManager::is_integer(orig_type)) {
       if ((return_flags & RF_compare) == RF_compare) {
         // Make sure it returns -1, 0, or 1, or Python complains with:
@@ -6434,6 +6380,97 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonName::write_getset
+//       Access: Public
+//  Description: Generates the synthetic method described by the
+//               MAKE_PROPERTY() macro.
+////////////////////////////////////////////////////////////////////
+void InterfaceMakerPythonNative::
+write_getset(ostream &out, Object *obj, Property *property) {
+
+  string ClassName = make_safe_name(obj->_itype.get_scoped_name());
+  std::string cClassName = obj->_itype.get_true_name();
+
+  const InterrogateElement &ielem = property->_ielement;
+
+  if (property->_getter != NULL) {
+    FunctionRemap *remap = property->_getter->_remaps.front();
+
+    out << "PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
+    if (remap->_const_method) {
+      out << "  const " << cClassName  << " *local_this = NULL;\n";
+      out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+    } else {
+      out << "  " << cClassName  << " *local_this = NULL;\n";
+      out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+          << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+    }
+    out << "    return NULL;\n";
+    out << "  }\n\n";
+
+    if (property->_has_function != NULL) {
+      out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "()) {\n"
+          << "    Py_INCREF(Py_None);\n"
+          << "    return Py_None;\n"
+          << "  }\n";
+    }
+
+    std::set<FunctionRemap*> remaps;
+    remaps.insert(remap);
+
+    string expected_params;
+    write_function_forset(out, remaps, 0, 0,
+                          expected_params, 2, false, true, AT_no_args,
+                          RF_pyobject | RF_err_null, false, false);
+    out << "}\n\n";
+  }
+
+  if (property->_setter != NULL) {
+    out << "int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *) {\n";
+    out << "  " << cClassName  << " *local_this = NULL;\n";
+    out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this, \""
+        << classNameFromCppName(cClassName, false) << "." << ielem.get_name() << "\")) {\n";
+    out << "    return -1;\n";
+    out << "  }\n\n";
+
+    if (property->_clear_function != NULL) {
+      out << "  if (arg == Py_None) {\n"
+          << "    local_this->" << property->_clear_function->_ifunc.get_name() << "();\n"
+          << "    return 0;\n"
+          << "  }\n";
+    }
+
+    std::set<FunctionRemap*> remaps;
+
+    // Extract only the setters that take one argument.
+    Function::Remaps::iterator it;
+    for (it = property->_setter->_remaps.begin();
+         it != property->_setter->_remaps.end();
+         ++it) {
+      FunctionRemap *remap = *it;
+      int min_num_args = remap->get_min_num_args();
+      int max_num_args = remap->get_max_num_args();
+      if (min_num_args <= 1 && max_num_args >= 1) {
+        remaps.insert(remap);
+      }
+    }
+
+    string expected_params;
+    write_function_forset(out, remaps, 1, 1,
+                          expected_params, 2, true, true, AT_single_arg,
+                          RF_int, false, false);
+
+    out << "  if (!_PyErr_OCCURRED()) {\n";
+    out << "    Dtool_Raise_BadArgumentsError(\n";
+    output_quoted(out, 6, expected_params);
+    out << ");\n";
+    out << "  }\n";
+    out << "  return -1;\n";
+    out << "}\n\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerPythonNative::record_object
 //       Access: Protected
 //  Description: Records the indicated type, which may be a struct
@@ -6541,6 +6578,22 @@ record_object(TypeIndex type_index) {
       }
     }
 
+    if (ielement.has_has_function()) {
+      FunctionIndex func_index = ielement.get_has_function();
+      Function *has_function = record_function(itype, func_index);
+      if (is_function_legal(has_function)) {
+        property->_has_function = has_function;
+      }
+    }
+
+    if (ielement.has_clear_function()) {
+      FunctionIndex func_index = ielement.get_clear_function();
+      Function *clear_function = record_function(itype, func_index);
+      if (is_function_legal(clear_function)) {
+        property->_clear_function = clear_function;
+      }
+    }
+
     if (property->_getter != NULL) {
       object->_properties.push_back(property);
     } else {
@@ -6634,11 +6687,10 @@ generate_wrappers() {
   }
 }
 
-//////////////////////////////////////////////
-//   Function :is_cpp_type_legal
-//
+////////////////////////////////////////////////////////////////////
+//     Function: is_cpp_type_legal
 // is the cpp object  supported by by the dtool_py interface..
-//////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 is_cpp_type_legal(CPPType *in_ctype) {
   if (in_ctype == NULL) {
@@ -6682,10 +6734,9 @@ is_cpp_type_legal(CPPType *in_ctype) {
 
   return false;
 }
-//////////////////////////////////////////////
-//   Function :isExportThisRun
-//
-//////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: isExportThisRun
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 isExportThisRun(CPPType *ctype) {
   if (builder.in_forcetype(ctype->get_local_name(&parser))) {
@@ -6703,9 +6754,9 @@ isExportThisRun(CPPType *ctype) {
   return false;
 }
 
-//////////////////////////////////////////////
-// Function : isExportThisRun
-/////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: isExportThisRun
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 isExportThisRun(Function *func) {
   if (func == NULL || !is_function_legal(func)) {
@@ -6721,9 +6772,9 @@ isExportThisRun(Function *func) {
   return false;
 }
 
-//////////////////////////////////////////////
-// Function : is_remap_legal
-//////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: is_remap_legal
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 is_remap_legal(FunctionRemap *remap) {
   if (remap == NULL) {
@@ -6761,11 +6812,11 @@ is_remap_legal(FunctionRemap *remap) {
   return true;
 }
 
-//////////////////////////////////////////////
-// Function : has_coerce_constructor
+////////////////////////////////////////////////////////////////////
+//     Function: has_coerce_constructor
 //            Returns 1 if coerce constructor
 //            returns const, 2 if non-const.
-//////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 int InterfaceMakerPythonNative::
 has_coerce_constructor(CPPStructType *type) {
   if (type == NULL) {
@@ -6828,9 +6879,9 @@ has_coerce_constructor(CPPStructType *type) {
   return result;
 }
 
-//////////////////////////////////////////////
-// Function : is_remap_coercion_possible
-//////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: is_remap_coercion_possible
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 is_remap_coercion_possible(FunctionRemap *remap) {
   if (remap == NULL) {
@@ -6865,9 +6916,9 @@ is_remap_coercion_possible(FunctionRemap *remap) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////////
-// Function  : is_function_legal
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: is_function_legal
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 is_function_legal(Function *func) {
   Function::Remaps::const_iterator ri;
@@ -6884,9 +6935,9 @@ is_function_legal(Function *func) {
   return false;
 }
 
-////////////////////////////////////////////////////////
-// Function :  IsRunTimeTyped
-///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: IsRunTimeTyped
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 IsRunTimeTyped(const InterrogateType &itype) {
   TypeIndex ptype_id = itype.get_outer_class();
@@ -6904,11 +6955,10 @@ IsRunTimeTyped(const InterrogateType &itype) {
   return false;
 }
 
-//////////////////////////////////////////////////////////
-// Function : DoesInheritFromIsClass
-//
+////////////////////////////////////////////////////////////////////
+//     Function: DoesInheritFromIsClass
 // Helper function to check cpp class inharatience..
-///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
   if (inclass == NULL) {
@@ -6937,11 +6987,10 @@ DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
-//  Function : HasAGetClassTypeFunction
-//
+////////////////////////////////////////////////////////////////////
+//     Function: HasAGetClassTypeFunction
 // does the class have a supportable GetClassType which returns a TypeHandle.
-//////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 bool InterfaceMakerPythonNative::
 HasAGetClassTypeFunction(CPPType *type) {
   while (type->get_subtype() == CPPDeclaration::ST_typedef) {

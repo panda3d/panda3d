@@ -146,10 +146,10 @@ set_number(int number) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCTypedef::output
-//       Access : Public, Virtual
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCTypedef::output
+//       Access: Public, Virtual
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DCTypedef::
 output(ostream &out, bool brief) const {
@@ -160,7 +160,7 @@ output(ostream &out, bool brief) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCTypedef::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DCTypedef::
 write(ostream &out, bool brief, int indent_level) const {

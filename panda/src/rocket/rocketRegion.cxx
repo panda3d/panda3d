@@ -21,6 +21,10 @@
 #include <Rocket/Debugger.h>
 #endif
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
+
 TypeHandle RocketRegion::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

@@ -1,5 +1,3 @@
-// P3DActiveX.cpp : Implementation of CP3DActiveXApp and DLL registration.
-
 // Filename: P3DActiveX.cpp
 // Created by:  atrestman (14Sept09)
 //
@@ -13,6 +11,8 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+
+// P3DActiveX.cpp : Implementation of CP3DActiveXApp and DLL registration.
 
 #include "stdafx.h"
 #include "P3DActiveX.h"
@@ -38,23 +38,23 @@ const WORD _wVerMinor = 0;
 
 // Id taken from IMPLEMENT_OLECREATE_EX function in xxxCtrl.cpp
 
- 
+
 const CATID CLSID_SafeItem =
 { 0x924b4927, 0xd3ba, 0x41ea, 0x9f, 0x7e, 0x8a, 0x89, 0x19, 0x4a, 0xb3, 0xac };
- 
+
 // HRESULT CreateComponentCategory - Used to register ActiveX control as safe
 
- 
+
 HRESULT CreateComponentCategory(CATID catid, WCHAR *catDescription)
 {
     ICatRegister *pcr = NULL ;
     HRESULT hr = S_OK ;
- 
-    hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr, 
+
+    hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr,
             NULL, CLSCTX_INPROC_SERVER, IID_ICatRegister, (void**)&pcr);
     if (FAILED(hr))
         return hr;
- 
+
     // Make sure the HKCR\Component Categories\{..catid...}
 
     // key is registered.
@@ -83,13 +83,13 @@ HRESULT CreateComponentCategory(CATID catid, WCHAR *catDescription)
           {
             len = 127;
           }
-        }   
+        }
     else
         {
           // TODO: Write an error handler;
 
         }
-    // The second parameter of StringCchCopy is 128 because you need 
+    // The second parameter of StringCchCopy is 128 because you need
 
     // room for a NULL-terminator.
 
@@ -97,25 +97,25 @@ HRESULT CreateComponentCategory(CATID catid, WCHAR *catDescription)
     // Make sure the description is null terminated.
 
     catinfo.szDescription[len + 1] = '\0';
- 
+
     hr = pcr->RegisterCategories(1, &catinfo);
     pcr->Release();
- 
+
     return hr;
 }
- 
+
 // HRESULT RegisterCLSIDInCategory -
 
 //      Register your component categories information
 
- 
+
 HRESULT RegisterCLSIDInCategory(REFCLSID clsid, CATID catid)
 {
 // Register your component categories information.
 
     ICatRegister *pcr = NULL ;
     HRESULT hr = S_OK ;
-    hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr, 
+    hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr,
                 NULL, CLSCTX_INPROC_SERVER, IID_ICatRegister, (void**)&pcr);
     if (SUCCEEDED(hr))
     {
@@ -125,22 +125,22 @@ HRESULT RegisterCLSIDInCategory(REFCLSID clsid, CATID catid)
        rgcatid[0] = catid;
        hr = pcr->RegisterClassImplCategories(clsid, 1, rgcatid);
     }
- 
+
     if (pcr != NULL)
         pcr->Release();
-            
+
     return hr;
 }
- 
+
 // HRESULT UnRegisterCLSIDInCategory - Remove entries from the registry
 
- 
+
 HRESULT UnRegisterCLSIDInCategory(REFCLSID clsid, CATID catid)
 {
     ICatRegister *pcr = NULL ;
     HRESULT hr = S_OK ;
- 
-    hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr, 
+
+    hr = CoCreateInstance(CLSID_StdComponentCategoriesMgr,
             NULL, CLSCTX_INPROC_SERVER, IID_ICatRegister, (void**)&pcr);
     if (SUCCEEDED(hr))
     {
@@ -150,10 +150,10 @@ HRESULT UnRegisterCLSIDInCategory(REFCLSID clsid, CATID catid)
        rgcatid[0] = catid;
        hr = pcr->UnRegisterClassImplCategories(clsid, 1, rgcatid);
     }
- 
+
     if (pcr != NULL)
         pcr->Release();
- 
+
     return hr;
 }
 
@@ -195,41 +195,41 @@ STDAPI DllRegisterServer(void)
 {
     HRESULT hr;    // HResult used by Safety Functions
 
- 
+
     AFX_MANAGE_STATE(_afxModuleAddrThis);
- 
+
     if (!AfxOleRegisterTypeLib(AfxGetInstanceHandle(), _tlid))
       return ResultFromScode(SELFREG_E_TYPELIB);
- 
+
     if (!COleObjectFactoryEx::UpdateRegistryAll(TRUE))
       return ResultFromScode(SELFREG_E_CLASS);
- 
+
     // Mark the control as safe for initializing.
 
-                                             
-    hr = CreateComponentCategory(CATID_SafeForInitializing, 
+
+    hr = CreateComponentCategory(CATID_SafeForInitializing,
          L"Controls safely initializable from persistent data!");
     if (FAILED(hr))
       return hr;
- 
-    hr = RegisterCLSIDInCategory(CLSID_SafeItem, 
+
+    hr = RegisterCLSIDInCategory(CLSID_SafeItem,
          CATID_SafeForInitializing);
     if (FAILED(hr))
         return hr;
- 
+
     // Mark the control as safe for scripting.
 
- 
-    hr = CreateComponentCategory(CATID_SafeForScripting, 
+
+    hr = CreateComponentCategory(CATID_SafeForScripting,
                                  L"Controls safely  scriptable!");
     if (FAILED(hr))
         return hr;
- 
-    hr = RegisterCLSIDInCategory(CLSID_SafeItem, 
+
+    hr = RegisterCLSIDInCategory(CLSID_SafeItem,
                         CATID_SafeForScripting);
     if (FAILED(hr))
         return hr;
- 
+
     return NOERROR;
 }
 
@@ -241,26 +241,26 @@ STDAPI DllUnregisterServer(void)
 {
     HRESULT hr;    // HResult used by Safety Functions
 
- 
+
     AFX_MANAGE_STATE(_afxModuleAddrThis);
- 
+
     // Remove entries from the registry.
 
-    hr = UnRegisterCLSIDInCategory(CLSID_SafeItem, 
+    hr = UnRegisterCLSIDInCategory(CLSID_SafeItem,
                      CATID_SafeForInitializing);
     if (FAILED(hr))
       return hr;
- 
-    hr = UnRegisterCLSIDInCategory(CLSID_SafeItem, 
+
+    hr = UnRegisterCLSIDInCategory(CLSID_SafeItem,
                         CATID_SafeForScripting);
     if (FAILED(hr))
       return hr;
- 
+
     if (!AfxOleUnregisterTypeLib(_tlid, _wVerMajor, _wVerMinor))
       return ResultFromScode(SELFREG_E_TYPELIB);
- 
+
     if (!COleObjectFactoryEx::UpdateRegistryAll(FALSE))
       return ResultFromScode(SELFREG_E_CLASS);
- 
+
     return NOERROR;
 }

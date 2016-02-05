@@ -20,9 +20,9 @@
 TypeHandle LinearCylinderVortexForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearCylinderVortexForce
-//      Access : public
-// Description : Simple Constructor
+//     Function: LinearCylinderVortexForce
+//       Access: Public
+//  Description: Simple Constructor
 ////////////////////////////////////////////////////////////////////
 LinearCylinderVortexForce::
 LinearCylinderVortexForce(PN_stdfloat radius, PN_stdfloat length, PN_stdfloat coef,
@@ -32,9 +32,9 @@ LinearCylinderVortexForce(PN_stdfloat radius, PN_stdfloat length, PN_stdfloat co
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearCylinderVortexForce
-//      Access : public
-// Description : copy Constructor
+//     Function: LinearCylinderVortexForce
+//       Access: Public
+//  Description: copy Constructor
 ////////////////////////////////////////////////////////////////////
 LinearCylinderVortexForce::
 LinearCylinderVortexForce(const LinearCylinderVortexForce &copy) :
@@ -45,18 +45,18 @@ LinearCylinderVortexForce(const LinearCylinderVortexForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LinearCylinderVortexForce
-//      Access : public
-// Description : Destructor
+//     Function: ~LinearCylinderVortexForce
+//       Access: Public
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 LinearCylinderVortexForce::
 ~LinearCylinderVortexForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : public, virtual
-// Description : child copier
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: child copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearCylinderVortexForce::
 make_copy() {
@@ -64,9 +64,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_child_vector
-//      Access : private, virtual
-// Description : returns the centripetal force vector for the
+//     Function: get_child_vector
+//       Access: Private, Virtual
+//  Description: returns the centripetal force vector for the
 //               passed-in object
 ////////////////////////////////////////////////////////////////////
 LVector3 LinearCylinderVortexForce::
@@ -128,10 +128,10 @@ get_child_vector(const PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearCylinderVortexForce::
 output(ostream &out) const {
@@ -141,10 +141,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearCylinderVortexForce::
 write(ostream &out, unsigned int indent) const {

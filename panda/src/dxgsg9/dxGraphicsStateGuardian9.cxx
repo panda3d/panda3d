@@ -897,7 +897,7 @@ clear(DrawableRegion *clearable) {
 //     Function: DXGraphicsStateGuardian9::prepare_display_region
 //       Access: Public, Virtual
 //  Description: Prepare a display region for rendering (set up
-//       scissor region and viewport)
+//               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
@@ -2339,6 +2339,8 @@ reset() {
   _pixel_shader_version_major = D3DSHADER_VERSION_MAJOR (d3d_caps.PixelShaderVersion);
   _pixel_shader_version_minor = D3DSHADER_VERSION_MINOR (d3d_caps.PixelShaderVersion);
 
+  _supports_hlsl = (_pixel_shader_version_major != 0);
+
   _vertex_shader_profile = (char *) D3DXGetVertexShaderProfile (_d3d_device);
   _pixel_shader_profile = (char *) D3DXGetPixelShaderProfile (_d3d_device);
 
@@ -2647,14 +2649,26 @@ reset() {
     }
   }
 
+  _supports_depth_stencil = ((_screen->_supported_tex_formats_mask & D24S8_FLAG) != 0);
+  _supports_depth_texture = _supports_depth_stencil ||
+    (_screen->_supported_tex_formats_mask & D16_FLAG) != 0 ||
+    (_screen->_supported_tex_formats_mask & D32_FLAG) != 0 ||
+    (_screen->_supported_tex_formats_mask & D24X8_FLAG) != 0;
+
+  // In DirectX 9, all built-in depth formats use shadow map filtering.  Some
+  // drivers (GeForce 8000+, Radeon HD 4000+, Intel G45+) expose a FourCC
+  // format called "INTZ" that allows access to the actual depth.  We don't
+  // have a flag to indicate this, though.
+  _supports_shadow_filter = _supports_depth_texture;
+
   // check if compressed textures are supported
-  #define CHECK_FOR_DXTVERSION(num) \
-  if (_screen->_supported_tex_formats_mask & DXT##num##_FLAG) {\
+  #define CHECK_COMPRESSED_FMT(mode, fmt) \
+  if (_screen->_supported_tex_formats_mask & fmt##_FLAG) {\
     if (dxgsg9_cat.is_debug()) {\
-      dxgsg9_cat.debug() << "Compressed texture format DXT" << #num << " supported\n";\
+      dxgsg9_cat.debug() << "Compressed texture format " << #fmt << " supported\n";\
     }\
     _supports_compressed_texture = true;\
-    _compressed_texture_formats.set_bit(Texture::CM_dxt##num);\
+    _compressed_texture_formats.set_bit(Texture::mode);\
   }
 
   if (_screen->_intel_compressed_texture_bug) {
@@ -2665,14 +2679,16 @@ reset() {
 
   } else {
     // Check for available compressed formats normally.
-    CHECK_FOR_DXTVERSION(1);
-    CHECK_FOR_DXTVERSION(2);
-    CHECK_FOR_DXTVERSION(3);
-    CHECK_FOR_DXTVERSION(4);
-    CHECK_FOR_DXTVERSION(5);
+    CHECK_COMPRESSED_FMT(CM_dxt1, DXT1);
+    CHECK_COMPRESSED_FMT(CM_dxt2, DXT2);
+    CHECK_COMPRESSED_FMT(CM_dxt3, DXT3);
+    CHECK_COMPRESSED_FMT(CM_dxt4, DXT4);
+    CHECK_COMPRESSED_FMT(CM_dxt5, DXT5);
+    CHECK_COMPRESSED_FMT(CM_rgtc, ATI1);
+    CHECK_COMPRESSED_FMT(CM_rgtc, ATI2);
   }
 
-  #undef CHECK_FOR_DXTVERSION
+  #undef CHECK_COMPRESSED_FMT
 
   _screen->_supports_rgba16f_texture_format = false;
   hr = _screen->_d3d9->CheckDeviceFormat(_screen->_card_id, D3DDEVTYPE_HAL, _screen->_display_mode.Format, 0x0, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F);
@@ -4122,6 +4138,10 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 void DXGraphicsStateGuardian9::
 close_gsg() {
   GraphicsStateGuardian::close_gsg();
+
+  if (_prepared_objects.is_null()) {
+    return;
+  }
 
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()

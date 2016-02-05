@@ -38,14 +38,14 @@
 TypeHandle FmodAudioManager::_type_handle;
 
 ReMutex FmodAudioManager::_lock;
-FMOD::System *FmodAudioManager::_system; 
+FMOD::System *FmodAudioManager::_system;
 
 pset<FmodAudioManager *> FmodAudioManager::_all_managers;
 
 bool FmodAudioManager::_system_is_valid = false;
 
 
-//  This sets the distance factor for 3D audio to use feet. 
+//  This sets the distance factor for 3D audio to use feet.
 //  FMOD uses meters by default.
 //  Since Panda use feet we need to compensate for that with a factor of 3.28
 //
@@ -81,7 +81,7 @@ AudioManager *Create_FmodAudioManager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FmodAudioManager::
 FmodAudioManager() {
@@ -92,7 +92,7 @@ FmodAudioManager() {
   unsigned int      version;
 
   _all_managers.insert(this);
-  
+
   //Init 3D attributes
   _position.x = 0;
   _position.y = 0;
@@ -124,7 +124,7 @@ FmodAudioManager() {
     //  Let check the Version of FMOD to make sure the Headers and Libraries are correct.
     result = _system->getVersion(&version);
     fmod_audio_errcheck("_system->getVersion()", result);
-  
+
     if (version < FMOD_VERSION){
       audio_error("You are using an old version of FMOD.  This program requires:" << FMOD_VERSION);
     }
@@ -194,7 +194,7 @@ FmodAudioManager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FmodAudioManager::
 ~FmodAudioManager() {
@@ -219,8 +219,8 @@ FmodAudioManager::
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::is_valid
 //       Access: Public
-//  Description: This just check to make sure the FMOD System is 
-//         up and running correctly.
+//  Description: This just check to make sure the FMOD System is
+//               up and running correctly.
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
 is_valid() {
@@ -358,7 +358,7 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
   }
 
   dsp->setUserData(USER_DSP_MAGIC);
-  
+
   return dsp;
 }
 
@@ -415,8 +415,8 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
 //       Access: Public
 //  Description: Configure the global DSP filter chain.
 //
-//               FMOD has a relatively powerful DSP 
-//               implementation.  It is likely that most 
+//               FMOD has a relatively powerful DSP
+//               implementation.  It is likely that most
 //               configurations will be supported.
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
@@ -443,7 +443,7 @@ get_sound(const string &file_name, bool positional, int) {
   ReMutexHolder holder(_lock);
   //Needed so People use Panda's Generic UNIX Style Paths for Filename.
   //path.to_os_specific() converts it back to the proper OS version later on.
-  
+
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -522,21 +522,21 @@ getSpeakerSetup() {
 //     Function: FmodAudioManager::setSpeakerSetup()
 //       Access: Published
 //  Description: This is to set up FMOD to use a MultiChannel Setup.
-//         This method is pretty much useless.
-//         To set a speaker setup in FMOD for Surround Sound, 
-//         stereo, or whatever you have to set the SpeakerMode
-//         BEFORE you Initialize FMOD.
-//         Since Panda Inits the FmodAudioManager right when you
-//         Start it up, you are never given an oppertunity to call
-//         this function.
-//         That is why I stuck a BOOL in the CONFIG.PRC file, whichs
-//         lets you flag if you want to use a Multichannel or not.
-//         That will set the speaker setup when an instance of this
-//         class is constructed.
-//         Still I put this here as a measure of good faith, since you
-//         can query the speaker setup after everything in Init.
-//         Also, maybe someone will completely hack Panda someday, in which
-//         one can init or re-init the AudioManagers after Panda is running.
+//               This method is pretty much useless.
+//               To set a speaker setup in FMOD for Surround Sound,
+//               stereo, or whatever you have to set the SpeakerMode
+//               BEFORE you Initialize FMOD.
+//               Since Panda Inits the FmodAudioManager right when you
+//               Start it up, you are never given an oppertunity to call
+//               this function.
+//               That is why I stuck a BOOL in the CONFIG.PRC file, whichs
+//               lets you flag if you want to use a Multichannel or not.
+//               That will set the speaker setup when an instance of this
+//               class is constructed.
+//               Still I put this here as a measure of good faith, since you
+//               can query the speaker setup after everything in Init.
+//               Also, maybe someone will completely hack Panda someday, in which
+//               one can init or re-init the AudioManagers after Panda is running.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
@@ -607,8 +607,8 @@ set_active(bool active) {
     _active = active;
 
     // Tell our AudioSounds to adjust:
-    for (SoundSet::iterator i = _all_sounds.begin(); 
-         i != _all_sounds.end(); 
+    for (SoundSet::iterator i = _all_sounds.begin();
+         i != _all_sounds.end();
          ++i) {
       (*i)->set_active(_active);
     }
@@ -618,7 +618,7 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::get_active()
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
 get_active() const {
@@ -662,16 +662,16 @@ update() {
 //     Function: FmodAudioManager::audio_3d_set_listener_attributes
 //       Access: Public
 //  Description: Set position of the "ear" that picks up 3d sounds
-//        NOW LISTEN UP!!! THIS IS IMPORTANT!
-//        Both Panda3D and FMOD use a left handed coordinate system.
-//        But there is a major difference!
-//        In Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.
-//        In FMOD the Y-Axis is going up and the Z-Axis is going into the screen.
-//        The solution is simple, we just flip the Y and Z axis, as we move coordinates
-//        from Panda to FMOD and back.
-//        What does did mean to average Panda user?  Nothing, they shouldn't notice anyway.
-//        But if you decide to do any 3D audio work in here you have to keep it in mind.
-//        I told you, so you can't say I didn't.
+//               NOW LISTEN UP!!! THIS IS IMPORTANT!
+//               Both Panda3D and FMOD use a left handed coordinate system.
+//               But there is a major difference!
+//               In Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.
+//               In FMOD the Y-Axis is going up and the Z-Axis is going into the screen.
+//               The solution is simple, we just flip the Y and Z axis, as we move coordinates
+//               from Panda to FMOD and back.
+//               What does did mean to average Panda user?  Nothing, they shouldn't notice anyway.
+//               But if you decide to do any 3D audio work in here you have to keep it in mind.
+//               I told you, so you can't say I didn't.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
@@ -679,10 +679,10 @@ audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
   audio_debug("FmodAudioManager::audio_3d_set_listener_attributes()");
 
   FMOD_RESULT result;
-  
+
   _position.x = px;
   _position.y = pz;
-  _position.z = py; 
+  _position.z = py;
 
   _velocity.x = vx;
   _velocity.y = vz;
@@ -695,7 +695,7 @@ audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
   _up.x = ux;
   _up.y = uz;
   _up.z = uy;
-    
+
   result = _system->set3DListenerAttributes( 0, &_position, &_velocity, &_forward, &_up);
   fmod_audio_errcheck("_system->set3DListenerAttributes()", result);
 
@@ -723,7 +723,7 @@ void FmodAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
   ReMutexHolder holder(_lock);
   audio_debug( "FmodAudioManager::audio_3d_set_distance_factor( factor= " << factor << ")" );
-  
+
   FMOD_RESULT result;
 
   _distance_factor = factor;
@@ -750,7 +750,7 @@ audio_3d_get_distance_factor() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::audio_3d_set_doppler_factor
 //       Access: Public
-//  Description: Exaggerates or diminishes the Doppler effect. 
+//  Description: Exaggerates or diminishes the Doppler effect.
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
@@ -770,7 +770,7 @@ audio_3d_set_doppler_factor(PN_stdfloat factor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::audio_3d_get_doppler_factor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat FmodAudioManager::
 audio_3d_get_doppler_factor() const {
@@ -802,7 +802,7 @@ audio_3d_set_drop_off_factor(PN_stdfloat factor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::audio_3d_get_drop_off_factor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat FmodAudioManager::
 audio_3d_get_drop_off_factor() const {
@@ -850,7 +850,7 @@ reduce_sounds_playing_to(unsigned int count) {
 //     Function: FmodAudioManager::uncache_sound
 //       Access: Public
 //  Description: NOT USED FOR FMOD-EX!!!
-//         Clears a sound out of the sound cache.
+//               Clears a sound out of the sound cache.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 uncache_sound(const string& file_name) {
@@ -863,19 +863,19 @@ uncache_sound(const string& file_name) {
 //     Function: FmodAudioManager::clear_cache
 //       Access: Public
 //  Description: NOT USED FOR FMOD-EX!!!
-//         Clear out the sound cache.
+//               Clear out the sound cache.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 clear_cache() {
   audio_debug("FmodAudioManager::clear_cache()");
-  
+
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::set_cache_limit
 //       Access: Public
 //  Description: NOT USED FOR FMOD-EX!!!
-//         Set the number of sounds that the cache can hold.
+//               Set the number of sounds that the cache can hold.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 set_cache_limit(unsigned int count) {
@@ -887,7 +887,7 @@ set_cache_limit(unsigned int count) {
 //     Function: FmodAudioManager::get_cache_limit
 //       Access: Public
 //  Description: NOT USED FOR FMOD-EX!!!
-//         Gets the number of sounds that the cache can hold.
+//               Gets the number of sounds that the cache can hold.
 ////////////////////////////////////////////////////////////////////
 unsigned int FmodAudioManager::
 get_cache_limit() const {

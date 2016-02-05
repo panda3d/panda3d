@@ -121,6 +121,10 @@ PUBLISHED:
   INLINE GraphicsPipe *get_pipe() const;
   INLINE GraphicsEngine *get_engine() const;
   INLINE const string &get_name() const;
+  MAKE_PROPERTY(gsg, get_gsg);
+  MAKE_PROPERTY(pipe, get_pipe);
+  MAKE_PROPERTY(engine, get_engine);
+  MAKE_PROPERTY(name, get_name);
 
   INLINE int count_textures() const;
   INLINE bool has_texture() const;
@@ -148,17 +152,26 @@ PUBLISHED:
   INLINE bool is_valid() const;
   INLINE bool is_nonzero_size() const;
 
+  MAKE_PROPERTY(size, get_size);
+  MAKE_PROPERTY(fb_size, get_fb_size);
+  MAKE_PROPERTY(sbs_left_size, get_sbs_left_size);
+  MAKE_PROPERTY(sbs_right_size, get_sbs_right_size);
+
   void set_active(bool active);
   virtual bool is_active() const;
+  MAKE_PROPERTY(active, is_active, set_active);
 
   void set_one_shot(bool one_shot);
   bool get_one_shot() const;
+  MAKE_PROPERTY(one_shot, get_one_shot, set_one_shot);
 
   void set_inverted(bool inverted);
   INLINE bool get_inverted() const;
+  MAKE_PROPERTY(inverted, get_inverted, set_inverted);
 
   INLINE void set_swap_eyes(bool swap_eyes);
   INLINE bool get_swap_eyes() const;
+  MAKE_PROPERTY(swap_eyes, get_swap_eyes, set_swap_eyes);
 
   INLINE void set_red_blue_stereo(bool red_blue_stereo,
                                   unsigned int left_eye_color_mask,
@@ -183,6 +196,7 @@ PUBLISHED:
 
   virtual void set_sort(int sort);
   INLINE int get_sort() const;
+  MAKE_PROPERTY(sort, get_sort, set_sort);
 
   INLINE void set_child_sort(int child_sort);
   INLINE void clear_child_sort();
@@ -236,6 +250,7 @@ PUBLISHED:
   virtual void unshare_depth_buffer();
 
   virtual bool get_supports_render_texture() const;
+  MAKE_PROPERTY(supports_render_texture, get_supports_render_texture);
 
 PUBLISHED:
   // These are not intended to be called directly by the user, but
@@ -259,7 +274,7 @@ public:
   // It is an error to call any of the following methods from any
   // thread other than the draw thread.  These methods are normally
   // called by the GraphicsEngine.
-  void clear(Thread *current_thread);
+  virtual void clear(Thread *current_thread);
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 

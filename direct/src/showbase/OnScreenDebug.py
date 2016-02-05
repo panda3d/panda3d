@@ -9,8 +9,10 @@ from direct.gui import OnscreenText
 from direct.directtools import DirectUtil
 
 class OnScreenDebug:
+
+    enabled = ConfigVariableBool("on-screen-debug-enabled", False)
+
     def __init__(self):
-        self.enabled = config.GetBool("on-screen-debug-enabled", 0)
         self.onScreenText = None
         self.frame = 0
         self.text = ""
@@ -19,19 +21,19 @@ class OnScreenDebug:
     def load(self):
         if self.onScreenText:
             return
-        
-        fontPath = config.GetString("on-screen-debug-font", "cmtt12")
-        fontScale = config.GetFloat("on-screen-debug-font-scale", 0.05)
+
+        fontPath = ConfigVariableString("on-screen-debug-font", "cmtt12").value
+        fontScale = ConfigVariableDouble("on-screen-debug-font-scale", 0.05).value
 
         color = {
             "black": Vec4(0, 0, 0, 1),
             "white": Vec4(1, 1, 1, 1),
             }
-        fgColor = color[config.GetString("on-screen-debug-fg-color", "white")]
-        bgColor = color[config.GetString("on-screen-debug-bg-color", "black")]
-        fgColor.setW(config.GetFloat("on-screen-debug-fg-alpha", 0.85))
-        bgColor.setW(config.GetFloat("on-screen-debug-bg-alpha", 0.85))
-        
+        fgColor = color[ConfigVariableString("on-screen-debug-fg-color", "white").value]
+        bgColor = color[ConfigVariableString("on-screen-debug-bg-color", "black").value]
+        fgColor.setW(ConfigVariableDouble("on-screen-debug-fg-alpha", 0.85).value)
+        bgColor.setW(ConfigVariableDouble("on-screen-debug-bg-alpha", 0.85).value)
+
         font = loader.loadFont(fontPath)
         if not font.isValid():
             print "failed to load OnScreenDebug font", fontPath
@@ -57,7 +59,7 @@ class OnScreenDebug:
                 #isNew = " is"
                 isNew = "="
             else:
-                # This data is not for the current 
+                # This data is not for the current
                 # frame (key roughly equals value):
                 #isNew = "was"
                 isNew = "~"

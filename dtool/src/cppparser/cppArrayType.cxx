@@ -88,6 +88,26 @@ is_trivial() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPArrayType::is_default_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is default-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPArrayType::
+is_default_constructible() const {
+  return _element_type->is_default_constructible();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPArrayType::is_copy_constructible
+//       Access: Public, Virtual
+//  Description: Returns true if the type is copy-constructible.
+////////////////////////////////////////////////////////////////////
+bool CPPArrayType::
+is_copy_constructible() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPArrayType::is_equivalent
 //       Access: Public, Virtual
 //  Description: This is a little more forgiving than is_equal(): it

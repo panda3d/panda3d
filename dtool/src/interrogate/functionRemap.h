@@ -65,6 +65,9 @@ public:
 
   string get_call_str(const string &container, const vector_string &pexprs) const;
 
+  int get_min_num_args() const;
+  int get_max_num_args() const;
+
   class Parameter {
   public:
     bool _has_name;

@@ -133,6 +133,8 @@ public:
     const InterrogateElement &_ielement;
     Function *_getter;
     Function *_setter;
+    Function *_has_function;
+    Function *_clear_function;
   };
   typedef vector<Property *> Properties;
 

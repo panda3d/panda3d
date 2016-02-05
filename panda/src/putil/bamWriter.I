@@ -94,3 +94,27 @@ INLINE void BamWriter::
 set_file_texture_mode(BamTextureMode file_texture_mode) {
   _file_texture_mode = file_texture_mode;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::get_root_node
+//       Access: Published
+//  Description: Returns the root node of the part of the scene
+//               graph we are currently writing out.  This is used
+//               for determining what to make NodePaths relative to.
+////////////////////////////////////////////////////////////////////
+INLINE TypedWritable *BamWriter::
+get_root_node() const {
+  return _root_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::set_root_node
+//       Access: Published
+//  Description: Sets the root node of the part of the scene graph
+//               we are currently writing out.  NodePaths written
+//               to this bam file will be relative to this node.
+////////////////////////////////////////////////////////////////////
+INLINE void BamWriter::
+set_root_node(TypedWritable *root_node) {
+  _root_node = root_node;
+}

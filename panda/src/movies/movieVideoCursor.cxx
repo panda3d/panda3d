@@ -1,4 +1,4 @@
-// Filename: movieVideo.cxx
+// Filename: movieVideoCursor.cxx
 // Created by: jyelon (02Jul07)
 //
 ////////////////////////////////////////////////////////////////////
@@ -51,12 +51,12 @@ MovieVideoCursor(MovieVideo *src) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::
 ~MovieVideoCursor() {
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::setup_texture
 //       Access: Published
@@ -139,20 +139,20 @@ apply_to_texture(const Buffer *buffer, Texture *t, int page) {
   nassertv((t->get_num_components() == 3) || (t->get_num_components() == 4));
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_num_pages());
-  
+
   PTA_uchar img;
   {
     PStatTimer timer2(_copy_pcollector_ram);
     t->set_keep_ram_image(true);
     img = t->modify_ram_image();
   }
-  
+
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
 
   PStatTimer timer2(_copy_pcollector_copy);
   if (t->get_x_size() == size_x() && t->get_num_components() == get_num_components()) {
     memcpy(data, buffer->_block, size_x() * size_y() * get_num_components());
-    
+
   } else {
     unsigned char *p = buffer->_block;
     if (t->get_num_components() == get_num_components()) {
@@ -207,9 +207,9 @@ apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src
     t->set_keep_ram_image(true);
     img = t->modify_ram_image();
   }
-  
+
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
-  
+
   PStatTimer timer2(_copy_pcollector_copy);
   int src_width = get_num_components();
   int src_stride = size_x() * src_width;
@@ -256,16 +256,16 @@ apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
   nassertv(t->get_num_components() == 4);
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_z_size());
-  
+
   PTA_uchar img;
   {
     PStatTimer timer2(_copy_pcollector_ram);
     t->set_keep_ram_image(true);
     img = t->modify_ram_image();
   }
-  
+
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
-  
+
   PStatTimer timer2(_copy_pcollector_copy);
   int src_stride = size_x() * get_num_components();
   int src_width = get_num_components();
@@ -354,7 +354,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::Buffer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::Buffer::
 Buffer(size_t block_size) :
@@ -367,7 +367,7 @@ Buffer(size_t block_size) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::Buffer::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::Buffer::
 ~Buffer() {

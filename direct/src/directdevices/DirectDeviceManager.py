@@ -23,7 +23,7 @@ class DirectDeviceManager(VrpnClient, DirectObject):
             self.server = server
         else:
             # Check config file, if that fails, use default
-            self.server = myBase.config.GetString('vrpn-server', 'spacedyne')
+            self.server = ConfigVariableString('vrpn-server', 'spacedyne').getValue()
 
         # Create a vrpn client
         VrpnClient.__init__(self, self.server)

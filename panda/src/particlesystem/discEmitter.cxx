@@ -15,9 +15,9 @@
 #include "discEmitter.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : DiscEmitter::DiscEmitter
-//      Access : Public
-// Description : constructor
+//     Function: DiscEmitter::DiscEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 DiscEmitter::
 DiscEmitter() {
@@ -28,9 +28,9 @@ DiscEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : DiscEmitter::DiscEmitter
-//      Access : Public
-// Description : copy constructor
+//     Function: DiscEmitter::DiscEmitter
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 DiscEmitter::
 DiscEmitter(const DiscEmitter &copy) :
@@ -48,18 +48,18 @@ DiscEmitter(const DiscEmitter &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : DiscEmitter::~DiscEmitter
-//      Access : Public
-// Description : destructor
+//     Function: DiscEmitter::~DiscEmitter
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 DiscEmitter::
 ~DiscEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *DiscEmitter::
 make_copy() {
@@ -67,9 +67,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : DiscEmitter::assign_initial_position
-//      Access : Public
-// Description : Generates a location for a new particle
+//     Function: DiscEmitter::assign_initial_position
+//       Access: Public
+//  Description: Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void DiscEmitter::
 assign_initial_position(LPoint3& pos) {
@@ -89,9 +89,9 @@ assign_initial_position(LPoint3& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : DiscEmitter::assign_initial_velocity
-//      Access : Public
-// Description : Generates a velocity for a new particle
+//     Function: DiscEmitter::assign_initial_velocity
+//       Access: Public
+//  Description: Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void DiscEmitter::
 assign_initial_velocity(LVector3& vel) {
@@ -125,10 +125,10 @@ assign_initial_velocity(LVector3& vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DiscEmitter::
 output(ostream &out) const {
@@ -138,10 +138,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DiscEmitter::
 write(ostream &out, int indent) const {

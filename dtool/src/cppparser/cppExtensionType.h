@@ -23,7 +23,7 @@
 class CPPScope;
 class CPPIdentifier;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPExtensionType
 // Description : Base class of enum, class, struct, and union types.
 //               An instance of the base class (instead of one of
@@ -48,6 +48,8 @@ public:
   virtual bool is_incomplete() const;
   virtual bool is_tbd() const;
   virtual bool is_trivial() const;
+  virtual bool is_default_constructible() const;
+  virtual bool is_copy_constructible() const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,

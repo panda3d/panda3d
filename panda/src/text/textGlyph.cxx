@@ -132,7 +132,7 @@ set_quad(const LVecBase4 &dimensions, const LVecBase4 &texcoords,
 void TextGlyph::
 set_geom(GeomVertexData *vdata, GeomPrimitive *prim, 
          const RenderState *state) {
-  PT(Geom) geom = new Geom(vdata);
+  PT(Geom) geom = new GeomTextGlyph(this, vdata);
   geom->add_primitive(prim);
   _geom = geom;
 

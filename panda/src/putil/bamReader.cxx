@@ -142,6 +142,12 @@ init() {
     _file_stdfloat_double = scan.get_bool();
   }
 
+  if (scan.get_current_index() > header.get_length()) {
+    bam_cat.error()
+      << "Bam header is too short.\n";
+    return false;
+  }
+
   return true;
 }
 
@@ -1238,6 +1244,12 @@ p_read_object() {
 
   int object_id = read_object_id(scan);
 
+  if (scan.get_current_index() > dg.get_length()) {
+    bam_cat.error()
+      << "Found truncated datagram in bam stream\n";
+    return 0;
+  }
+
   // There are two cases (not counting the special _remove_flag case,
   // above).  Either this is a new object definition, or this is a
   // reference to an object that was previously defined.
@@ -1278,6 +1290,12 @@ p_read_object() {
       _now_creating = oi;
       created_obj._ptr->fillin(scan, this);
       _now_creating = was_creating;
+
+      if (scan.get_remaining_size() > 0) {
+        bam_cat.warning()
+          << "Skipping " << scan.get_remaining_size() << " remaining bytes "
+          << "in datagram containing type " << type << "\n";
+      }
 
     } else {
       // We are receiving a new object.  Now we can call the factory
@@ -1378,6 +1396,13 @@ p_read_object() {
             << "Read a " << object->get_type() << ": " << (void *)object << "\n";
         }
       }
+    }
+
+    // Sanity check that we read the expected number of bytes.
+    if (scan.get_current_index() > dg.get_length()) {
+      bam_cat.error()
+        << "End of datagram reached while reading bam object "
+        << type << ": " << (void *)created_obj._ptr << "\n";
     }
   }
 

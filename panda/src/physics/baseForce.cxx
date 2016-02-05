@@ -18,44 +18,44 @@
 TypeHandle BaseForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseForce
-//      Access : protected
-// Description : constructor
+//     Function: BaseForce
+//       Access: Protected
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 BaseForce::
 BaseForce(bool active) :
-  _force_node(NULL), 
-  _active(active) 
+  _force_node(NULL),
+  _active(active)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseForce
-//      Access : protected
-// Description : copy constructor
+//     Function: BaseForce
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 BaseForce::
 BaseForce(const BaseForce &copy) :
-  TypedReferenceCount(copy) 
+  TypedReferenceCount(copy)
 {
   _active = copy._active;
   _force_node = (ForceNode *) NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~BaseForce
-//      Access : public, virtual
-// Description : destructor
+//     Function: ~BaseForce
+//       Access: Public, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 BaseForce::
 ~BaseForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseForce::
 output(ostream &out) const {
@@ -63,16 +63,16 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseForce::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "BaseForce (id " << this << "):\n";
-  
+
   indent(out, indent_level + 2)
     << "_force_node ";
   if (_force_node) {
@@ -80,7 +80,7 @@ write(ostream &out, int indent_level) const {
   } else {
     out << "null\n";
   }
-  
+
   indent(out, indent_level + 2)
     << "_active " << _active << "\n";
 }

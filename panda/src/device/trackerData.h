@@ -46,6 +46,12 @@ public:
   INLINE bool has_dt() const;
   INLINE double get_dt() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(time, get_time, set_time);
+  MAKE_PROPERTY(pos, get_pos, set_pos);
+  MAKE_PROPERTY(orient, get_orient, set_orient);
+  MAKE_PROPERTY(dt, get_dt, set_dt);
+
 private:
   enum Flags {
     F_has_time    = 0x0001,

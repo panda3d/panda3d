@@ -178,10 +178,10 @@ is_airecv() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCField::output
-//       Access : Published
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCField::output
+//       Access: Published
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 INLINE void DCField::
 output(ostream &out) const {
@@ -189,10 +189,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCField::
-//       Access : Published
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCField::
+//       Access: Published
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 INLINE void DCField::
 write(ostream &out, int indent_level) const {

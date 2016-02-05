@@ -1,8 +1,6 @@
-
-////////////////////////////////////////////////////////////////////////
-// Filename    : pathFind.h
-// Created by  : Deepak, John, Navin
-// Date        :  12 Oct 09
+// Filename: pathFind.h
+// Created by: Deepak, John, Navin (12Oct09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -24,15 +22,15 @@
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Class : PathFind
-//  Description : This class contains all the members and functions that are required to form an interface between
-//                the AIBehaviors class and the PathFinder class. An object (pointer) of this class is provided in the
-//                AIBehaviors class. It is only via this object that the user can activate pathfinding.
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//       Class : PathFind
+// Description : This class contains all the members and functions
+//               that are required to form an interface between
+//               the AIBehaviors class and the PathFinder class.
+//               An object (pointer) of this class is provided in
+//               the AIBehaviors class.  It is only via this object
+//               that the user can activate pathfinding.
+////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAAI PathFind {
 public:
   AICharacter *_ai_char;

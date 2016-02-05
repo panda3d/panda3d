@@ -43,7 +43,6 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
   _glgsg = glgsg;
   _cg_program = 0;
   _glsl_program = 0;
-  _has_divisor = false;
   _color_attrib_index = CA_color;
   _transform_table_param = 0;
   _slider_table_param = 0;
@@ -108,7 +107,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
     }
   }
 
-  if (_cg_program != 0) {
+  if (_cg_program != 0 && _glgsg->_supports_glsl) {
     if (cgGetProgramProfile(_cg_program) == CG_PROFILE_GLSLC) {
       _glsl_program = cgGLGetProgramID(_cg_program);
 
@@ -424,43 +423,44 @@ set_state_and_transform(const RenderState *target_rs,
     altered |= Shader::SSD_projection;
   }
 
-  if (_state_rs != target_rs) {
-    if (_state_rs == NULL) {
-      // We haven't set any state yet.
-      altered |= Shader::SSD_general;
-    } else {
-      if (_state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
-          target_rs->get_attrib(ColorAttrib::get_class_slot())) {
-        altered |= Shader::SSD_color;
-      }
-      if (_state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
-          target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
-        altered |= Shader::SSD_colorscale;
-      }
-      if (_state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
-          target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
-        altered |= Shader::SSD_material;
-      }
-      if (_state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
-          target_rs->get_attrib(ShaderAttrib::get_class_slot())) {
-        altered |= Shader::SSD_shaderinputs;
-      }
-      if (_state_rs->get_attrib(FogAttrib::get_class_slot()) !=
-          target_rs->get_attrib(FogAttrib::get_class_slot())) {
-        altered |= Shader::SSD_fog;
-      }
-      if (_state_rs->get_attrib(LightAttrib::get_class_slot()) !=
-          target_rs->get_attrib(LightAttrib::get_class_slot())) {
-        altered |= Shader::SSD_light;
-      }
-      if (_state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
-          target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
-        altered |= Shader::SSD_clip_planes;
-      }
-      if (_state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
-          target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
-        altered |= Shader::SSD_tex_matrix;
-      }
+  if (_state_rs.was_deleted() || _state_rs == (const RenderState *)NULL) {
+    // Reset all of the state.
+    altered |= Shader::SSD_general;
+    _state_rs = target_rs;
+
+  } else if (_state_rs != target_rs) {
+    // The state has changed since last time.
+    if (_state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
+        target_rs->get_attrib(ColorAttrib::get_class_slot())) {
+      altered |= Shader::SSD_color;
+    }
+    if (_state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
+        target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
+      altered |= Shader::SSD_colorscale;
+    }
+    if (_state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
+        target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
+      altered |= Shader::SSD_material;
+    }
+    if (_state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
+        target_rs->get_attrib(ShaderAttrib::get_class_slot())) {
+      altered |= Shader::SSD_shaderinputs;
+    }
+    if (_state_rs->get_attrib(FogAttrib::get_class_slot()) !=
+        target_rs->get_attrib(FogAttrib::get_class_slot())) {
+      altered |= Shader::SSD_fog;
+    }
+    if (_state_rs->get_attrib(LightAttrib::get_class_slot()) !=
+        target_rs->get_attrib(LightAttrib::get_class_slot())) {
+      altered |= Shader::SSD_light;
+    }
+    if (_state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
+        target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
+      altered |= Shader::SSD_clip_planes;
+    }
+    if (_state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
+        target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
+      altered |= Shader::SSD_tex_matrix;
     }
     _state_rs = target_rs;
   }
@@ -704,6 +704,12 @@ issue_parameters(int altered) {
       case Shader::SMP_cell15:
         GLf(cgGLSetParameter1)(p, data[15]);
         continue;
+      case Shader::SMP_cell14:
+        GLf(cgGLSetParameter1)(p, data[14]);
+        continue;
+      case Shader::SMP_cell13:
+        GLf(cgGLSetParameter1)(p, data[13]);
+        continue;
       }
     }
   }
@@ -779,10 +785,7 @@ disable_shader_vertex_arrays() {
     GLint p = _attributes[i];
 
     if (p >= 0) {
-      _glgsg->_glDisableVertexAttribArray(p);
-      if (_has_divisor) {
-        _glgsg->_glVertexAttribDivisor(p, 0);
-      }
+      _glgsg->disable_vertex_attrib_array(p);
     } else {
 #ifdef SUPPORT_FIXED_FUNCTION
       switch (p) {
@@ -826,10 +829,6 @@ disable_shader_vertex_arrays() {
 ////////////////////////////////////////////////////////////////////
 bool CLP(CgShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
-  if (prev) {
-    prev->disable_shader_vertex_arrays();
-  }
-
   if (!valid()) {
     return true;
   }
@@ -846,6 +845,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     Geom::NumericType numeric_type;
     int start, stride, num_values;
     size_t nvarying = _shader->_var_spec.size();
+
+    GLuint max_p = 0;
+
     for (size_t i = 0; i < nvarying; ++i) {
       const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
       InternalName *name = bind._name;
@@ -877,10 +879,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         client_pointer += start;
 
         // We don't use cgGLSetParameterPointer because it is very buggy and
-        // limited in the options we can set.start
+        // limited in the options we can set.
         GLenum type = _glgsg->get_numeric_type(numeric_type);
         if (p >= 0) {
-          _glgsg->_glEnableVertexAttribArray(p);
+          max_p = max(max_p, (GLuint)p + 1);
+
+          _glgsg->enable_vertex_attrib_array(p);
 
           if (bind._integer) {
             _glgsg->_glVertexAttribIPointer(p, num_values, type,
@@ -895,9 +899,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
                                            normalized, stride, client_pointer);
           }
 
-          if (_glgsg->_supports_vertex_attrib_divisor) {
-            _glgsg->_glVertexAttribDivisor(p, divisor);
-            _has_divisor = true;
+          if (divisor > 0) {
+            _glgsg->set_vertex_attrib_divisor(p, divisor);
           }
 
         } else {
@@ -949,7 +952,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           // to be at 0, but we don't have control over that with Cg.  So, we
           // work around this by just binding something silly to 0.
           // This breaks flat colors, but it's better than invisible objects?
-          _glgsg->_glEnableVertexAttribArray(0);
+          _glgsg->enable_vertex_attrib_array(0);
           if (bind._integer) {
             _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);
           } else {
@@ -959,7 +962,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         } else
 #endif  // SUPPORT_FIXED_FUNCTION
         if (p >= 0) {
-          _glgsg->_glDisableVertexAttribArray(p);
+          _glgsg->disable_vertex_attrib_array(p);
 
           if (p == _color_attrib_index) {
 #ifdef STDFLOAT_DOUBLE
@@ -999,6 +1002,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
     }
+
+    // Disable attribute arrays we don't use.
+    GLint highest_p = _glgsg->_enabled_vertex_attrib_arrays.get_highest_on_bit() + 1;
+    for (GLint p = max_p; p < highest_p; ++p) {
+      _glgsg->disable_vertex_attrib_array(p);
+    }
   }
 
   if (_transform_table_param) {
@@ -1033,7 +1042,7 @@ disable_shader_texture_bindings() {
     if (p == 0) continue;
 
     int texunit = cgGetParameterResourceIndex(p);
-    _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+    _glgsg->set_active_texture_stage(texunit);
 
     glBindTexture(GL_TEXTURE_1D, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -1089,26 +1098,16 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
     int texunit = cgGetParameterResourceIndex(p);
-
-    Texture *tex = NULL;
     int view = _glgsg->get_current_tex_view_offset();
     SamplerState sampler;
 
-    if (id != NULL) {
-      tex = _glgsg->_target_shader->get_shader_input_texture(id, &sampler);
-
-    } else {
-      if (spec._stage >= texattrib->get_num_on_stages()) {
-        // Apply a white texture in order to make it easier to use a shader
-        // that takes a texture on a model that doesn't have a texture applied.
-        _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
-        _glgsg->apply_white_texture();
-        continue;
-      }
-      TextureStage *stage = texattrib->get_on_stage(spec._stage);
-      tex = texattrib->get_on_texture(stage);
-      sampler = texattrib->get_on_sampler(stage);
-      view += stage->get_tex_view_offset();
+    PT(Texture) tex = _glgsg->fetch_specified_texture(spec, sampler, view);
+    if (tex.is_null()) {
+      // Apply a white texture in order to make it easier to use a shader
+      // that takes a texture on a model that doesn't have a texture applied.
+      _glgsg->set_active_texture_stage(i);
+      _glgsg->apply_white_texture();
+      continue;
     }
 
     if (spec._suffix != 0) {
@@ -1122,7 +1121,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
-    _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+    _glgsg->set_active_texture_stage(texunit);
 
     TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
     if (tc == (TextureContext*)NULL) {

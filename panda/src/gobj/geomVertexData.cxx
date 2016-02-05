@@ -1188,6 +1188,45 @@ transform_vertices(const LMatrix4 &mat, int begin_row, int end_row) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::transform_vertices
+//       Access: Published
+//  Description: Applies the indicated transform matrix to all of the
+//               vertices mentioned in the sparse array.  The
+//               transform is applied to all "point" and "vector"
+//               type columns described in the format.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+transform_vertices(const LMatrix4 &mat, const SparseArray &rows) {
+  if (rows.is_zero()) {
+    // Trivial no-op.
+    return;
+  }
+
+  const GeomVertexFormat *format = get_format();
+
+  size_t ci;
+  for (ci = 0; ci < format->get_num_points(); ci++) {
+    GeomVertexRewriter data(this, format->get_point(ci));
+
+    for (size_t i = 0; i < rows.get_num_subranges(); ++i) {
+      int begin_row = rows.get_subrange_begin(i);
+      int end_row = rows.get_subrange_end(i);
+      do_transform_point_column(format, data, mat, begin_row, end_row);
+    }
+  }
+
+  for (ci = 0; ci < format->get_num_vectors(); ci++) {
+    GeomVertexRewriter data(this, format->get_vector(ci));
+
+    for (size_t i = 0; i < rows.get_num_subranges(); ++i) {
+      int begin_row = rows.get_subrange_begin(i);
+      int end_row = rows.get_subrange_end(i);
+      do_transform_vector_column(format, data, mat, begin_row, end_row);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::do_set_color
 //       Access: Private, Static
 //  Description: Fills in the color column of the given vertex data

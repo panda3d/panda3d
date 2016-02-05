@@ -60,6 +60,7 @@ PUBLISHED:
   void collect();
 
   NodePath get_internal_scene();
+  MAKE_PROPERTY(internal_scene, get_internal_scene);
 
 public:
   // From parent class PandaNode

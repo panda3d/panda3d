@@ -95,7 +95,8 @@ EggMakeFont() : EggWriter(true, false) {
      "by commas and hyphens to indicate ranges, e.g. '32-126,0xfa0-0xfff'.  "
      "It also may specify ranges of ASCII characters by enclosing them "
      "within square brackets, e.g. '[A-Za-z0-9]'.  If this is not specified, "
-     "the default is the set of ASCII characters.",
+     "the default set has all ASCII characters and an assorted set of "
+     "latin-1 characters, diacritics and punctuation marks.",
      &EggMakeFont::dispatch_range, NULL, &_range);
 
   add_option
@@ -114,7 +115,7 @@ EggMakeFont() : EggWriter(true, false) {
      "generated texture map that are used for each onscreen unit (or each "
      "10 points of font; see -ps).  Setting this number larger results in "
      "an easier-to-read font, but at the cost of more texture memory.  "
-     "The default is 30.",
+     "The default is 40.",
      &EggMakeFont::dispatch_double, NULL, &_pixels_per_unit);
 
   add_option
@@ -123,6 +124,12 @@ EggMakeFont() : EggWriter(true, false) {
      "apparent size of the font when it is rendered onscreen.  By convention, "
      "a 10 point font is 1 screen unit high, so the default is 10.",
      &EggMakeFont::dispatch_double, NULL, &_point_size);
+
+  add_option
+    ("sdf", "", 0,
+     "If this is set, a signed distance field will be generated, which "
+     "results in crisp text even when the text is enlarged or zoomed in.",
+     &EggMakeFont::dispatch_true, NULL, &_generate_distance_field);
 
   add_option
     ("pm", "n", 0,
@@ -215,13 +222,14 @@ EggMakeFont() : EggWriter(true, false) {
   _fg.set(1.0, 1.0, 1.0, 1.0);
   _bg.set(1.0, 1.0, 1.0, 0.0);
   _interior.set(1.0, 1.0, 1.0, 1.0);
-  _pixels_per_unit = 30.0;
+  _pixels_per_unit = 40.0;
   _point_size = 10.0;
   _poly_margin = 1.0;
   _tex_margin = 2;
   _render_margin = 0.0;
-  _palette_size[0] = _palette_size[1] = 256;
+  _palette_size[0] = _palette_size[1] = 512;
   _face_index = 0;
+  _generate_distance_field = false;
 
   _text_maker = NULL;
   _vpool = NULL;
@@ -274,7 +282,9 @@ run() {
   if (!_got_scale_factor) {
     // The default scale factor is 4 if we are not using FreeType's
     // antialias, or 2 if we are.
-    if (_no_native_aa) {
+    if (_generate_distance_field) {
+      _scale_factor = 1.0;
+    } else if (_no_native_aa) {
       _scale_factor = 4.0;
     } else {
       _scale_factor = 2.0;
@@ -327,9 +337,44 @@ run() {
   }
 
   if (_range.is_empty()) {
-    // If there's no specified range, the default is the entire ASCII
-    // set.
+    // If there's no specified range, the default is the entire ASCII set.
     _range.add_range(0x20, 0x7e);
+
+    _range.add_singleton(0xa1); // Upside down exclamation mark
+    _range.add_singleton(0xa9); // Copyright sign
+    _range.add_singleton(0xab); // Left double angle quote
+    //_range.add_singleton(0xae); // Registered sign
+    _range.add_singleton(0xb0); // Degree symbol
+    _range.add_singleton(0xb5); // Mu/micro
+    _range.add_singleton(0xb8); // Cedilla
+    _range.add_singleton(0xbb); // Right double angle quote
+    _range.add_singleton(0xbf); // Upside down question mark
+
+    _range.add_singleton(0xc6); // AE ligature
+    _range.add_singleton(0xc7); // C cedilla
+    //_range.add_singleton(0xd0); // Upper-case Eth
+    //_range.add_singleton(0xd8); // Upper-case O with line
+    //_range.add_singleton(0xde); // Upper-case Thorn
+    _range.add_singleton(0xdf); // German Eszet
+    _range.add_singleton(0xe6); // ae ligature
+    _range.add_singleton(0xe7); // c cedilla
+    _range.add_singleton(0xf0); // Lower-case Eth
+    _range.add_singleton(0xf8); // Lower-case O with line
+    _range.add_singleton(0xfe); // Lower-case Thorn
+
+    //_range.add_singleton(0x03c0); // pi
+
+    // Dotless i and j, for combining purposes.
+    _range.add_singleton(0x0131);
+    _range.add_singleton(0x0237);
+
+    // And general punctuation.  These don't take up much space anyway.
+    _range.add_range(0x2018, 0x201f);
+
+    _range.add_singleton(0x2026); // Ellipses
+
+    // Also add all the combining diacritic marks.
+    _range.add_range(0x0300, 0x030f);
   }
   if (_output_glyph_pattern.empty()) {
     // Create a default texture filename pattern.
@@ -374,7 +419,7 @@ run() {
       _num_channels = 1;
       _format = EggTexture::F_luminance;
     }
-  }      
+  }
 
   // Create a global Palettizer object.  We'll use this even if the
   // user specified -nopal, if nothing else just to hold all of the
@@ -413,10 +458,24 @@ run() {
   _group->set_switch_flag(true);
   _group->set_switch_fps(2.0);
 
-  // Also create an egg group indicating the font's design size.
+  double margin = _poly_margin;
+  if (_generate_distance_field) {
+    // Distance fields are always rendered with binary alpha.
+    _group->set_alpha_mode(EggRenderMode::AM_binary);
+
+    // Fudged to make most fonts fit on 512x256.
+    if (_poly_margin >= 1) {
+      margin += 3.5;
+      _poly_margin -= 0.5;
+    }
+
+    _text_maker->set_distance_field_radius(4);
+  }
+
+  // Also create an egg group indicating the font's design size and poly margin.
   EggGroup *ds_group = new EggGroup("ds");
   _group->add_child(ds_group);
-  EggVertex *vtx = make_vertex(LPoint2d(0.0, _text_maker->get_line_height()));
+  EggVertex *vtx = make_vertex(LPoint2d(margin / _pixels_per_unit, _text_maker->get_line_height()));
   EggPoint *point = new EggPoint;
   ds_group->add_child(point);
   point->add_vertex(vtx);

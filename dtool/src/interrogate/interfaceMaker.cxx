@@ -96,7 +96,9 @@ InterfaceMaker::Property::
 Property(const InterrogateElement &ielement) :
   _ielement(ielement),
   _getter(NULL),
-  _setter(NULL)
+  _setter(NULL),
+  _has_function(NULL),
+  _clear_function(NULL)
 {
 }
 

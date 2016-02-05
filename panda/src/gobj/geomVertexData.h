@@ -94,13 +94,16 @@ PUBLISHED:
 
   INLINE const string &get_name() const;
   void set_name(const string &name);
+  MAKE_PROPERTY(name, get_name, set_name);
 
   INLINE UsageHint get_usage_hint() const;
   void set_usage_hint(UsageHint usage_hint);
+  MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
 
   INLINE const GeomVertexFormat *get_format() const;
   void set_format(const GeomVertexFormat *format);
   void unclean_set_format(const GeomVertexFormat *format);
+  MAKE_PROPERTY(format, get_format, set_format);
 
   INLINE bool has_column(const InternalName *name) const;
 
@@ -119,6 +122,7 @@ PUBLISHED:
   INLINE const TransformTable *get_transform_table() const;
   void set_transform_table(const TransformTable *table);
   INLINE void clear_transform_table();
+  MAKE_PROPERTY(transform_table, get_transform_table, set_transform_table);
 
   INLINE CPT(TransformBlendTable) get_transform_blend_table() const;
   PT(TransformBlendTable) modify_transform_blend_table();
@@ -128,9 +132,12 @@ PUBLISHED:
   INLINE const SliderTable *get_slider_table() const;
   void set_slider_table(const SliderTable *table);
   INLINE void clear_slider_table();
+  MAKE_PROPERTY(slider_table, get_slider_table, set_slider_table);
 
   INLINE int get_num_bytes() const;
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_PROPERTY(num_bytes, get_num_bytes);
+  MAKE_PROPERTY(modified, get_modified);
 
   bool request_resident() const;
 
@@ -156,6 +163,7 @@ PUBLISHED:
   void clear_animated_vertices();
   void transform_vertices(const LMatrix4 &mat);
   void transform_vertices(const LMatrix4 &mat, int begin_row, int end_row);
+  void transform_vertices(const LMatrix4 &mat, const SparseArray &rows);
 
   PT(GeomVertexData)
     replace_column(InternalName *name, int num_components,

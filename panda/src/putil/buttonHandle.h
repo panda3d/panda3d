@@ -28,7 +28,7 @@
 class EXPCL_PANDA_PUTIL ButtonHandle FINAL {
 PUBLISHED:
   INLINE ButtonHandle();
-  INLINE ButtonHandle(int index);
+  CONSTEXPR ButtonHandle(int index);
   INLINE ButtonHandle(const ButtonHandle &copy);
   ButtonHandle(const string &name);
 
@@ -50,11 +50,17 @@ PUBLISHED:
 
   INLINE bool matches(const ButtonHandle &other) const;
 
-  INLINE int get_index() const;
+  CONSTEXPR int get_index() const;
   INLINE void output(ostream &out) const;
   INLINE static ButtonHandle none();
 
   INLINE operator bool () const;
+
+  MAKE_PROPERTY(index, get_index);
+  MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY2(ascii_equivalent, has_ascii_equivalent,
+                                   get_ascii_equivalent);
+  MAKE_PROPERTY(alias, get_alias);
 
 private:
   int _index;

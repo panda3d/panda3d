@@ -1,4 +1,4 @@
-// Filename: glTextureContext.cxx
+// Filename: glTextureContext_src.cxx
 // Created by:  drose (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////

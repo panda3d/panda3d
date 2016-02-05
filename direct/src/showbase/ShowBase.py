@@ -1,4 +1,6 @@
-"""Undocumented Module"""
+""" This module contains ShowBase, an application framework responsible
+for opening a graphical display, setting up input devices and creating
+the scene graph. """
 
 __all__ = ['ShowBase', 'WindowControls']
 
@@ -44,9 +46,6 @@ if __debug__:
 import OnScreenDebug
 import AppRunnerGlobal
 
-builtins.FADE_SORT_INDEX = 1000
-builtins.NO_FADE_SORT_INDEX = 2000
-
 def legacyRun():
     builtins.base.notify.warning("run() is deprecated, use base.run() instead")
     builtins.base.run()
@@ -78,11 +77,13 @@ class ShowBase(DirectObject.DirectObject):
 
         ## The directory containing the main Python file of this application.
         self.mainDir = ExecutionEnvironment.getEnvironmentVariable("MAIN_DIR")
+        self.main_dir = self.mainDir
 
         ## This contains the global appRunner instance, as imported from
         ## AppRunnerGlobal.  This will be None if we are not running in the
         ## runtime environment (ie. from a .p3d file).
         self.appRunner = AppRunnerGlobal.appRunner
+        self.app_runner = self.appRunner
 
         #debug running multiplier
         self.debugRunningMultiplier = 4
@@ -215,6 +216,7 @@ class ShowBase(DirectObject.DirectObject):
 
         ## The global graphics engine, ie. GraphicsEngine.getGlobalPtr()
         self.graphicsEngine = GraphicsEngine.getGlobalPtr()
+        self.graphics_engine = self.graphicsEngine
         self.setupRender()
         self.setupRender2d()
         self.setupDataGraph()
@@ -283,6 +285,7 @@ class ShowBase(DirectObject.DirectObject):
         self.bboard = bulletinBoard
         ## The global task manager, as imported from TaskManagerGlobal.
         self.taskMgr = taskMgr
+        self.task_mgr = taskMgr
         ## The global job manager, as imported from JobManagerGlobal.
         self.jobMgr = jobMgr
 
@@ -327,7 +330,7 @@ class ShowBase(DirectObject.DirectObject):
             # assigned to a single CPU
             autoAffinity = self.config.GetBool('auto-single-cpu-affinity', 0)
             affinity = None
-            if autoAffinity and ('clientIndex' in builtins.__dict__):
+            if autoAffinity and hasattr(builtins, 'clientIndex'):
                 affinity = abs(int(builtins.clientIndex))
             else:
                 affinity = self.config.GetInt('client-cpu-affinity', -1)
@@ -338,7 +341,7 @@ class ShowBase(DirectObject.DirectObject):
                 TrueClock.getGlobalPtr().setCpuAffinity(1 << (affinity % 32))
 
         # Make sure we're not making more than one ShowBase.
-        if 'base' in builtins.__dict__:
+        if hasattr(builtins, 'base'):
             raise StandardError, "Attempt to spawn multiple ShowBase instances!"
 
         # DO NOT ADD TO THIS LIST.  We're trying to phase out the use of
@@ -370,24 +373,26 @@ class ShowBase(DirectObject.DirectObject):
         builtins.wantUberdog = self.config.GetBool('want-uberdog', 1)
         if __debug__:
             builtins.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
-        builtins.onScreenDebug = OnScreenDebug.OnScreenDebug()
+        self.onScreenDebug = OnScreenDebug.OnScreenDebug()
+        builtins.onScreenDebug = self.onScreenDebug
 
         if self.wantRender2dp:
             builtins.render2dp = self.render2dp
             builtins.aspect2dp = self.aspect2dp
             builtins.pixel2dp = self.pixel2dp
 
-        if __dev__:
-            ShowBase.notify.debug('__dev__ == %s' % __dev__)
+        if self.__dev__:
+            ShowBase.notify.debug('__dev__ == %s' % self.__dev__)
         else:
-            ShowBase.notify.info('__dev__ == %s' % __dev__)
+            ShowBase.notify.info('__dev__ == %s' % self.__dev__)
 
         self.createBaseAudioManagers()
 
         # set up recording of Functor creation stacks in __dev__
-        PythonUtil.recordFunctorCreationStacks()
+        if self.__dev__ and self.config.GetBool('record-functor-creation-stacks', False):
+            PythonUtil.recordFunctorCreationStacks()
 
-        if __dev__ or self.config.GetBool('want-e3-hacks', False):
+        if self.__dev__ or self.config.GetBool('want-e3-hacks', False):
             if self.config.GetBool('track-gui-items', True):
                 # dict of guiId to gui item, for tracking down leaks
                 self.guiItems = {}
@@ -428,9 +433,10 @@ class ShowBase(DirectObject.DirectObject):
 
         # Offscreen buffer viewing utility.
         # This needs to be allocated even if the viewer is off.
-        self.bufferViewer = BufferViewer()
         if self.wantRender2dp:
-            self.bufferViewer.setRenderParent(self.render2dp)
+            self.bufferViewer = BufferViewer(self.win, self.render2dp)
+        else:
+            self.bufferViewer = BufferViewer(self.win, self.render2d)
 
         if self.windowType != 'none':
             if fStartDirect: # [gjeon] if this is False let them start direct manually
@@ -992,9 +998,9 @@ class ShowBase(DirectObject.DirectObject):
         else:
             # Spawn it after igloop (at the end of each frame)
             self.taskMgr.remove('clientSleep')
-            self.taskMgr.add(self.sleepCycleTask, 'clientSleep', sort = 55)
+            self.taskMgr.add(self.__sleepCycleTask, 'clientSleep', sort = 55)
 
-    def sleepCycleTask(self, task):
+    def __sleepCycleTask(self, task):
         Thread.sleep(self.clientSleep)
         #time.sleep(self.clientSleep)
         return Task.cont
@@ -1641,6 +1647,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def addAngularIntegrator(self):
         if not self.physicsMgrAngular:
+            from panda3d.physics import AngularEulerIntegrator
             self.physicsMgrAngular = 1
             integrator = AngularEulerIntegrator()
             self.physicsMgr.attachAngularIntegrator(integrator)
@@ -1784,12 +1791,14 @@ class ShowBase(DirectObject.DirectObject):
     # backwards compatibility. Please do not add code here, add
     # it to the loader.
     def loadSfx(self, name):
+        self.notify.warning("base.loadSfx is deprecated, use base.loader.loadSfx instead.")
         return self.loader.loadSfx(name)
 
     # This function should only be in the loader but is here for
     # backwards compatibility. Please do not add code here, add
     # it to the loader.
     def loadMusic(self, name):
+        self.notify.warning("base.loadMusic is deprecated, use base.loader.loadMusic instead.")
         return self.loader.loadMusic(name)
 
     def playSfx(
@@ -1879,7 +1888,7 @@ class ShowBase(DirectObject.DirectObject):
     def __igLoop(self, state):
         # We render the watch variables for the onScreenDebug as soon
         # as we reasonably can before the renderFrame().
-        onScreenDebug.render()
+        self.onScreenDebug.render()
 
         if self.recorder:
             self.recorder.recordFrame()
@@ -1893,7 +1902,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # We clear the text buffer for the onScreenDebug as soon
         # as we reasonably can after the renderFrame().
-        onScreenDebug.clear()
+        self.onScreenDebug.clear()
 
         if self.recorder:
             self.recorder.playFrame()
@@ -1918,11 +1927,10 @@ class ShowBase(DirectObject.DirectObject):
     def __igLoopSync(self, state):
         # We render the watch variables for the onScreenDebug as soon
         # as we reasonably can before the renderFrame().
-        onScreenDebug.render()
+        self.onScreenDebug.render()
 
         if self.recorder:
             self.recorder.recordFrame()
-
 
         self.cluster.collectData()
 
@@ -1935,7 +1943,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # We clear the text buffer for the onScreenDebug as soon
         # as we reasonably can after the renderFrame().
-        onScreenDebug.clear()
+        self.onScreenDebug.clear()
 
         if self.recorder:
             self.recorder.playFrame()
@@ -2982,6 +2990,74 @@ class ShowBase(DirectObject.DirectObject):
         if self.appRunner is None or self.appRunner.dummy or \
            (self.appRunner.interactiveConsole and not self.appRunner.initialAppImport):
             self.taskMgr.run()
+
+
+    # Snake-case aliases, for people who prefer these.  We're in the process
+    # of migrating everyone to use the snake-case alternatives.
+    make_default_pipe = makeDefaultPipe
+    make_module_pipe = makeModulePipe
+    make_all_pipes = makeAllPipes
+    open_window = openWindow
+    close_window = closeWindow
+    open_default_window = openDefaultWindow
+    open_main_window = openMainWindow
+    set_sleep = setSleep
+    set_frame_rate_meter = setFrameRateMeter
+    set_scene_graph_analyzer_meter = setSceneGraphAnalyzerMeter
+    setup_window_controls = setupWindowControls
+    setup_render = setupRender
+    setup_render2d = setupRender2d
+    setup_render2dp = setupRender2dp
+    set_aspect_ratio = setAspectRatio
+    get_aspect_ratio = getAspectRatio
+    get_size = getSize
+    make_camera = makeCamera
+    make_camera2d = makeCamera2d
+    make_camera2dp = makeCamera2dp
+    setup_data_graph = setupDataGraph
+    setup_mouse = setupMouse
+    setup_mouse_cb = setupMouseCB
+    enable_software_mouse_pointer = enableSoftwareMousePointer
+    add_angular_integrator = addAngularIntegrator
+    enable_particles = enableParticles
+    disable_particles = disableParticles
+    toggle_particles = toggleParticles
+    create_stats = createStats
+    add_sfx_manager = addSfxManager
+    enable_music = enableMusic
+    enable_sound_effects = enableSoundEffects
+    disable_all_audio = disableAllAudio
+    enable_all_audio = enableAllAudio
+    init_shadow_trav = initShadowTrav
+    get_background_color = getBackgroundColor
+    set_background_color = setBackgroundColor
+    toggle_backface = toggleBackface
+    backface_culling_on = backfaceCullingOn
+    backface_culling_off = backfaceCullingOff
+    toggle_texture = toggleTexture
+    texture_on = textureOn
+    texture_off = textureOff
+    toggle_wireframe = toggleWireframe
+    wireframe_on = wireframeOn
+    wireframe_off = wireframeOff
+    disable_mouse = disableMouse
+    enable_mouse = enableMouse
+    silence_input = silenceInput
+    revive_input = reviveInput
+    set_mouse_on_node = setMouseOnNode
+    change_mouse_interface = changeMouseInterface
+    use_drive = useDrive
+    use_trackball = useTrackball
+    toggle_tex_mem = toggleTexMem
+    toggle_show_vertices = toggleShowVertices
+    oobe_cull = oobeCull
+    show_camera_frustum = showCameraFrustum
+    remove_camera_frustum = removeCameraFrustum
+    save_cube_map = saveCubeMap
+    save_sphere_map = saveSphereMap
+    start_wx = startWx
+    start_tk = startTk
+    start_direct = startDirect
 
 
 # A class to encapsulate information necessary for multiwindow support.

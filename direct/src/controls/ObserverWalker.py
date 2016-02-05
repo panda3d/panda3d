@@ -14,8 +14,7 @@ although it does send messeges that allow a listener to play sounds or
 animations based on walker events.
 """
 
-from direct.showbase.ShowBaseGlobal import *
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.directnotify import DirectNotifyGlobal
 import NonPhysicsWalker
 

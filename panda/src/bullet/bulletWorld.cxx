@@ -210,7 +210,7 @@ do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::sync_p2b
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 sync_p2b(PN_stdfloat dt, int num_substeps) {
@@ -235,7 +235,7 @@ sync_p2b(PN_stdfloat dt, int num_substeps) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::sync_b2p
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 sync_b2p() {
@@ -444,15 +444,15 @@ attach_ghost(BulletGhostNode *node) {
 
   // TODO group/filter settings...
 /*
-enum CollisionFilterGroups { 
-  DefaultFilter = 1, 
-  StaticFilter = 2, 
-  KinematicFilter = 4, 
-  DebrisFilter = 8, 
-  SensorTrigger = 16, 
-  CharacterFilter = 32, 
-  AllFilter = -1 
-} 
+enum CollisionFilterGroups {
+  DefaultFilter = 1,
+  StaticFilter = 2,
+  KinematicFilter = 4,
+  DebrisFilter = 8,
+  SensorTrigger = 16,
+  CharacterFilter = 32,
+  AllFilter = -1
+}
 */
 
   short group = btBroadphaseProxy::SensorTrigger;
@@ -518,7 +518,7 @@ attach_character(BulletBaseCharacterControllerNode *node) {
 
   if (found == _characters.end()) {
     _characters.push_back(node);
-    
+
     _world->addCollisionObject(node->get_ghost(),
       btBroadphaseProxy::CharacterFilter,
       btBroadphaseProxy::StaticFilter|btBroadphaseProxy::DefaultFilter);
@@ -713,7 +713,7 @@ sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const Tran
 
   BulletClosestHitSweepResult cb(from_pos, to_pos, mask);
   _world->convexSweepTest(convex, from_trans, to_trans, cb, penetration);
-  return cb;  
+  return cb;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -804,7 +804,7 @@ contact_test_pair(PandaNode *node0, PandaNode *node1) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::get_manifold
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BulletPersistentManifold *BulletWorld::
 get_manifold(int idx) const {
@@ -818,7 +818,7 @@ get_manifold(int idx) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::get_collision_object
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 btCollisionObject *BulletWorld::
 get_collision_object(PandaNode *node) {
@@ -842,7 +842,7 @@ get_collision_object(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::set_group_collision_flag
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable) {
@@ -858,7 +858,7 @@ set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable) 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::get_group_collision_flag
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool BulletWorld::
 get_group_collision_flag(unsigned int group1, unsigned int group2) const {
@@ -921,7 +921,7 @@ clear_tick_callback() {
   _world->setInternalTickCallback(NULL);
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::tick_callback
 //       Access: Private
 //  Description:
@@ -1088,7 +1088,7 @@ operator >> (istream &in, BulletWorld::BroadphaseAlgorithm &algorithm) {
   }
   else if (word == "aabb") {
     algorithm = BulletWorld::BA_dynamic_aabb_tree;
-  } 
+  }
   else {
     bullet_cat.error()
       << "Invalid BulletWorld::BroadphaseAlgorithm: " << word << "\n";
@@ -1130,7 +1130,7 @@ operator >> (istream &in, BulletWorld::FilterAlgorithm &algorithm) {
   }
   else if (word == "groups-mask") {
     algorithm = BulletWorld::FA_groups_mask;
-  } 
+  }
   else if (word == "callback") {
     algorithm = BulletWorld::FA_callback;
   }

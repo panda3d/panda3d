@@ -140,6 +140,9 @@ PUBLISHED:
   INLINE static TypeHandle none();
   INLINE operator bool () const;
 
+  MAKE_PROPERTY(index, get_index);
+  MAKE_PROPERTY(name, get_name);
+
 public:
   INLINE static TypeHandle from_index(int index);
 

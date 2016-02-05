@@ -135,7 +135,7 @@ get_include_shape_group() const {
 unsigned int PhysxForceField::
 get_num_shape_groups() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, 0);
   return _ptr->getNbShapeGroups();
 }
 

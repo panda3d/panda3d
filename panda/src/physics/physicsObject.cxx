@@ -20,9 +20,9 @@ ConfigVariableDouble PhysicsObject::_default_terminal_velocity
 TypeHandle PhysicsObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysicsObject
-//       Access : Public
-//  Description : Default Constructor
+//     Function: PhysicsObject
+//       Access: Public
+//  Description: Default Constructor
 ////////////////////////////////////////////////////////////////////
 PhysicsObject::
 PhysicsObject() :
@@ -39,9 +39,9 @@ PhysicsObject() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysicsObject
-//       Access : Public
-//  Description : copy constructor
+//     Function: PhysicsObject
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 PhysicsObject::
 PhysicsObject(const PhysicsObject& copy) {
@@ -49,18 +49,18 @@ PhysicsObject(const PhysicsObject& copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~PhysicsObject
-//       Access : Public
-//  Description : Destructor
+//     Function: ~PhysicsObject
+//       Access: Public
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 PhysicsObject::
 ~PhysicsObject() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : Assignment operator
-//       Access : Public
-//  Description :
+//     Function: Assignment operator
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const PhysicsObject &PhysicsObject::
 operator =(const PhysicsObject &other) {
@@ -78,9 +78,9 @@ operator =(const PhysicsObject &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : make_copy
-//       Access : Public, virtual
-//  Description : dynamic copy.
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: dynamic copy.
 ////////////////////////////////////////////////////////////////////
 PhysicsObject *PhysicsObject::
 make_copy() const {
@@ -88,9 +88,9 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_local_impact
-//      Access : Public
-// Description : Adds an impulse and/or torque (i.e. an instantanious
+//     Function: add_local_impact
+//       Access: Public
+//  Description: Adds an impulse and/or torque (i.e. an instantanious
 //               change in velocity) based on how well the offset and
 //               impulse align with the center of mass (aka position).
 //               If you wanted to immitate this function you could
@@ -109,9 +109,9 @@ add_local_impact(const LPoint3 &offset_from_center_of_mass,
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_impact
-//      Access : Public
-// Description : Adds an impulse and/or torque (i.e. an instantanious
+//     Function: add_impact
+//       Access: Public
+//  Description: Adds an impulse and/or torque (i.e. an instantanious
 //               change in velocity) based on how well the offset and
 //               impulse align with the center of mass (aka position).
 //               If you wanted to immitate this function you could
@@ -144,9 +144,9 @@ add_impact(const LPoint3 &offset,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_lcs
-//       Access : Public
-//  Description : returns a transform matrix to this object's
+//     Function: get_lcs
+//       Access: Public
+//  Description: returns a transform matrix to this object's
 //                local coordinate system.
 ////////////////////////////////////////////////////////////////////
 LMatrix4 PhysicsObject::
@@ -160,9 +160,9 @@ get_lcs() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : get_inertial_tensor
-//       Access : Public
-//  Description : returns a transform matrix that represents the
+//     Function: get_inertial_tensor
+//       Access: Public
+//  Description: returns a transform matrix that represents the
 //                object's willingness to be forced.
 ////////////////////////////////////////////////////////////////////
 LMatrix4 PhysicsObject::
@@ -171,10 +171,10 @@ get_inertial_tensor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsObject::
 output(ostream &out) const {
@@ -184,10 +184,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsObject::
 write(ostream &out, unsigned int indent) const {

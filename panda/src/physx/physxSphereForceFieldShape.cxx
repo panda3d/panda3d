@@ -20,7 +20,7 @@ TypeHandle PhysxSphereForceFieldShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSphereForceFieldShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereForceFieldShape::
 link(NxForceFieldShape *shapePtr) {
@@ -38,7 +38,7 @@ link(NxForceFieldShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSphereForceFieldShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereForceFieldShape::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxSphereForceFieldShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxSphereForceFieldShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereForceFieldShape::
 save_to_desc(PhysxSphereForceFieldShapeDesc &shapeDesc) const {
@@ -66,7 +66,7 @@ save_to_desc(PhysxSphereForceFieldShapeDesc &shapeDesc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxSphereForceFieldShape::set_radius
 //       Access: Published
-//  Description: Sets the sphere radius. 
+//  Description: Sets the sphere radius.
 ////////////////////////////////////////////////////////////////////
 void PhysxSphereForceFieldShape::
 set_radius(float radius) {

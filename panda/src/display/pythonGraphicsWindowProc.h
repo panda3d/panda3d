@@ -1,4 +1,4 @@
-// Filename: customGgraphicswindowProc.h
+// Filename: pythonGraphicsWindowProc.h
 // Created by:  Walt Destler (May 2010)
 //
 ////////////////////////////////////////////////////////////////////

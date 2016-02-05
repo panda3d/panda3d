@@ -113,7 +113,7 @@ public:
                int flags, const string &expression = string());
 
   ElementIndex
-  get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type);
+  get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CPPScope *scope);
 
   MakeSeqIndex
   get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type);

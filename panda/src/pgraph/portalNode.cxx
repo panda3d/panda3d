@@ -236,7 +236,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     portal_cat.debug() << "portal_depth is " << data._portal_depth << endl;
     PT(GeometricBoundingVolume) vf = trav->get_view_frustum();
     PT(BoundingVolume) reduced_frustum;
-    
+
     // remember old viewport and frustum, so we can restore them for the siblings. (it gets changed by the prepare_portal call)
     LPoint2 old_reduced_viewport_min, old_reduced_viewport_max;
     portal_viewer->get_reduced_viewport(old_reduced_viewport_min, old_reduced_viewport_max);
@@ -250,17 +250,17 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         set_visible(true);
         // The frustum is in camera space
         vf = DCAST(GeometricBoundingVolume, reduced_frustum);
-        
+
         // create a copy of this reduced frustum, we'll transform it from camera space to the cell_out space
         PT(BoundingHexahedron) new_bh = DCAST(BoundingHexahedron, vf->make_copy());
-        
+
         // Get the net trasform of the _cell_out as seen from the camera.
         CPT(TransformState) cell_transform = _cell_out.get_net_transform();
         CPT(TransformState) frustum_transform = cell_transform ->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
 
         // transform to _cell_out space
         new_bh->xform(frustum_transform->get_mat());
-        
+
         CPT(RenderState) next_state = data._state;
 
         // set clipping planes, if desired..
@@ -268,14 +268,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           // create a copy of this reduced frustum, we'll transform it from camera space to this portal node's space (because the clip planes are attached to this node)
           PT(BoundingHexahedron) temp_bh = DCAST(BoundingHexahedron, vf->make_copy());
           CPT(TransformState) temp_frustum_transform = data._node_path.get_node_path().get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
-          
+
           portal_cat.spam() << "clipping plane frustum transform " << *temp_frustum_transform << endl;
-          portal_cat.spam() << "frustum before transform " << *temp_bh << endl; 
+          portal_cat.spam() << "frustum before transform " << *temp_bh << endl;
           // transform to portalNode space
           temp_bh->xform(temp_frustum_transform->get_mat());
 
           portal_cat.spam() << "frustum after transform " << *temp_bh << endl;
-          
+
           _left_plane_node->set_plane(-temp_bh->get_plane(4)); // left plane of bh
           _right_plane_node->set_plane(-temp_bh->get_plane(2));// right plane of bh
           _top_plane_node->set_plane(-temp_bh->get_plane(3)); // top plane of bh
@@ -306,7 +306,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           portal_cat.spam() << "next state after composition " << *next_state << endl;
         }
 
-        CullTraverserData next_data(_cell_out, 
+        CullTraverserData next_data(_cell_out,
                                     cell_transform,
                                     next_state, new_bh,
                                     current_thread);
@@ -363,9 +363,8 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalNode::draw
 //       Access: Public
-//  Description: Draws the vertices of this portal rectangle to the 
-//               screen with a line 
-
+//  Description: Draws the vertices of this portal rectangle to the
+//               screen with a line
 ////////////////////////////////////////////////////////////////////
 void PortalNode::
 draw() const {

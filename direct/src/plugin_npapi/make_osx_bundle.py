@@ -48,7 +48,7 @@ def makeBundle(startDir):
     exeFilename.makeDir()
     resourceFilename = Filename(bundleFilename, 'Contents/Resources/nppanda3d.rsrc')
     resourceFilename.makeDir()
-    
+
     # Compile the .r file to an .rsrc file.
     os.system('/Developer/Tools/Rez -useDF -o %s %s' % (
         resourceFilename.toOsSpecific(), Filename(fstartDir, "nppanda3d.r").toOsSpecific()))
@@ -94,4 +94,4 @@ if __name__ == '__main__':
 
     # We don't need the dmg these days; the installer is better.
     #buildDmg(startDir)
-    
+

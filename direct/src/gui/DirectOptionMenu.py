@@ -238,7 +238,7 @@ class DirectOptionMenu(DirectButton):
         """ Clear frame color, clear highlightedIndex """
         item['frameColor'] = frameColor
         item['frameSize'] = (self.minX, self.maxX, self.minZ, self.maxZ)
-        item['text_scale'] = (1,1)        
+        item['text_scale'] = (1,1)
         self.highlightedIndex = None
 
     def selectHighlightedIndex(self, event = None):

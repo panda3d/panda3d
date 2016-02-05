@@ -93,7 +93,7 @@ init_libMilesAudio() {
 //  Description: This function is called when the dynamic library is
 //               loaded; it should return the Create_AudioManager
 //               function appropriate to create a MilesAudioManager.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 Create_AudioManager_proc *
 get_audio_manager_func_miles_audio() {
   init_libMilesAudio();

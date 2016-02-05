@@ -33,7 +33,7 @@ ButtonHandle() {
 //               index number, which may have been returned by an
 //               earlier call to ButtonHandle::get_index().
 ////////////////////////////////////////////////////////////////////
-INLINE ButtonHandle::
+CONSTEXPR ButtonHandle::
 ButtonHandle(int index) : _index(index) {
 }
 
@@ -180,7 +180,7 @@ matches(const ButtonHandle &other) const {
 //               for the convenience of non-C++ scripting languages to
 //               build a hashtable of ButtonHandles.
 ////////////////////////////////////////////////////////////////////
-INLINE int ButtonHandle::
+CONSTEXPR int ButtonHandle::
 get_index() const {
   return _index;
 }

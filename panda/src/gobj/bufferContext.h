@@ -49,6 +49,11 @@ PUBLISHED:
   INLINE bool get_active() const;
   INLINE bool get_resident() const;
 
+  MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
+  MAKE_PROPERTY(modified, get_modified);
+  MAKE_PROPERTY(active, get_active);
+  MAKE_PROPERTY(resident, get_resident);
+
 public:
   INLINE void set_active(bool flag);
   INLINE void set_resident(bool flag);

@@ -16,9 +16,9 @@
 #include "cmath.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ZSpinParticle
-//      Access : public
-// Description : constructor
+//     Function: ZSpinParticle
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticle::
 ZSpinParticle() :
@@ -31,9 +31,9 @@ ZSpinParticle() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ZSpinParticle
-//      Access : public
-// Description : copy constructor
+//     Function: ZSpinParticle
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticle::
 ZSpinParticle(const ZSpinParticle &copy) :
@@ -46,18 +46,18 @@ ZSpinParticle(const ZSpinParticle &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~ZSpinParticle
-//      Access : public, virtual
-// Description : destructor
+//     Function: ~ZSpinParticle
+//       Access: Public, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 ZSpinParticle::
 ~ZSpinParticle() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : public, virtual
-// Description : dynamic copier
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: dynamic copier
 ////////////////////////////////////////////////////////////////////
 PhysicsObject *ZSpinParticle::
 make_copy() const {
@@ -65,18 +65,18 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : init
-//      Access : public, virtual
-// Description :
+//     Function: init
+//       Access: Public, Virtual
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
 init() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : update
-//      Access : public, virtual
-// Description :
+//     Function: update
+//       Access: Public, Virtual
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
 update() {
@@ -102,18 +102,18 @@ update() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : die
-//      Access : public, virtual
-// Description :
+//     Function: die
+//       Access: Public, Virtual
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
 die() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_theta
-//      Access : public, virtual
-// Description :
+//     Function: get_theta
+//       Access: Public, Virtual
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat ZSpinParticle::
 get_theta() const {
@@ -121,10 +121,10 @@ get_theta() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
 output(ostream &out) const {
@@ -134,10 +134,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
 write(ostream &out, int indent) const {

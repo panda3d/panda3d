@@ -149,7 +149,7 @@ class DirectScrolledList(DirectFrame):
         if self.decButtonCallback:
             self.decButtonCallback = None
         self.incButton.destroy()
-        self.decButton.destroy()       
+        self.decButton.destroy()
         DirectFrame.destroy(self)
 
     def selectListItem(self, item):
@@ -320,7 +320,7 @@ class DirectScrolledList(DirectFrame):
         messenger.send('wakeup')
         if self.incButtonCallback:
             self.incButtonCallback()
-        
+
     def __decButtonDown(self, event):
         assert self.notify.debugStateCall(self)
         task = Task(self.__scrollByTask)
@@ -333,14 +333,14 @@ class DirectScrolledList(DirectFrame):
         self.scrollBy(task.delta)
         messenger.send('wakeup')
         if self.decButtonCallback:
-            self.decButtonCallback()        
-               
+            self.decButtonCallback()
+
     def __buttonUp(self, event):
         assert self.notify.debugStateCall(self)
         taskName = self.taskName("scroll")
         #print "buttonUp: removing ", taskName
         taskMgr.remove(taskName)
-        
+
     def addItem(self, item, refresh=1):
         """
         Add this string and extraArg to the list
@@ -376,7 +376,7 @@ class DirectScrolledList(DirectFrame):
             return 1
         else:
             return 0
-        
+
     def removeAndDestroyItem(self, item, refresh = 1):
         """
         Remove and destroy this item from the panel.
@@ -411,16 +411,16 @@ class DirectScrolledList(DirectFrame):
                 del self.currentSelected
             self["items"].remove(item)
             if type(item) != type(''):
-                #RAU possible leak here, let's try to do the right thing 
+                #RAU possible leak here, let's try to do the right thing
                 #item.reparentTo(hidden)
                 item.removeNode()
             retval = 1
 
         if (refresh):
             self.refresh()
-            
+
         return retval
-    
+
     def removeAndDestroyAllItems(self, refresh = 1):
         """
         Remove and destroy all items from the panel.
@@ -436,12 +436,12 @@ class DirectScrolledList(DirectFrame):
                 item.destroy()
             self["items"].remove(item)
             if type(item) != type(''):
-                #RAU possible leak here, let's try to do the right thing 
+                #RAU possible leak here, let's try to do the right thing
                 #item.reparentTo(hidden)
                 item.removeNode()
             retval = 1
         if (refresh):
-            self.refresh()            
+            self.refresh()
         return retval
 
     def refresh(self):
@@ -471,7 +471,7 @@ class DirectScrolledList(DirectFrame):
 
     def setDecButtonCallback(self):
         assert self.notify.debugStateCall(self)
-        self.decButtonCallback = self["decButtonCallback"]        
+        self.decButtonCallback = self["decButtonCallback"]
 
 
 """

@@ -149,6 +149,8 @@ class TaskManager:
         self.mgr.setClock(clockObject)
         self.globalClock = clockObject
 
+    clock = property(lambda self: self.mgr.getClock(), setClock)
+
     def invokeDefaultHandler(self, signalNumber, stackFrame):
         print '*** allowing mid-frame keyboard interrupt.'
         # Restore default interrupt handler
@@ -310,6 +312,8 @@ class TaskManager:
         task.setDelay(delayTime)
         self.mgr.add(task)
         return task
+
+    do_method_later = doMethodLater
 
     def add(self, funcOrTask, name = None, sort = None, extraArgs = None,
             priority = None, uponDeath = None, appendTask = False,
@@ -582,7 +586,10 @@ class TaskManager:
         return numFound
 
     def popupControls(self):
-        from direct.tkpanels import TaskManagerPanel
+        # Don't use a regular import, to prevent ModuleFinder from picking
+        # it up as a dependency when building a .p3d package.
+        import importlib
+        TaskManagerPanel = importlib.import_module('direct.tkpanels.TaskManagerPanel')
         return TaskManagerPanel.TaskManagerPanel(self)
 
     def getProfileSession(self, name=None):
@@ -700,12 +707,12 @@ class TaskManager:
     def _getRandomTask(self):
         # Figure out when the next frame is likely to expire, so we
         # won't grab any tasks that are sleeping for a long time.
-        now = globalClock.getFrameTime()
-        avgFrameRate = globalClock.getAverageFrameRate()
+        now = self.globalClock.getFrameTime()
+        avgFrameRate = self.globalClock.getAverageFrameRate()
         if avgFrameRate < .00001:
             avgFrameDur = 0.
         else:
-            avgFrameDur = (1. / globalClock.getAverageFrameRate())
+            avgFrameDur = (1. / self.globalClock.getAverageFrameRate())
         next = now + avgFrameDur
 
         # Now grab a task at random, until we find one that we like.

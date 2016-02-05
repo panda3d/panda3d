@@ -37,21 +37,21 @@
 #include <iostream>
 #include <sstream>
 
-class MaxEggImporter : public SceneImport 
+class MaxEggImporter : public SceneImport
 {
 public:
   // GUI-related methods
   MaxEggImporter();
   ~MaxEggImporter();
-  int               ExtCount();        // Number of extensions supported 
+  int               ExtCount();        // Number of extensions supported
   const TCHAR * Ext(int n);        // Extension #n (i.e. "EGG")
-  const TCHAR * LongDesc();        // Long ASCII description (i.e. "Egg Importer") 
+  const TCHAR * LongDesc();        // Long ASCII description (i.e. "Egg Importer")
   const TCHAR * ShortDesc();       // Short ASCII description (i.e. "Egg")
   const TCHAR * AuthorName();      // ASCII Author name
-  const TCHAR * CopyrightMessage();// ASCII Copyright message 
+  const TCHAR * CopyrightMessage();// ASCII Copyright message
   const TCHAR * OtherMessage1();   // Other message #1
   const TCHAR * OtherMessage2();   // Other message #2
-  unsigned int Version();          // Version number * 100 (i.e. v3.01 = 301) 
+  unsigned int Version();          // Version number * 100 (i.e. v3.01 = 301)
   void  ShowAbout(HWND hWnd);      // Show DLL's "About..." box
   int   DoImport(const TCHAR *name,ImpInterface *ei,Interface *i, BOOL suppressPrompts);
 
@@ -99,22 +99,22 @@ const TCHAR * MaxEggImporter::ShortDesc()
   return _T("Panda3D Egg");
 }
 
-const TCHAR * MaxEggImporter::AuthorName() 
+const TCHAR * MaxEggImporter::AuthorName()
 {
   return _T("Joshua Yelon");
 }
 
-const TCHAR * MaxEggImporter::CopyrightMessage() 
+const TCHAR * MaxEggImporter::CopyrightMessage()
 {
   return _T("Copyight (c) 2005 Josh Yelon");
 }
 
-const TCHAR * MaxEggImporter::OtherMessage1() 
+const TCHAR * MaxEggImporter::OtherMessage1()
 {
   return _T("");
 }
 
-const TCHAR * MaxEggImporter::OtherMessage2() 
+const TCHAR * MaxEggImporter::OtherMessage2()
 {
   return _T("");
 }
@@ -128,7 +128,7 @@ static INT_PTR CALLBACK AboutBoxDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 {
   switch (msg) {
   case WM_INITDIALOG:
-    CenterWindow(hWnd, GetParent(hWnd)); 
+    CenterWindow(hWnd, GetParent(hWnd));
     break;
   case WM_COMMAND:
     switch (LOWORD(wParam)) {
@@ -141,7 +141,7 @@ static INT_PTR CALLBACK AboutBoxDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
     return FALSE;
   }
   return TRUE;
-}      
+}
 
 void MaxEggImporter::ShowAbout(HWND hWnd)
 {
@@ -152,12 +152,12 @@ void MaxEggImporter::ShowAbout(HWND hWnd)
 
 static INT_PTR CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  MaxEggImporter *imp = (MaxEggImporter*) GetWindowLongPtr(hWnd, GWLP_USERDATA); 
+  MaxEggImporter *imp = (MaxEggImporter*) GetWindowLongPtr(hWnd, GWLP_USERDATA);
   switch (msg) {
   case WM_INITDIALOG:
     imp = (MaxEggImporter*)lParam;
     SetWindowLongPtr(hWnd, GWLP_USERDATA, lParam);
-    CenterWindow(hWnd, GetParent(hWnd)); 
+    CenterWindow(hWnd, GetParent(hWnd));
     CheckDlgButton(hWnd, IDC_MERGE,       imp->_merge);
     CheckDlgButton(hWnd, IDC_IMPORTMODEL, imp->_importmodel);
     CheckDlgButton(hWnd, IDC_IMPORTANIM,  imp->_importanim);
@@ -165,9 +165,9 @@ static INT_PTR CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
   case WM_COMMAND:
     switch (LOWORD(wParam)) {
     case IDOK:
-      imp->_merge       = IsDlgButtonChecked(hWnd, IDC_MERGE); 
-      imp->_importmodel = IsDlgButtonChecked(hWnd, IDC_IMPORTMODEL); 
-      imp->_importanim  = IsDlgButtonChecked(hWnd, IDC_IMPORTANIM); 
+      imp->_merge       = IsDlgButtonChecked(hWnd, IDC_MERGE);
+      imp->_importmodel = IsDlgButtonChecked(hWnd, IDC_IMPORTMODEL);
+      imp->_importanim  = IsDlgButtonChecked(hWnd, IDC_IMPORTANIM);
       EndDialog(hWnd, 1);
       break;
     case IDCANCEL:
@@ -179,7 +179,7 @@ static INT_PTR CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
     return FALSE;
   }
   return TRUE;
-}       
+}
 
 int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BOOL suppressPrompts) {
   // Prompt the user with our dialogbox.
@@ -201,7 +201,7 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // Plugin Initialization
 //
@@ -209,14 +209,14 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
 // of the classes defined in this DLL, and provides a means for
 // Max to create instances of those classes.
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 HINSTANCE hInstance;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)  {
   static int controlsInit = FALSE;
   hInstance = hinstDLL;
-  
+
   if (!controlsInit) {
     controlsInit = TRUE;
     // It appears that InitCustomControls is deprecated in 2012.
@@ -227,7 +227,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)  {
 #endif
     InitCommonControls();
   }
-  
+
   return (TRUE);
 }
 
@@ -237,26 +237,26 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)  {
 class MaxEggImporterClassDesc: public ClassDesc {
 public:
   int            IsPublic() {return 1;}
-  void          *Create(BOOL loading = FALSE) {return new MaxEggImporter;} 
+  void          *Create(BOOL loading = FALSE) {return new MaxEggImporter;}
   const TCHAR   *ClassName() {return _T("MaxEggImporter");}
-  SClass_ID      SuperClassID() {return SCENE_IMPORT_CLASS_ID;} 
+  SClass_ID      SuperClassID() {return SCENE_IMPORT_CLASS_ID;}
   Class_ID       ClassID() {return Class_ID(PANDAEGGIMP_CLASS_ID1,PANDAEGGIMP_CLASS_ID2);}
   const TCHAR   *Category() {return _T("Chrutilities");}
 };
 
 static MaxEggImporterClassDesc MaxEggImporterDesc;
 
-__declspec( dllexport ) const TCHAR* LibDescription() 
+__declspec( dllexport ) const TCHAR* LibDescription()
 {
   return _T("Panda3D Egg Importer");
 }
 
-__declspec( dllexport ) int LibNumberClasses() 
+__declspec( dllexport ) int LibNumberClasses()
 {
   return 1;
 }
 
-__declspec( dllexport ) ClassDesc* LibClassDesc(int i) 
+__declspec( dllexport ) ClassDesc* LibClassDesc(int i)
 {
   switch(i) {
   case 0: return &MaxEggImporterDesc;
@@ -264,7 +264,7 @@ __declspec( dllexport ) ClassDesc* LibClassDesc(int i)
   }
 }
 
-__declspec( dllexport ) ULONG LibVersion() 
+__declspec( dllexport ) ULONG LibVersion()
 {
   return VERSION_3DSMAX;
 }

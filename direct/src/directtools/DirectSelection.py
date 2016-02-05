@@ -616,7 +616,7 @@ class SelectionRay(SelectionQueue):
         if direct:
             self.collider.setFromLens(base.direct.camNode, mx, my)
         else:
-            self.collider.setFromLens(base.camNode, mx, my)            
+            self.collider.setFromLens(base.camNode, mx, my)
         self.ct.traverse(targetNodePath)
         self.sortEntries()
 

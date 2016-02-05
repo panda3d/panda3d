@@ -383,6 +383,8 @@ get_next_token0() {
         ident->_names.back().set_templ
           (nested_parse_template_instantiation(decl->get_template_scope()));
         token = internal_get_next_token();
+      } else {
+        error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
       }
     }
 
@@ -441,6 +443,8 @@ get_next_token0() {
           ident->_names.back().set_templ
             (nested_parse_template_instantiation(decl->get_template_scope()));
           token = internal_get_next_token();
+        } else {
+          error(string("unknown template '") + ident->get_fully_scoped_name() + "'", loc);
         }
       }
     }
@@ -1711,6 +1715,12 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
     } else {
       _last_c = '\0';
 
+      // If it was explicitly named on the command-line, mark it S_local.
+      filename.make_absolute();
+      if (_explicit_files.count(filename)) {
+        source = CPPFile::S_local;
+      }
+
       CPPFile file(filename, filename_as_referenced, source);
 
       // Don't include it if we included it before and it had #pragma once.
@@ -2531,6 +2541,7 @@ check_keyword(const string &name) {
   if (name == "int") return KW_INT;
   if (name == "long") return KW_LONG;
   if (name == "__make_property") return KW_MAKE_PROPERTY;
+  if (name == "__make_property2") return KW_MAKE_PROPERTY2;
   if (name == "__make_seq") return KW_MAKE_SEQ;
   if (name == "mutable") return KW_MUTABLE;
   if (name == "namespace") return KW_NAMESPACE;

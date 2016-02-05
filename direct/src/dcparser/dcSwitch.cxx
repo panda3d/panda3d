@@ -67,7 +67,7 @@ DCSwitch::
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::as_switch
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCSwitch *DCSwitch::
 as_switch() {
@@ -77,7 +77,7 @@ as_switch() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::as_switch
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const DCSwitch *DCSwitch::
 as_switch() const {
@@ -351,10 +351,10 @@ apply_switch(const char *value_data, size_t length) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCSwitch::output
-//       Access : Public, Virtual
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCSwitch::output
+//       Access: Public, Virtual
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DCSwitch::
 output(ostream &out, bool brief) const {
@@ -379,7 +379,7 @@ write(ostream &out, bool brief, int indent_level) const {
 //               the indicated output stream.
 ////////////////////////////////////////////////////////////////////
 void DCSwitch::
-output_instance(ostream &out, bool brief, const string &prename, 
+output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
   out << "switch";
   if (!_name.empty()) {
@@ -426,7 +426,7 @@ output_instance(ostream &out, bool brief, const string &prename,
 ////////////////////////////////////////////////////////////////////
 void DCSwitch::
 write_instance(ostream &out, bool brief, int indent_level,
-               const string &prename, const string &name, 
+               const string &prename, const string &name,
                const string &postname) const {
   indent(out, indent_level)
     << "switch";
@@ -532,7 +532,7 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
     // default.
     packer.pack_default_value();
     fields = _default_case;
-  }    
+  }
 
   if (!packer.end_pack()) {
     pack_error = true;
@@ -634,7 +634,7 @@ start_new_case() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::SwitchFields::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCSwitch::SwitchFields::
 SwitchFields(const string &name) :
@@ -654,7 +654,7 @@ SwitchFields(const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::SwitchFields::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCSwitch::SwitchFields::
 ~SwitchFields() {
@@ -690,7 +690,7 @@ add_field(DCField *field) {
   if (!field->get_name().empty()) {
     bool inserted = _fields_by_name.insert
       (FieldsByName::value_type(field->get_name(), field)).second;
-    
+
     if (!inserted) {
       return false;
     }
@@ -738,11 +738,11 @@ do_check_match_switch_case(const DCSwitch::SwitchFields *other) const {
 
   return true;
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::SwitchFields::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DCSwitch::SwitchFields::
 output(ostream &out, bool brief) const {
@@ -758,11 +758,11 @@ output(ostream &out, bool brief) const {
   }
   out << "break; ";
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::SwitchFields::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DCSwitch::SwitchFields::
 write(ostream &out, bool brief, int indent_level) const {
@@ -797,7 +797,7 @@ do_check_match(const DCPackerInterface *) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::SwitchCase::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCSwitch::SwitchCase::
 SwitchCase(const string &value, DCSwitch::SwitchFields *fields) :
@@ -809,7 +809,7 @@ SwitchCase(const string &value, DCSwitch::SwitchFields *fields) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::SwitchCase::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCSwitch::SwitchCase::
 ~SwitchCase() {

@@ -1,6 +1,6 @@
-// Filename: pandaegg.cxx
+// Filename: pandaeggnopg.cxx
 // Created by:  drose (16May00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pandaegg.h"

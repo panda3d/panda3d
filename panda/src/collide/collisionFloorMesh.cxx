@@ -1,4 +1,4 @@
-// Filename: collisionPlane.cxx
+// Filename: collisionFloorMesh.cxx
 // Created by:  drose (25Apr00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ xform(const LMatrix4 &mat) {
     LPoint3 v1 = _vertices[tri.p1];
     LPoint3 v2 = _vertices[tri.p2];
     LPoint3 v3 = _vertices[tri.p3];
-    
+
     tri.min_x=min(min(v1[0],v2[0]),v3[0]);
     tri.max_x=max(max(v1[0],v2[0]),v3[0]);
     tri.min_y=min(min(v1[1],v2[1]),v3[1]);
@@ -143,7 +143,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
   LPoint3 from_origin = ray->get_origin() * entry.get_wrt_mat();
-  
+
   double fx = from_origin[0];
   double fy = from_origin[1];
 
@@ -154,7 +154,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     if (fx < tri.min_x || fx >= tri.max_x || fy < tri.min_y || fy >= tri.max_y) {
       continue;
     }
-    
+
     //okay, there's a good chance we'll be colliding
     LPoint3 p0 = _vertices[tri.p1];
     LPoint3 p1 = _vertices[tri.p2];
@@ -167,31 +167,31 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     e0x = fx - p0x; e0y = fy - p0y;
     e1x = p1[0] - p0x; e1y = p1[1] - p0y;
     e2x = p2[0] - p0x; e2y = p2[1] - p0y;
-    if (e1x == 0.0) {  
-      if (e2x == 0.0) continue; 
+    if (e1x == 0.0) {
+      if (e2x == 0.0) continue;
       u = e0x / e2x;
-      if (u < 0.0 || u > 1.0) continue;     
+      if (u < 0.0 || u > 1.0) continue;
       if (e1y == 0) continue;
       v = (e0y - (e2y * u)) / e1y;
-      if (v < 0.0) continue; 
+      if (v < 0.0) continue;
     } else {
       PN_stdfloat d = (e2y * e1x) - (e2x * e1y);
-      if (d == 0.0) continue; 
+      if (d == 0.0) continue;
       u = ((e0y * e1x) - (e0x * e1y)) / d;
       if (u < 0.0 || u > 1.0) continue;
       v = (e0x - (e2x * u)) / e1x;
       if (v < 0.0) continue;
     }
-    if (u + v <= 0.0 || u + v > 1.0) continue; 
+    if (u + v <= 0.0 || u + v > 1.0) continue;
     //we collided!!
     PN_stdfloat mag = u + v;
     PN_stdfloat p0z = p0[2];
-   
+
     PN_stdfloat uz = (p2[2] - p0z) *  mag;
     PN_stdfloat vz = (p1[2] - p0z) *  mag;
     PN_stdfloat finalz = p0z + vz + (((uz - vz) * u) / (u + v));
-    PT(CollisionEntry) new_entry = new CollisionEntry(entry);    
-    
+    PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
     new_entry->set_surface_normal(LPoint3(0, 0, 1));
     new_entry->set_surface_point(LPoint3(fx, fy, finalz));
     return new_entry;
@@ -203,17 +203,17 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionFloorMesh::test_intersection_from_sphere
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
   LPoint3 from_origin = sphere->get_center() * entry.get_wrt_mat();
-  
+
   double fx = from_origin[0];
   double fy = from_origin[1];
-  
+
   PN_stdfloat  fz = PN_stdfloat(from_origin[2]);
   PN_stdfloat rad = sphere->get_radius();
   CollisionFloorMesh::Triangles::const_iterator ti;
@@ -223,7 +223,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     if (fx < tri.min_x || fx >= tri.max_x || fy < tri.min_y || fy >= tri.max_y) {
       continue;
     }
-    
+
     //okay, there's a good chance we'll be colliding
     LPoint3 p0 = _vertices[tri.p1];
     LPoint3 p1 = _vertices[tri.p2];
@@ -236,34 +236,34 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     e0x = fx - p0x; e0y = fy - p0y;
     e1x = p1[0] - p0x; e1y = p1[1] - p0y;
     e2x = p2[0] - p0x; e2y = p2[1] - p0y;
-    if (e1x == 0.0) {  
-      if (e2x == 0.0) continue; 
+    if (e1x == 0.0) {
+      if (e2x == 0.0) continue;
       u = e0x / e2x;
-      if (u < 0.0 || u > 1.0) continue;     
+      if (u < 0.0 || u > 1.0) continue;
       if (e1y == 0) continue;
       v = (e0y - (e2y * u)) / e1y;
-      if (v < 0.0) continue; 
+      if (v < 0.0) continue;
     } else {
       PN_stdfloat d = (e2y * e1x) - (e2x * e1y);
-      if (d == 0.0) continue; 
+      if (d == 0.0) continue;
       u = ((e0y * e1x) - (e0x * e1y)) / d;
       if (u < 0.0 || u > 1.0) continue;
       v = (e0x - (e2x * u)) / e1x;
       if (v < 0.0) continue;
     }
-    if (u + v <= 0.0 || u + v > 1.0) continue; 
+    if (u + v <= 0.0 || u + v > 1.0) continue;
     //we collided!!
     PN_stdfloat mag = u + v;
     PN_stdfloat p0z = p0[2];
-   
+
     PN_stdfloat uz = (p2[2] - p0z) *  mag;
     PN_stdfloat vz = (p1[2] - p0z) *  mag;
     PN_stdfloat finalz = p0z+vz+(((uz - vz) *u)/(u+v));
     PN_stdfloat dz = fz - finalz;
-    if(dz > rad) 
+    if(dz > rad)
       return NULL;
-    PT(CollisionEntry) new_entry = new CollisionEntry(entry);    
-    
+    PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
     new_entry->set_surface_normal(LPoint3(0, 0, 1));
     new_entry->set_surface_point(LPoint3(fx, fy, finalz));
     return new_entry;
@@ -290,7 +290,7 @@ fill_viz_geom() {
     ("collision", GeomVertexFormat::get_v3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
 
   PT(GeomTriangles) mesh = new GeomTriangles(Geom::UH_static);
   PT(GeomLinestrips) wire = new GeomLinestrips(Geom::UH_static);
@@ -300,7 +300,7 @@ fill_viz_geom() {
     LPoint3 vert = *vi;
     vertex.add_data3(vert);
   }
-  for (ti = _triangles.begin(); ti != _triangles.end(); ++ti) {    
+  for (ti = _triangles.begin(); ti != _triangles.end(); ++ti) {
     CollisionFloorMesh::TriangleIndices tri = *ti;
     mesh->add_vertex(tri.p1);
     mesh->add_vertex(tri.p2);
@@ -312,16 +312,16 @@ fill_viz_geom() {
     wire->close_primitive();
     mesh->close_primitive();
   }
-  
+
   PT(Geom) geom = new Geom(vdata);
   PT(Geom) geom2 = new Geom(vdata);
   geom->add_primitive(mesh);
   geom2->add_primitive(wire);
   _viz_geom->add_geom(geom, ((CollisionFloorMesh *)this)->get_solid_viz_state());
   _viz_geom->add_geom(geom2, ((CollisionFloorMesh *)this)->get_wireframe_viz_state());
-  
-  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());  
-  _bounds_viz_geom->add_geom(geom2, get_wireframe_bounds_viz_state());  
+
+  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+  _bounds_viz_geom->add_geom(geom2, get_wireframe_bounds_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,7 +401,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
     tri.p1 = scan.get_uint32();
     tri.p2 = scan.get_uint32();
     tri.p3 = scan.get_uint32();
-   
+
     tri.min_x=scan.get_stdfloat();
     tri.max_x=scan.get_stdfloat();
     tri.min_y=scan.get_stdfloat();
@@ -466,6 +466,6 @@ add_triangle(unsigned int pointA, unsigned int pointB, unsigned int pointC) {
   tri.max_x=max(max(v1[0],v2[0]),v3[0]);
   tri.min_y=min(min(v1[1],v2[1]),v3[1]);
   tri.max_y=max(max(v1[1],v2[1]),v3[1]);
-  
+
   _triangles.push_back(tri);
 }

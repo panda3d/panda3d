@@ -40,14 +40,14 @@
 
 #if defined(USE_MEMORY_DLMALLOC)
 
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // Memory manager: DLMALLOC
 //
 // This is Doug Lea's memory manager.  It is very fast, but it is not
 // thread-safe.  However, we provide thread locking within MemoryHook.
 //
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
@@ -71,7 +71,7 @@
 // the system library.  It also doesn't appear to be thread-safe on
 // OSX.
 
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // Memory manager: PTMALLOC2
 //
@@ -81,7 +81,7 @@
 // thread-safety constructs take a certain amount of CPU time), but
 // it's still much faster than the windows allocator.
 //
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
@@ -97,14 +97,14 @@
 
 #else
 
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // Memory manager: MALLOC
 //
 // This option uses the built-in system allocator.  This is a good
 // choice on linux, but it's a terrible choice on windows.
 //
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 #define call_malloc malloc
 #define call_realloc realloc
@@ -116,7 +116,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryHook::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryHook::
 MemoryHook() {
@@ -147,7 +147,7 @@ MemoryHook() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryHook::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryHook::
 MemoryHook(const MemoryHook &copy) :
@@ -169,7 +169,7 @@ MemoryHook(const MemoryHook &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryHook::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryHook::
 ~MemoryHook() {
@@ -215,7 +215,7 @@ heap_alloc_single(size_t size) {
   // In the DO_MEMORY_USAGE case, we want to track the total size of
   // allocated bytes on the heap.
   AtomicAdjust::add(_total_heap_single_size, (AtomicAdjust::Integer)size);
-  if ((size_t)AtomicAdjust::get(_total_heap_single_size) + 
+  if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
       (size_t)AtomicAdjust::get(_total_heap_array_size) >
       _max_heap_size) {
     overflow_heap_size();
@@ -291,7 +291,7 @@ heap_alloc_array(size_t size) {
   // In the DO_MEMORY_USAGE case, we want to track the total size of
   // allocated bytes on the heap.
   AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size);
-  if ((size_t)AtomicAdjust::get(_total_heap_single_size) + 
+  if ((size_t)AtomicAdjust::get(_total_heap_single_size) +
       (size_t)AtomicAdjust::get(_total_heap_array_size) >
       _max_heap_size) {
     overflow_heap_size();
@@ -332,7 +332,7 @@ heap_realloc_array(void *ptr, size_t size) {
 
   while (alloc1 == (void *)NULL) {
     alloc_fail(inflated_size);
-    
+
     // Recover the original pointer.
     alloc1 = alloc;
 
@@ -457,7 +457,7 @@ mmap_alloc(size_t size, bool allow_exec) {
     cerr << "Couldn't allocate memory page of size " << size << ": ";
 
     PVOID buffer;
-    DWORD length = 
+    DWORD length =
       FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                     NULL, err, 0, (LPTSTR)&buffer, 0, NULL);
     if (length != 0) {
@@ -506,7 +506,7 @@ mmap_free(void *ptr, size_t size) {
 
 #ifdef WIN32
   VirtualFree(ptr, 0, MEM_RELEASE);
-#else  
+#else
   munmap(ptr, size);
 #endif
 }
@@ -547,7 +547,7 @@ get_deleted_chain(size_t buffer_size) {
     chain = new DeletedBufferChain(buffer_size);
     _deleted_chains.insert(DeletedChains::value_type(buffer_size, chain));
   }
-  
+
   _lock.release();
   return chain;
 }

@@ -1,4 +1,4 @@
-// Filename: InterfaceMakerPythonNative.h
+// Filename: interfaceMakerPythonNative.h
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -170,6 +170,7 @@ private:
 
   void write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                       const std::string &cClassName, MakeSeq *make_seq);
+  void write_getset(ostream &out, Object *obj, Property *property);
 
   void write_class_prototypes(ostream &out) ;
   void write_class_declarations(ostream &out, ostream *out_h, Object *obj);

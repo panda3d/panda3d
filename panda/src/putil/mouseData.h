@@ -37,6 +37,10 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
+  MAKE_PROPERTY(x, get_x);
+  MAKE_PROPERTY(y, get_y);
+  MAKE_PROPERTY(in_window, get_in_window);
+
 public:
   bool _in_window;
   double _xpos;

@@ -156,6 +156,14 @@ PUBLISHED:
   INLINE PN_stdfloat get_shear2d() const;
   INLINE LMatrix3 get_mat3() const;
 
+  MAKE_PROPERTY(pos, get_pos);
+  MAKE_PROPERTY(hpr, get_hpr);
+  MAKE_PROPERTY(quat, get_quat);
+  MAKE_PROPERTY(norm_quat, get_norm_quat);
+  MAKE_PROPERTY(scale, get_scale);
+  MAKE_PROPERTY(shear, get_shear);
+  MAKE_PROPERTY(mat, get_mat);
+
   CPT(TransformState) set_pos(const LVecBase3 &pos) const;
   CPT(TransformState) set_hpr(const LVecBase3 &hpr) const;
   CPT(TransformState) set_quat(const LQuaternion &quat) const;
@@ -208,7 +216,6 @@ PUBLISHED:
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
   EXTENSION(static PyObject *get_unused_states());
-
 
 public:
   static void init_states();

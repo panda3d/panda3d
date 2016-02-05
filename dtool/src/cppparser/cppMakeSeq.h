@@ -21,7 +21,7 @@
 #include "cppIdentifier.h"
 #include "cppFunctionGroup.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPMakeSeq
 // Description : This is a MAKE_SEQ() declaration appearing within a
 //               class body.  It means to generate a sequence method

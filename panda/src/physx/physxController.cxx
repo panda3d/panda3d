@@ -55,6 +55,8 @@ factory(NxControllerType controllerType) {
   case NX_CONTROLLER_CAPSULE:
     return new PhysxCapsuleController();
 
+  default:
+    break;
   }
 
   physx_cat.error() << "Unknown controller type.\n";

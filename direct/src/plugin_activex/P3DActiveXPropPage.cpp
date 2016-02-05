@@ -1,5 +1,3 @@
-// P3DActiveXPropPage.cpp : Implementation of the CP3DActiveXPropPage property page class.
-
 // Filename: P3DActiveXPropPage.cpp
 // Created by:  atrestman (14Sept09)
 //
@@ -13,6 +11,8 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+
+// P3DActiveXPropPage.cpp : Implementation of the CP3DActiveXPropPage property page class.
 
 #include "stdafx.h"
 #include "P3DActiveX.h"

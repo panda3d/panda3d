@@ -20,20 +20,19 @@
 TypeHandle Physical::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : Physical
-//       Access : Public
-//  Description : Default Constructor
-//
-//                The idea here is that most physicals will NOT 
-//                be collections of sets (i.e. particle systems 
-//                and whatever else).  Because of this, the default 
-//                constructor, unless otherwise specified, will 
-//                automatically allocate and initialize one 
-//                PhysicalObject.  This makes it easier for 
+//     Function: Physical
+//       Access: Public
+//  Description: Default Constructor
+//                The idea here is that most physicals will NOT
+//                be collections of sets (i.e. particle systems
+//                and whatever else).  Because of this, the default
+//                constructor, unless otherwise specified, will
+//                automatically allocate and initialize one
+//                PhysicalObject.  This makes it easier for
 //                high-level work.
 //
-//                pre-alloc is ONLY for multiple-object physicals, 
-//                and if true, fills the physics_object vector 
+//                pre-alloc is ONLY for multiple-object physicals,
+//                and if true, fills the physics_object vector
 //                with dead nodes, pre-allocating for the speed
 //                end of the speed-vs-overhead deal.
 ////////////////////////////////////////////////////////////////////
@@ -59,9 +58,9 @@ Physical(int total_objects, bool pre_alloc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : Physical
-//       Access : Public
-//  Description : copy constructor (note- does deep copy of pn's)
+//     Function: Physical
+//       Access: Public
+//  Description: copy constructor (note- does deep copy of pn's)
 //                but does NOT attach itself to its template's
 //                physicsmanager.
 ////////////////////////////////////////////////////////////////////
@@ -101,9 +100,9 @@ Physical(const Physical& copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~Physical
-//       Access : Public
-//  Description : destructor
+//     Function: ~Physical
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 Physical::
 ~Physical() {
@@ -117,8 +116,8 @@ Physical::
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_objects
-//      Access : Public
+//     Function: get_objects
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 const PhysicsObjectCollection Physical::
 get_objects() const{
@@ -134,10 +133,10 @@ get_objects() const{
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void Physical::
 output(ostream &out) const {
@@ -147,10 +146,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write_physics_objects
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write_physics_objects
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void Physical::
 write_physics_objects(ostream &out, unsigned int indent) const {
@@ -166,10 +165,10 @@ write_physics_objects(ostream &out, unsigned int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write_linear_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write_linear_forces
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void Physical::
 write_linear_forces(ostream &out, unsigned int indent) const {
@@ -185,10 +184,10 @@ write_linear_forces(ostream &out, unsigned int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write_angular_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write_angular_forces
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void Physical::
 write_angular_forces(ostream &out, unsigned int indent) const {
@@ -204,10 +203,10 @@ write_angular_forces(ostream &out, unsigned int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void Physical::
 write(ostream &out, unsigned int indent) const {

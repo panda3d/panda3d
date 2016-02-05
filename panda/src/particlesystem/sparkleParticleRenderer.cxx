@@ -23,9 +23,9 @@
 PStatCollector SparkleParticleRenderer::_render_collector("App:Particles:Sparkle:Render");
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SparkleParticleRenderer
-//      Access : Public
-// Description : Default Constructor
+//     Function: SparkleParticleRenderer
+//       Access: Public
+//  Description: Default Constructor
 ////////////////////////////////////////////////////////////////////
 SparkleParticleRenderer::
 SparkleParticleRenderer() :
@@ -38,9 +38,9 @@ SparkleParticleRenderer() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SparkleParticleRenderer
-//      Access : Public
-// Description : Constructor
+//     Function: SparkleParticleRenderer
+//       Access: Public
+//  Description: Constructor
 ////////////////////////////////////////////////////////////////////
 SparkleParticleRenderer::
 SparkleParticleRenderer(const LColor& center, const LColor& edge,
@@ -55,9 +55,9 @@ SparkleParticleRenderer(const LColor& center, const LColor& edge,
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : SparkleParticleRenderer
-//      Access : Public
-// Description : Copy Constructor
+//     Function: SparkleParticleRenderer
+//       Access: Public
+//  Description: Copy Constructor
 ////////////////////////////////////////////////////////////////////
 SparkleParticleRenderer::
 SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
@@ -72,18 +72,18 @@ SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~SparkleParticleRenderer
-//      Access : Public
-// Description : Destructor
+//     Function: ~SparkleParticleRenderer
+//       Access: Public
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 SparkleParticleRenderer::
 ~SparkleParticleRenderer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make copy
-//      Access : Public
-// Description : child virtual for spawning systems
+//     Function: make copy
+//       Access: Public
+//  Description: child virtual for spawning systems
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer *SparkleParticleRenderer::
 make_copy() {
@@ -91,27 +91,27 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : birth_particle
-//      Access : Private, virtual
-// Description : child birth
+//     Function: birth_particle
+//       Access: Private, Virtual
+//  Description: child birth
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 birth_particle(int) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : kill_particle
-//      Access : Private, virtual
-// Description : child kill
+//     Function: kill_particle
+//       Access: Private, Virtual
+//  Description: child kill
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 kill_particle(int) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : resize_pool
-//      Access : private
-// Description : resizes the render pool.  Reference counting
+//     Function: resize_pool
+//       Access: Private
+//  Description: resizes the render pool.  Reference counting
 //               makes this easy.
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
@@ -122,9 +122,9 @@ resize_pool(int new_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : init_geoms
-//      Access : private
-// Description : initializes the geomnodes
+//     Function: init_geoms
+//       Access: Private
+//  Description: initializes the geomnodes
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 init_geoms() {
@@ -142,9 +142,9 @@ init_geoms() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : render
-//      Access : private
-// Description : populates the GeomLine
+//     Function: render
+//       Access: Private
+//  Description: populates the GeomLine
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
@@ -250,7 +250,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     color.add_data4(edge_color);
     color.add_data4(center_color);
     color.add_data4(edge_color);
-    
+
     _lines->add_next_vertices(2);
     _lines->close_primitive();
     _lines->add_next_vertices(2);
@@ -263,7 +263,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     _lines->close_primitive();
     _lines->add_next_vertices(2);
     _lines->close_primitive();
-    
+
     remaining_particles--;
     if (remaining_particles == 0) {
       break;
@@ -281,10 +281,10 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 output(ostream &out) const {
@@ -294,10 +294,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void SparkleParticleRenderer::
 write(ostream &out, int indent_level) const {

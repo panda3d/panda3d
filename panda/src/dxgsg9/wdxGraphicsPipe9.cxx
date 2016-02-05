@@ -431,7 +431,7 @@ dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
   return DDENUMRET_OK;
 }
 
-//////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow9::find_best_depth_format
 //       Access: Private
 //  Description:
@@ -890,16 +890,16 @@ void Init_D3DFORMAT_map() {
   INSERT_ELEM(L8);
   INSERT_ELEM(A8L8);
   INSERT_ELEM(A4L4);
-  INSERT_ELEM(V8U8);
-  INSERT_ELEM(L6V5U5);
-  INSERT_ELEM(X8L8V8U8);
-  INSERT_ELEM(Q8W8V8U8);
-  INSERT_ELEM(V16U16);
+  INSERT_ELEM(D16);
+  INSERT_ELEM(D24X8);
+  INSERT_ELEM(D24S8);
+  INSERT_ELEM(D32);
+  INSERT_ELEM(INTZ);
 //  NOT IN DX9
 //  INSERT_ELEM(W11V11U10);
   INSERT_ELEM(A2W10V10U10);
-  INSERT_ELEM(UYVY);
-  INSERT_ELEM(YUY2);
+  INSERT_ELEM(ATI1);
+  INSERT_ELEM(ATI2);
   INSERT_ELEM(DXT1);
   INSERT_ELEM(DXT2);
   INSERT_ELEM(DXT3);
@@ -940,8 +940,8 @@ const char *D3DFormatStr(D3DFORMAT fmt) {
 //  NOT IN DX9
 //    CASESTR(D3DFMT_W11V11U10);
     CASESTR(D3DFMT_A2W10V10U10);
-    CASESTR(D3DFMT_UYVY);
-    CASESTR(D3DFMT_YUY2);
+    CASESTR(D3DFMT_ATI1);
+    CASESTR(D3DFMT_ATI2);
     CASESTR(D3DFMT_DXT1);
     CASESTR(D3DFMT_DXT2);
     CASESTR(D3DFMT_DXT3);
@@ -954,6 +954,7 @@ const char *D3DFormatStr(D3DFORMAT fmt) {
     CASESTR(D3DFMT_D16);
     CASESTR(D3DFMT_D24X8);
     CASESTR(D3DFMT_D24X4S4);
+    CASESTR(D3DFMT_INTZ);
     CASESTR(D3DFMT_VERTEXDATA);
     CASESTR(D3DFMT_INDEX16);
     CASESTR(D3DFMT_INDEX32);

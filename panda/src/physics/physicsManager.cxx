@@ -22,9 +22,9 @@ ConfigVariableInt PhysicsManager::_random_seed
 ("physics_manager_random_seed", 139);
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysicsManager
-//       Access : Public
-//  Description : Default Constructor.  NOTE: EulerIntegrator is
+//     Function: PhysicsManager
+//       Access: Public
+//  Description: Default Constructor.  NOTE: EulerIntegrator is
 //                the standard default.
 ////////////////////////////////////////////////////////////////////
 PhysicsManager::
@@ -35,9 +35,9 @@ PhysicsManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~PhysicsManager
-//       Access : Public
-//  Description : Simple Destructor
+//     Function: ~PhysicsManager
+//       Access: Public
+//  Description: Simple Destructor
 ////////////////////////////////////////////////////////////////////
 PhysicsManager::
 ~PhysicsManager() {
@@ -49,9 +49,9 @@ PhysicsManager::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : InitRandomSeed
-//       Access : Public
-//  Description : One-time config function, sets up the random seed
+//     Function: InitRandomSeed
+//       Access: Public
+//  Description: One-time config function, sets up the random seed
 //                used by the physics and particle systems.
 //                For synchronizing across distributed computers
 ////////////////////////////////////////////////////////////////////
@@ -63,9 +63,9 @@ init_random_seed() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : remove_linear_force
-//       Access : Public
-//  Description : takes a linear force out of the physics list
+//     Function: remove_linear_force
+//       Access: Public
+//  Description: takes a linear force out of the physics list
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_linear_force(LinearForce *f) {
@@ -82,9 +82,9 @@ remove_linear_force(LinearForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : remove_angular_force
-//       Access : Public
-//  Description : takes an angular force out of the physics list
+//     Function: remove_angular_force
+//       Access: Public
+//  Description: takes an angular force out of the physics list
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_angular_force(AngularForce *f) {
@@ -101,9 +101,9 @@ remove_angular_force(AngularForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : remove_physical
-//       Access : Public
-//  Description : takes a physical out of the object list
+//     Function: remove_physical
+//       Access: Public
+//  Description: takes a physical out of the object list
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_physical(Physical *p) {
@@ -120,9 +120,9 @@ remove_physical(Physical *p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : remove_physical_node
-//      Access : Public
-// Description : Removes a physicalnode from the manager
+//     Function: remove_physical_node
+//       Access: Public
+//  Description: Removes a physicalnode from the manager
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 remove_physical_node(PhysicalNode *p) {
@@ -133,9 +133,9 @@ remove_physical_node(PhysicalNode *p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DoPhysics
-//       Access : Public
-//  Description : This is the main high-level API call.  Performs
+//     Function: DoPhysics
+//       Access: Public
+//  Description: This is the main high-level API call.  Performs
 //                integration on every attached Physical.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
@@ -168,28 +168,28 @@ do_physics(PN_stdfloat dt) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DoPhysics
-//       Access : Public
-//  Description : This is the main high-level API call.  Performs
-//                integration on a single physical.  Make sure its 
+//     Function: DoPhysics
+//       Access: Public
+//  Description: This is the main high-level API call.  Performs
+//                integration on a single physical.  Make sure its
 //                associated forces are active.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 do_physics(PN_stdfloat dt, Physical *physical) {
   nassertv(physical);
-  
+
   // do linear
   //if (_linear_integrator.is_null() == false) {
   if (_linear_integrator) {
     _linear_integrator->integrate(physical, _linear_forces, dt);
   }
-  
+
   // do angular
   //if (_angular_integrator.is_null() == false) {
   if (_angular_integrator) {
     _angular_integrator->integrate(physical, _angular_forces, dt);
   }
-  
+
   // if it's an actor node, tell it to update itself.
   PhysicalNode *pn = physical->get_physical_node();
   if (pn && pn->is_of_type(ActorNode::get_class_type())) {
@@ -199,10 +199,10 @@ do_physics(PN_stdfloat dt, Physical *physical) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 output(ostream &out) const {
@@ -212,10 +212,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write_physicals
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write_physicals
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 write_physicals(ostream &out, unsigned int indent) const {
@@ -235,10 +235,10 @@ write_physicals(ostream &out, unsigned int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write_forces
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 write_linear_forces(ostream &out, unsigned int indent) const {
@@ -254,10 +254,10 @@ write_linear_forces(ostream &out, unsigned int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write_angular_forces
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write_angular_forces
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 write_angular_forces(ostream &out, unsigned int indent) const {
@@ -273,10 +273,10 @@ write_angular_forces(ostream &out, unsigned int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 write(ostream &out, unsigned int indent) const {
@@ -306,10 +306,10 @@ write(ostream &out, unsigned int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
 debug_output(ostream &out, unsigned int indent) const {
@@ -317,7 +317,7 @@ debug_output(ostream &out, unsigned int indent) const {
   out.width(indent); out<<""<<"PhysicsManager li"<<(_linear_integrator?1:0)<<" ai"<<(_angular_integrator?1:0)<<"\n";
   out<<"  _physicals "<<_physicals.size()<<"\n";
   //_physicals._phys_body.write(out, indent+2);
-  
+
 
   out.width(indent+2);
   out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";

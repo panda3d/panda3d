@@ -14,7 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Default Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
@@ -23,7 +23,7 @@ FLOATNAME(LRotation)() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Copy Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
@@ -33,7 +33,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LQuaternion) &c) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Copy Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
@@ -43,7 +43,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LVecBase4) &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
@@ -53,7 +53,7 @@ FLOATNAME(LRotation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: lmatrix3
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
@@ -63,7 +63,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LMatrix3) &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: lmatrix4
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
@@ -73,7 +73,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LMatrix4) &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: axis + angle (in degrees)
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
@@ -90,7 +90,7 @@ FLOATNAME(LRotation)(const FLOATNAME(LVector3) &axis, FLOATTYPE angle) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: Sets the rotation from the given Euler angles.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
@@ -120,7 +120,7 @@ operator / (FLOATTYPE scalar) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::operator *
-//       Access: public
+//       Access: Public
 //  Description: Rotation * Rotation = Rotation
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation) FLOATNAME(LRotation)::
@@ -130,7 +130,7 @@ operator * (const FLOATNAME(LRotation) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::operator *
-//       Access: public
+//       Access: Public
 //  Description: Rotation * Orientation = Orientation
 //               This is another meaningless operation, attempting
 //               to apply an orientation to a rotation.

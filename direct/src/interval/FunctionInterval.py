@@ -21,7 +21,7 @@ class FunctionInterval(Interval.Interval):
 
     # Keep a list of function intervals currently in memory for
     # Control-C-Control-V redefining. These are just weakrefs so they
-    # should not cause any leaks. 
+    # should not cause any leaks.
     if __debug__:
         import weakref
         FunctionIntervals = weakref.WeakKeyDictionary()
@@ -29,7 +29,7 @@ class FunctionInterval(Interval.Interval):
         @classmethod
         def replaceMethod(self, oldFunction, newFunction):
             import types
-            count = 0        
+            count = 0
             for ival in self.FunctionIntervals:
                 # print 'testing: ', ival.function, oldFunction
                 # Note: you can only replace methods currently
@@ -55,7 +55,7 @@ class FunctionInterval(Interval.Interval):
 
         # Record instance variables
         self.function = function
-            
+
         # Create a unique name for the interval if necessary
         if name is None:
             name = self.makeUniqueName(function)

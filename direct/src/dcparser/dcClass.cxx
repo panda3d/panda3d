@@ -22,6 +22,10 @@
 #include "dcClassParameter.h"
 #include <algorithm>
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"
+#endif
+
 #ifdef WITHIN_PANDA
 #include "pStatTimer.h"
 
@@ -68,7 +72,7 @@ public:
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCClass::
-DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) : 
+DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
 #ifdef WITHIN_PANDA
   _class_update_pcollector(_update_pcollector, name),
   _class_generate_pcollector(_generate_pcollector, name),
@@ -80,7 +84,7 @@ DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
 {
   _number = -1;
   _constructor = NULL;
-      
+
 #ifdef HAVE_PYTHON
   _class_def = NULL;
   _owner_class_def = NULL;
@@ -112,7 +116,7 @@ DCClass::
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::as_class
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCClass *DCClass::
 as_class() {
@@ -122,7 +126,7 @@ as_class() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::as_class
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const DCClass *DCClass::
 as_class() const {
@@ -151,7 +155,7 @@ get_parent(int n) const {
   nassertr(n >= 0 && n < (int)_parents.size(), NULL);
   return _parents[n];
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::has_constructor
 //       Access: Published
@@ -162,7 +166,7 @@ bool DCClass::
 has_constructor() const {
   return (_constructor != (DCField *)NULL);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_constructor
 //       Access: Published
@@ -280,7 +284,7 @@ get_field_by_index(int index_number) const {
 ////////////////////////////////////////////////////////////////////
 int DCClass::
 get_num_inherited_fields() const {
-  if (dc_multiple_inheritance && dc_virtual_inheritance && 
+  if (dc_multiple_inheritance && dc_virtual_inheritance &&
       _dc_file != (DCFile *)NULL) {
     _dc_file->check_inherited_fields();
     if (_inherited_fields.empty()) {
@@ -299,7 +303,7 @@ get_num_inherited_fields() const {
     for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
       num_fields += (*pi)->get_num_inherited_fields();
     }
-    
+
     return num_fields;
   }
 }
@@ -308,7 +312,7 @@ get_num_inherited_fields() const {
 //     Function: DCClass::get_inherited_field
 //       Access: Published
 //  Description: Returns the nth field field in the class and all of
-//               its ancestors.  
+//               its ancestors.
 //
 //               This *used* to be the same thing as
 //               get_field_by_index(), back when the fields were
@@ -318,7 +322,7 @@ get_num_inherited_fields() const {
 ////////////////////////////////////////////////////////////////////
 DCField *DCClass::
 get_inherited_field(int n) const {
-  if (dc_multiple_inheritance && dc_virtual_inheritance && 
+  if (dc_multiple_inheritance && dc_virtual_inheritance &&
       _dc_file != (DCFile *)NULL) {
     _dc_file->check_inherited_fields();
     if (_inherited_fields.empty()) {
@@ -334,18 +338,18 @@ get_inherited_field(int n) const {
       if (n < psize) {
         return (*pi)->get_inherited_field(n);
       }
-      
+
       n -= psize;
     }
-    
+
     return get_field(n);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCClass::inherits_from_bogus_class
-//       Access : Published
-//  Description : Returns true if this class, or any class in the
+//     Function: DCClass::inherits_from_bogus_class
+//       Access: Published
+//  Description: Returns true if this class, or any class in the
 //                inheritance heirarchy for this class, is a "bogus"
 //                class--a forward reference to an as-yet-undefined
 //                class.
@@ -367,10 +371,10 @@ inherits_from_bogus_class() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCClass::output
-//       Access : Published, Virtual
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCClass::output
+//       Access: Published, Virtual
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
 output(ostream &out) const {
@@ -663,7 +667,7 @@ receive_update_other(PyObject *distobj, DatagramIterator &di) const {
 //               value blob.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-direct_update(PyObject *distobj, const string &field_name, 
+direct_update(PyObject *distobj, const string &field_name,
               const string &value_blob) {
   DCField *field = get_field_by_name(field_name);
   nassertv_always(field != NULL);
@@ -684,7 +688,7 @@ direct_update(PyObject *distobj, const string &field_name,
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-direct_update(PyObject *distobj, const string &field_name, 
+direct_update(PyObject *distobj, const string &field_name,
               const Datagram &datagram) {
   direct_update(distobj, field_name, datagram.get_message());
 }
@@ -704,7 +708,7 @@ direct_update(PyObject *distobj, const string &field_name,
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCClass::
-pack_required_field(Datagram &datagram, PyObject *distobj, 
+pack_required_field(Datagram &datagram, PyObject *distobj,
                     const DCField *field) const {
   DCPacker packer;
   packer.begin_pack(field);
@@ -734,7 +738,7 @@ pack_required_field(Datagram &datagram, PyObject *distobj,
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCClass::
-pack_required_field(DCPacker &packer, PyObject *distobj, 
+pack_required_field(DCPacker &packer, PyObject *distobj,
                     const DCField *field) const {
   const DCParameter *parameter = field->as_parameter();
   if (parameter != (DCParameter *)NULL) {
@@ -758,14 +762,14 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
       nassert_raise(strm.str());
       return false;
     }
-    PyObject *result = 
+    PyObject *result =
       PyObject_GetAttrString(distobj, (char *)field_name.c_str());
     nassertr(result != (PyObject *)NULL, false);
 
     // Now pack the value into the datagram.
     bool pack_ok = parameter->pack_args(packer, result);
     Py_DECREF(result);
-    
+
     return pack_ok;
   }
 
@@ -801,7 +805,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     nassert_raise(strm.str());
     return false;
   }
-  
+
   string getter_name = setter_name;
   if (setter_name.substr(0, 3) == "set") {
     // If the original method started with "set", we mangle this
@@ -814,7 +818,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     getter_name = "get" + setter_name;
     getter_name[3] = toupper(getter_name[3]);
   }
-  
+
   // Now we have to look up the getter on the distributed object
   // and call it.
   if (!PyObject_HasAttrString(distobj, (char *)getter_name.c_str())) {
@@ -833,10 +837,10 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     nassert_raise(strm.str());
     return false;
   }
-  PyObject *func = 
+  PyObject *func =
     PyObject_GetAttrString(distobj, (char *)getter_name.c_str());
   nassertr(func != (PyObject *)NULL, false);
-  
+
   PyObject *empty_args = PyTuple_New(0);
   PyObject *result = PyObject_CallObject(func, empty_args);
   Py_DECREF(empty_args);
@@ -847,7 +851,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     cerr << "Error when calling " << getter_name << "\n";
     return false;
   }
-  
+
   if (atom->get_num_elements() == 1) {
     // In this case, we expect the getter to return one object,
     // which we wrap up in a tuple.
@@ -861,13 +865,13 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     if (!PySequence_Check(result)) {
       ostringstream strm;
       strm << "Since dclass " << get_name() << " method " << setter_name
-           << " is declared to have multiple parameters, Python function " 
+           << " is declared to have multiple parameters, Python function "
            << getter_name << " must return a list or tuple.\n";
       nassert_raise(strm.str());
       return false;
     }
   }
-  
+
   // Now pack the arguments into the datagram.
   bool pack_ok = atom->pack_args(packer, result);
   Py_DECREF(result);
@@ -885,7 +889,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
 //               object from the client.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-client_format_update(const string &field_name, DOID_TYPE do_id, 
+client_format_update(const string &field_name, DOID_TYPE do_id,
                      PyObject *args) const {
   DCField *field = get_field_by_name(field_name);
   if (field == (DCField *)NULL) {
@@ -909,7 +913,7 @@ client_format_update(const string &field_name, DOID_TYPE do_id,
 //               object from the AI.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-ai_format_update(const string &field_name, DOID_TYPE do_id, 
+ai_format_update(const string &field_name, DOID_TYPE do_id,
                  CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
   DCField *field = get_field_by_name(field_name);
   if (field == (DCField *)NULL) {
@@ -934,7 +938,7 @@ ai_format_update(const string &field_name, DOID_TYPE do_id,
 //               object from the AI.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id, 
+ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id,
                  CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const {
   DCField *field = get_field_by_name(field_name);
   if (field == (DCField *)NULL) {
@@ -964,7 +968,7 @@ ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id,
 //               This method is only called by the CMU implementation.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id, 
+client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
                            ZONEID_TYPE zone_id,
                            PyObject *optional_fields) const {
   DCPacker packer;
@@ -1003,7 +1007,7 @@ client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
     string field_name = PyString_AsString(py_field_name);
 #endif
     Py_XDECREF(py_field_name);
-    
+
     DCField *field = get_field_by_name(field_name);
     if (field == (DCField *)NULL) {
       ostringstream strm;
@@ -1037,7 +1041,7 @@ client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
 //               in addition to the normal required fields.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-ai_format_generate(PyObject *distobj, DOID_TYPE do_id, 
+ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
                    DOID_TYPE parent_id, ZONEID_TYPE zone_id,
                    CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
                    PyObject *optional_fields) const {
@@ -1055,7 +1059,7 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
   } else {
     packer.raw_pack_uint16(STATESERVER_OBJECT_GENERATE_WITH_REQUIRED);
   }
-  
+
   // Parent is a bit overloaded; this parent is not about inheritance,
   // this one is about the visibility container parent, i.e. the zone
   // parent:
@@ -1122,14 +1126,14 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
 //  Description: Generates a datagram containing the message necessary
 //               to create a new database distributed object from the AI.
 //
-//               First Pass is to only incldue required values
-//               (with Defaults).                   
+//               First Pass is to only include required values
+//               (with Defaults).
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
 ai_database_generate_context(
     unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
     CHANNEL_TYPE owner_channel,
-    CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const 
+    CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const
 {
   DCPacker packer;
   packer.raw_pack_uint8(1);
@@ -1137,7 +1141,7 @@ ai_database_generate_context(
   packer.RAW_PACK_CHANNEL(from_channel_id);
   //packer.raw_pack_uint8('A');
   packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
-  packer.raw_pack_uint32(parent_id);  
+  packer.raw_pack_uint32(parent_id);
   packer.raw_pack_uint32(zone_id);
   packer.RAW_PACK_CHANNEL(owner_channel);
   packer.raw_pack_uint16(_number); // DCD class ID
@@ -1166,13 +1170,13 @@ ai_database_generate_context(
 //  Description: Generates a datagram containing the message necessary
 //               to create a new database distributed object from the AI.
 //
-//               First Pass is to only incldue required values
-//               (with Defaults).                   
+//               First Pass is to only include required values
+//               (with Defaults).
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
 ai_database_generate_context_old(
     unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
-    CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const 
+    CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const
 {
   DCPacker packer;
   packer.raw_pack_uint8(1);
@@ -1180,7 +1184,7 @@ ai_database_generate_context_old(
   packer.RAW_PACK_CHANNEL(from_channel_id);
   //packer.raw_pack_uint8('A');
   packer.raw_pack_uint16(STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT);
-  packer.raw_pack_uint32(parent_id);  
+  packer.raw_pack_uint32(parent_id);
   packer.raw_pack_uint32(zone_id);
   packer.raw_pack_uint16(_number); // DCD class ID
   packer.raw_pack_uint32(context_id);
@@ -1201,10 +1205,10 @@ ai_database_generate_context_old(
 #endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCClass::output
-//       Access : Public, Virtual
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCClass::output
+//       Access: Public, Virtual
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
 output(ostream &out, bool brief) const {
@@ -1280,7 +1284,7 @@ write(ostream &out, bool brief, int indent_level) const {
 //               the indicated output stream.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-output_instance(ostream &out, bool brief, const string &prename, 
+output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
   if (_is_struct) {
     out << "struct";
@@ -1376,7 +1380,7 @@ rebuild_inherited_fields() {
   Names names;
 
   _inherited_fields.clear();
-  
+
   // First, all of the inherited fields from our parent are at the top
   // of the list.
   Parents::const_iterator pi;
@@ -1409,7 +1413,7 @@ rebuild_inherited_fields() {
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     DCField *field = (*fi);
     if (field->get_name().empty()) {
-      // Unnamed fields are always added. 
+      // Unnamed fields are always added.
      _inherited_fields.push_back(field);
 
     } else {
@@ -1496,7 +1500,7 @@ add_field(DCField *field) {
     }
   }
 
-  if (_dc_file != (DCFile *)NULL && 
+  if (_dc_file != (DCFile *)NULL &&
       ((dc_virtual_inheritance && dc_sort_inheritance_by_file) || !is_struct())) {
     if (dc_multiple_inheritance) {
       _dc_file->set_new_index_number(field);

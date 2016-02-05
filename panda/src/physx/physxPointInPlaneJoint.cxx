@@ -20,7 +20,7 @@ TypeHandle PhysxPointInPlaneJoint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxPointInPlaneJoint::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxPointInPlaneJoint::
 link(NxJoint *jointPtr) {
@@ -38,7 +38,7 @@ link(NxJoint *jointPtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxPointInPlaneJoint::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxPointInPlaneJoint::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxPointInPlaneJoint::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the joint object to a 
-//                descriptor.
+//     Function: PhysxPointInPlaneJoint::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the joint object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxPointInPlaneJoint::
 save_to_desc(PhysxPointInPlaneJointDesc &jointDesc) const {
@@ -64,10 +64,10 @@ save_to_desc(PhysxPointInPlaneJointDesc &jointDesc) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxPointInPlaneJoint::load_from_desc
-//       Access : Published
-//  Description : Loads the entire state of the joint from a 
-//                descriptor with a single call.
+//     Function: PhysxPointInPlaneJoint::load_from_desc
+//       Access: Published
+//  Description: Loads the entire state of the joint from a
+//               descriptor with a single call.
 ////////////////////////////////////////////////////////////////////
 void PhysxPointInPlaneJoint::
 load_from_desc(const PhysxPointInPlaneJointDesc &jointDesc) {

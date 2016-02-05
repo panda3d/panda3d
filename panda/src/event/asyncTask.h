@@ -22,14 +22,6 @@
 #include "conditionVar.h"
 #include "pStatCollector.h"
 
-#ifdef HAVE_PYTHON
-
-#undef HAVE_LONG_LONG  // NSPR and Python both define this.
-#undef _POSIX_C_SOURCE
-#include <Python.h>
-
-#endif  // HAVE_PYTHON
-
 class AsyncTaskManager;
 class AsyncTaskChain;
 
@@ -104,8 +96,8 @@ PUBLISHED:
   INLINE const string &get_done_event() const;
 
 #ifdef HAVE_PYTHON
-  INLINE void set_python_object(PyObject *python_object);
-  INLINE PyObject *get_python_object() const;
+  void set_python_object(PyObject *python_object);
+  PyObject *get_python_object() const;
 #endif  // HAVE_PYTHON
 
   INLINE double get_dt() const;

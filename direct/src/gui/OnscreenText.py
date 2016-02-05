@@ -158,11 +158,11 @@ class OnscreenText(DirectObject, NodePath):
             scale = (scale, scale)
 
         # Save some of the parameters for posterity.
-        self.scale = scale
-        self.pos = pos
-        self.roll = roll
-        self.wordwrap = wordwrap
-        
+        self.__scale = scale
+        self.__pos = pos
+        self.__roll = roll
+        self.__wordwrap = wordwrap
+
         if decal:
             textNode.setCardDecal(1)
 
@@ -249,11 +249,15 @@ class OnscreenText(DirectObject, NodePath):
     def getDecal(self):
         return self.textNode.getCardDecal()
 
+    decal = property(getDecal, setDecal)
+
     def setFont(self, font):
         self.textNode.setFont(font)
 
     def getFont(self):
         return self.textNode.getFont()
+
+    font = property(getFont, setFont)
 
     def clearText(self):
         self.textNode.clearText()
@@ -279,31 +283,37 @@ class OnscreenText(DirectObject, NodePath):
         else:
             return self.textNode.getText()
 
+    text = property(getText, setText)
+
     def setX(self, x):
-        self.setPos(x, self.pos[1])
+        self.setPos(x, self.__pos[1])
 
     def setY(self, y):
-        self.setPos(self.pos[0], y)
+        self.setPos(self.__pos[0], y)
 
     def setPos(self, x, y):
         """setPos(self, float, float)
         Position the onscreen text in 2d screen space
         """
-        self.pos = (x, y)
+        self.__pos = (x, y)
         self.updateTransformMat()
 
     def getPos(self):
-        return self.pos
+        return self.__pos
+
+    pos = property(getPos, setPos)
 
     def setRoll(self, roll):
         """setRoll(self, float)
         Rotate the onscreen text around the screen's normal
         """
-        self.roll = roll
+        self.__roll = roll
         self.updateTransformMat()
 
     def getRoll(self):
-        return self.roll
+        return self.__roll
+
+    roll = property(getRoll, setRoll)
 
     def setScale(self, sx, sy = None):
         """setScale(self, float, float)
@@ -313,38 +323,53 @@ class OnscreenText(DirectObject, NodePath):
 
         if sy == None:
             if isinstance(sx, types.TupleType):
-                self.scale = sx
+                self.__scale = sx
             else:
-                self.scale = (sx, sx)
+                self.__scale = (sx, sx)
         else:
-            self.scale = (sx, sy)
+            self.__scale = (sx, sy)
         self.updateTransformMat()
 
     def updateTransformMat(self):
         assert(isinstance(self.textNode, TextNode))
         mat = (
-            Mat4.scaleMat(Vec3.rfu(self.scale[0], 1, self.scale[1])) *
-            Mat4.rotateMat(self.roll, Vec3.back()) *
-            Mat4.translateMat(Point3.rfu(self.pos[0], 0, self.pos[1]))
+            Mat4.scaleMat(Vec3.rfu(self.__scale[0], 1, self.__scale[1])) *
+            Mat4.rotateMat(self.__roll, Vec3.back()) *
+            Mat4.translateMat(Point3.rfu(self.__pos[0], 0, self.__pos[1]))
             )
         self.textNode.setTransform(mat)
 
     def getScale(self):
-        return self.scale
+        return self.__scale
+
+    scale = property(getScale, setScale)
 
     def setWordwrap(self, wordwrap):
-        self.wordwrap = wordwrap
-        
+        self.__wordwrap = wordwrap
+
         if wordwrap:
             self.textNode.setWordwrap(wordwrap)
         else:
             self.textNode.clearWordwrap()
 
     def getWordwrap(self):
-        return self.wordwrap
-    
+        return self.__wordwrap
+
+    wordwrap = property(getWordwrap, setWordwrap)
+
+    def __getFg(self):
+        return self.textNode.getTextColor()
+
     def setFg(self, fg):
         self.textNode.setTextColor(fg[0], fg[1], fg[2], fg[3])
+
+    fg = property(__getFg, setFg)
+
+    def __getBg(self):
+        if self.textNode.hasCard():
+            return self.textNode.getCardColor()
+        else:
+            return LColor(0)
 
     def setBg(self, bg):
         if bg[3] != 0:
@@ -355,6 +380,11 @@ class OnscreenText(DirectObject, NodePath):
             # Otherwise, remove the card.
             self.textNode.clearCard()
 
+    bg = property(__getBg, setBg)
+
+    def __getShadow(self):
+        return self.textNode.getShadowColor()
+
     def setShadow(self, shadow):
         if shadow[3] != 0:
             # If we have a shadow color, create a shadow.
@@ -364,6 +394,11 @@ class OnscreenText(DirectObject, NodePath):
             # Otherwise, remove the shadow.
             self.textNode.clearShadow()
 
+    shadow = property(__getShadow, setShadow)
+
+    def __getFrame(self):
+        return self.textNode.getFrameColor()
+
     def setFrame(self, frame):
         if frame[3] != 0:
             # If we have a frame color, create a frame.
@@ -372,6 +407,8 @@ class OnscreenText(DirectObject, NodePath):
         else:
             # Otherwise, remove the frame.
             self.textNode.clearFrame()
+
+    frame = property(__getFrame, setFrame)
 
     def configure(self, option=None, **kw):
         # These is for compatibility with DirectGui functions
@@ -399,8 +436,13 @@ class OnscreenText(DirectObject, NodePath):
         getter = getattr(self, 'get' + option[0].upper() + option[1:])
         return getter()
 
+    def __getAlign(self):
+        return self.textNode.getAlign()
+
     def setAlign(self, align):
         self.textNode.setAlign(align)
+
+    align = property(__getAlign, setAlign)
 
     # Allow index style refererences
     __getitem__ = cget

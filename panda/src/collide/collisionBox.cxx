@@ -176,36 +176,6 @@ get_collision_origin() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::get_min
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-LPoint3 CollisionBox::
-get_min() const {
-  return _min;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::get_max
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-LPoint3 CollisionBox::
-get_max() const {
-  return _max;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::get_approx_center
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-LPoint3 CollisionBox::
-get_approx_center() const {
-  return (_min + _max) * 0.5f;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::get_volume_pcollector
 //       Access: Public, Virtual
 //  Description: Returns a PStatCollector that is used to count the
@@ -442,9 +412,14 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     into_depth = max_dist - orig_dist;
   }
 
+  // Clamp the surface point to the box bounds.
+  LPoint3 surface = from_center - normal * dist;
+  surface = surface.fmax(_min);
+  surface = surface.fmin(_max);
+
   new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(from_center - normal * dist);
-  new_entry->set_interior_point(from_center - normal * (dist + into_depth));
+  new_entry->set_surface_point(surface);
+  new_entry->set_interior_point(surface - normal * into_depth);
   new_entry->set_contact_pos(contact_point);
   new_entry->set_contact_normal(plane.get_normal());
   new_entry->set_t(actual_t);
@@ -619,18 +594,209 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::test_intersection_from_box
 //       Access: Public, Virtual
 //  Description: Double dispatch point for box as a FROM object
-//               NOT Implemented.
 ////////////////////////////////////////////////////////////////////
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_box(const CollisionEntry &entry) const {
-  return NULL;
-}
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), 0);
 
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 diff = wrt_mat.xform_point_general(box->get_center()) - _center;
+  LVector3 from_extents = box->get_dimensions() * 0.5f;
+  LVector3 into_extents = get_dimensions() * 0.5f;
+
+  LVecBase3 box_x = wrt_mat.get_row3(0);
+  LVecBase3 box_y = wrt_mat.get_row3(1);
+  LVecBase3 box_z = wrt_mat.get_row3(2);
+
+  // To make the math simpler, normalize the box basis vectors, instead
+  // applying the scale to the box dimensions.  Note that this doesn't
+  // work for a non-uniform scales applied after a rotation, since that
+  // has the possibility of making the box no longer a box.
+  PN_stdfloat l;
+  l = box_x.length();
+  from_extents[0] *= l;
+  box_x /= l;
+  l = box_y.length();
+  from_extents[1] *= l;
+  box_y /= l;
+  l = box_z.length();
+  from_extents[2] *= l;
+  box_z /= l;
+
+  PN_stdfloat r1, r2;
+  PN_stdfloat min_pen = 0;
+  PN_stdfloat pen;
+  int axis = 0;
+
+  // SAT test for the three axes of the into cube.
+  r1 = into_extents[0];
+  r2 = cabs(box_x[0] * from_extents[0]) +
+       cabs(box_y[0] * from_extents[1]) +
+       cabs(box_z[0] * from_extents[2]);
+  pen = r1 + r2 - cabs(diff[0]);
+  if (pen < 0) {
+    return NULL;
+  }
+  min_pen = pen;
+
+  r1 = into_extents[1];
+  r2 = cabs(box_x[1] * from_extents[0]) +
+       cabs(box_y[1] * from_extents[1]) +
+       cabs(box_z[1] * from_extents[2]);
+  pen = r1 + r2 - cabs(diff[1]);
+  if (pen < 0) {
+    return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
+    axis = 1;
+  }
+
+  r1 = into_extents[2];
+  r2 = cabs(box_x[2] * from_extents[0]) +
+       cabs(box_y[2] * from_extents[1]) +
+       cabs(box_z[2] * from_extents[2]);
+  pen = r1 + r2 - cabs(diff[2]);
+  if (pen < 0) {
+    return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
+    axis = 2;
+  }
+
+  // SAT test for the three axes of the from cube.
+  r1 = cabs(box_x[0] * into_extents[0]) +
+       cabs(box_x[1] * into_extents[1]) +
+       cabs(box_x[2] * into_extents[2]);
+  r2 = from_extents[0];
+  pen = r1 + r2 - cabs(diff.dot(box_x));
+  if (pen < 0) {
+    return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
+  }
+
+  r1 = cabs(box_y[0] * into_extents[0]) +
+       cabs(box_y[1] * into_extents[1]) +
+       cabs(box_y[2] * into_extents[2]);
+  r2 = from_extents[1];
+  pen = r1 + r2 - cabs(diff.dot(box_y));
+  if (pen < 0) {
+    return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
+  }
+
+  r1 = cabs(box_z[0] * into_extents[0]) +
+       cabs(box_z[1] * into_extents[1]) +
+       cabs(box_z[2] * into_extents[2]);
+  r2 = from_extents[2];
+  pen = r1 + r2 - cabs(diff.dot(box_z));
+  if (pen < 0) {
+    return NULL;
+  }
+  if (pen < min_pen) {
+    min_pen = pen;
+  }
+
+  // SAT test of the nine cross products.
+  r1 = into_extents[1] * cabs(box_x[2]) + into_extents[2] * cabs(box_x[1]);
+  r2 = from_extents[1] * cabs(box_z[0]) + from_extents[2] * cabs(box_y[0]);
+  if (cabs(diff[2] * box_x[1] - diff[1] * box_x[2]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[1] * cabs(box_y[2]) + into_extents[2] * cabs(box_y[1]);
+  r2 = from_extents[0] * cabs(box_z[0]) + from_extents[2] * cabs(box_x[0]);
+  if (cabs(diff[2] * box_y[1] - diff[1] * box_y[2]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[1] * cabs(box_z[2]) + into_extents[2] * cabs(box_z[1]);
+  r2 = from_extents[0] * cabs(box_y[0]) + from_extents[1] * cabs(box_x[0]);
+  if (cabs(diff[2] * box_z[1] - diff[1] * box_z[2]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_x[2]) + into_extents[2] * cabs(box_x[0]);
+  r2 = from_extents[1] * cabs(box_z[1]) + from_extents[2] * cabs(box_y[1]);
+  if (cabs(diff[0] * box_x[2] - diff[2] * box_x[0]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_y[2]) + into_extents[2] * cabs(box_y[0]);
+  r2 = from_extents[0] * cabs(box_z[1]) + from_extents[2] * cabs(box_x[1]);
+  if (cabs(diff[0] * box_y[2] - diff[2] * box_y[0]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_z[2]) + into_extents[2] * cabs(box_z[0]);
+  r2 = from_extents[0] * cabs(box_y[1]) + from_extents[1] * cabs(box_x[1]);
+  if (cabs(diff[0] * box_z[2] - diff[2] * box_z[0]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_x[1]) + into_extents[1] * cabs(box_x[0]);
+  r2 = from_extents[1] * cabs(box_z[2]) + from_extents[2] * cabs(box_y[2]);
+  if (cabs(diff[1] * box_x[0] - diff[0] * box_x[1]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_y[1]) + into_extents[1] * cabs(box_y[0]);
+  r2 = from_extents[0] * cabs(box_z[2]) + from_extents[2] * cabs(box_x[2]);
+  if (cabs(diff[1] * box_y[0] - diff[0] * box_y[1]) > r1 + r2) {
+      return NULL;
+  }
+
+  r1 = into_extents[0] * cabs(box_z[1]) + into_extents[1] * cabs(box_z[0]);
+  r2 = from_extents[0] * cabs(box_y[2]) + from_extents[1] * cabs(box_x[2]);
+  if (cabs(diff[1] * box_z[0] - diff[0] * box_z[1]) > r1 + r2) {
+      return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  // This isn't always the correct surface point.  However, it seems to
+  // be enough to let the pusher do the right thing.
+  LPoint3 surface(
+    min(max(diff[0], -into_extents[0]), into_extents[0]),
+    min(max(diff[1], -into_extents[1]), into_extents[1]),
+    min(max(diff[2], -into_extents[2]), into_extents[2]));
+
+  // Create the normal along the axis of least penetration.
+  LVector3 normal(0);
+  PN_stdfloat diff_axis = diff[axis];
+  int sign = (diff_axis >= 0) ? 1 : -1;
+  normal[axis] = sign;
+  surface[axis] = into_extents[axis] * sign;
+
+  new_entry->set_surface_point(surface + _center);
+
+  // Does not generate the correct depth.  Needs fixing.
+  new_entry->set_interior_point(surface + _center + normal * -min_pen);
+
+  if (has_effective_normal() && box->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::fill_viz_geom

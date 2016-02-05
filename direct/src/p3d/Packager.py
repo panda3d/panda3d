@@ -13,12 +13,12 @@ import os
 import glob
 import string
 import types
-import getpass
 import struct
 import subprocess
 import copy
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
+from direct.p3d.HostInfo import HostInfo
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
 from direct.showutil import FreezeTool
@@ -378,7 +378,8 @@ class Packager:
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer(platform = self.packager.platform)
-            
+            self.freezer.storePythonSource = self.packager.storePythonSource
+
             # Map of extensions to files to number (ignored by dir)
             self.ignoredDirFiles = {}
 
@@ -396,7 +397,7 @@ class Packager:
                 total = sum([x for x in self.ignoredDirFiles.values()])
                 self.notify.warning("excluded %s files not marked for inclusion: %s" \
                                     % (total, ", ".join(["'" + ext + "'" for ext in exts])))
-                
+
             if not self.host:
                 self.host = self.packager.host
 
@@ -1075,7 +1076,7 @@ class Packager:
             fpath.append(Filename("/Library/Frameworks"))
             fpath.append(Filename("/System/Library/Frameworks"))
             fpath.append(Filename("/Developer/Library/Frameworks"))
-            fpath.append(Filename("/Users/%s" % getpass.getuser(), "Library/Frameworks"))
+            fpath.append(Filename(os.path.expanduser("~"), "Library/Frameworks"))
             if "HOME" in os.environ:
                 fpath.append(Filename(os.environ["HOME"], "Library/Frameworks"))
             ffilename = Filename(library.split('.framework/', 1)[0].split('/')[-1] + '.framework')
@@ -2219,7 +2220,7 @@ class Packager:
         # ignoring any request to specify a particular download host,
         # e.g. for testing and development.
         self.ignoreSetHost = False
-        
+
         # Set this to true to verbosely log files ignored by dir().
         self.verbosePrint = False
 
@@ -2232,6 +2233,11 @@ class Packager:
         self.hosts = {}
         self.host = PandaSystem.getPackageHostUrl()
         self.addHost(self.host)
+
+        # This will be used when we're not compiling in the packaged
+        # environment.
+        self.__hostInfos = {}
+        self.http = HTTPClient.getGlobalPtr()
 
         # The maximum amount of time a client should cache the
         # contents.xml before re-querying the server, in seconds.
@@ -2317,6 +2323,10 @@ class Packager:
         # Set this flag true to automatically add allow_python_dev to
         # any applications.
         self.allowPythonDev = False
+
+        # Set this flag to store the original Python source files,
+        # without compiling them to .pyc or .pyo.
+        self.storePythonSource = False
 
         # Fill this with a list of (certificate, chain, pkey,
         # password) tuples to automatically sign each p3d file
@@ -2417,7 +2427,7 @@ class Packager:
 
         # Binary files that are considered uncompressible, and are
         # copied without compression.
-        self.uncompressibleExtensions = [ 'mp3', 'ogg', 'wav', 'rml', 'rcss', 'otf' ]
+        self.uncompressibleExtensions = [ 'mp3', 'ogg', 'ogv', 'wav', 'rml', 'rcss', 'otf' ]
         # wav files are compressible, but p3openal_audio won't load
         # them compressed.
         # rml, rcss and otf files must be added here because
@@ -2429,12 +2439,12 @@ class Packager:
 
         # Files for which warnings should be suppressed when they are
         # not handled by dir()
-        self.suppressWarningForExtensions = ['', 'pyc', 'pyo', 
-                                             'p3d', 'pdef', 
+        self.suppressWarningForExtensions = ['', 'pyc', 'pyo',
+                                             'p3d', 'pdef',
                                              'c', 'C', 'cxx', 'cpp', 'h', 'H',
                                              'hpp', 'pp', 'I', 'pem', 'p12', 'crt',
                                              'o', 'obj', 'a', 'lib', 'bc', 'll']
-         
+
         # System files that should never be packaged.  For
         # case-insensitive filesystems (like Windows and OSX), put the
         # lowercase filename here.  Case-sensitive filesystems should
@@ -3028,17 +3038,10 @@ class Packager:
 
     def __findPackageOnHost(self, packageName, platform, version, hostUrl, requires = None):
         appRunner = AppRunnerGlobal.appRunner
-        if not appRunner:
-            # We don't download import files from a host unless we're
-            # running in a packaged environment ourselves.  It would
-            # be possible to do this, but a fair bit of work for not
-            # much gain--this is meant to be run in a packaged
-            # environment.
-            return None
 
         # Make sure we have a fresh version of the contents file.
-        host = appRunner.getHost(hostUrl)
-        if not host.downloadContentsFile(appRunner.http):
+        host = self.__getHostInfo(hostUrl)
+        if not host.downloadContentsFile(self.http):
             return None
 
         packageInfos = []
@@ -3063,22 +3066,47 @@ class Packager:
 
             # Now we've retrieved a PackageInfo.  Get the import desc file
             # from it.
-            filename = Filename(host.hostDir, 'imports/' + packageInfo.importDescFile.basename)
-            if not appRunner.freshenFile(host, packageInfo.importDescFile, filename):
+            if host.hostDir:
+                filename = Filename(host.hostDir, 'imports/' + packageInfo.importDescFile.basename)
+            else:
+                # We're not running in the packaged environment, so download
+                # to a temporary file instead of the host directory.
+                filename = Filename.temporary('', 'import_' + packageInfo.importDescFile.basename, '.xml')
+
+            if not host.freshenFile(self.http, packageInfo.importDescFile, filename):
                 self.notify.error("Couldn't download import file.")
                 continue
 
             # Now that we have the import desc file, use it to load one of
             # our Package objects.
             package = self.Package('', self)
-            if not package.readImportDescFile(filename):
-                continue
+            success = package.readImportDescFile(filename)
 
-            if self.__packageIsValid(package, requires, platform):
+            if not host.hostDir:
+                # Don't forget to delete the temporary file we created.
+                filename.unlink()
+
+            if success and self.__packageIsValid(package, requires, platform):
                 return package
 
         # Couldn't find a suitable package.
         return None
+
+    def __getHostInfo(self, hostUrl = None):
+        """ This shadows appRunner.getHost(), for the purpose of running
+        outside the packaged environment. """
+
+        if not hostUrl:
+            hostUrl = PandaSystem.getPackageHostUrl()
+
+        if AppRunnerGlobal.appRunner:
+            return AppRunnerGlobal.appRunner.getHost(hostUrl)
+
+        host = self.__hostInfos.get(hostUrl, None)
+        if not host:
+            host = HostInfo(hostUrl)
+            self.__hostInfos[hostUrl] = host
+        return host
 
     def __sortImportPackages(self, packages):
         """ Given a list of Packages read from *.import.xml filenames,
@@ -3649,17 +3677,17 @@ class Packager:
         self.currentPackage.excludeFile(filename)
 
 
-    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None, 
-                         imageExtensions = None, textExtensions = None, 
+    def do_includeExtensions(self, executableExtensions = None, extractExtensions = None,
+                         imageExtensions = None, textExtensions = None,
                          uncompressibleExtensions = None, unprocessedExtensions = None,
                          suppressWarningForExtensions = None):
         """ Ensure that dir() will include files with the given extensions.
         The extensions should not have '.' prefixes.
-        
+
         All except 'suppressWarningForExtensions' allow the given kinds of files
         to be packaged with their respective semantics (read the source).
-        
-        'suppressWarningForExtensions' lists extensions *expected* to be ignored, 
+
+        'suppressWarningForExtensions' lists extensions *expected* to be ignored,
         so no warnings will be emitted for them.
         """
         if executableExtensions:
@@ -3716,8 +3744,7 @@ class Packager:
         self.__recurseDir(dirname, newDir, unprocessed = unprocessed)
 
     def __recurseDir(self, filename, newName, unprocessed = None, packageTree = None):
-        dirList = vfs.scanDirectory(filename)
-        if dirList:
+        if filename.isDirectory():
             # It's a directory name.  Recurse.
             prefix = newName
             if prefix and prefix[-1] != '/':
@@ -3725,6 +3752,7 @@ class Packager:
 
             # First check if this is a Python package tree.  If so, add it
             # implicitly as a module.
+            dirList = vfs.scanDirectory(filename)
             for subfile in dirList:
                 filename = subfile.getFilename()
                 if filename.getBasename() == '__init__.py':
@@ -3735,6 +3763,9 @@ class Packager:
                 filename = subfile.getFilename()
                 self.__recurseDir(filename, prefix + filename.getBasename(),
                                   unprocessed = unprocessed)
+            return
+        elif not filename.exists():
+            # It doesn't exist.  Perhaps it's a virtual file.  Ignore it.
             return
 
         # It's a file name.  Add it.
@@ -3760,9 +3791,9 @@ class Packager:
             elif not ext in self.suppressWarningForExtensions:
                 newCount = self.currentPackage.ignoredDirFiles.get(ext, 0) + 1
                 self.currentPackage.ignoredDirFiles[ext] = newCount
-                
+
                 if self.verbosePrint:
-                    self.notify.warning("ignoring file %s" % filename) 
+                    self.notify.warning("ignoring file %s" % filename)
 
     def readContentsFile(self):
         """ Reads the contents.xml file at the beginning of

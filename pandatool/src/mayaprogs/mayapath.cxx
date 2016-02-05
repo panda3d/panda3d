@@ -58,7 +58,7 @@
 #define TOSTRING(x) QUOTESTR(x)
 
 #if defined(_WIN32)
-// Filename::dso_filename changes .so to .dll automatically.
+// Note: Filename::dso_filename changes .so to .dll automatically.
 static const Filename openmaya_filename = "bin/OpenMaya.so";
 #elif defined(IS_OSX)
 static const Filename openmaya_filename = "MacOS/libOpenMaya.dylib";

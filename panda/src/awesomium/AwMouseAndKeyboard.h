@@ -1,4 +1,4 @@
-// Filename: awWebCore.h
+// Filename: AwMouseAndKeyboard.h
 // Created by:  rurbino (12Oct09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAAWESOMIUM AwMouseAndKeyboard : public DataNode {
 //member data data
-protected:  
+protected:
   // inputs adn output indices... initialized in constructor
   int _button_events_input;
   int _button_events_output;

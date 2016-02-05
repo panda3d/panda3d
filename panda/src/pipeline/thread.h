@@ -24,11 +24,6 @@
 #include "pnotify.h"
 #include "config_pipeline.h"
 
-#ifdef HAVE_PYTHON
-#undef _POSIX_C_SOURCE
-#include <Python.h>
-#endif  // HAVE_PYTHON
-
 class Mutex;
 class ReMutex;
 class MutexDebug;

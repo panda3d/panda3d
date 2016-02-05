@@ -64,6 +64,10 @@ PUBLISHED:
   bool set_from_lens(LensNode *camera, const LPoint2 &point);
   INLINE bool set_from_lens(LensNode *camera, PN_stdfloat px, PN_stdfloat py);
 
+PUBLISHED:
+  MAKE_PROPERTY(point_a, get_point_a, set_point_a);
+  MAKE_PROPERTY(point_b, get_point_b, set_point_b);
+
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 

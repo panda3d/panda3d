@@ -424,47 +424,8 @@ class AppRunner(DirectObject):
         it downloads a new version on-the-spot.  Returns true on
         success, false on failure. """
 
-        if fileSpec.quickVerify(pathname = localPathname):
-            # It's good, keep it.
-            return True
-
         assert self.http
-
-        # It's stale, get a new one.
-        doc = None
-        if self.superMirrorUrl:
-            # Use the "super mirror" first.
-            url = core.URLSpec(self.superMirrorUrl + fileSpec.filename)
-            self.notify.info("Freshening %s" % (url))
-            doc = self.http.getDocument(url)
-
-        if not doc or not doc.isValid():
-            # Failing the super mirror, contact the actual host.
-            url = core.URLSpec(host.hostUrlPrefix + fileSpec.filename)
-            self.notify.info("Freshening %s" % (url))
-            doc = self.http.getDocument(url)
-            if not doc.isValid():
-                return False
-
-        file = Filename.temporary('', 'p3d_')
-        if not doc.downloadToFile(file):
-            # Failed to download.
-            file.unlink()
-            return False
-
-        # Successfully downloaded!
-        localPathname.makeDir()
-        if not file.renameTo(localPathname):
-            # Couldn't move it into place.
-            file.unlink()
-            return False
-
-        if not fileSpec.fullVerify(pathname = localPathname, notify = self.notify):
-            # No good after download.
-            self.notify.info("%s is still no good after downloading." % (url))
-            return False
-
-        return True
+        return host.freshenFile(self.http, fileSpec, localPathname)
 
     def scanInstalledPackages(self):
         """ Scans the hosts and packages already installed locally on

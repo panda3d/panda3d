@@ -189,6 +189,27 @@ add_dependent_file(const Filename &pathname) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::add_dependent_file
+//       Access: Published
+//  Description: Variant of add_dependent_file that takes an already
+//               opened VirtualFile.
+////////////////////////////////////////////////////////////////////
+void BamCacheRecord::
+add_dependent_file(const VirtualFile *file) {
+  _files.push_back(DependentFile());
+  DependentFile &dfile = _files.back();
+  dfile._pathname = file->get_filename();
+  dfile._pathname.make_absolute();
+
+  dfile._timestamp = file->get_timestamp();
+  dfile._size = file->get_file_size();
+
+  if (dfile._pathname == _source_pathname) {
+    _source_timestamp = dfile._timestamp;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamCacheRecord::output
 //       Access: Published
 //  Description: 

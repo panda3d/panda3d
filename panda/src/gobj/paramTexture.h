@@ -37,6 +37,9 @@ PUBLISHED:
   INLINE Texture *get_texture() const;
   INLINE const SamplerState &get_sampler() const;
 
+  MAKE_PROPERTY(texture, get_texture);
+  MAKE_PROPERTY(sampler, get_sampler);
+
   virtual void output(ostream &out) const;
 
 private:
@@ -101,6 +104,12 @@ PUBLISHED:
   INLINE bool get_bind_layered() const;
   INLINE int get_bind_level() const;
   INLINE int get_bind_layer() const;
+
+  MAKE_PROPERTY(texture, get_texture);
+  MAKE_PROPERTY(read_access, has_read_access);
+  MAKE_PROPERTY(write_access, has_write_access);
+  MAKE_PROPERTY(bind_level, get_bind_level);
+  MAKE_PROPERTY2(bind_layer, get_bind_layered, get_bind_layer);
 
   virtual void output(ostream &out) const;
 

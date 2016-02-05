@@ -20,7 +20,7 @@ TypeHandle PhysxDistanceJoint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxDistanceJoint::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxDistanceJoint::
 link(NxJoint *jointPtr) {
@@ -38,7 +38,7 @@ link(NxJoint *jointPtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxDistanceJoint::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxDistanceJoint::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxDistanceJoint::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the joint object to a 
-//                descriptor.
+//     Function: PhysxDistanceJoint::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the joint object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxDistanceJoint::
 save_to_desc(PhysxDistanceJointDesc &jointDesc) const {
@@ -64,10 +64,10 @@ save_to_desc(PhysxDistanceJointDesc &jointDesc) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxDistanceJoint::load_from_desc
-//       Access : Published
-//  Description : Loads the entire state of the joint from a 
-//                descriptor with a single call.
+//     Function: PhysxDistanceJoint::load_from_desc
+//       Access: Published
+//  Description: Loads the entire state of the joint from a
+//               descriptor with a single call.
 ////////////////////////////////////////////////////////////////////
 void PhysxDistanceJoint::
 load_from_desc(const PhysxDistanceJointDesc &jointDesc) {

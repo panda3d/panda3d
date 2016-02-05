@@ -1823,7 +1823,19 @@ get_character_glyphs(int character, const TextProperties *properties,
   if (!got_glyph && map_entry != NULL && map_entry->_ascii_equiv != 0) {
     // If we couldn't find the Unicode glyph, try the ASCII
     // equivalent (without the accent marks).
-    got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
+    if (map_entry->_ascii_equiv == 'i') {
+      // Special case for the i: we want to try the dotless variant first.
+      got_glyph = font->get_glyph(0x0131, glyph) ||
+                  font->get_glyph('i', glyph);
+
+    } else if (map_entry->_ascii_equiv == 'j') {
+      // And the dotless j as well.
+      got_glyph = font->get_glyph(0x0237, glyph) ||
+                  font->get_glyph('j', glyph);
+
+    } else {
+      got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
+    }
     
     if (!got_glyph && map_entry->_toupper_character != character) {
       // If we still couldn't find it, try the uppercase
@@ -1845,7 +1857,7 @@ get_character_glyphs(int character, const TextProperties *properties,
         got_second_glyph = 
           font->get_glyph(map_entry->_ascii_additional, second_glyph);
       }
-      
+
       if ((additional_flags & UnicodeLatinMap::AF_ligature) != 0 &&
           got_second_glyph) {
         // If we have two letters that are supposed to be in a
@@ -1875,6 +1887,16 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
                const LPoint3 &centroid,
                const TextProperties *properties, 
                TextAssembler::GlyphPlacement &placement) const {
+
+  // Look for a combining accent mark character.
+  wchar_t combine_char = UnicodeLatinMap::get_combining_accent(accent_type);
+  if (combine_char != 0 &&
+      tack_on_accent(combine_char, CP_above, CT_none, min_vert, max_vert,
+                     centroid, properties, placement)) {
+    return;
+  }
+
+
   switch (accent_type) {
   case UnicodeLatinMap::AT_grave:
     // We use the slash as the grave and acute accents.  ASCII does
@@ -1978,8 +2000,10 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
     break;
 
   case UnicodeLatinMap::AT_cedilla:
-    tack_on_accent('c', CP_bottom, CT_tiny_mirror_x, min_vert, max_vert, centroid,
-                   properties, placement);
+   tack_on_accent(0xb8, CP_below, CT_none, min_vert, max_vert, centroid,
+                   properties, placement) ||
+      tack_on_accent('c', CP_bottom, CT_tiny_mirror_x, min_vert, max_vert, centroid,
+                     properties, placement);
     //tack_on_accent(',', CP_bottom, CT_none, min_vert, max_vert, centroid,
     //               properties, placement);
     break;
@@ -2014,7 +2038,7 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
 //               font.
 ////////////////////////////////////////////////////////////////////
 bool TextAssembler::
-tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
+tack_on_accent(wchar_t accent_mark, TextAssembler::CheesyPosition position,
                TextAssembler::CheesyTransform transform,
                const LPoint3 &min_vert, const LPoint3 &max_vert,
                const LPoint3 &centroid,
@@ -2208,28 +2232,34 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           has_mat = false;
         }
 
+        PN_stdfloat total_margin = font->get_total_poly_margin();
+
         LPoint3 accent_centroid = (min_accent + max_accent) / 2.0f;
-        PN_stdfloat accent_height = max_accent[2] - min_accent[2];
+        PN_stdfloat accent_height = max_accent[2] - min_accent[2] - total_margin * 2;
+        PN_stdfloat accent_x = centroid[0] - accent_centroid[0];
         PN_stdfloat accent_y = 0;
+        PN_stdfloat min_y = min_vert[2] + total_margin;
+        PN_stdfloat max_y = max_vert[2] - total_margin;
+
         switch (position) {
         case CP_above:
           // A little above the character.
-          accent_y = max_vert[2] - accent_centroid[2] + accent_height * 0.5f;
+          accent_y = max_y - accent_centroid[2] + accent_height * 0.75f;
           break;
 
         case CP_below:
           // A little below the character.
-          accent_y = min_vert[2] - accent_centroid[2] - accent_height * 0.5f;
+          accent_y = min_y - accent_centroid[2] - accent_height * 0.75f;
           break;
 
         case CP_top:
           // Touching the top of the character.
-          accent_y = max_vert[2] - accent_centroid[2];
+          accent_y = max_y - accent_centroid[2];
           break;
 
         case CP_bottom:
           // Touching the bottom of the character.
-          accent_y = min_vert[2] - accent_centroid[2];
+          accent_y = min_y - accent_centroid[2];
           break;
 
         case CP_within:
@@ -2238,7 +2268,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
         }
 
-        placement._xpos += placement._scale * (centroid[0] - accent_centroid[0] + placement._slant * accent_y);
+        placement._xpos += placement._scale * (accent_x + placement._slant * accent_y);
         placement._ypos += placement._scale * accent_y;
 
         if (has_mat) {

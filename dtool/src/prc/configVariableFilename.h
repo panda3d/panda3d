@@ -58,6 +58,8 @@ PUBLISHED:
   INLINE void set_value(const Filename &value);
   INLINE Filename get_value() const;
   INLINE Filename get_default_value() const;
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(default_value, get_default_value);
 
   INLINE Filename get_word(size_t n) const;
   INLINE void set_word(size_t n, const Filename &value);

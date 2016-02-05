@@ -197,7 +197,7 @@ class FSM(DirectObject):
             # If there's no matching filterState() function, call
             # defaultFilter() instead.
             filter = self.defaultFilter
-            
+
         return filter
 
     def getCurrentOrNextState(self):
@@ -394,7 +394,7 @@ class FSM(DirectObject):
         if request[0].isupper():
             return (request,) + args
         return self.defaultFilter(request, args)
-        
+
 
     def setStateArray(self, stateArray):
         """array of unique states to iterate through"""

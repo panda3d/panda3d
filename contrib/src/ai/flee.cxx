@@ -1,7 +1,6 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : flee.cxx
-// Created by  : Deepak, John, Navin
-// Date        :  24 Oct 09
+// Filename: flee.cxx
+// Created by: Deepak, John, Navin (24Oct09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -46,17 +45,14 @@ Flee::Flee(AICharacter *ai_ch, LVecBase3 pos, double panic_distance,
 Flee::~Flee() {
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : do_flee
-// Description : This function performs the flee and returns a flee force which is used
-//                in the calculate_prioritized function.
-//                In case the AICharacter is past the (panic + relax) distance,
-//                it resets to flee_activate.
-//                This function is not to be used by the user.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: do_flee
+//  Description: This function performs the flee and returns a flee force which is used
+//               in the calculate_prioritized function.
+//               In case the AICharacter is past the (panic + relax) distance,
+//               it resets to flee_activate.
+//               This function is not to be used by the user.
+////////////////////////////////////////////////////////////////////
 LVecBase3 Flee::do_flee() {
   LVecBase3 dirn;
   double distance;
@@ -80,15 +76,12 @@ LVecBase3 Flee::do_flee() {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-// Function : flee_activate
-// Description : This function checks for whether the target is within the panic distance.
-//                When this is true, it calls the do_flee function and sets the flee direction.
-//                This function is not to be used by the user.
-
-/////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////
+//     Function: flee_activate
+//  Description: This function checks for whether the target is within the panic distance.
+//               When this is true, it calls the do_flee function and sets the flee direction.
+//               This function is not to be used by the user.
+////////////////////////////////////////////////////////////////////
 void Flee::flee_activate() {
   LVecBase3 dirn;
   double distance;

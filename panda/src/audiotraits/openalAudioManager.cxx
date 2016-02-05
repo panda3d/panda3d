@@ -19,6 +19,7 @@
 #include "config_audio.h"
 #include "config_util.h"
 #include "config_express.h"
+#include "config_openalAudio.h"
 #include "openalAudioManager.h"
 #include "openalAudioSound.h"
 #include "virtualFileSystem.h"
@@ -26,6 +27,14 @@
 #include "reMutexHolder.h"
 
 #include <algorithm>
+
+#ifndef ALC_DEFAULT_ALL_DEVICES_SPECIFIER
+#define ALC_DEFAULT_ALL_DEVICES_SPECIFIER 0x1012
+#endif
+
+#ifndef ALC_ALL_DEVICES_SPECIFIER
+#define ALC_ALL_DEVICES_SPECIFIER 0x1013
+#endif
 
 TypeHandle OpenALAudioManager::_type_handle;
 
@@ -74,7 +83,7 @@ AudioManager *Create_OpenALAudioManager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::
 OpenALAudioManager() {
@@ -90,7 +99,7 @@ OpenALAudioManager() {
   _active = audio_active;
   _volume = audio_volume;
   _play_rate = 1.0f;
-  
+
   _cache_limit = audio_cache_limit;
 
   _concurrent_sound_limit = 0;
@@ -116,20 +125,50 @@ OpenALAudioManager() {
   _forward_up[5] = 0;
 
   // Initialization
+  audio_cat.init();
   if (_active_managers == 0 || !_openal_active) {
-    _device = alcOpenDevice(NULL); // select the "preferred device"
-    if (!_device) {
-      // this is a unique kind of error
-      audio_error("OpenALAudioManager: alcOpenDevice(NULL): ALC couldn't open device");
+    _device = NULL;
+    string dev_name = select_audio_device();
+
+    if (!dev_name.empty()) {
+      // Open a specific device by name.
+      audio_cat.info() << "Using OpenAL device " << dev_name << "\n";
+      _device = alcOpenDevice(dev_name.c_str());
+
+      if (_device == NULL) {
+        audio_cat.error()
+          << "Couldn't open OpenAL device \"" << dev_name << "\", falling back to default device\n";
+      }
     } else {
+      audio_cat.info() << "Using default OpenAL device\n";
+    }
+
+    if (_device == NULL) {
+      // Open the default device.
+      _device = alcOpenDevice(NULL);
+
+      if (_device == NULL && dev_name != "OpenAL Soft") {
+        // Try the OpenAL Soft driver instead, which is fairly reliable.
+        _device = alcOpenDevice("OpenAL Soft");
+
+        if (_device == NULL) {
+          audio_cat.error()
+            << "Couldn't open default OpenAL device\n";
+        }
+      }
+    }
+
+    if (_device != NULL) {
+      // We managed to get a device open.
       alcGetError(_device); // clear errors
       _context = alcCreateContext(_device, NULL);
-      alc_audio_errcheck("alcCreateContext(_device, NULL)",_device);
+      alc_audio_errcheck("alcCreateContext(_device, NULL)", _device);
       if (_context != NULL) {
         _openal_active = true;
       }
     }
   }
+
   // We increment _active_managers regardless of possible errors above.
   // The shutdown call will do the right thing when it's called,
   // either way.
@@ -150,22 +189,22 @@ OpenALAudioManager() {
     audio_3d_set_drop_off_factor(audio_drop_off_factor);
 
     if (audio_cat.is_debug()) {
-      audio_cat->debug()
+      audio_cat.debug()
         << "ALC_DEVICE_SPECIFIER:" << alcGetString(_device, ALC_DEVICE_SPECIFIER) << endl;
     }
   }
 
   if (audio_cat.is_debug()) {
-    audio_cat->debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
-    audio_cat->debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
-    audio_cat->debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
+    audio_cat.debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
+    audio_cat.debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
+    audio_cat.debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::
 ~OpenALAudioManager() {
@@ -213,10 +252,86 @@ is_valid() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioManager::select_audio_device
+//       Access: Private
+//  Description: Enumerate the audio devices, selecting the one that
+//               is most appropriate or has been selected by the user.
+////////////////////////////////////////////////////////////////////
+string OpenALAudioManager::
+select_audio_device() {
+  string selected_device = openal_device;
+
+  const char *devices = NULL;
+
+  // This extension gives us all audio paths on all drivers.
+  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATE_ALL_EXT") == AL_TRUE) {
+    string default_device = alcGetString(NULL, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
+    devices = (const char *)alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
+
+    if (devices) {
+      audio_cat.debug() << "All OpenAL devices:\n";
+
+      while (*devices) {
+        string device(devices);
+        devices += device.size() + 1;
+
+        if (audio_cat.is_debug()) {
+          if (device == selected_device) {
+            audio_cat.debug() << "  " << device << " [selected]\n";
+          } else if (device == default_device) {
+            audio_cat.debug() << "  " << device << " [default]\n";
+          } else {
+            audio_cat.debug() << "  " << device << "\n";
+          }
+        }
+      }
+    }
+  } else {
+    audio_cat.debug() << "ALC_ENUMERATE_ALL_EXT not supported\n";
+  }
+
+  // This extension just gives us generic driver names, like "OpenAL Soft"
+  // and "Generic Software", rather than individual outputs.
+  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT") == AL_TRUE) {
+    string default_device = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+    devices = (const char *)alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+
+    if (devices) {
+      audio_cat.debug() << "OpenAL drivers:\n";
+
+      while (*devices) {
+        string device(devices);
+        devices += device.size() + 1;
+
+        if (selected_device.empty() && device == "OpenAL Soft" &&
+            default_device == "Generic Software") {
+          // Prefer OpenAL Soft over the buggy Generic Software driver.
+          selected_device = "OpenAL Soft";
+        }
+
+        if (audio_cat.is_debug()) {
+          if (device == selected_device) {
+            audio_cat.debug() << "  " << device << " [selected]\n";
+          } else if (device == default_device) {
+            audio_cat.debug() << "  " << device << " [default]\n";
+          } else {
+            audio_cat.debug() << "  " << device << "\n";
+          }
+        }
+      }
+    }
+  } else {
+    audio_cat.debug() << "ALC_ENUMERATION_EXT not supported\n";
+  }
+
+  return selected_device;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::make_current
 //       Access: Private
-//  Description: This makes this manager's OpenAL context the 
-//         current context. Needed before any parameter sets.
+//  Description: This makes this manager's OpenAL context the
+//               current context. Needed before any parameter sets.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 make_current() const {
@@ -291,10 +406,10 @@ OpenALAudioManager::SoundData *OpenALAudioManager::
 get_sound_data(MovieAudio *movie, int mode) {
   ReMutexHolder holder(_lock);
   const Filename &path = movie->get_filename();
-  
+
   // Search for an already-cached sample or an already-opened stream.
   if (!path.empty()) {
-    
+
     if (mode != SM_stream) {
       SampleCache::iterator lsmi=_sample_cache.find(path);
       if (lsmi != _sample_cache.end()) {
@@ -315,18 +430,18 @@ get_sound_data(MovieAudio *movie, int mode) {
       }
     }
   }
-  
+
   PT(MovieAudioCursor) stream = movie->open();
   if (stream == 0) {
     audio_error("Cannot open file: "<<path);
     return NULL;
   }
-  
+
   if (!can_use_audio(stream)) {
     audio_error("File is not in usable format: "<<path);
     return NULL;
   }
-  
+
   SoundData *sd = new SoundData();
   sd->_client_count = 1;
   sd->_manager  = this;
@@ -369,7 +484,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     audio_debug(path.get_basename() << ": loading as stream");
     sd->_stream = stream;
   }
-  
+
   return sd;
 }
 
@@ -384,9 +499,9 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
   if(!is_valid()) {
     return get_null_sound();
   }
-  PT(OpenALAudioSound) oas = 
+  PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, sound, positional, mode);
-  
+
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
   return res;
@@ -403,21 +518,21 @@ get_sound(const string &file_name, bool positional, int mode) {
   if(!is_valid()) {
     return get_null_sound();
   }
-  
+
   Filename path = file_name;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
-  
+
   if (path.empty()) {
     audio_error("get_sound - invalid filename");
     return NULL;
   }
 
   PT(MovieAudio) mva = MovieAudio::get(path);
-  
-  PT(OpenALAudioSound) oas = 
+
+  PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, mva, positional, mode);
-  
+
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
   return res;
@@ -435,7 +550,7 @@ uncache_sound(const string& file_name) {
   ReMutexHolder holder(_lock);
   assert(is_valid());
   Filename path = file_name;
-  
+
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
 
@@ -500,8 +615,8 @@ release_sound(OpenALAudioSound* audioSound) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::set_volume(PN_stdfloat volume)
 //       Access: Public
-//  Description: 
-//        Sets listener gain
+//  Description:
+//               Sets listener gain
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::set_volume(PN_stdfloat volume) {
   ReMutexHolder holder(_lock);
@@ -514,7 +629,7 @@ void OpenALAudioManager::set_volume(PN_stdfloat volume) {
       (**i).set_volume((**i).get_volume());
     }
 
-    /* 
+    /*
     // this was neat alternative to the above look
     // when we had a seperate context for each manager
     make_current();
@@ -528,8 +643,8 @@ void OpenALAudioManager::set_volume(PN_stdfloat volume) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::get_volume()
 //       Access: Public
-//  Description: 
-//        Gets listener gain
+//  Description:
+//               Gets listener gain
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioManager::
 get_volume() const {
@@ -586,7 +701,7 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::get_active()
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioManager::
 get_active() const {
@@ -597,23 +712,23 @@ get_active() const {
 //     Function: OpenALAudioManager::audio_3d_set_listener_attributes
 //       Access: Public
 //  Description: Set position of the "ear" that picks up 3d sounds
-//        NOW LISTEN UP!!! THIS IS IMPORTANT!
-//        Both Panda3D and OpenAL use a right handed coordinate system.
-//        But there is a major difference!
-//        In Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.
-//        In OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
-//        The solution is simple, we just flip the Y and Z axis and negate the Z, as we move coordinates
-//        from Panda to OpenAL and back.
-//        What does did mean to average Panda user?  Nothing, they shouldn't notice anyway.
-//        But if you decide to do any 3D audio work in here you have to keep it in mind.
-//        I told you, so you can't say I didn't.
+//               NOW LISTEN UP!!! THIS IS IMPORTANT!
+//               Both Panda3D and OpenAL use a right handed coordinate system.
+//               But there is a major difference!
+//               In Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.
+//               In OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
+//               The solution is simple, we just flip the Y and Z axis and negate the Z, as we move coordinates
+//               from Panda to OpenAL and back.
+//               What does did mean to average Panda user?  Nothing, they shouldn't notice anyway.
+//               But if you decide to do any 3D audio work in here you have to keep it in mind.
+//               I told you, so you can't say I didn't.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
   ReMutexHolder holder(_lock);
   _position[0] = px;
   _position[1] = pz;
-  _position[2] = -py; 
+  _position[2] = -py;
 
   _velocity[0] = vx;
   _velocity[1] = vz;
@@ -626,8 +741,8 @@ audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
   _forward_up[3] = ux;
   _forward_up[4] = uz;
   _forward_up[5] = -uy;
-    
-  
+
+
   make_current();
 
   alGetError(); // clear errors
@@ -658,7 +773,7 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
   *fx = _forward_up[0];
   *fy = -_forward_up[2];
   *fz = _forward_up[1];
-  
+
   *ux = _forward_up[3];
   *uy = -_forward_up[5];
   *uz = _forward_up[4];
@@ -715,7 +830,7 @@ audio_3d_get_distance_factor() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::audio_3d_set_doppler_factor
 //       Access: Public
-//  Description: Exaggerates or diminishes the Doppler effect. 
+//  Description: Exaggerates or diminishes the Doppler effect.
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
@@ -724,7 +839,7 @@ audio_3d_set_doppler_factor(PN_stdfloat factor) {
   _doppler_factor = factor;
 
   make_current();
-  
+
   alGetError(); // clear errors
   alDopplerFactor(_doppler_factor);
   al_audio_errcheck("alDopplerFactor()");
@@ -733,7 +848,7 @@ audio_3d_set_doppler_factor(PN_stdfloat factor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::audio_3d_get_doppler_factor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioManager::
 audio_3d_get_doppler_factor() const {
@@ -760,7 +875,7 @@ audio_3d_set_drop_off_factor(PN_stdfloat factor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::audio_3d_get_drop_off_factor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioManager::
 audio_3d_get_drop_off_factor() const {
@@ -769,7 +884,7 @@ audio_3d_get_drop_off_factor() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::starting_sound
-//       Access: 
+//       Access:
 //  Description: Inform the manager that a sound is about to play.
 //               The manager will add this sound to the table of
 //               sounds that are playing, and will allocate a source
@@ -779,7 +894,7 @@ void OpenALAudioManager::
 starting_sound(OpenALAudioSound* audio) {
   ReMutexHolder holder(_lock);
   ALuint source=0;
-  
+
   // If the sound already has a source, we don't need to do anything.
   if (audio->_source) {
     return;
@@ -791,7 +906,7 @@ starting_sound(OpenALAudioSound* audio) {
   if (_concurrent_sound_limit) {
     reduce_sounds_playing_to(_concurrent_sound_limit-1); // because we're about to add one
   }
-  
+
   // get a source from the source pool or create a new source
   if (_al_sources->empty()) {
     make_current();
@@ -812,15 +927,15 @@ starting_sound(OpenALAudioSound* audio) {
   }
 
   audio->_source = source;
-  
+
   if (source)
     _sounds_playing.insert(audio);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::stopping_sound
-//       Access: 
-//  Description: Inform the manager that a sound is finished or 
+//       Access:
+//  Description: Inform the manager that a sound is finished or
 //               someone called stop on the sound (this should not
 //               be called if a sound is only paused).
 ////////////////////////////////////////////////////////////////////
@@ -837,7 +952,7 @@ stopping_sound(OpenALAudioSound* audio) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::set_concurrent_sound_limit
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 set_concurrent_sound_limit(unsigned int limit) {
@@ -849,7 +964,7 @@ set_concurrent_sound_limit(unsigned int limit) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::get_concurrent_sound_limit
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 unsigned int OpenALAudioManager::
 get_concurrent_sound_limit() const {
@@ -859,7 +974,7 @@ get_concurrent_sound_limit() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::reduce_sounds_playing_to
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 reduce_sounds_playing_to(unsigned int count) {
@@ -872,7 +987,7 @@ reduce_sounds_playing_to(unsigned int count) {
     SoundsPlaying::iterator sound = _sounds_playing.begin();
     assert(sound != _sounds_playing.end());
     // When the user stops a sound, there is still a PT in the
-    // user's hand.  When we stop a sound here, however, 
+    // user's hand.  When we stop a sound here, however,
     // this can remove the last PT.  This can cause an ugly
     // recursion where stop calls the destructor, and the
     // destructor calls stop.  To avoid this, we create
@@ -904,7 +1019,7 @@ update() {
 
   // See if any of our playing sounds have ended
   // we must first collect a seperate list of finished sounds and then
-  // iterated over those again calling their finished method. We 
+  // iterated over those again calling their finished method. We
   // can't call finished() within a loop iterating over _sounds_playing
   // since finished() modifies _sounds_playing
   SoundsPlaying sounds_finished;
@@ -923,7 +1038,7 @@ update() {
       sounds_finished.insert(*i);
     }
   }
-  
+
   i=sounds_finished.begin();
   for (; i!=sounds_finished.end(); ++i) {
     (**i).finished();
@@ -946,15 +1061,15 @@ cleanup() {
   }
 
   stop_all_sounds();
-  
+
   AllSounds sounds(_all_sounds);
   AllSounds::iterator ai;
   for (ai = sounds.begin(); ai != sounds.end(); ++ai) {
     (*ai)->cleanup();
   }
-  
+
   clear_cache();
-  
+
   nassertv(_active_managers > 0);
   --_active_managers;
 
@@ -978,7 +1093,7 @@ cleanup() {
       alcGetError(_device); // clear errors
       alcMakeContextCurrent(NULL);
       alc_audio_errcheck("alcMakeContextCurrent(NULL)",_device);
-      
+
       alcDestroyContext(_context);
       alc_audio_errcheck("alcDestroyContext(_context)",_device);
       _context = NULL;
@@ -1000,7 +1115,7 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::SoundData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::SoundData::
 SoundData() :
@@ -1018,7 +1133,7 @@ SoundData() :
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::SoundData::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::SoundData::
 ~SoundData() {

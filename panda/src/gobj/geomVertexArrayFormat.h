@@ -81,17 +81,22 @@ PUBLISHED:
 
   INLINE bool is_registered() const;
   INLINE static CPT(GeomVertexArrayFormat) register_format(const GeomVertexArrayFormat *format);
+  MAKE_PROPERTY(registered, is_registered);
 
   INLINE int get_stride() const;
   INLINE void set_stride(int stride);
+  MAKE_PROPERTY(stride, get_stride, set_stride);
 
   INLINE int get_pad_to() const;
   INLINE void set_pad_to(int pad_to);
+  MAKE_PROPERTY(pad_to, get_pad_to, set_pad_to);
 
   INLINE int get_divisor() const;
   INLINE void set_divisor(int divisor);
+  MAKE_PROPERTY(divisor, get_divisor, set_divisor);
 
   INLINE int get_total_bytes() const;
+  MAKE_PROPERTY(total_bytes, get_total_bytes);
 
   int add_column(CPT_InternalName name, int num_components,
                  NumericType numeric_type, Contents contents,

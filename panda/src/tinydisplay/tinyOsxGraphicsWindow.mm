@@ -1,3 +1,5 @@
+// Filename: tinyOsxGraphicsWindow.mm
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -33,18 +35,14 @@
 #include "pmutex.h"
 //#include "mutexHolder.h"
 
-////////////////////////////////////
 
-\
-Mutex &  OSXGloablMutex() {
-    static   Mutex  m("OSXWIN_Mutex");
-    return m;
+Mutex &OSXGloablMutex() {
+  static Mutex m("OSXWIN_Mutex");
+  return m;
 }
 
-
-struct work1
-{
-    volatile bool work_done;
+struct work1 {
+  volatile bool work_done;
 };
 
 #define PANDA_CREATE_WINDOW  101
@@ -67,9 +65,6 @@ static void Post_Event_Wait(unsigned short type, unsigned int data1 , unsigned i
 
 }
 
-
-
-////////////////////////// Global Objects .....
 
 TypeHandle TinyOsxGraphicsWindow::_type_handle;
 TinyOsxGraphicsWindow  * TinyOsxGraphicsWindow::FullScreenWindow = NULL;
@@ -156,7 +151,7 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
   case kEventClassMouse:
     result  = handleWindowMouseEvents (myHandler, event);
     break;
-    
+
   case kEventClassWindow:
     switch (kind) {
         case kEventWindowCollapsing:
@@ -201,7 +196,7 @@ event_handler(EventHandlerCallRef myHandler, EventRef event) {
           }
         }
         break;
-        
+
     case kEventWindowBoundsChanged: // called for resize and moves (drag)
       DoResize();
       break;
@@ -248,7 +243,7 @@ void TinyOsxGraphicsWindow::user_close_request() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyOsxGraphicsWindow::SystemCloseWindow
-//       Access: private
+//       Access: Private
 //  Description: The Windows is closed by a OS resource not by a internal request
 //
 ////////////////////////////////////////////////////////////////////
@@ -260,7 +255,7 @@ void TinyOsxGraphicsWindow::SystemCloseWindow() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: windowEvtHndlr
-//       Access: file scope static
+//       Access: file scope Static
 //  Description: The C callback for Window Events ..
 //
 //  We only hook this up for non fullscreen window... so we only
@@ -287,7 +282,7 @@ static pascal OSStatus    windowEvtHndlr(EventHandlerCallRef myHandler, EventRef
   return eventNotHandledErr;
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: TinyOsxGraphicsWindow::DoResize
 //       Access:
 //  Description: The C callback for Window Events ..
@@ -319,7 +314,7 @@ void TinyOsxGraphicsWindow::DoResize(void) {
   }
 };
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: appEvtHndlr
 //       Access:
 //  Description: The C callback for APlication Events..
@@ -395,7 +390,7 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
   return result;
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: TinyOsxGraphicsWindow::handleTextInput
 //       Access:
 //  Description:  Trap Unicode  Input.
@@ -426,9 +421,9 @@ OSStatus TinyOsxGraphicsWindow::handleTextInput (EventHandlerCallRef myHandler, 
 
   return ret;
 }
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: TinyOsxGraphicsWindow::ReleaseSystemResources
-//       Access: private..
+//       Access: Private
 //  Description: Clean up the OS level messes..
 ////////////////////////////////////////////////////////////////////
 void TinyOsxGraphicsWindow::ReleaseSystemResources() {
@@ -753,17 +748,15 @@ void TinyOsxGraphicsWindow::close_window() {
  GraphicsWindow::close_window();
 }
 
-//////////////////////////////////////////////////////////
 // HACK ALLERT ************ Undocumented OSX calls...
 // I can not find any other way to get the mouse focus to a window in OSX..
-//
 //extern "C" {
 //    struct  CPSProcessSerNum
 //    {
 //        UInt32 lo;
 //        UInt32 hi;
 //    };
-///
+
 //extern OSErr CPSGetCurrentProcess(CPSProcessSerNum *psn);
 //extern OSErr CPSEnableForegroundOperation( struct CPSProcessSerNum *psn);
 //extern OSErr CPSSetProcessName ( struct CPSProcessSerNum *psn, char *processname);
@@ -891,7 +884,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
     // A minimized window can't be fullscreen.
     wants_fullscreen = false;
   }
-  
+
   if (wants_fullscreen) {
    tinydisplay_cat.info() << "Creating full screen\n";
 
@@ -921,14 +914,14 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
     _properties.set_fullscreen(true);
     _properties.set_minimized(false);
     _properties.set_foreground(true);
- 
-    _is_fullscreen = true; 
+
+    _is_fullscreen = true;
     FullScreenWindow = this;
     req_properties.clear_fullscreen();
   } else {
     int x_origin = 10;
     int y_origin = 50;
-    if (req_properties.has_origin()) { 
+    if (req_properties.has_origin()) {
       y_origin  = req_properties.get_y_origin();
       x_origin = req_properties.get_x_origin();
     }
@@ -939,7 +932,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
       x_size = req_properties.get_x_size();
       y_size = req_properties.get_y_size();
     }
-      
+
     // A coordinate of -2 means to center the window on screen.
     if (y_origin == -2 || x_origin == -2) {
       if (y_origin == -2) {
@@ -1111,7 +1104,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyOsxGraphicsWindow::process_events()
-//       Access: virtual, protected
+//       Access: Virtual, Protected
 //  Description: Required Event upcall . Used to dispatch Window and Aplication Events
 //               back into panda
 //
@@ -1154,15 +1147,14 @@ supports_pixel_zoom() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyOsxGraphicsWindow::handleKeyInput()
-//       Access: virtual, protected
+//       Access: Virtual, Protected
 //  Description: Required Event upcall . Used to dispatch Window and Aplication Events
 //               back into panda
-//
 ////////////////////////////////////////////////////////////////////
-// key input handler
 OSStatus TinyOsxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown) {
+  // key input handler
 
- if (tinydisplay_cat.is_debug()) {
+  if (tinydisplay_cat.is_debug()) {
     UInt32 keyCode;
     GetEventParameter (event, kEventParamKeyCode, typeUInt32, NULL, sizeof(UInt32), NULL, &keyCode);
 
@@ -1693,10 +1685,10 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
         properties.get_y_size() != _properties.get_y_size()))) {
     need_full_rebuild = true;
   }
- 
+
   // If we are fullscreen and requesting a minimize change
-  if (_properties.get_fullscreen() && 
-      (properties.has_minimized() && 
+  if (_properties.get_fullscreen() &&
+      (properties.has_minimized() &&
        (properties.get_minimized() != _properties.get_minimized()))) {
     need_full_rebuild = true;
   }
@@ -1776,8 +1768,9 @@ void TinyOsxGraphicsWindow::set_properties_now(WindowProperties &properties) {
   return;
 }
 
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: TinyOsxGraphicsWindow::LocalPointToSystemPoint
+////////////////////////////////////////////////////////////////////
 void TinyOsxGraphicsWindow::LocalPointToSystemPoint(Point &qdLocalPoint) {
   if (_osx_window != NULL) {
     GrafPtr savePort;

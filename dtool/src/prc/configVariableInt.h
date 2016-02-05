@@ -42,6 +42,8 @@ PUBLISHED:
   INLINE void set_value(int value);
   INLINE int get_value() const;
   INLINE int get_default_value() const;
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(default_value, get_default_value);
 
   INLINE int get_word(size_t n) const;
   INLINE void set_word(size_t n, int value);

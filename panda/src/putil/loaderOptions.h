@@ -57,14 +57,20 @@ PUBLISHED:
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
+  MAKE_PROPERTY(flags, get_flags, set_flags);
 
   INLINE void set_texture_flags(int flags);
   INLINE int get_texture_flags() const;
   INLINE void set_texture_num_views(int num_views);
   INLINE int get_texture_num_views() const;
+  MAKE_PROPERTY(texture_flags, get_texture_flags, set_texture_flags);
+  MAKE_PROPERTY(texture_num_views, get_texture_num_views,
+                                   set_texture_num_views);
 
   INLINE void set_auto_texture_scale(AutoTextureScale scale);
   INLINE AutoTextureScale get_auto_texture_scale() const;
+  MAKE_PROPERTY(auto_texture_scale, get_auto_texture_scale,
+                                    set_auto_texture_scale);
 
   void output(ostream &out) const;
 

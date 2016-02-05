@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_contact_vector
-//      Access : Public
-// Description : 
+//     Function: set_contact_vector
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void ActorNode::
 set_contact_vector(const LVector3 &contact_vector) {
@@ -23,9 +23,9 @@ set_contact_vector(const LVector3 &contact_vector) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_contact_vector
-//      Access : Public
-// Description : 
+//     Function: get_contact_vector
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector3 &ActorNode::
 get_contact_vector() const {

@@ -68,9 +68,9 @@ REFERENCEITEMS = [
     ("classes.html",   "Classes"),
 ]
 
-def urldecode(url): 
-    regex = re.compile("%([0-9a-hA-H][0-9a-hA-H])", re.M) 
-    return regex.sub(lambda x: chr(int(x.group(1), 16)), url) 
+def urldecode(url):
+    regex = re.compile("%([0-9a-hA-H][0-9a-hA-H])", re.M)
+    return regex.sub(lambda x: chr(int(x.group(1), 16)), url)
 
 def ireplace(string, target, replacement):
     """Case-insensitive replace."""
@@ -142,7 +142,7 @@ def treeToHTML(tree, dirname, indent = ""):
             html += indent + "<ul>\n"
             html += treeToHTML(sub, dirname, indent + "  ")
             html += indent + "</ul>\n"
-    return html            
+    return html
 
 def makeCHM(outputfile, dirname, title, special = None):
     """Creates a CHM file based on a directory of HTML files. See the top of this file for more info."""
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     except:
         # If not, we don't care at all.
         pass
-    
+
     # Now, make CHM's for both the manual and reference, if we have them.
     for lang in ["python", "cxx"]:
         if not os.path.isdir("manual-" + lang):
@@ -267,7 +267,7 @@ if __name__ == "__main__":
                 makeManualCHM("manual-%s.chm" % lang, "manual-" + lang, "Panda3D Manual")
             else:
                 makeManualCHM("manual-%s-%s.chm" % (VERSION, lang), "manual-" + lang, "Panda3D %s Manual" % VERSION)
-        
+
         if not os.path.isdir("reference-" + lang):
             print "No directory named 'reference-%s' found" % lang
         else:
@@ -276,6 +276,6 @@ if __name__ == "__main__":
                 makeReferenceCHM("reference-%s.chm" % lang, "reference-" + lang, "Panda3D Reference")
             else:
                 makeReferenceCHM("reference-%s-%s.chm" % (VERSION, lang), "reference-" + lang, "Panda3D %s Reference" % VERSION)
-    
+
     print "Done!"
 

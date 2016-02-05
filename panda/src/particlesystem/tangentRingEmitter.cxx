@@ -15,9 +15,9 @@
 #include "tangentRingEmitter.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : tangentRingEmitter
-//       Access : public
-//  Description : constructor
+//     Function: tangentRingEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 TangentRingEmitter::
 TangentRingEmitter() {
@@ -26,9 +26,9 @@ TangentRingEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : tangentRingEmitter
-//       Access : public
-//  Description : copy constructor
+//     Function: tangentRingEmitter
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 TangentRingEmitter::
 TangentRingEmitter(const TangentRingEmitter &copy) :
@@ -38,18 +38,18 @@ TangentRingEmitter(const TangentRingEmitter &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~tangentringemitter
-//       Access : public, virtual
-//  Description : destructor
+//     Function: ~tangentringemitter
+//       Access: Public, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 TangentRingEmitter::
 ~TangentRingEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : make_copy
-//       Access : public, virtual
-//  Description : child copier
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: child copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *TangentRingEmitter::
 make_copy() {
@@ -57,9 +57,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : TangentRingEmitter::assign_initial_position
-//      Access : Public
-// Description : Generates a location for a new particle
+//     Function: TangentRingEmitter::assign_initial_position
+//       Access: Public
+//  Description: Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
 assign_initial_position(LPoint3& pos) {
@@ -73,9 +73,9 @@ assign_initial_position(LPoint3& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : TangentRingEmitter::assign_initial_velocity
-//      Access : Public
-// Description : Generates a velocity for a new particle
+//     Function: TangentRingEmitter::assign_initial_velocity
+//       Access: Public
+//  Description: Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
 assign_initial_velocity(LVector3& vel) {
@@ -83,10 +83,10 @@ assign_initial_velocity(LVector3& vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
 output(ostream &out) const {
@@ -96,10 +96,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
 write(ostream &out, int indent) const {

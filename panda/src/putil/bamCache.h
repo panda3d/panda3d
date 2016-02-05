@@ -61,6 +61,9 @@ PUBLISHED:
   INLINE void set_cache_compressed_textures(bool flag);
   INLINE bool get_cache_compressed_textures() const;
 
+  INLINE void set_cache_compiled_shaders(bool flag);
+  INLINE bool get_cache_compiled_shaders() const;
+
   void set_root(const Filename &root);
   INLINE Filename get_root() const;
 
@@ -85,6 +88,19 @@ PUBLISHED:
   INLINE static BamCache *get_global_ptr();
   INLINE static void consider_flush_global_index();
   INLINE static void flush_global_index();
+
+PUBLISHED:
+  MAKE_PROPERTY(active, get_active, set_active);
+  MAKE_PROPERTY(cache_models, get_cache_models, set_cache_models);
+  MAKE_PROPERTY(cache_textures, get_cache_textures, set_cache_textures);
+  MAKE_PROPERTY(cache_compressed_textures, get_cache_compressed_textures,
+                                           set_cache_compressed_textures);
+  MAKE_PROPERTY(cache_compiled_shaders, get_cache_compiled_shaders,
+                                        set_cache_compiled_shaders);
+  MAKE_PROPERTY(root, get_root, set_root);
+  MAKE_PROPERTY(flush_time, get_flush_time, set_flush_time);
+  MAKE_PROPERTY(cache_max_kbytes, get_cache_max_kbytes, set_cache_max_kbytes);
+  MAKE_PROPERTY(read_only, get_read_only, set_read_only);
 
 private:
   void read_index();
@@ -119,6 +135,7 @@ private:
   bool _cache_models;
   bool _cache_textures;
   bool _cache_compressed_textures;
+  bool _cache_compiled_shaders;
   bool _read_only;
   Filename _root;
   int _flush_time;

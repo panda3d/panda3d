@@ -15,12 +15,12 @@
 #include "baseParticleFactory.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleFactory
-//      Access : protected
-// Description : constructor
+//     Function: BaseParticleFactory
+//       Access: Protected
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleFactory::
-BaseParticleFactory() : 
+BaseParticleFactory() :
   _lifespan_base(1.0),
   _lifespan_spread(0.0),
   _mass_base(1.0f),
@@ -31,12 +31,12 @@ BaseParticleFactory() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleFactory
-//      Access : protected
-// Description : copy constructor
+//     Function: BaseParticleFactory
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleFactory::
-BaseParticleFactory(const BaseParticleFactory &copy) : 
+BaseParticleFactory(const BaseParticleFactory &copy) :
   _lifespan_base(copy._lifespan_base),
   _lifespan_spread(copy._lifespan_spread),
   _mass_base(copy._mass_base),
@@ -47,17 +47,17 @@ BaseParticleFactory(const BaseParticleFactory &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~BaseParticleFactory
-//      Access : public virtual
-// Description : destructor
+//     Function: ~BaseParticleFactory
+//       Access: Public Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleFactory::
 ~BaseParticleFactory() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_particle
-// Description : public
+//     Function: make_particle
+//  Description: public
 ////////////////////////////////////////////////////////////////////
 void BaseParticleFactory::
 populate_particle(BaseParticle *bp) {
@@ -74,10 +74,10 @@ populate_particle(BaseParticle *bp) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleFactory::
 output(ostream &out) const {
@@ -87,10 +87,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleFactory::
 write(ostream &out, int indent) const {

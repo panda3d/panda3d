@@ -18,10 +18,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector2) : public FLOATNAME(LVecBase2) {
 PUBLISHED:
-  INLINE_LINMATH FLOATNAME(LVector2)();
-  INLINE_LINMATH FLOATNAME(LVector2)(const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LVector2) &operator = (const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LVector2) &operator = (FLOATTYPE fill_value);
+
+  INLINE_LINMATH FLOATNAME(LVector2)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LVector2)(const FLOATNAME(LVecBase2)& copy);
   INLINE_LINMATH FLOATNAME(LVector2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector2)(FLOATTYPE x, FLOATTYPE y);
 
@@ -44,6 +43,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector2) operator / (FLOATTYPE scalar) const;
 
 #ifndef FLOATTYPE_IS_INT
+  INLINE_LINMATH FLOATNAME(LVector2) normalized() const;
   INLINE_LINMATH FLOATNAME(LVector2) project(const FLOATNAME(LVecBase2) &onto) const;
   INLINE_LINMATH FLOATTYPE signed_angle_rad(const FLOATNAME(LVector2) &other) const;
   INLINE_LINMATH FLOATTYPE signed_angle_deg(const FLOATNAME(LVector2) &other) const;

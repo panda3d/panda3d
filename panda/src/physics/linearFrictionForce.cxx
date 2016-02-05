@@ -18,9 +18,9 @@
 TypeHandle LinearFrictionForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearFrictionForce
-//      Access : Public
-// Description : Constructor
+//     Function: LinearFrictionForce
+//       Access: Public
+//  Description: Constructor
 ////////////////////////////////////////////////////////////////////
 LinearFrictionForce::
 LinearFrictionForce(PN_stdfloat coef, PN_stdfloat a, bool m) :
@@ -29,9 +29,9 @@ LinearFrictionForce(PN_stdfloat coef, PN_stdfloat a, bool m) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearFrictionForce
-//      Access : Public
-// Description : copy constructor
+//     Function: LinearFrictionForce
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 LinearFrictionForce::
 LinearFrictionForce(const LinearFrictionForce &copy) :
@@ -40,18 +40,18 @@ LinearFrictionForce(const LinearFrictionForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearFrictionForce
-//      Access : Public
-// Description : destructor
+//     Function: LinearFrictionForce
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 LinearFrictionForce::
 ~LinearFrictionForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearFrictionForce::
 make_copy() {
@@ -59,9 +59,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearFrictionForce
-//      Access : Public
-// Description : Constructor
+//     Function: LinearFrictionForce
+//       Access: Public
+//  Description: Constructor
 ////////////////////////////////////////////////////////////////////
 LVector3 LinearFrictionForce::
 get_child_vector(const PhysicsObject* po) {
@@ -72,7 +72,7 @@ get_child_vector(const PhysicsObject* po) {
   physics_debug(" v "<<v<<" len "<<v.length()
       <<" friction "<<friction<<" len "<<friction.length()
       <<" dot "<<(normalize(v).dot(normalize(friction))));
-  assert(friction.almost_equal(LVector3::zero()) 
+  assert(friction.almost_equal(LVector3::zero())
       || IS_NEARLY_EQUAL(normalize(v).dot(normalize(friction)), -1.0f));
   // cary said to cap this at zero so that friction can't reverse
   // your direction, but it seems to me that if you're computing:
@@ -82,10 +82,10 @@ get_child_vector(const PhysicsObject* po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearFrictionForce::
 output(ostream &out) const {
@@ -95,10 +95,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearFrictionForce::
 write(ostream &out, unsigned int indent) const {

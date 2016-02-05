@@ -23,7 +23,7 @@ TypeHandle PhysxActor::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
 link(NxActor *actorPtr) {
@@ -51,7 +51,7 @@ link(NxActor *actorPtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
 unlink() {
@@ -76,7 +76,7 @@ unlink() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::release
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
 release() {
@@ -91,7 +91,7 @@ release() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::link_controller
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
 link_controller(PhysxController *controller) {
@@ -102,7 +102,7 @@ link_controller(PhysxController *controller) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::save_body_to_desc
 //       Access: Published
-//  Description: Saves the body information of a dynamic actor to 
+//  Description: Saves the body information of a dynamic actor to
 //               the passed body descriptor.
 ////////////////////////////////////////////////////////////////////
 bool PhysxActor::
@@ -115,7 +115,7 @@ save_body_to_desc(PhysxBodyDesc &bodyDesc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::save_to_desc
 //       Access: Published
-//  Description: Saves the state of the actor to the passed 
+//  Description: Saves the state of the actor to the passed
 //               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
@@ -129,7 +129,7 @@ save_to_desc(PhysxActorDesc &actorDesc) const {
 //     Function: PhysxActor::set_name
 //       Access: Published
 //  Description: Sets a name string for the object that can be
-//               retrieved with get_name(). 
+//               retrieved with get_name().
 //               This is for debugging and is not used by the
 //               engine.
 ////////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@ set_global_pos(const LPoint3f &pos) {
 //     Function: PhysxActor::set_global_mat
 //       Access: Published
 //  Description: Method for setting a dynamic actor's transform
-//               matrix in the world. 
+//               matrix in the world.
 //
 //               This method instantaneously changes the actor space
 //               to world space transformation.
@@ -269,7 +269,7 @@ set_global_pos(const LPoint3f &pos) {
 //               - When moving jointed actors the joints' cached
 //                 transform information is destroyed and recreated
 //                 next frame; thus this call is expensive for
-//                 jointed actors. 
+//                 jointed actors.
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
 set_global_mat(const LMatrix4f &mat) {
@@ -301,7 +301,7 @@ set_global_hpr(float h, float p, float r) {
 //     Function: PhysxActor::move_global_pos
 //       Access: Published
 //  Description: The move_global_* calls serve to move kinematically
-//               controlled dynamic actors through the game world. 
+//               controlled dynamic actors through the game world.
 //
 //               See move_global_mat() for more information.
 //
@@ -321,7 +321,7 @@ move_global_pos(const LPoint3f &pos) {
 //       Access: Published
 //  Description: The move_global_* calls serve to move
 //               kinematically controlled dynamic actors through
-//               the game world. 
+//               the game world.
 //
 //               You set a dynamic actor to be kinematic using the
 //               BF_KINEMATIC body flag, used either in the
@@ -355,7 +355,7 @@ move_global_mat(const LMatrix4f &mat) {
 //     Function: PhysxActor::move_global_hpr
 //       Access: Published
 //  Description: The move_global_* calls serve to move kinematically
-//               controlled dynamic actors through the game world. 
+//               controlled dynamic actors through the game world.
 //
 //               See move_global_mat() for more information.
 //
@@ -455,7 +455,7 @@ get_num_shapes() const {
 //     Function: PhysxActor::create_shape
 //       Access: Published
 //  Description: Creates a new shape and adds it to the list of
-//               shapes of this actor. 
+//               shapes of this actor.
 //
 //               Mass properties of dynamic actors will not
 //               automatically be recomputed to reflect the new mass
@@ -557,7 +557,7 @@ add_force(const LVector3f force, PhysxForceMode mode, bool wakeup) {
 //       Access: Published
 //  Description: Applies a force (or impulse) defined in the global
 //               coordinate frame, acting at a particular point in
-//               global coordinates, to the actor. 
+//               global coordinates, to the actor.
 //
 //               Note that if the force does not act along the
 //               center of mass of the actor, this will also add the
@@ -588,7 +588,7 @@ add_force_at_pos(const LVector3f force, const LPoint3f &pos, PhysxForceMode mode
 //       Access: Published
 //  Description: Applies a force (or impulse) defined in the global
 //               coordinate frame, acting at a particular point in
-//               local coordinates, to the actor. 
+//               local coordinates, to the actor.
 //
 //               Note that if the force does not act along the
 //               center of mass of the actor, this will also add
@@ -618,7 +618,7 @@ add_force_at_local_pos(const LVector3f force, const LPoint3f &pos, PhysxForceMod
 //     Function: PhysxActor::add_torque
 //       Access: Published
 //  Description: Applies an impulsive torque defined in the global
-//               coordinate frame to the actor. 
+//               coordinate frame to the actor.
 //
 //               Mode determines if the torque is to be conventional
 //               or impulsive.
@@ -640,7 +640,7 @@ add_torque(const LVector3f torque, PhysxForceMode mode, bool wakeup) {
 //     Function: PhysxActor::add_local_force
 //       Access: Published
 //  Description: Applies a force (or impulse) defined in the actor
-//               local coordinate frame to the actor. 
+//               local coordinate frame to the actor.
 //               This will not induce a torque.
 //
 //               Mode determines if the torque is to be conventional
@@ -664,7 +664,7 @@ add_local_force(const LVector3f force, PhysxForceMode mode, bool wakeup) {
 //       Access: Published
 //  Description: Applies a force (or impulse) defined in the actor
 //               local coordinate frame, acting at a particular
-//               point in global coordinates, to the actor. 
+//               point in global coordinates, to the actor.
 //
 //               Note that if the force does not act along the
 //               center of mass of the actor, this will also add
@@ -695,7 +695,7 @@ add_local_force_at_pos(const LVector3f force, const LPoint3f &pos, PhysxForceMod
 //       Access: Published
 //  Description: Applies a force (or impulse) defined in the actor
 //               local coordinate frame, acting at a particular
-//               point in local coordinates, to the actor. 
+//               point in local coordinates, to the actor.
 //
 //               Note that if the force does not act along the
 //               center of mass of the actor, this will also add the
@@ -747,7 +747,7 @@ add_local_torque(const LVector3f torque, PhysxForceMode mode, bool wakeup) {
 //     Function: PhysxActor::update_mass_from_shapes
 //       Access: Published
 //  Description: Recomputes a dynamic actor's mass properties from
-//               its shapes. 
+//               its shapes.
 //
 //               Given a constant density or total mass, the actors
 //               mass properties can be recomputed using the shapes
@@ -834,7 +834,7 @@ set_shape_group(unsigned int group) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::set_body_flag
 //       Access: Published
-//  Description: Raise or lower individual BodyFlag flags. 
+//  Description: Raise or lower individual BodyFlag flags.
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
 set_body_flag(PhysxBodyFlag flag, bool value) {
@@ -862,7 +862,7 @@ get_body_flag(PhysxBodyFlag flag) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::set_actor_flag
 //       Access: Published
-//  Description: Raise or lower individual ActorFlag flags. 
+//  Description: Raise or lower individual ActorFlag flags.
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
 set_actor_flag(PhysxActorFlag flag, bool value) {
@@ -891,7 +891,7 @@ get_actor_flag(PhysxActorFlag flag) const {
 //     Function: PhysxActor::set_contact_report_flag
 //       Access: Published
 //  Description: Sets the actor's contact report flags.
-// 
+//
 //               These flags are used to determine the kind of
 //               report that is generated for interactions with
 //               other actors.
@@ -909,7 +909,7 @@ set_contact_report_flag(PhysxContactPairFlag flag, bool value) {
 
   nassertv(_error_type == ET_ok);
 
-  NxU32 flags = _ptr->getContactReportFlags(); 
+  NxU32 flags = _ptr->getContactReportFlags();
 
   if (value == true) {
     flags |= flag;
@@ -1037,7 +1037,7 @@ set_angular_damping(float angDamp) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::get_angular_damping
 //       Access: Published
-//  Description: Returns the angular damping coefficient. 
+//  Description: Returns the angular damping coefficient.
 //               The actor must be dynamic.
 ////////////////////////////////////////////////////////////////////
 float PhysxActor::
@@ -1067,7 +1067,7 @@ set_linear_damping(float linDamp) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::get_linear_damping
 //       Access: Published
-//  Description: Retrieves the linear damping coefficient. 
+//  Description: Retrieves the linear damping coefficient.
 //               The actor must be dynamic.
 ////////////////////////////////////////////////////////////////////
 float PhysxActor::
@@ -1080,7 +1080,7 @@ get_linear_damping() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::set_linear_velocity
 //       Access: Published
-//  Description: Sets the linear velocity of the actor. 
+//  Description: Sets the linear velocity of the actor.
 //
 //               Note that if you continuously set the velocity of
 //               an actor yourself, forces such as gravity or
@@ -1102,7 +1102,7 @@ set_linear_velocity(const LVector3f &linVel) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::set_angular_velocity
 //       Access: Published
-//  Description: Sets the angular velocity of the actor. 
+//  Description: Sets the angular velocity of the actor.
 //
 //               Note that if you continuously set the angular
 //               velocity of an actor yourself, forces such as
@@ -1125,7 +1125,7 @@ set_angular_velocity(const LVector3f &angVel) {
 //     Function: PhysxActor::set_max_angular_velocity
 //       Access: Published
 //  Description: Lets you set the maximum angular velocity permitted
-//               for this actor. 
+//               for this actor.
 //
 //               Because for various internal computations, very
 //               quickly rotating actors introduce error into the
@@ -1219,7 +1219,7 @@ get_point_velocity(const LPoint3f &point) const {
 //       Access: Published
 //  Description: Computes the velocity of a point given in body
 //               local coordinates as if it were attached to the
-//               actor and moving with it. 
+//               actor and moving with it.
 //
 //               The actor must be dynamic.
 ////////////////////////////////////////////////////////////////////
@@ -1236,7 +1236,7 @@ get_local_point_velocity(const LPoint3f &point) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::set_linear_momentum
 //       Access: Published
-//  Description: Sets the linear momentum of the actor. 
+//  Description: Sets the linear momentum of the actor.
 //               Note that if you continuously set the linear
 //               momentum of an actor yourself, forces such as
 //               gravity or friction will not be able to manifest
@@ -1254,7 +1254,7 @@ set_linear_momentum(const LVector3f &momentum) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::set_angular_momentum
 //       Access: Published
-//  Description: Sets the angular momentum of the actor. 
+//  Description: Sets the angular momentum of the actor.
 //               Note that if you continuously set the angular
 //               velocity of an actor yourself, forces such as
 //               friction will not be able to rotate the actor,
@@ -1272,7 +1272,7 @@ set_angular_momentum(const LVector3f &momentum) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::get_linear_momentum
 //       Access: Published
-//  Description: Retrieves the linear momentum of an actor. 
+//  Description: Retrieves the linear momentum of an actor.
 //               The momentum is equal to the velocity times the
 //               mass.
 //               The actor must be dynamic.
@@ -1287,7 +1287,7 @@ get_linear_momentum() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::get_angular_momentum
 //       Access: Published
-//  Description: Retrieves the angular momentum of an actor. 
+//  Description: Retrieves the angular momentum of an actor.
 //               The angular momentum is equal to the angular
 //               velocity times the global space inertia tensor.
 //               The actor must be dynamic.
@@ -1408,7 +1408,7 @@ get_sleep_energy_threshold() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::is_sleeping
 //       Access: Published
-//  Description: Returns true if this body is sleeping. 
+//  Description: Returns true if this body is sleeping.
 //
 //               When an actor does not move for a period of time,
 //               it is no longer simulated in order to save time.
@@ -1430,7 +1430,7 @@ is_sleeping() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::wake_up
 //       Access: Published
-//  Description: Wakes up the actor if it is sleeping. 
+//  Description: Wakes up the actor if it is sleeping.
 //
 //               The wakeCounterValue determines how long until the
 //               body is put to sleep, a value of zero means that
@@ -1449,7 +1449,7 @@ wake_up(float wakeCounterValue) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxActor::put_to_sleep
 //       Access: Published
-//  Description: Forces the actor to sleep. 
+//  Description: Forces the actor to sleep.
 //
 //               The actor will stay asleep until the next call to
 //               simulate, and will not wake up until then even when

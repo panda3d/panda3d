@@ -22,7 +22,7 @@ class PyDatagramIterator(DatagramIterator):
         STUint32: DatagramIterator.getUint32,
         STUint64: DatagramIterator.getUint64,
         STFloat64: DatagramIterator.getFloat64,
-        STString: DatagramIterator.getString, 
+        STString: DatagramIterator.getString,
         STBlob: DatagramIterator.getString,
         STBlob32: DatagramIterator.getString32,
         }
@@ -77,7 +77,7 @@ class PyDatagramIterator(DatagramIterator):
             else:
                 raise Exception("Error: No such type as: " + str(subAtomicType))
         else:
-            # See if it is in the handy dict            
+            # See if it is in the handy dict
             getFunc = self.FuncDict.get(subatomicType)
             if getFunc:
                 retVal = (getFunc(self)/float(divisor))

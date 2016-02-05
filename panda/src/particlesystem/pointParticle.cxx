@@ -15,9 +15,9 @@
 #include "pointParticle.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : PointParticle
-//      Access : Public
-// Description : simple constructor
+//     Function: PointParticle
+//       Access: Public
+//  Description: simple constructor
 ////////////////////////////////////////////////////////////////////
 PointParticle::
 PointParticle(PN_stdfloat lifespan, bool alive) :
@@ -26,9 +26,9 @@ PointParticle(PN_stdfloat lifespan, bool alive) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : PointParticle
-//      Access : Public
-// Description : copy constructor
+//     Function: PointParticle
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 PointParticle::
 PointParticle(const PointParticle &copy) :
@@ -37,18 +37,18 @@ PointParticle(const PointParticle &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~PointParticle
-//      Access : Public
-// Description : simple destructor
+//     Function: ~PointParticle
+//       Access: Public
+//  Description: simple destructor
 ////////////////////////////////////////////////////////////////////
 PointParticle::
 ~PointParticle() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : dynamic copier
+//     Function: make_copy
+//       Access: Public
+//  Description: dynamic copier
 ////////////////////////////////////////////////////////////////////
 PhysicsObject *PointParticle::
 make_copy() const {
@@ -56,37 +56,37 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : die
-//      Access : Public
-// Description : particle death routine
+//     Function: die
+//       Access: Public
+//  Description: particle death routine
 ////////////////////////////////////////////////////////////////////
 void PointParticle::
 die() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : init
-//      Access : Public
-// Description : particle init routine
+//     Function: init
+//       Access: Public
+//  Description: particle init routine
 ////////////////////////////////////////////////////////////////////
 void PointParticle::
 init() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : update
-//      Access : Public
-// Description : particle update
+//     Function: update
+//       Access: Public
+//  Description: particle update
 ////////////////////////////////////////////////////////////////////
 void PointParticle::
 update() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PointParticle::
 output(ostream &out) const {
@@ -96,10 +96,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PointParticle::
 write(ostream &out, int indent) const {

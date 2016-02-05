@@ -1,4 +1,4 @@
-// Filename: cppBison.y
+// Filename: cppBison.yxx
 // Created by:  drose (16Jan99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -282,6 +282,7 @@ pop_struct() {
 %token KW_LONG
 %token KW_LONGLONG
 %token KW_MAKE_PROPERTY
+%token KW_MAKE_PROPERTY2
 %token KW_MAKE_SEQ
 %token KW_MUTABLE
 %token KW_NAMESPACE
@@ -341,6 +342,7 @@ pop_struct() {
 %type <u.inst_ident> empty_instance_identifier
 %type <u.type> type
 %type <u.decl> type_decl
+%type <u.decl> var_type_decl
 %type <u.type> predefined_type
 %type <u.type> full_type
 %type <u.struct_type> anonymous_struct
@@ -529,6 +531,61 @@ declaration:
     current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
   }
 }
+        | KW_MAKE_PROPERTY2 '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *hasser = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (hasser == (CPPDeclaration *)NULL || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid has-function: " + $5->get_fully_scoped_name(), @5);
+  }
+
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+  }
+
+  if (hasser && getter) {
+    CPPMakeProperty *make_property;
+    make_property = new CPPMakeProperty($3,
+                                        hasser->as_function_group(),
+                                        getter->as_function_group(),
+                                        NULL, NULL,
+                                        current_scope, @1.file);
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
+        | KW_MAKE_PROPERTY2 '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
+{
+  CPPDeclaration *hasser = $5->find_symbol(current_scope, global_scope, current_lexer);
+  if (hasser == (CPPDeclaration *)NULL || hasser->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid has-function: " + $5->get_fully_scoped_name(), @5);
+  }
+
+  CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
+  if (getter == (CPPDeclaration *)NULL || getter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid getter: " + $7->get_fully_scoped_name(), @7);
+  }
+
+  CPPDeclaration *setter = $9->find_symbol(current_scope, global_scope, current_lexer);
+  if (setter == (CPPDeclaration *)NULL || setter->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid setter: " + $9->get_fully_scoped_name(), @9);
+  }
+
+  CPPDeclaration *clearer = $11->find_symbol(current_scope, global_scope, current_lexer);
+  if (clearer == (CPPDeclaration *)NULL || clearer->get_subtype() != CPPDeclaration::ST_function_group) {
+    yyerror("Reference to non-existent or invalid clear-function: " + $11->get_fully_scoped_name(), @11);
+  }
+
+  if (hasser && getter && setter && clearer) {
+    CPPMakeProperty *make_property;
+    make_property = new CPPMakeProperty($3,
+                                        hasser->as_function_group(),
+                                        getter->as_function_group(),
+                                        setter->as_function_group(),
+                                        clearer->as_function_group(),
+                                        current_scope, @1.file);
+    current_scope->add_declaration(make_property, global_scope, current_lexer, @1);
+  }
+}
         | KW_MAKE_SEQ '(' IDENTIFIER ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
   CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
@@ -676,7 +733,7 @@ type_like_declaration:
         ;
 
 multiple_var_declaration:
-        storage_class type_decl
+        storage_class var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
@@ -691,11 +748,15 @@ multiple_var_declaration:
 {
   pop_storage_class();
 }
-        | storage_class KW_CONST type
+        | storage_class KW_CONST var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  current_type = $3;
+  if ($3->as_type_declaration()) {
+    current_type = $3->as_type_declaration()->_type;
+  } else {
+    current_type = $3->as_type();
+  }
   push_storage_class($1);
 }
         multiple_const_instance_identifiers
@@ -750,7 +811,7 @@ multiple_const_instance_identifiers:
 
 
 typedef_declaration:
-        storage_class type_decl
+        storage_class var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
@@ -765,11 +826,15 @@ typedef_declaration:
 {
   pop_storage_class();
 }
-        | storage_class KW_CONST type
+        | storage_class KW_CONST var_type_decl
 {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  current_type = $3;
+  if ($3->as_type_declaration()) {
+    current_type = $3->as_type_declaration()->_type;
+  } else {
+    current_type = $3->as_type();
+  }
   push_storage_class($1);
 }
         typedef_const_instance_identifiers
@@ -1460,6 +1525,14 @@ maybe_initialize_or_function_body:
 {
   $$ = $2;
 }
+        | '=' KW_DEFAULT ';'
+{
+  $$ = new CPPExpression(CPPExpression::get_default());
+}
+        | '=' KW_DELETE ';'
+{
+  $$ = new CPPExpression(CPPExpression::get_delete());
+}
         | '=' '{' structure_init '}'
 {
   $$ = (CPPExpression *)NULL;
@@ -1892,6 +1965,18 @@ predefined_type:
 }
         ;
 
+var_type_decl:
+        type_decl
+{
+  $$ = $1;
+}
+        | IDENTIFIER
+{
+  yyerror(string("unknown type '") + $1->get_fully_scoped_name() + "'", @1);
+
+  $$ = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
+}
+
 full_type:
         type empty_instance_identifier
 {
@@ -2322,14 +2407,14 @@ element:
         | KW_CLASS | KW_CONST | KW_CONSTEXPR | KW_DECLTYPE | KW_DEFAULT
         | KW_DELETE | KW_DOUBLE | KW_DYNAMIC_CAST | KW_ELSE | KW_ENUM
         | KW_EXTERN | KW_EXPLICIT | KW_FALSE
-        | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO
-        | KW_IF | KW_INLINE | KW_INT | KW_LONG | KW_MUTABLE
+        | KW_FLOAT | KW_FRIEND | KW_FOR | KW_GOTO | KW_IF | KW_INLINE
+        | KW_INT | KW_LONG | KW_MUTABLE | KW_NAMESPACE
         | KW_NEW | KW_NULLPTR | KW_OPERATOR | KW_PRIVATE | KW_PROTECTED
         | KW_PUBLIC | KW_PUBLISHED | KW_REGISTER | KW_RETURN
         | KW_SHORT | KW_SIGNED | KW_SIZEOF | KW_STATIC | KW_STATIC_ASSERT
         | KW_STATIC_CAST | KW_STRUCT | KW_THROW | KW_TRUE | KW_TRY
-        | KW_TYPEDEF | KW_TYPENAME | KW_UNION | KW_UNSIGNED | KW_VIRTUAL
-        | KW_VOID | KW_VOLATILE | KW_WCHAR_T | KW_WHILE
+        | KW_TYPEDEF | KW_TYPENAME | KW_UNION | KW_UNSIGNED | KW_USING
+        | KW_VIRTUAL | KW_VOID | KW_VOLATILE | KW_WCHAR_T | KW_WHILE
 {
 }
         | '+' | '-' | '*' | '/' | '&' | '|' | '^' | '!' | '~' | '=' | '%'

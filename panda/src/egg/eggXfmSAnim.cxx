@@ -26,14 +26,7 @@
 
 TypeHandle EggXfmSAnim::_type_handle;
 
-
-// For now, the standard order is sphrt.  This matches the old,
-// incorrect behavior of decompose_matrix().  When we have a new
-// egg-optchar, we can safely remove the old decompose_matrix() and
-// restore the correct standard order.
-const string EggXfmSAnim::_standard_order_legacy = "sphrt";
-const string EggXfmSAnim::_standard_order_hpr_fix = "srpht";
-
+const string EggXfmSAnim::_standard_order = "srpht";
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::Conversion constructor

@@ -369,8 +369,8 @@ if (sys.platform == "win32"):
     CMD=CMD+'/DPPGAME="'+TMPGAME+'" '
     CMD=CMD+'/DPPMAIN="'+MAIN+'" '
     CMD=CMD+'/DPPICON="'+PPICON+'" '
-    CMD=CMD+'"'+PSOURCE+'\\direct\\directscripts\\packpanda.nsi"' 
-    
+    CMD=CMD+'"'+PSOURCE+'\\direct\\directscripts\\packpanda.nsi"'
+
     print ""
     print CMD
     print "packing..."
@@ -386,12 +386,12 @@ else:
     os.system("cp --recursive %s/Pmw             %s/usr/share/games/%s/Pmw" % (PANDA, TMPDIR, BASENAME))
     os.system("cp %s                             %s/usr/share/games/%s/LICENSE" % (LICENSE, TMPDIR, BASENAME))
     os.system("cp --recursive /usr/lib/panda3d/* %s/usr/lib/games/%s/" % (TMPDIR, BASENAME))
-    
+
     # Make the script to run the game
     txt = RUN_SCRIPT[1:].replace("BASENAME",BASENAME).replace("PYTHONV",PYTHONV).replace("MAIN",MAIN)
     WriteFile(TMPDIR+"/usr/bin/"+BASENAME, txt)
     os.system("chmod +x "+TMPDIR+"/usr/bin/"+BASENAME)
-    
+
     if (os.path.exists("/usr/bin/rpmbuild")):
         os.system("rm -rf %s/DEBIAN" % TMPDIR)
         os.system("rpm -E '%_target_cpu' > packpanda-TMP.txt")
@@ -404,7 +404,7 @@ else:
         os.system("mv "+ARCH+"/"+BASENAME+"-"+VER+"-1."+ARCH+".rpm .")
         os.rmdir(ARCH)
         os.remove("packpanda-TMP.spec")
-    
+
     if (os.path.exists("/usr/bin/dpkg-deb")):
         os.system("dpkg --print-architecture > packpanda-TMP.txt")
         ARCH=ReadFile("packpanda-TMP.txt").strip()
@@ -415,7 +415,7 @@ else:
         os.system("cd %s ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums" % TMPDIR)
         WriteFile(TMPDIR+"/DEBIAN/control",txt)
         os.system("dpkg-deb -b "+TMPDIR+" "+BASENAME+"_"+VER+"_"+ARCH+".deb")
-    
+
     if not(os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
 

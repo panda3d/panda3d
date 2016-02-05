@@ -38,7 +38,7 @@ get_lens_index() const {
   return cdata->_lens_index;
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_num_regions
 //       Access: Published
 //  Description: Returns the number of regions, see set_num_regions.
@@ -49,7 +49,7 @@ get_num_regions() const {
   return cdata->_regions.size();
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_num_regions
 //       Access: Published
 //  Description: Sets the number of regions that this DisplayRegion
@@ -66,7 +66,7 @@ set_num_regions(int i) {
   cdata->_regions.resize(i);
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_dimensions
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion's
@@ -78,7 +78,7 @@ get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) c
   get_dimensions(0, l, r, b, t);
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_dimensions
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion's
@@ -95,7 +95,7 @@ get_dimensions(int i, PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloa
   t = region._dimensions[3];
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_dimensions
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion's
@@ -137,8 +137,8 @@ get_right(int i) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_bottom
 //       Access: Published
-//  Description: Retrieves the y coordinate of the bottom edge of 
-//               the rectangle within its GraphicsOutput.  This 
+//  Description: Retrieves the y coordinate of the bottom edge of
+//               the rectangle within its GraphicsOutput.  This
 //               number will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegion::
@@ -499,6 +499,18 @@ get_pixel_height(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixel_size
+//       Access: Published
+//  Description: Returns the size of the DisplayRegion in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE LVecBase2i DisplayRegion::
+get_pixel_size(int i) const {
+  CDReader cdata(_cycler);
+  return LVecBase2i(cdata->_regions[i]._pixels[1] - cdata->_regions[i]._pixels[0],
+                    cdata->_regions[i]._pixels[3] - cdata->_regions[i]._pixels[2]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_pixels
 //       Access: Public
 //  Description: Retrieves the coordinates of the DisplayRegion within
@@ -777,14 +789,14 @@ get_current_thread() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionPipelineReader::is_any_clear_active
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool DisplayRegionPipelineReader::
 is_any_clear_active() const {
   return _object->is_any_clear_active();
 }
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionPipelineReader::get_num_regions
 //       Access: Published
 //  Description: Returns the number of regions, see set_num_regions.
@@ -861,8 +873,8 @@ get_right(int i) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionPipelineReader::get_bottom
 //       Access: Public
-//  Description: Retrieves the y coordinate of the bottom edge of 
-//               the rectangle within its GraphicsOutput.  This 
+//  Description: Retrieves the y coordinate of the bottom edge of
+//               the rectangle within its GraphicsOutput.  This
 //               number will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegionPipelineReader::

@@ -74,12 +74,15 @@ PUBLISHED:
 
   INLINE void set_clear_color(const LColor &color);
   INLINE const LColor &get_clear_color() const;
+  MAKE_PROPERTY(clear_color, get_clear_color, set_clear_color);
 
   INLINE void set_clear_depth(PN_stdfloat depth);
   INLINE PN_stdfloat get_clear_depth() const;
+  MAKE_PROPERTY(clear_depth, get_clear_depth, set_clear_depth);
 
   INLINE void set_clear_stencil(unsigned int stencil);
   INLINE unsigned int get_clear_stencil() const;
+  MAKE_PROPERTY(clear_stencil, get_clear_stencil, set_clear_stencil);
 
   virtual void set_clear_active(int n, bool clear_aux_active);
   virtual bool get_clear_active(int n) const;
@@ -94,6 +97,8 @@ PUBLISHED:
   INLINE PN_stdfloat get_pixel_zoom() const;
   INLINE PN_stdfloat get_pixel_factor() const;
   virtual bool supports_pixel_zoom() const;
+  MAKE_PROPERTY(pixel_zoom, get_pixel_zoom, set_pixel_zoom);
+  MAKE_PROPERTY(pixel_factor, get_pixel_factor);
 
   static int get_renderbuffer_type(int plane);
   

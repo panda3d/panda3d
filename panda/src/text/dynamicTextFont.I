@@ -259,6 +259,17 @@ get_poly_margin() const {
 //               for the DynamicTextFont.
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
+set_page_size(const LVecBase2i &page_size) {
+  _page_size = page_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_page_size
+//       Access: Published
+//  Description: Sets the x, y size of the textures that are created
+//               for the DynamicTextFont.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
 set_page_size(int x_size, int y_size) {
   _page_size.set(x_size, y_size);
 }
@@ -389,30 +400,6 @@ set_render_mode(DynamicTextFont::RenderMode render_mode) {
 INLINE DynamicTextFont::RenderMode DynamicTextFont::
 get_render_mode() const {
   return _render_mode;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::set_winding_order
-//       Access: Published
-//  Description: Specifies an explicitly winding order on this
-//               particular font.  This is only necessary if the
-//               render_mode is RM_polygon or RM_solid, and only if
-//               FreeType appears to guess wrong on this font.
-//               Normally, you should leave this at WO_default.
-////////////////////////////////////////////////////////////////////
-INLINE void DynamicTextFont::
-set_winding_order(DynamicTextFont::WindingOrder winding_order) {
-  _winding_order = winding_order;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::get_winding_order
-//       Access: Published
-//  Description: Returns the winding order set via set_winding_order().
-////////////////////////////////////////////////////////////////////
-INLINE DynamicTextFont::WindingOrder DynamicTextFont::
-get_winding_order() const {
-  return _winding_order;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -572,49 +559,6 @@ get_outline_feather() const {
 INLINE Texture::Format DynamicTextFont::
 get_tex_format() const {
   return _tex_format;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::ContourPoint::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE DynamicTextFont::ContourPoint::
-ContourPoint(const LPoint2 &p, const LVector2 &in, const LVector2 &out) :
-  _p(p), _in(in), _out(out)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::ContourPoint::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE DynamicTextFont::ContourPoint::
-ContourPoint(PN_stdfloat px, PN_stdfloat py, PN_stdfloat tx, PN_stdfloat ty) :
-  _p(px, py), _in(tx, ty), _out(tx, ty)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::connect_to
-//       Access: Public
-//  Description: Connects the indicated point to the next point, whose
-//               tangent is given.  The given tangent becomes the out
-//               tangent at this point.  If the in tangent and out
-//               tangent are sufficiently close, they will be smoothed
-//               together.
-////////////////////////////////////////////////////////////////////
-INLINE void DynamicTextFont::ContourPoint::
-connect_to(const LVector2 &out) {
-  _out = out;
-  if (_in.dot(_out) > 0.7071) {
-    // Less than 45 degrees of difference: smooth them.
-    LVector2 av = (_in + _out) * 0.5f;
-    av.normalize();
-    _in = av;
-    _out = av;
-  }
 }
 
 

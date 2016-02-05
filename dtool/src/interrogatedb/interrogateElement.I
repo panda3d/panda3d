@@ -14,7 +14,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Element: InterrogateElement::Constructor
+//     Function: InterrogateElement::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -26,10 +26,12 @@ InterrogateElement(InterrogateModuleDef *def) :
   _type = 0;
   _getter = 0;
   _setter = 0;
+  _has_function = 0;
+  _clear_function = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Element: InterrogateElement::Copy Constructor
+//     Function: InterrogateElement::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +41,7 @@ InterrogateElement(const InterrogateElement &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Element: InterrogateElement::Copy Assignment Operator
+//     Function: InterrogateElement::Copy Assignment Operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -52,6 +54,8 @@ operator = (const InterrogateElement &copy) {
   _type = copy._type;
   _getter = copy._getter;
   _setter = copy._setter;
+  _has_function = copy._has_function;
+  _clear_function = copy._clear_function;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,7 +111,7 @@ get_comment() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Element: InterrogateElement::get_type
+//     Function: InterrogateElement::get_type
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -117,7 +121,7 @@ get_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Element: InterrogateElement::has_getter
+//     Function: InterrogateElement::has_getter
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -127,7 +131,7 @@ has_getter() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Element: InterrogateElement::get_getter
+//     Function: InterrogateElement::get_getter
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -137,7 +141,7 @@ get_getter() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Element: InterrogateElement::has_setter
+//     Function: InterrogateElement::has_setter
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -147,13 +151,53 @@ has_setter() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Element: InterrogateElement::get_setter
+//     Function: InterrogateElement::get_setter
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateElement::
 get_setter() const {
   return _setter;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateElement::has_has_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateElement::
+has_has_function() const {
+  return (_flags & F_has_has_function) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateElement::get_has_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FunctionIndex InterrogateElement::
+get_has_function() const {
+  return _has_function;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateElement::has_clear_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateElement::
+has_clear_function() const {
+  return (_flags & F_has_clear_function) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateElement::get_clear_function
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE FunctionIndex InterrogateElement::
+get_clear_function() const {
+  return _clear_function;
 }
 
 

@@ -17,9 +17,9 @@
 TypeHandle LinearUserDefinedForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearUserDefinedForce
-//      Access : public
-// Description : constructor
+//     Function: LinearUserDefinedForce
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 LinearUserDefinedForce::
 LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *),
@@ -30,9 +30,9 @@ LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *),
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearUserDefinedForce
-//      Access : public
-// Description : copy constructor
+//     Function: LinearUserDefinedForce
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 LinearUserDefinedForce::
 LinearUserDefinedForce(const LinearUserDefinedForce &copy) :
@@ -41,18 +41,18 @@ LinearUserDefinedForce(const LinearUserDefinedForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LinearUserDefinedForce
-//      Access : public
-// Description : destructor
+//     Function: ~LinearUserDefinedForce
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 LinearUserDefinedForce::
 ~LinearUserDefinedForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : private, virtual
-// Description : child copier
+//     Function: make_copy
+//       Access: Private, Virtual
+//  Description: child copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearUserDefinedForce::
 make_copy() {
@@ -60,9 +60,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_child_vector
-//      Access : private, virtual
-// Description : force builder
+//     Function: get_child_vector
+//       Access: Private, Virtual
+//  Description: force builder
 ////////////////////////////////////////////////////////////////////
 LVector3 LinearUserDefinedForce::
 get_child_vector(const PhysicsObject *po) {
@@ -70,10 +70,10 @@ get_child_vector(const PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearUserDefinedForce::
 output(ostream &out) const {
@@ -83,10 +83,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearUserDefinedForce::
 write(ostream &out, unsigned int indent) const {

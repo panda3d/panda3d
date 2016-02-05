@@ -169,7 +169,7 @@ class DistributedObjectOV(DistributedObjectBase):
         # but before we update the non-required fields.
         self.announceGenerate()
         self.postGenerateMessage()
-        
+
         dclass.receiveUpdateOther(self, di)
 
     def getCacheable(self):

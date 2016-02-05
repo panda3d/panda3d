@@ -14,7 +14,7 @@ class CachedDOData:
     def destroy(self):
         # override and handle this object being destroyed
         # this is destruction of this object, not the cached data (see flush)
-        pass 
+        pass
 
     def flush(self):
         # override and destroy the cached data

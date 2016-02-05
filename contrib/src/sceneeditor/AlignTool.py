@@ -19,7 +19,7 @@ class AlignTool(AppShell):
     padx            = 0
     pady            = 0
 
-    
+
     def __init__(self, list = [], parent = None, nodePath = None, **kw):
         # Keep nodePath Data
         self.nodePath = nodePath
@@ -36,14 +36,14 @@ class AlignTool(AppShell):
             self.parent = Toplevel()
         AppShell.__init__(self, self.parent)
         self.parent.geometry('%dx%d+%d+%d' % (self.frameWidth, self.frameHeight,self.frameIniPosX,self.frameIniPosY))
-        
+
         self.initialiseoptions(AlignTool)
-        
+
         self.parent.resizable(False,False) ## Disable the ability to resize for this Window.
-        
+
     def appInit(self):
         return
-        
+
     def createInterface(self):
         # The interior of the toplevel panel
         interior = self.interior()
@@ -77,14 +77,14 @@ class AlignTool(AppShell):
             variable = self.alignHVar)
         self.alignHButton.pack(side=RIGHT, expand=False)
         frame.pack(side=TOP, fill = X, expand = 1,pady=5)
-        
+
         groupFrame.pack(side=TOP, fill = 'both', expand = 1,padx=5,pady=5)
-        
+
         frame = Frame(mainFrame)
         Button(frame, text='Align', width = 13, command=self.Align_press).pack(side=LEFT)
         Button(frame, text='OK', width = 13, command=self.ok_press).pack(side=RIGHT)
         frame.pack(side=BOTTOM, fill = X, expand = 1,pady=5)
-        
+
         # Y and P checkbox
         frame = Frame(groupFrame)
         self.alignYVar = IntVar()
@@ -149,14 +149,14 @@ class AlignTool(AppShell):
             variable = self.alignSZVar)
         self.alignSZButton.pack(side=LEFT, expand=False)
         frame.pack(side=TOP, fill = X, expand = 1,pady=5)
-        
-        
+
+
         mainFrame.pack(fill = 'both', expand = 1,padx=7,pady=7)
 
-    
+
     def createMenuBar(self):
         self.menuBar.destroy()
-        
+
     def onDestroy(self, event):
         messenger.send('ALW_close', [self.nodePath.getName()])
         '''
@@ -165,7 +165,7 @@ class AlignTool(AppShell):
         pass
 
     ###############################
-    
+
     def ok_press(self):
         #################################################################
         # ok_press(self)

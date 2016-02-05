@@ -72,6 +72,8 @@ PUBLISHED:
   INLINE virtual TypeHandle get_value_type() const;
   INLINE TypedReferenceCount *get_value() const;
 
+  MAKE_PROPERTY(value, get_value);
+
   virtual void output(ostream &out) const;
 
 private:
@@ -117,6 +119,8 @@ PUBLISHED:
   INLINE virtual TypeHandle get_value_type() const;
   INLINE void set_value(const Type &value);
   INLINE const Type &get_value() const;
+
+  MAKE_PROPERTY(value, get_value, set_value);
 
   INLINE virtual void output(ostream &out) const;
 

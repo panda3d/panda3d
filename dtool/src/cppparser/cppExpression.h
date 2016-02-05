@@ -24,12 +24,13 @@ class CPPType;
 class CPPPreprocessor;
 class CPPFunctionGroup;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPExpression
 // Description :
 ////////////////////////////////////////////////////////////////////
 class CPPExpression : public CPPDeclaration {
 public:
+  CPPExpression(bool value);
   CPPExpression(unsigned long long value);
   CPPExpression(int value);
   CPPExpression(const string &value);
@@ -52,6 +53,8 @@ public:
   static CPPExpression raw_literal(const string &raw, CPPInstance *lit_op);
 
   static const CPPExpression &get_nullptr();
+  static const CPPExpression &get_default();
+  static const CPPExpression &get_delete();
 
   ~CPPExpression();
 
@@ -102,6 +105,7 @@ public:
 
   enum Type {
     T_nullptr,
+    T_boolean,
     T_integer,
     T_real,
     T_string,
@@ -124,11 +128,16 @@ public:
     T_trinary_operation,
     T_literal,
     T_raw_literal,
+
+    // These are used when parsing =default and =delete methods.
+    T_default,
+    T_delete,
   };
 
   Type _type;
   string _str;
   union {
+    bool _boolean;
     unsigned long long _integer;
     long double _real;
     CPPInstance *_variable;

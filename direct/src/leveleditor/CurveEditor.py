@@ -18,27 +18,27 @@ class CurveEditor(DirectObject):
         self.i = 0
         self.ropeNum = 0
         self.curve = []
-        self.curveControl = [] 
+        self.curveControl = []
         self.currentRope = None
         self.degree = 3
-    
+
     def createCurve(self):
         if self.editor.mode == self.editor.CREATE_CURVE_MODE:
             self.view = self.editor.ui.currentView
-            
+
             #Get the mouse position
             x = base.direct.dr.mouseX
-            y = base.direct.dr.mouseY    
-            
+            y = base.direct.dr.mouseY
+
             if self.editor.fMoveCamera == False and self.view != None:
                 self.createControler(x,y)
                 if self.currentRope != None:
                     self.currentRope.detachNode()
                 self.ropeUpdate(self.curve)
                 self.accept("DIRECT-enter", self.onBaseMode)
-            
-            self.accept("DIRECT-enter", self.onBaseMode) 
-    
+
+            self.accept("DIRECT-enter", self.onBaseMode)
+
     def editCurve(self, task):
         if self.editor.mode == self.editor.EDIT_CURVE_MODE:
             if self.editor.fMoveCamera == False:
@@ -50,9 +50,9 @@ class CurveEditor(DirectObject):
                             self.point = item  #temporarily save the controler information for further use
                             self.currentCurve = self.currentRope.ropeNode.getCurve()
                             self.currentCurve.setVertex(item[0], self.selected.getPos())
-                            self.accept("DIRECT-delete", self.onControlerDelete) 
-                            return task.cont 
-    
+                            self.accept("DIRECT-delete", self.onControlerDelete)
+                            return task.cont
+
     def onControlerDelete(self):
         if self.editor.mode == self.editor.EDIT_CURVE_MODE:
             self.curve.remove(self.curve[self.point[0]])
@@ -69,7 +69,7 @@ class CurveEditor(DirectObject):
         self.currentRope = Rope()
         self.currentRope.setup(self.degree, curve)
         self.currentRope.reparentTo(render)
-        
+
     def onBaseMode(self):
         self.editor.preMode = self.editor.mode
         self.editor.mode = self.editor.BASE_MODE
@@ -90,17 +90,17 @@ class CurveEditor(DirectObject):
         base.direct.manipulationControl.enableManipulation()
         self.editor.ui.createCurveMenuItem.Check(False)
         self.editor.ui.editCurveMenuItem.Check(False)
-        
+
     def updateScene(self):
         curveObjNP = self.editor.objectMgr.addNewCurve(self.curveControl, self.degree, nodePath=self.currentRope)
         curveObj = self.editor.objectMgr.findObjectByNodePath(curveObjNP)
         for item in self.curveControl:
             item[1].reparentTo(curveObjNP)
         self.editor.objectMgr.updateObjectPropValue(curveObj, 'Degree', self.degree, fSelectObject=False, fUndo=False)
-                                    
+
     def doneEdit(self):
         base.direct.selected.last = None
-            
+
     def createControler(self, x, y):
         if self.view != None:
             self.controler = render.attachNewNode("controler")
@@ -113,7 +113,7 @@ class CurveEditor(DirectObject):
             self.controler.setTag('OBJRoot','1')
             self.controler.setTag('Controller','1') #controller Tag
             self.i += 1
-        
+
             iRay = SelectionRay(self.view.camera)
             iRay.collider.setFromLens(self.view.camNode, x, y)
             iRay.collideWithBitMask(BitMask32.bit(21))
@@ -130,7 +130,7 @@ class CurveEditor(DirectObject):
                 if base.direct.manipulationControl.fGridSnap:
                     snappedPos = self.view.grid.computeSnapPoint(np.getPos())
                     np.setPos(snappedPos)
-            
+
                 # update temp nodePath's HPR and scale with newobj's
                 np.setHpr(self.controler.getHpr())
                 np.setScale(self.controler.getScale())
@@ -143,4 +143,4 @@ class CurveEditor(DirectObject):
 
             self.curve.append((None, self.controler.getPos()))
             self.curveControl.append((self.i-1, self.controler))
-            
+

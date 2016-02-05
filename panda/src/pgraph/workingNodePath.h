@@ -61,6 +61,10 @@ public:
 
   void output(ostream &out) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(valid, is_valid);
+  MAKE_PROPERTY(node_path, get_node_path);
+
 private:
   PT(NodePathComponent) r_get_node_path() const;
 

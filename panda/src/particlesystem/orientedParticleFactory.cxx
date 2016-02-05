@@ -16,9 +16,9 @@
 #include "orientedParticle.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : OrientedParticleFactory
-//      Access : Public
-// Description : Constructor
+//     Function: OrientedParticleFactory
+//       Access: Public
+//  Description: Constructor
 ////////////////////////////////////////////////////////////////////
 OrientedParticleFactory::
 OrientedParticleFactory() :
@@ -26,9 +26,9 @@ OrientedParticleFactory() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : OrientedParticleFactory
-//      Access : Public
-// Description : copy Constructor
+//     Function: OrientedParticleFactory
+//       Access: Public
+//  Description: copy Constructor
 ////////////////////////////////////////////////////////////////////
 OrientedParticleFactory::
 OrientedParticleFactory(const OrientedParticleFactory &copy) :
@@ -38,18 +38,18 @@ OrientedParticleFactory(const OrientedParticleFactory &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~OrientedParticleFactory
-//      Access : public
-// Description : destructor
+//     Function: ~OrientedParticleFactory
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 OrientedParticleFactory::
 ~OrientedParticleFactory() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : populate_child_particle
-//      Access : private
-// Description : child spawn
+//     Function: populate_child_particle
+//       Access: Private
+//  Description: child spawn
 ////////////////////////////////////////////////////////////////////
 void OrientedParticleFactory::
 populate_child_particle(BaseParticle *bp) const {
@@ -57,9 +57,9 @@ populate_child_particle(BaseParticle *bp) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : alloc_particle
-//      Access : public
-// Description : child particle generation function
+//     Function: alloc_particle
+//       Access: Public
+//  Description: child particle generation function
 ////////////////////////////////////////////////////////////////////
 BaseParticle *OrientedParticleFactory::
 alloc_particle() const {
@@ -67,10 +67,10 @@ alloc_particle() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void OrientedParticleFactory::
 output(ostream &out) const {
@@ -80,10 +80,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void OrientedParticleFactory::
 write(ostream &out, int indent) const {

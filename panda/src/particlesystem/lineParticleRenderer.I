@@ -13,8 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_head_color
-//      Access : public
+//     Function: set_head_color
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void LineParticleRenderer::
 set_head_color(const LColor& c) {
@@ -22,8 +22,8 @@ set_head_color(const LColor& c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_tail_color
-//      Access : public
+//     Function: set_tail_color
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void LineParticleRenderer::
 set_tail_color(const LColor& c) {
@@ -31,8 +31,8 @@ set_tail_color(const LColor& c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_head_color
-//      Access : public
+//     Function: get_head_color
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE const LColor& LineParticleRenderer::
 get_head_color() const {
@@ -40,8 +40,8 @@ get_head_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_tail_color
-//      Access : public
+//     Function: get_tail_color
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE const LColor& LineParticleRenderer::
 get_tail_color() const {
@@ -49,8 +49,8 @@ get_tail_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_line_scale_factor
-// Description : accessor
+//     Function: set_line_scale_factor
+//  Description: accessor
 ////////////////////////////////////////////////////////////////////
 INLINE void LineParticleRenderer::
 set_line_scale_factor(PN_stdfloat sf) {
@@ -58,8 +58,8 @@ set_line_scale_factor(PN_stdfloat sf) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_line_scale_factor
-// Description : accessor
+//     Function: get_line_scale_factor
+//  Description: accessor
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat LineParticleRenderer::
 get_line_scale_factor() const {

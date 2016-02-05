@@ -1,4 +1,4 @@
-// Filename: osxSubprocessWindow.I
+// Filename: subprocessWindow.I
 // Created by:  drose (11Jul09)
 //
 ////////////////////////////////////////////////////////////////////

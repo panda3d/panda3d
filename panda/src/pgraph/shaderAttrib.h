@@ -41,7 +41,7 @@ private:
   INLINE ShaderAttrib(const ShaderAttrib &copy);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(const Shader *shader = NULL);
+  static CPT(RenderAttrib) make(const Shader *shader = NULL, int priority = 0);
   static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make_default();
 
@@ -115,6 +115,7 @@ PUBLISHED:
   static void register_with_read_factory();
 
 public:
+  virtual void output(ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;

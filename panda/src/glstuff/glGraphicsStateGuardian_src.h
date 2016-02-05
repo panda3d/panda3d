@@ -306,9 +306,9 @@ public:
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
-  bool apply_vertex_buffer(VertexBufferContext *vbc,
-                           const GeomVertexArrayDataHandle *reader,
-                           bool force);
+  bool update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
+                            const GeomVertexArrayDataHandle *reader,
+                            bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   bool setup_array_data(const unsigned char *&client_pointer,
@@ -451,6 +451,14 @@ protected:
 
   virtual void free_pointers();
 
+#ifndef OPENGLES_1
+  INLINE void enable_vertex_attrib_array(GLuint index);
+  INLINE void disable_vertex_attrib_array(GLuint index);
+  INLINE void set_vertex_attrib_divisor(GLuint index, GLuint divisor);
+#endif
+
+  INLINE void set_active_texture_stage(int i);
+
   INLINE void enable_multisample_antialias(bool val);
   INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
@@ -527,8 +535,12 @@ protected:
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
 #endif
+#ifndef OPENGLES
+  void update_shader_vertex_format(const GeomVertexFormat *format);
+#endif
 
   void apply_white_texture();
+  GLuint get_white_texture();
 
 #ifndef NDEBUG
   void update_show_usage_texture_bindings(int show_stage_index);
@@ -601,6 +613,9 @@ protected:
   epvector<LVecBase4i> _scissor_array;
 
 #ifndef OPENGLES_1
+  BitMask32 _enabled_vertex_attrib_arrays;
+  GLint _vertex_attrib_divisors[32];
+
   PT(Shader) _current_shader;
   ShaderContext *_current_shader_context;
   PT(Shader) _vertex_array_shader;
@@ -641,12 +656,22 @@ protected:
   GLuint _current_vbuffer_index;
   GLuint _current_ibuffer_index;
   GLuint _current_fbo;
+
+#ifndef OPENGLES
+  pvector<GLuint> _current_vertex_buffers;
+  bool _use_vertex_attrib_binding;
+  CPT(GeomVertexFormat) _current_vertex_format;
+  const GeomVertexColumn *_vertex_attrib_columns[32];
+#endif
+
+  int _active_texture_stage;
   int _num_active_texture_stages;
   PN_stdfloat _max_anisotropy;
   bool _supports_anisotropy;
   GLint _max_image_units;
   bool _supports_multi_bind;
   bool _supports_get_program_binary;
+  pset<GLenum> _program_binary_formats;
 
 #ifdef OPENGLES
   bool _supports_depth24;
@@ -719,9 +744,15 @@ public:
 
 #ifdef SUPPORT_FIXED_FUNCTION
   bool _supports_rescale_normal;
+
+#ifndef OPENGLES
+  bool _use_separate_specular_color;
+#endif
 #endif
 
+#ifndef OPENGLES_2
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
+#endif
 #ifdef SUPPORT_FIXED_FUNCTION
   PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;
 #endif
@@ -809,7 +840,13 @@ public:
   INLINE bool get_supports_framebuffer_blit();
   PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
+
+#ifndef OPENGLES
   PFNGLCLEARBUFFERFVPROC _glClearBufferfv;
+  PFNGLCLEARBUFFERIVPROC _glClearBufferiv;
+  PFNGLCLEARBUFFERFIPROC _glClearBufferfi;
+#endif
+
   int _max_fb_samples;
   bool _supports_viewport_arrays;
   bool _supports_bindless_texture;
@@ -877,6 +914,13 @@ public:
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
 #endif  // !OPENGLES_1
 #ifndef OPENGLES
+  PFNGLBINDVERTEXBUFFERPROC _glBindVertexBuffer;
+  PFNGLBINDVERTEXBUFFERSPROC _glBindVertexBuffers;
+  PFNGLVERTEXATTRIBFORMATPROC _glVertexAttribFormat;
+  PFNGLVERTEXATTRIBIFORMATPROC _glVertexAttribIFormat;
+  PFNGLVERTEXATTRIBLFORMATPROC _glVertexAttribLFormat;
+  PFNGLVERTEXATTRIBBINDINGPROC _glVertexAttribBinding;
+  PFNGLVERTEXBINDINGDIVISORPROC _glVertexBindingDivisor;
   PFNGLGETACTIVEUNIFORMSIVPROC _glGetActiveUniformsiv;
   PFNGLGETACTIVEUNIFORMBLOCKIVPROC _glGetActiveUniformBlockiv;
   PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC _glGetActiveUniformBlockName;
@@ -896,6 +940,7 @@ public:
   PFNGLDISPATCHCOMPUTEPROC _glDispatchCompute;
   PFNGLMEMORYBARRIERPROC _glMemoryBarrier;
   PFNGLGETPROGRAMBINARYPROC _glGetProgramBinary;
+  PFNGLPROGRAMBINARYPROC _glProgramBinary;
   PFNGLGETINTERNALFORMATIVPROC _glGetInternalformativ;
   PFNGLVIEWPORTARRAYVPROC _glViewportArrayv;
   PFNGLSCISSORARRAYVPROC _glScissorArrayv;
@@ -914,6 +959,12 @@ public:
   GLenum _mirror_clamp;
   GLenum _mirror_edge_clamp;
   GLenum _mirror_border_clamp;
+
+#ifndef OPENGLES
+  bool _supports_texture_lod;
+  bool _supports_texture_lod_bias;
+#endif
+
 #ifndef OPENGLES_1
   GLsizei _instance_count;
 #endif

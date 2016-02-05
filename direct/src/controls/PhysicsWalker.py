@@ -469,12 +469,12 @@ class PhysicsWalker(DirectObject.DirectObject):
         slideLeft = 0#inputState.isSet("slideLeft")
         slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
-        
+
         # Check for Auto-Run
         if base.localAvatar.getAutoRun():
             forward = 1
             reverse = 0
-                
+
         # Determine what the speeds are based on the buttons:
         self.__speed=(forward and self.avatarControlForwardSpeed or
                 reverse and -self.avatarControlReverseSpeed)
