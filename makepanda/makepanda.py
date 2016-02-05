@@ -457,7 +457,6 @@ SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(RTDIST)
-SdkLocateVisualStudio(MSVC_VERSION)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocatePhysX()
 SdkLocateSpeedTree()
@@ -496,6 +495,7 @@ if RUNTIME and not HOST_URL:
 
 if GetHost() == 'windows' and GetTarget() == 'windows':
     COMPILER = "MSVC"
+    SdkLocateVisualStudio(MSVC_VERSION)
 else:
     COMPILER = "GCC"
 
@@ -736,6 +736,9 @@ if (COMPILER=="GCC"):
         if (os.path.isdir("/usr/PCBSD")):
             IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
             LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
+
+    if GetTarget() != "windows":
+        PkgDisable("DIRECTCAM")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
@@ -4323,7 +4326,7 @@ if (GetTarget() == 'windows' and not RUNTIME):
 # DIRECTORY: panda/metalibs/pandadx9/
 #
 
-if PkgSkip("DX9")==0 and not RUNTIME:
+if GetTarget() == 'windows' and PkgSkip("DX9")==0 and not RUNTIME:
   OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
   TargetAdd('p3dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
   TargetAdd('p3dxgsg9_composite1.obj', opts=OPTS, input='p3dxgsg9_composite1.cxx')
