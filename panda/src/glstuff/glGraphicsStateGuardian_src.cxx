@@ -6583,9 +6583,12 @@ do_issue_depth_test() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_alpha_test() {
+#ifndef OPENGLES_1
   if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     enable_alpha_test(false);
-  } else {
+  } else
+#endif
+  {
     const AlphaTestAttrib *target_alpha_test;
     _target_rs->get_attrib_def(target_alpha_test);
 
@@ -6846,9 +6849,13 @@ do_issue_blending() {
 
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
+
+#ifndef OPENGLES_1
   if (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write)) {
     color_channels &= ~(ColorWriteAttrib::C_alpha);
   }
+#endif
+
   if (color_channels == ColorWriteAttrib::C_off) {
     int color_write_slot = ColorWriteAttrib::get_class_slot();
     enable_multisample_alpha_one(false);
@@ -9875,9 +9882,12 @@ set_state_and_transform(const RenderState *target,
 #ifdef SUPPORT_FIXED_FUNCTION
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
-      !_state_mask.get_bit(alpha_test_slot) ||
-      (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test) !=
-       _state_shader->get_flag(ShaderAttrib::F_subsume_alpha_test))) {
+      !_state_mask.get_bit(alpha_test_slot)
+#ifndef OPENGLES_1
+      || (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test) !=
+          _state_shader->get_flag(ShaderAttrib::F_subsume_alpha_test))
+#endif
+      ) {
     //PStatGPUTimer timer(this, _draw_set_state_alpha_test_pcollector);
     do_issue_alpha_test();
     _state_mask.set_bit(alpha_test_slot);
@@ -9981,9 +9991,12 @@ set_state_and_transform(const RenderState *target,
       _target_rs->get_attrib(color_blend_slot) != _state_rs->get_attrib(color_blend_slot) ||
       !_state_mask.get_bit(transparency_slot) ||
       !_state_mask.get_bit(color_write_slot) ||
-      !_state_mask.get_bit(color_blend_slot) ||
-      (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) !=
-       _state_shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
+      !_state_mask.get_bit(color_blend_slot)
+#ifndef OPENGLES_1
+      || (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) !=
+          _state_shader->get_flag(ShaderAttrib::F_disable_alpha_write))
+#endif
+      ) {
     //PStatGPUTimer timer(this, _draw_set_state_blending_pcollector);
     do_issue_blending();
     _state_mask.set_bit(transparency_slot);

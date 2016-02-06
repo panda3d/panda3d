@@ -16,13 +16,19 @@
 
 #include <istream>
 
+#if __GNUC__ >= 4
+#define EXPORT_JNI extern "C" __attribute__((visibility("default")))
+#else
+#define EXPORT_JNI extern "C"
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NativeIStream::nativeGet
 //       Access: Private, Static
 //  Description: Reads a single character from the istream.
 //               Should return -1 on EOF.
 ////////////////////////////////////////////////////////////////////
-extern "C" jint
+EXPORT_JNI jint
 Java_org_panda3d_android_NativeIStream_nativeGet(JNIEnv *env, jclass clazz, jlong ptr) {
   std::istream *stream = (std::istream *) ptr;
 
@@ -37,7 +43,7 @@ Java_org_panda3d_android_NativeIStream_nativeGet(JNIEnv *env, jclass clazz, jlon
 //               the actual number of bytes that were read.
 //               Should return -1 on EOF.
 ////////////////////////////////////////////////////////////////////
-extern "C" jint
+EXPORT_JNI jint
 Java_org_panda3d_android_NativeIStream_nativeRead(JNIEnv *env, jclass clazz, jlong ptr, jbyteArray byte_array, jint offset, jint length) {
   std::istream *stream = (std::istream *) ptr;
   jbyte *buffer = (jbyte *) env->GetPrimitiveArrayCritical(byte_array, NULL);
@@ -63,7 +69,7 @@ Java_org_panda3d_android_NativeIStream_nativeRead(JNIEnv *env, jclass clazz, jlo
 //  Description: Skips ahead N bytes in the stream.  Returns the
 //               actual number of skipped bytes.
 ////////////////////////////////////////////////////////////////////
-extern "C" jlong
+EXPORT_JNI jlong
 Java_org_panda3d_android_NativeIStream_nativeIgnore(JNIEnv *env, jclass clazz, jlong ptr, jlong offset) {
   std::istream *stream = (std::istream *) ptr;
   stream->ignore(offset);
