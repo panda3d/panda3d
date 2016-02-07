@@ -33,6 +33,12 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_z();
   INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_w();
 
+  INLINE_LINMATH FLOATNAME(LPoint3) get_xyz() const;
+  INLINE_LINMATH FLOATNAME(LPoint2) get_xy() const;
+
+  MAKE_PROPERTY(xyz, get_xyz);
+  MAKE_PROPERTY(xy, get_xy);
+
   INLINE_LINMATH FLOATNAME(LPoint4) operator - () const;
 
   INLINE_LINMATH FLOATNAME(LVecBase4)

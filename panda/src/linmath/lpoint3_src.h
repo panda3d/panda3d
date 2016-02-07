@@ -42,6 +42,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint2) get_xz() const;
   INLINE_LINMATH FLOATNAME(LPoint2) get_yz() const;
 
+  MAKE_PROPERTY(xy, get_xy);
+  MAKE_PROPERTY(xz, get_xz);
+  MAKE_PROPERTY(yz, get_yz);
+
   INLINE_LINMATH FLOATNAME(LPoint3) operator - () const;
 
   INLINE_LINMATH FLOATNAME(LVecBase3)
