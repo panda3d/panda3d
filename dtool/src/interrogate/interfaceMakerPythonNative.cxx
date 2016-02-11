@@ -2896,7 +2896,7 @@ write_module_class(ostream &out, Object *obj) {
   // struct PyMethodDef *tp_methods;
   out << "    Dtool_Methods_" << ClassName << ",\n";
   // struct PyMemberDef *tp_members;
-  out << "    standard_type_members,\n";
+  out << "    0, // tp_members\n";
 
   // struct PyGetSetDef *tp_getset;
   if (num_getset > 0) {

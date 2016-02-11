@@ -509,6 +509,9 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_apiclip_to_apiview)) {
     dep |= SSD_projection;
   }
+  if (inp == SMO_tex_is_alpha_i) {
+    dep |= SSD_texture | SSD_frame;
+  }
 
   return dep;
 }

@@ -155,14 +155,14 @@ static const string default_vshader =
   "attribute vec4 p3d_Color;\n"
   "attribute vec2 p3d_MultiTexCoord0;\n"
   "varying vec2 texcoord;\n"
-  "varying vec4 color;\n"
+  "varying lowp vec4 color;\n"
 #endif
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
   "  texcoord = p3d_MultiTexCoord0;\n"
-  "  color = p3d_Color * p3d_ColorScale;\n"
+  "  color = p3d_Color;\n"
   "}\n";
 
 static const string default_fshader =
@@ -171,18 +171,23 @@ static const string default_fshader =
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;"
+  "uniform sampler2D p3d_Texture0;\n"
+  "uniform vec4 p3d_TexAlphaOnly;\n"
 #else
   "precision mediump float;\n"
   "varying vec2 texcoord;\n"
-  "varying vec4 color;\n"
+  "varying lowp vec4 color;\n"
+  "uniform lowp sampler2D p3d_Texture0;\n"
+  "uniform lowp vec4 p3d_TexAlphaOnly;\n"
 #endif
-  "uniform sampler2D p3d_Texture0;\n"
   "void main(void) {\n"
 #ifndef OPENGLES
   "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
-  "  p3d_FragColor *= color;\n"
+  "  p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
+  "  p3d_FragColor = color;\n"
 #else
   "  gl_FragColor = texture2D(p3d_Texture0, texcoord).bgra;\n"
+  "  gl_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
   "  gl_FragColor *= color;\n"
 #endif
   "}\n";
@@ -6596,9 +6601,12 @@ do_issue_depth_test() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_alpha_test() {
+#ifndef OPENGLES_1
   if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     enable_alpha_test(false);
-  } else {
+  } else
+#endif
+  {
     const AlphaTestAttrib *target_alpha_test;
     _target_rs->get_attrib_def(target_alpha_test);
 
@@ -6859,9 +6867,13 @@ do_issue_blending() {
 
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
+
+#ifndef OPENGLES_1
   if (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write)) {
     color_channels &= ~(ColorWriteAttrib::C_alpha);
   }
+#endif
+
   if (color_channels == ColorWriteAttrib::C_off) {
     int color_write_slot = ColorWriteAttrib::get_class_slot();
     enable_multisample_alpha_one(false);
@@ -9897,9 +9909,12 @@ set_state_and_transform(const RenderState *target,
 #ifdef SUPPORT_FIXED_FUNCTION
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
-      !_state_mask.get_bit(alpha_test_slot) ||
-      (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test) !=
-       _state_shader->get_flag(ShaderAttrib::F_subsume_alpha_test))) {
+      !_state_mask.get_bit(alpha_test_slot)
+#ifndef OPENGLES_1
+      || (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test) !=
+          _state_shader->get_flag(ShaderAttrib::F_subsume_alpha_test))
+#endif
+      ) {
     //PStatGPUTimer timer(this, _draw_set_state_alpha_test_pcollector);
     do_issue_alpha_test();
     _state_mask.set_bit(alpha_test_slot);
@@ -10003,9 +10018,12 @@ set_state_and_transform(const RenderState *target,
       _target_rs->get_attrib(color_blend_slot) != _state_rs->get_attrib(color_blend_slot) ||
       !_state_mask.get_bit(transparency_slot) ||
       !_state_mask.get_bit(color_write_slot) ||
-      !_state_mask.get_bit(color_blend_slot) ||
-      (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) !=
-       _state_shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
+      !_state_mask.get_bit(color_blend_slot)
+#ifndef OPENGLES_1
+      || (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) !=
+          _state_shader->get_flag(ShaderAttrib::F_disable_alpha_write))
+#endif
+      ) {
     //PStatGPUTimer timer(this, _draw_set_state_blending_pcollector);
     do_issue_blending();
     _state_mask.set_bit(transparency_slot);
@@ -11558,9 +11576,9 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     // texture formats?
     switch (tex->get_format()) {
     case Texture::F_alpha:
-      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_ONE);
-      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_ONE);
-      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_ONE);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_ZERO);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_ZERO);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
       glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_RED);
       break;
 

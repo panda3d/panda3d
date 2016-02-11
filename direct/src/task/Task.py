@@ -483,6 +483,9 @@ class TaskManager:
         """Starts the task manager running.  Does not return until an
         exception is encountered (including KeyboardInterrupt). """
 
+        if PandaSystem.getPlatform() == 'emscripten':
+            return
+
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
         t = self.globalClock.getFrameTime()

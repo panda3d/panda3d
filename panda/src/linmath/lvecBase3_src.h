@@ -74,6 +74,8 @@ PUBLISHED:
   MAKE_PROPERTY(y, get_y, set_y);
   MAKE_PROPERTY(z, get_z, set_z);
   MAKE_PROPERTY(xy, get_xy);
+  MAKE_PROPERTY(xz, get_xz);
+  MAKE_PROPERTY(yz, get_yz);
 
   // These next functions add to an existing value.
   // i.e. foo.set_x(foo.get_x() + value)

@@ -106,6 +106,26 @@ unit_w() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector4::get_xyz
+//       Access: Published
+//  Description: Returns the x, y and z component of this vector
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector4)::
+get_xyz() const {
+  return FLOATNAME(LVector3)(_v(0), _v(1), _v(2));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector4::get_xy
+//       Access: Published
+//  Description: Returns the x and y component of this vector
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector4)::
+get_xy() const {
+  return FLOATNAME(LVector2)(_v(0), _v(1));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVector4::unary -
 //       Access: Public
 //  Description:

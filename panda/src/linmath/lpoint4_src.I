@@ -105,6 +105,28 @@ unit_w() {
   return (const FLOATNAME(LPoint4) &)FLOATNAME(LVecBase4)::unit_w();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint4::get_xyz
+//       Access: Published
+//  Description: Returns the x, y and z component of this vector
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint3) FLOATNAME(LPoint4)::
+get_xyz() const {
+  return FLOATNAME(LPoint3)(_v(0), _v(1), _v(2));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint4::get_xy
+//       Access: Published
+//  Description: Returns the x and y component of this vector
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint4)::
+get_xy() const {
+  return FLOATNAME(LPoint2)(_v(0), _v(1));
+}
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::unary -
 //       Access: Public
