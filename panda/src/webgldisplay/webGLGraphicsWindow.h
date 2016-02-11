@@ -52,6 +52,7 @@ protected:
 
 private:
   static EM_BOOL on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void *user_data);
+  static EM_BOOL on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, void *user_data);
   static EM_BOOL on_keyboard_event(int type, const EmscriptenKeyboardEvent *event,
                                    void *user_data);
   static EM_BOOL on_mouse_event(int type, const EmscriptenMouseEvent *event,

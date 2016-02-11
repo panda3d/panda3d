@@ -63,6 +63,12 @@ WebGLGraphicsWindow::
 ////////////////////////////////////////////////////////////////////
 bool WebGLGraphicsWindow::
 move_pointer(int device, int x, int y) {
+  if (device == 0 && _properties.get_mouse_mode() == WindowProperties::M_relative) {
+    // The pointer position is meaningless in relative mode, so we
+    // silently pretend that this worked.
+    _input_devices[0].set_pointer_in_window(x, y);
+    return true;
+  }
   return false;
 }
 
@@ -207,6 +213,43 @@ set_properties_now(WindowProperties &properties) {
       }
     }
   }
+
+  if (properties.has_mouse_mode() &&
+      properties.get_mouse_mode() != _properties.get_mouse_mode()) {
+
+    if (properties.get_mouse_mode() == WindowProperties::M_relative) {
+      EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(NULL, true);
+
+      if (result == EMSCRIPTEN_RESULT_SUCCESS) {
+        // Great, we're in pointerlock mode.
+        _properties.set_mouse_mode(WindowProperties::M_absolute);
+        _properties.set_cursor_hidden(true);
+        properties.clear_mouse_mode();
+
+      } else if (result == EMSCRIPTEN_RESULT_DEFERRED) {
+        // We can't switch to pointerlock just yet - this action is deferred
+        // until we're in an event handler.  We can't know for sure yet that
+        // pointerlock will be supported, but we shouldn't report failure.
+        properties.clear_mouse_mode();
+        if (properties.has_cursor_hidden() && properties.get_cursor_hidden()) {
+          properties.clear_cursor_hidden();
+        }
+      }
+    } else {
+      if (emscripten_exit_pointerlock() == EMSCRIPTEN_RESULT_SUCCESS) {
+        _properties.set_mouse_mode(WindowProperties::M_absolute);
+        properties.clear_mouse_mode();
+        properties.clear_cursor_hidden();
+      }
+    }
+  }
+
+  if (properties.has_cursor_hidden() &&
+      properties.get_cursor_hidden() == (_properties.get_mouse_mode() == WindowProperties::M_relative)) {
+    // A hidden cursor comes for free with pointerlock.  Without pointerlock,
+    // though, we can't hdide the cursor.
+    properties.clear_cursor_hidden();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -225,6 +268,7 @@ close_window() {
   // Clear the assigned callbacks.
   const char *target = NULL;
   emscripten_set_fullscreenchange_callback(target, NULL, false, NULL);
+  emscripten_set_pointerlockchange_callback(target, NULL, false, NULL);
 
   emscripten_set_keypress_callback(target, NULL, false, NULL);
   emscripten_set_keydown_callback(target, NULL, false, NULL);
@@ -308,6 +352,7 @@ open_window() {
 
   // Set callbacks.
   emscripten_set_fullscreenchange_callback(target, (void *)this, false, &on_fullscreen_event);
+  emscripten_set_pointerlockchange_callback(target, (void *)this, false, &on_pointerlock_event);
 
   void *user_data = (void *)&_input_devices[0];
 
@@ -338,6 +383,34 @@ on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void
   if (type == EMSCRIPTEN_EVENT_FULLSCREENCHANGE) {
     WindowProperties props;
     props.set_fullscreen(event->isFullscreen);
+    window->system_changed_properties(props);
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WebGLGraphicsWindow::on_pointerlock_event
+//       Access: Private, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+EM_BOOL WebGLGraphicsWindow::
+on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, void *user_data) {
+  WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
+  nassertr(window != NULL, false);
+
+  if (type == EMSCRIPTEN_EVENT_POINTERLOCKCHANGE) {
+    WindowProperties props;
+    if (event->isActive) {
+      cout << "pointerlock engaged\n";
+      props.set_mouse_mode(WindowProperties::M_relative);
+      props.set_cursor_hidden(true);
+    } else {
+      cout << "pointerlock disabled\n";
+      props.set_mouse_mode(WindowProperties::M_absolute);
+      props.set_cursor_hidden(false);
+    }
     window->system_changed_properties(props);
     return true;
   }
@@ -479,7 +552,18 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
     return true;
 
   case EMSCRIPTEN_EVENT_MOUSEMOVE:
-    device->set_pointer_in_window(event->canvasX, event->canvasY, time);
+    {
+      EmscriptenPointerlockChangeEvent ev;
+      emscripten_get_pointerlock_status(&ev);
+
+      if (ev.isActive) {
+        MouseData md = device->get_pointer();
+        device->set_pointer_in_window(md.get_x() + event->movementX,
+                                      md.get_y() + event->movementY, time);
+      } else {
+        device->set_pointer_in_window(event->canvasX, event->canvasY, time);
+      }
+    }
     return true;
 
   case EMSCRIPTEN_EVENT_MOUSEENTER:
