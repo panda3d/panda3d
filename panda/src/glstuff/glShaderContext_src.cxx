@@ -1198,6 +1198,22 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       _slider_table_size = param_size;
       return;
     }
+    if (noprefix == "TexAlphaOnly") {
+      Shader::ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._func = Shader::SMF_first;
+      bind._index = 0;
+      bind._part[0] = Shader::SMO_tex_is_alpha_i;
+      bind._arg[0] = NULL;
+      bind._dep[0] = Shader::SSD_general | Shader::SSD_texture | Shader::SSD_frame;
+      bind._part[1] = Shader::SMO_identity;
+      bind._arg[1] = NULL;
+      bind._dep[1] = Shader::SSD_NONE;
+      bind._piece = Shader::SMP_row3;
+      _shader->_mat_spec.push_back(bind);
+      _shader->_mat_deps |= bind._dep[0] | bind._dep[1];
+      return;
+    }
     GLCAT.error() << "Unrecognized uniform name '" << param_name << "'!\n";
     return;
 
@@ -1849,6 +1865,10 @@ set_state_and_transform(const RenderState *target_rs,
     if (_state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
       altered |= Shader::SSD_tex_matrix;
+    }
+    if (_state_rs->get_attrib(TextureAttrib::get_class_slot()) !=
+        target_rs->get_attrib(TextureAttrib::get_class_slot())) {
+      altered |= Shader::SSD_texture;
     }
     _state_rs = target_rs;
   }

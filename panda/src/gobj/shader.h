@@ -201,6 +201,9 @@ public:
     // Additional properties for PBR materials
     SMO_attr_material2,
 
+    // Hack for text rendering.  Don't use in user shaders.
+    SMO_tex_is_alpha_i,
+
     SMO_INVALID
   };
 
@@ -297,6 +300,7 @@ public:
     SSD_tex_matrix    = 0x200,
     SSD_frame         = 0x400,
     SSD_projection    = 0x800,
+    SSD_texture      = 0x1000,
   };
 
   enum ShaderBug {

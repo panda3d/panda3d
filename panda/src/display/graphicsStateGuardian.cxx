@@ -1239,6 +1239,20 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       return &LMatrix4::ident_mat();
     }
   }
+  case Shader::SMO_tex_is_alpha_i: {
+    // This is a hack so we can support both F_alpha and other
+    // formats in the default shader, to fix font rendering in GLES2
+    const TextureAttrib *ta;
+    if (_target_rs->get_attrib(ta) &&
+        index < ta->get_num_on_stages()) {
+      TextureStage *ts = ta->get_on_stage(index);
+      PN_stdfloat v = (ta->get_on_texture(ts)->get_format() == Texture::F_alpha);
+      t = LMatrix4(0,0,0,0,0,0,0,0,0,0,0,0,v,v,v,0);
+      return &t;
+    } else {
+      return &LMatrix4::zeros_mat();
+    }
+  }
   case Shader::SMO_plane_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::zeros_mat());
