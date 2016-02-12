@@ -115,16 +115,32 @@ on_context_event(int type, const void *, void *user_data) {
   nassertr(gsg != NULL, false);
 
   if (type == EMSCRIPTEN_EVENT_WEBGLCONTEXTLOST) {
-    webgldisplay_cat.warning() << "WebGL context lost!\n";
-    gsg->release_all();
+    webgldisplay_cat.info() << "WebGL context lost!\n";
+    gsg->context_lost();
     return true;
 
   } else if (type == EMSCRIPTEN_EVENT_WEBGLCONTEXTRESTORED) {
-    webgldisplay_cat.warning() << "WebGL context restored!\n";
+    webgldisplay_cat.info() << "WebGL context restored!\n";
+    gsg->reset();
     return true;
   }
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WebGLGraphicsStateGuardian::context_lost
+//       Access: Protected
+//  Description: Called to indicate that we lost the WebGL context,
+//               and any resources we prepared previously are gone.
+////////////////////////////////////////////////////////////////////
+void WebGLGraphicsStateGuardian::
+context_lost() {
+  release_all();
+
+  // Assign a new PreparedGraphicsObjects to prevent the GSG from
+  // to trying to neatly clean up the old resources.
+  _prepared_objects = new PreparedGraphicsObjects;
 }
 
 ////////////////////////////////////////////////////////////////////

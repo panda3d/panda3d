@@ -17,6 +17,7 @@
 #include "config_webgldisplay.h"
 #include "mouseButton.h"
 #include "keyboardButton.h"
+#include "throw_event.h"
 
 #include <emscripten.h>
 
@@ -92,6 +93,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   WebGLGraphicsStateGuardian *webgl_gsg;
   DCAST_INTO_R(webgl_gsg, _gsg, false);
+
+  if (emscripten_is_webgl_context_lost(0)) {
+    // The context was lost, and any GL calls we make will fail.
+    return false;
+  }
 
   if (emscripten_webgl_make_context_current(webgl_gsg->_context) != EMSCRIPTEN_RESULT_SUCCESS) {
     webgldisplay_cat.error()
@@ -188,6 +194,8 @@ set_properties_now(WindowProperties &properties) {
     emscripten_set_canvas_size(properties.get_x_size(), properties.get_y_size());
     _properties.set_size(properties.get_size());
     properties.clear_size();
+    set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
+    throw_event(get_window_event(), this);
   }
 
   if (properties.has_fullscreen() &&
@@ -269,6 +277,10 @@ close_window() {
   const char *target = NULL;
   emscripten_set_fullscreenchange_callback(target, NULL, false, NULL);
   emscripten_set_pointerlockchange_callback(target, NULL, false, NULL);
+  emscripten_set_visibilitychange_callback(NULL, false, NULL);
+
+  emscripten_set_focus_callback(target, NULL, false, NULL);
+  emscripten_set_blur_callback(target, NULL, false, NULL);
 
   emscripten_set_keypress_callback(target, NULL, false, NULL);
   emscripten_set_keydown_callback(target, NULL, false, NULL);
@@ -280,6 +292,8 @@ close_window() {
   emscripten_set_mousemove_callback(target, NULL, false, NULL);
   emscripten_set_mouseenter_callback(target, NULL, false, NULL);
   emscripten_set_mouseleave_callback(target, NULL, false, NULL);
+
+  emscripten_set_wheel_callback(target, NULL, false, NULL);
 
   GraphicsWindow::close_window();
 }
@@ -324,6 +338,8 @@ open_window() {
     _properties.set_fullscreen(fullscreen > 0);
   }
 
+  _properties.set_undecorated(true);
+
   if (emscripten_webgl_make_context_current(webgl_gsg->_context) != EMSCRIPTEN_RESULT_SUCCESS) {
     webgldisplay_cat.error()
       << "Failed to make context current.\n";
@@ -353,6 +369,10 @@ open_window() {
   // Set callbacks.
   emscripten_set_fullscreenchange_callback(target, (void *)this, false, &on_fullscreen_event);
   emscripten_set_pointerlockchange_callback(target, (void *)this, false, &on_pointerlock_event);
+  emscripten_set_visibilitychange_callback((void *)this, false, &on_visibility_event);
+
+  emscripten_set_focus_callback(target, (void *)this, false, &on_focus_event);
+  emscripten_set_blur_callback(target, (void *)this, false, &on_focus_event);
 
   void *user_data = (void *)&_input_devices[0];
 
@@ -366,6 +386,8 @@ open_window() {
   emscripten_set_mousemove_callback(target, user_data, false, &on_mouse_event);
   emscripten_set_mouseenter_callback(target, user_data, false, &on_mouse_event);
   emscripten_set_mouseleave_callback(target, user_data, false, &on_mouse_event);
+
+  emscripten_set_wheel_callback(target, user_data, false, &on_wheel_event);
 
   return true;
 }
@@ -411,6 +433,51 @@ on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, vo
       props.set_mouse_mode(WindowProperties::M_absolute);
       props.set_cursor_hidden(false);
     }
+    window->system_changed_properties(props);
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WebGLGraphicsWindow::on_visibility_event
+//       Access: Private, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+EM_BOOL WebGLGraphicsWindow::
+on_visibility_event(int type, const EmscriptenVisibilityChangeEvent *event, void *user_data) {
+  WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
+  nassertr(window != NULL, false);
+
+  if (type == EMSCRIPTEN_EVENT_VISIBILITYCHANGE) {
+    WindowProperties props;
+    props.set_minimized(event->hidden != 0);
+    window->system_changed_properties(props);
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WebGLGraphicsWindow::on_focus_event
+//       Access: Private, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+EM_BOOL WebGLGraphicsWindow::
+on_focus_event(int type, const EmscriptenFocusEvent *event, void *user_data) {
+  WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
+  nassertr(window != NULL, false);
+
+  if (type == EMSCRIPTEN_EVENT_FOCUS) {
+    WindowProperties props;
+    props.set_foreground(true);
+    window->system_changed_properties(props);
+    return true;
+  } else if (type == EMSCRIPTEN_EVENT_BLUR) {
+    WindowProperties props;
+    props.set_foreground(false);
     window->system_changed_properties(props);
     return true;
   }
@@ -475,7 +542,7 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
       break;
 
     case 188:
-      handle = KeyboardButton::ascii_key('.');
+      handle = KeyboardButton::ascii_key(',');
       break;
 
     case 189:
@@ -483,7 +550,7 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
       break;
 
     case 190:
-      handle = KeyboardButton::ascii_key(',');
+      handle = KeyboardButton::ascii_key('.');
       break;
 
     case 191:
@@ -541,11 +608,15 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   switch (type) {
   case EMSCRIPTEN_EVENT_MOUSEDOWN:
     // Don't register out-of-bounds mouse downs.
-    if (event->canvasX < 0 || event->canvasY < 0) {
-      return false;
+    if (event->canvasX >= 0 && event->canvasY >= 0) {
+      int w, h, f;
+      emscripten_get_canvas_size(&w, &h, &f);
+      if (event->canvasX < w && event->canvasY < h) {
+        device->button_down(MouseButton::button(event->button), time);
+        return true;
+      }
     }
-    device->button_down(MouseButton::button(event->button), time);
-    return true;
+    return false;
 
   case EMSCRIPTEN_EVENT_MOUSEUP:
     device->button_up(MouseButton::button(event->button), time);
@@ -575,6 +646,34 @@ on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
 
   default:
     break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WebGLGraphicsWindow::on_wheel_event
+//       Access: Private, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+EM_BOOL WebGLGraphicsWindow::
+on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data) {
+  GraphicsWindowInputDevice *device;
+  device = (GraphicsWindowInputDevice *)user_data;
+  nassertr(device != NULL, false);
+
+  double time = event->mouse.timestamp * 0.001;
+
+  if (type == EMSCRIPTEN_EVENT_WHEEL) {
+    if (event->deltaY < 0) {
+      device->button_down(MouseButton::wheel_up(), time);
+      device->button_up(MouseButton::wheel_up(), time);
+    }
+    if (event->deltaY > 0) {
+      device->button_down(MouseButton::wheel_down(), time);
+      device->button_up(MouseButton::wheel_down(), time);
+    }
+    return true;
   }
 
   return false;

@@ -454,10 +454,10 @@ assert_failure(const char *expression, int line,
     int *ptr = (int *)NULL;
     *ptr = 1;
 
-#elif defined(__EMSCRIPTEN__) && defined(_DEBUG)
-    // This should drop us into the browser's JavaScript debugger, but
-    // adding this disables ASM.js validation.
-    emscripten_debugger();
+#elif defined(__EMSCRIPTEN__)
+    // This should drop us into the browser's JavaScript debugger.
+    //emscripten_debugger();
+    EM_ASM(debugger;);
 
 #else  // WIN32
     abort();

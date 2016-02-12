@@ -43,6 +43,8 @@ private:
   bool _have_context;
 
 protected:
+  void context_lost();
+
   virtual void get_extra_extensions();
   virtual bool has_extension(const string &extension) const;
   virtual void *do_get_extension_func(const char *name);

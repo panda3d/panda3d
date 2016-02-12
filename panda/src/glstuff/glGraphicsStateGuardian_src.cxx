@@ -468,6 +468,7 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
 void CLP(GraphicsStateGuardian)::
 reset() {
   _last_error_check = -1.0;
+  _white_texture = 0;
 
   free_pointers();
   GraphicsStateGuardian::reset();

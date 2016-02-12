@@ -53,10 +53,11 @@ protected:
 private:
   static EM_BOOL on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void *user_data);
   static EM_BOOL on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, void *user_data);
-  static EM_BOOL on_keyboard_event(int type, const EmscriptenKeyboardEvent *event,
-                                   void *user_data);
-  static EM_BOOL on_mouse_event(int type, const EmscriptenMouseEvent *event,
-                                void *user_data);
+  static EM_BOOL on_visibility_event(int type, const EmscriptenVisibilityChangeEvent *event, void *user_data);
+  static EM_BOOL on_focus_event(int type, const EmscriptenFocusEvent *event, void *user_data);
+  static EM_BOOL on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_data);
+  static EM_BOOL on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data);
+  static EM_BOOL on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data);
 
   string _canvas_id;
 
