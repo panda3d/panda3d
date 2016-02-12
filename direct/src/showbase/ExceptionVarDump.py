@@ -1,4 +1,5 @@
-from panda3d.direct import get_config_showbase
+__all__ = ["install"]
+
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import fastRepr
 import sys
@@ -6,7 +7,6 @@ import types
 import traceback
 
 notify = directNotify.newCategory("ExceptionVarDump")
-config = get_config_showbase()
 
 reentry = 0
 
@@ -187,7 +187,7 @@ def install(log, upload):
     wantStackDumpLog = log
     wantStackDumpUpload = upload
 
-    dumpOnExceptionInit = config.GetBool('variable-dump-on-exception-init', 0)
+    dumpOnExceptionInit = ConfigVariableBool('variable-dump-on-exception-init', False)
     if dumpOnExceptionInit:
         # this mode doesn't completely work because exception objects
         # thrown by the interpreter don't get created until the

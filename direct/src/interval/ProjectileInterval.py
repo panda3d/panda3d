@@ -72,13 +72,6 @@ class ProjectileInterval(Interval):
                               self.projectileIntervalNum)
             ProjectileInterval.projectileIntervalNum += 1
 
-            """
-            # attempt to add info about the caller
-            file, line, func = PythonUtil.callerInfo()
-            if file is not None:
-                name += '-%s:%s:%s' % (file, line, func)
-            """
-
         args = (startPos, endPos, duration, startVel, endZ,
                 wayPoint, timeToWayPoint, gravityMult)
         self.implicitStartPos = 0

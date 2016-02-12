@@ -281,7 +281,7 @@ class GarbageReport(Job):
         if self._args.findCycles:
             s = ['===== GarbageReport: \'%s\' (%s %s) =====' % (
                 self._args.name, self.numCycles,
-                choice(self.numCycles == 1, 'cycle', 'cycles'))]
+                ('cycle' if self.numCycles == 1 else 'cycles'))]
         else:
             s = ['===== GarbageReport: \'%s\' =====' % (
                 self._args.name)]
@@ -499,7 +499,7 @@ class GarbageReport(Job):
         rootId = index
         # check if the root object is one of the garbage instances (has __del__)
         objId = id(self.garbage[rootId])
-        numDelInstances = choice(objId in self.garbageInstanceIds, 1, 0)
+        numDelInstances = int(objId in self.garbageInstanceIds)
         stateStack.push(([rootId], rootId, numDelInstances, 0))
         while True:
             yield None
@@ -535,7 +535,7 @@ class GarbageReport(Job):
                 elif refId is not None:
                     # check if this object is one of the garbage instances (has __del__)
                     objId = id(self.garbage[refId])
-                    numDelInstances += choice(objId in self.garbageInstanceIds, 1, 0)
+                    numDelInstances += int(objId in self.garbageInstanceIds)
                     # this refId does not complete a cycle. Mark down
                     # where we are in this list of referents, then
                     # start looking through the referents of the new refId

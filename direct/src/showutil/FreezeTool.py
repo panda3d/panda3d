@@ -30,8 +30,8 @@ isDebugBuild = (python.lower().endswith('_d'))
 # These are modules that Python always tries to import up-front.  They
 # must be frozen in any main.exe.
 startupModules = [
-    'site', 'sitecustomize', 'os', 'encodings.cp1252',
-    'encodings.latin_1', 'encodings.utf_8', 'io', 'org',
+    'os', 'encodings.cp1252',
+    'encodings.latin_1', 'encodings.utf_8', 'io',
     ]
 
 # These are missing modules that we've reported already this session.
