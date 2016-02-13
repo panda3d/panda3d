@@ -184,7 +184,7 @@ static const string default_fshader =
 #ifndef OPENGLES
   "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
   "  p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
-  "  p3d_FragColor = color;\n"
+  "  p3d_FragColor *= color;\n"
 #else
   "  gl_FragColor = texture2D(p3d_Texture0, texcoord).bgra;\n"
   "  gl_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
