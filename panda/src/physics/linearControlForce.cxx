@@ -22,9 +22,9 @@
 TypeHandle LinearControlForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearControlForce
-//       Access : Public
-//  Description : Vector Constructor
+//     Function: LinearControlForce
+//       Access: Public
+//  Description: Vector Constructor
 ////////////////////////////////////////////////////////////////////
 LinearControlForce::
 LinearControlForce(const PhysicsObject *po, PN_stdfloat a, bool mass) :
@@ -34,9 +34,9 @@ LinearControlForce(const PhysicsObject *po, PN_stdfloat a, bool mass) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearControlForce
-//       Access : Public
-//  Description : Copy Constructor
+//     Function: LinearControlForce
+//       Access: Public
+//  Description: Copy Constructor
 ////////////////////////////////////////////////////////////////////
 LinearControlForce::
 LinearControlForce(const LinearControlForce &copy) :
@@ -46,18 +46,18 @@ LinearControlForce(const LinearControlForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearControlForce
-//       Access : Public
-//  Description : Destructor
+//     Function: LinearControlForce
+//       Access: Public
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 LinearControlForce::
 ~LinearControlForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public, virtual
-// Description : copier
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearControlForce::
 make_copy() {
@@ -65,9 +65,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_child_vector
-//      Access : Public
-// Description : vector access
+//     Function: get_child_vector
+//       Access: Public
+//  Description: vector access
 ////////////////////////////////////////////////////////////////////
 LVector3 LinearControlForce::
 get_child_vector(const PhysicsObject *po) {
@@ -79,10 +79,10 @@ get_child_vector(const PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearControlForce::
 output(ostream &out) const {
@@ -92,10 +92,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearControlForce::
 write(ostream &out, unsigned int indent) const {

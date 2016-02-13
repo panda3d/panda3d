@@ -1,4 +1,4 @@
-// Filename: CollisionHandlerGravity.h
+// Filename: collisionHandlerGravity.h
 // Created by:  drose (16Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -56,6 +56,17 @@ PUBLISHED:
 
   INLINE void set_legacy_mode(bool legacy_mode);
   INLINE bool get_legacy_mode() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(offset, get_offset, set_offset);
+  MAKE_PROPERTY(reach, get_reach, set_reach);
+  MAKE_PROPERTY(airborne_height, get_airborne_height);
+  MAKE_PROPERTY(on_ground, is_on_ground);
+  MAKE_PROPERTY(impact_velocity, get_impact_velocity);
+  MAKE_PROPERTY(contact_normal, get_contact_normal);
+  MAKE_PROPERTY(velocity, get_velocity, set_velocity);
+  MAKE_PROPERTY(gravity, get_gravity, set_gravity);
+  MAKE_PROPERTY(max_velocity, get_max_velocity, set_max_velocity);
 
 protected:
   PN_stdfloat set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);

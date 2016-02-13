@@ -33,7 +33,7 @@ public:
   bool operator () (CPPType *a, CPPType *b) const;
 };
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPType
 // Description :
 ////////////////////////////////////////////////////////////////////
@@ -49,6 +49,8 @@ public:
 
   virtual bool is_tbd() const;
   virtual bool is_trivial() const;
+  virtual bool is_default_constructible() const;
+  virtual bool is_copy_constructible() const;
   virtual bool is_parameter_expr() const;
 
   bool has_typedef_name() const;

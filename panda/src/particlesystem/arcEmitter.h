@@ -1,4 +1,4 @@
-// Filename: ringEmitter.h
+// Filename: arcEmitter.h
 // Created by:  charles (22Jun00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +44,6 @@ private:
   // our emitter limits
   PN_stdfloat _start_theta;
   PN_stdfloat _end_theta;
-  ///////////////////////////////
 
   virtual void assign_initial_position(LPoint3& pos);
 };

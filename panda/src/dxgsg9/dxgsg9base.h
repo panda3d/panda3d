@@ -172,14 +172,18 @@ typedef enum {
     INTZ_FLAG =         FLG(22),
     W11V11U10_FLAG =    FLG(23),
     A2W10V10U10_FLAG =  FLG(24),
-    UYVY_FLAG =         FLG(25),
-    YUY2_FLAG =         FLG(26),
+    ATI1_FLAG =         FLG(25),
+    ATI2_FLAG =         FLG(26),
     DXT1_FLAG =         FLG(27),
     DXT2_FLAG =         FLG(28),
     DXT3_FLAG =         FLG(29),
     DXT4_FLAG =         FLG(30),
     DXT5_FLAG =         FLG(31)
 } D3DFORMAT_FLAG;
+
+#define D3DFMT_INTZ ((D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'))
+#define D3DFMT_ATI1 ((D3DFORMAT)MAKEFOURCC('A', 'T', 'I', '1'))
+#define D3DFMT_ATI2 ((D3DFORMAT)MAKEFOURCC('A', 'T', 'I', '2'))
 
 // this is only used in conjunction w/rendertgt fmts, so just make it something that can never be a rtgt
 #define DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG DXT1_FLAG

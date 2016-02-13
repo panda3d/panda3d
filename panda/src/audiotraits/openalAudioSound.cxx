@@ -91,7 +91,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::Destructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 OpenALAudioSound::
@@ -124,7 +124,7 @@ cleanup() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::play
-//       Access: public
+//       Access: Public
 //  Description: Plays a sound.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
@@ -199,7 +199,7 @@ play() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::stop
-//       Access: public
+//       Access: Public
 //  Description: Stop a sound
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
@@ -246,7 +246,7 @@ finished() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_loop
-//       Access: public
+//       Access: Public
 //  Description: Turns looping on and off
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
@@ -257,7 +257,7 @@ set_loop(bool loop) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_loop
-//       Access: public
+//       Access: Public
 //  Description: Returns whether looping is on or off
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioSound::
@@ -267,7 +267,7 @@ get_loop() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_loop_count
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
@@ -283,7 +283,7 @@ set_loop_count(unsigned long loop_count) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_loop_count
-//       Access: public
+//       Access: Public
 //  Description: Return how many times a sound will loop.
 ////////////////////////////////////////////////////////////////////
 unsigned long OpenALAudioSound::
@@ -293,7 +293,7 @@ get_loop_count() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::restart_stalled_audio
-//       Access: public
+//       Access: Public
 //  Description: When streaming audio, the computer is supposed to
 //               keep OpenAL's queue full.  However, there are times
 //               when the computer is running slow and the queue
@@ -318,7 +318,7 @@ restart_stalled_audio() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::queue_buffer
-//       Access: public
+//       Access: Public
 //  Description: Pushes a buffer into the source queue.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
@@ -343,7 +343,7 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::make_buffer
-//       Access: public
+//       Access: Public
 //  Description: Creates an OpenAL buffer object.
 ////////////////////////////////////////////////////////////////////
 ALuint OpenALAudioSound::
@@ -376,7 +376,7 @@ make_buffer(int samples, int channels, int rate, unsigned char *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::read_stream_data
-//       Access: public
+//       Access: Public
 //  Description: Fills a buffer with data from the stream.
 //               Returns the number of samples stored in the buffer.
 ////////////////////////////////////////////////////////////////////
@@ -427,7 +427,7 @@ read_stream_data(int bytelen, unsigned char *buffer) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::correct_calibrated_clock
-//       Access: public
+//       Access: Public
 //  Description: Compares the specified time to the value of the
 //               calibrated clock, and adjusts the calibrated
 //               clock speed to make it closer to the target value.
@@ -465,7 +465,7 @@ correct_calibrated_clock(double rtc, double t) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::pull_used_buffers
-//       Access: public
+//       Access: Public
 //  Description: Pulls any used buffers out of OpenAL's queue.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
@@ -499,7 +499,7 @@ pull_used_buffers() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::push_fresh_buffers
-//       Access: public
+//       Access: Public
 //  Description: Pushes fresh buffers into OpenAL's queue until
 //               the queue is "full" (ie, has plenty of data).
 ////////////////////////////////////////////////////////////////////
@@ -543,7 +543,7 @@ push_fresh_buffers() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_time
-//       Access: public
+//       Access: Public
 //  Description: The next time you call play, the sound will
 //               start from the specified offset.
 ////////////////////////////////////////////////////////////////////
@@ -555,7 +555,7 @@ set_time(PN_stdfloat time) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_time
-//       Access: public
+//       Access: Public
 //  Description: Gets the play position within the sound
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
@@ -587,7 +587,7 @@ cache_time(double rtc) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_volume(PN_stdfloat vol)
-//       Access: public
+//       Access: Public
 //  Description: 0.0 to 1.0 scale of volume converted to Fmod's
 //               internal 0.0 to 255.0 scale.
 ////////////////////////////////////////////////////////////////////
@@ -607,7 +607,7 @@ set_volume(PN_stdfloat volume) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_volume
-//       Access: public
+//       Access: Public
 //  Description: Gets the current volume of a sound.  1 is Max. O is Min.
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
@@ -617,7 +617,7 @@ get_volume() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_balance(PN_stdfloat bal)
-//       Access: public
+//       Access: Public
 //  Description: -1.0 to 1.0 scale
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
@@ -627,10 +627,10 @@ set_balance(PN_stdfloat balance_right) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_balance
-//       Access: public
+//       Access: Public
 //  Description: -1.0 to 1.0 scale
-//        -1 should be all the way left.
-//        1 is all the way to the right.
+//               -1 should be all the way left.
+//               1 is all the way to the right.
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
 get_balance() const {
@@ -640,10 +640,10 @@ get_balance() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_play_rate(PN_stdfloat rate)
-//       Access: public
+//       Access: Public
 //  Description: Sets the speed at which a sound plays back.
-//        The rate is a multiple of the sound, normal playback speed.
-//        IE 2 would play back 2 times fast, 3 would play 3 times, and so on.
+//               The rate is a multiple of the sound, normal playback speed.
+//               IE 2 would play back 2 times fast, 3 would play 3 times, and so on.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_play_rate(PN_stdfloat play_rate) {
@@ -656,7 +656,7 @@ set_play_rate(PN_stdfloat play_rate) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_play_rate
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
@@ -666,7 +666,7 @@ get_play_rate() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::length
-//       Access: public
+//       Access: Public
 //  Description: Get length
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
@@ -676,7 +676,7 @@ length() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_3d_attributes
-//       Access: public
+//       Access: Public
 //  Description: Set position and velocity of this sound
 //
 //               Both Panda3D and OpenAL use a right handed
@@ -714,9 +714,9 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_3d_attributes
-//       Access: public
+//       Access: Public
 //  Description: Get position and velocity of this sound
-//         Currently unimplemented. Get the attributes of the attached object.
+//               Currently unimplemented. Get the attributes of the attached object.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
@@ -732,7 +732,7 @@ get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_3d_min_distance
-//       Access: public
+//       Access: Public
 //  Description: Set the distance that this sound begins to fall off. Also
 //               affects the rate it falls off.
 ////////////////////////////////////////////////////////////////////
@@ -752,7 +752,7 @@ set_3d_min_distance(PN_stdfloat dist) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_3d_min_distance
-//       Access: public
+//       Access: Public
 //  Description: Get the distance that this sound begins to fall off
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
@@ -762,7 +762,7 @@ get_3d_min_distance() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_3d_max_distance
-//       Access: public
+//       Access: Public
 //  Description: Set the distance that this sound stops falling off
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
@@ -781,7 +781,7 @@ set_3d_max_distance(PN_stdfloat dist) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_3d_max_distance
-//       Access: public
+//       Access: Public
 //  Description: Get the distance that this sound stops falling off
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
@@ -791,7 +791,7 @@ get_3d_max_distance() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_3d_drop_off_factor
-//       Access: public
+//       Access: Public
 //  Description: Control the effect distance has on audability.
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
@@ -811,7 +811,7 @@ set_3d_drop_off_factor(PN_stdfloat factor) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_3d_drop_off_factor
-//       Access: public
+//       Access: Public
 //  Description: Control the effect distance has on audability.
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
@@ -822,7 +822,7 @@ get_3d_drop_off_factor() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_active
-//       Access: public
+//       Access: Public
 //  Description: Sets whether the sound is marked "active".  By
 //               default, the active flag true for all sounds.  If the
 //               active flag is set to false for any particular sound,
@@ -856,7 +856,7 @@ set_active(bool active) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_active
-//       Access: public
+//       Access: Public
 //  Description: Returns whether the sound has been marked "active".
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioSound::
@@ -886,7 +886,7 @@ get_finished_event() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::get_name
-//       Access: public
+//       Access: Public
 //  Description: Get name of sound file
 ////////////////////////////////////////////////////////////////////
 const string& OpenALAudioSound::
@@ -896,7 +896,7 @@ get_name() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::status
-//       Access: public
+//       Access: Public
 //  Description: Get status of the sound.
 //
 //               This returns the status as of the

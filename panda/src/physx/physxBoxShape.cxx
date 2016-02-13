@@ -21,7 +21,7 @@ TypeHandle PhysxBoxShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxBoxShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxBoxShape::
 link(NxShape *shapePtr) {
@@ -39,7 +39,7 @@ link(NxShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxBoxShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxBoxShape::
 unlink() {
@@ -52,10 +52,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxBoxShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxBoxShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxBoxShape::
 save_to_desc(PhysxBoxShapeDesc &shapeDesc) const {
@@ -67,7 +67,7 @@ save_to_desc(PhysxBoxShapeDesc &shapeDesc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxBoxShape::set_dimensions
 //       Access: Published
-//  Description: Sets the box dimensions. 
+//  Description: Sets the box dimensions.
 //
 //               The dimensions are the 'radii' of the box,
 //               meaning 1/2 extents in x dimension, 1/2 extents
@@ -83,7 +83,7 @@ set_dimensions(const LVector3f &vec) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxBoxShape::get_dimensions
 //       Access: Published
-//  Description: Retrieves the dimensions of the box. 
+//  Description: Retrieves the dimensions of the box.
 //
 //               The dimensions are the 'radii' of the box,
 //               meaning 1/2 extents in x dimension, 1/2 extents

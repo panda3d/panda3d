@@ -39,7 +39,7 @@ PStatCollector PhysxScene::_pcollector_softbody("App:PhysX:Softbody");
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxScene::
 link(NxScene *scenePtr) {
@@ -68,7 +68,7 @@ link(NxScene *scenePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxScene::
 unlink() {
@@ -171,7 +171,7 @@ unlink() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::release
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxScene::
 release() {
@@ -303,7 +303,6 @@ fetch_results() {
 //     Function: PhysxScene::set_timing_variable
 //       Access: Published
 //  Description: Sets simulation timing parameters used in simulate.
-
 ////////////////////////////////////////////////////////////////////
 void PhysxScene::
 set_timing_variable() {
@@ -368,7 +367,7 @@ get_gravity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::get_num_actors
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 unsigned int PhysxScene::
 get_num_actors() const {
@@ -403,7 +402,7 @@ create_actor(PhysxActorDesc &desc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::get_actor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxActor *PhysxScene::
 get_actor(unsigned int idx) const {
@@ -538,7 +537,7 @@ is_controller_reporting_enabled() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::get_num_materials
 //       Access: Published
-//  Description: Return the number of materials in the scene. 
+//  Description: Return the number of materials in the scene.
 //
 //               Note that the returned value is not related to
 //               material indices. Those may not be allocated
@@ -626,7 +625,7 @@ get_hightest_material_index() const {
 //     Function: PhysxScene::get_material_from_index
 //       Access: Published
 //  Description: Retrieves the material with the given material
-//               index. 
+//               index.
 //
 //               There is always at least one material in the Scene,
 //               the default material (index 0). If the specified
@@ -675,7 +674,7 @@ get_material(unsigned int idx) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::get_num_controllers
 //       Access: Published
-//  Description: Return the number of controllers in the scene. 
+//  Description: Return the number of controllers in the scene.
 ////////////////////////////////////////////////////////////////////
 unsigned int PhysxScene::
 get_num_controllers() const {
@@ -1076,7 +1075,7 @@ raycast_any_shape(const PhysxRay &ray,
 
   NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : NULL;
 
-  return _ptr->raycastAnyShape(ray._ray, (NxShapesType)shapesType, 
+  return _ptr->raycastAnyShape(ray._ray, (NxShapesType)shapesType,
                                mask.get_mask(), ray._length, groupsPtr);
 }
 
@@ -1107,7 +1106,7 @@ raycast_closest_shape(const PhysxRay &ray,
     hints |= NX_RAYCAST_FACE_NORMAL;
   }
 
-  _ptr->raycastClosestShape(ray._ray, (NxShapesType)shapesType, hit, 
+  _ptr->raycastClosestShape(ray._ray, (NxShapesType)shapesType, hit,
                             mask.get_mask(), ray._length, hints, groupsPtr);
 
 
@@ -1163,7 +1162,7 @@ raycast_any_bounds(const PhysxRay &ray,
 
   NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : NULL;
 
-  return _ptr->raycastAnyBounds(ray._ray, (NxShapesType)shapesType, 
+  return _ptr->raycastAnyBounds(ray._ray, (NxShapesType)shapesType,
                                 mask.get_mask(), ray._length, groupsPtr);
 }
 
@@ -1192,7 +1191,7 @@ raycast_closest_bounds(const PhysxRay &ray, PhysxShapesType shapesType, PhysxMas
     hints |= NX_RAYCAST_FACE_NORMAL;
   }
 
-  _ptr->raycastClosestBounds(ray._ray, (NxShapesType)shapesType, hit, 
+  _ptr->raycastClosestBounds(ray._ray, (NxShapesType)shapesType, hit,
                              mask.get_mask(), ray._length, hints, groupsPtr);
 
 
@@ -1237,7 +1236,7 @@ raycast_all_bounds(const PhysxRay &ray,
 //     Function: PhysxScene::overlap_sphere_shapes
 //       Access: Published
 //  Description: Returns the set of shapes overlapped by the
-//               world-space sphere. 
+//               world-space sphere.
 //               You can test against static and/or dynamic objects
 //               by adjusting 'shapeType'.
 ////////////////////////////////////////////////////////////////////
@@ -1262,7 +1261,7 @@ overlap_sphere_shapes(const LPoint3f &center, float radius,
 //     Function: PhysxScene::overlap_capsule_shapes
 //       Access: Published
 //  Description: Returns the set of shapes overlapped by the
-//               world-space capsule. 
+//               world-space capsule.
 //               You can test against static and/or dynamic objects
 //               by adjusting 'shapeType'.
 ////////////////////////////////////////////////////////////////////
@@ -1288,7 +1287,7 @@ overlap_capsule_shapes(const LPoint3f &p0, const LPoint3f &p1, float radius,
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::set_actor_pair_flag
 //       Access: Published
-//  Description: Sets the pair flags for the given pair of actors. 
+//  Description: Sets the pair flags for the given pair of actors.
 //
 //               Calling this on an actor that has no shape(s) has
 //               no effect. The two actor references must not
@@ -1308,7 +1307,7 @@ set_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB,
 
   NxActor *ptrA = actorA.ptr();
   NxActor *ptrB = actorB.ptr();
-  NxU32 flags = _ptr->getActorPairFlags(*ptrA, *ptrB); 
+  NxU32 flags = _ptr->getActorPairFlags(*ptrA, *ptrB);
 
   if (value == true) {
     flags |= flag;
@@ -1325,7 +1324,7 @@ set_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB,
 //       Access: Published
 //  Description: Retrieves a single flag for the given pair of
 //               actors.
-// 
+//
 //               The two actor references must not reference the
 //               same actor.
 ////////////////////////////////////////////////////////////////////
@@ -1337,7 +1336,7 @@ get_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB,
 
   NxActor *ptrA = actorA.ptr();
   NxActor *ptrB = actorB.ptr();
-  NxU32 flags = _ptr->getActorPairFlags(*ptrA, *ptrB); 
+  NxU32 flags = _ptr->getActorPairFlags(*ptrA, *ptrB);
 
   return (flags && flag) ? true : false;
 }
@@ -1358,7 +1357,7 @@ set_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB, bool value) {
 
   NxShape *ptrA = shapeA.ptr();
   NxShape *ptrB = shapeB.ptr();
-  NxU32 flags = _ptr->getShapePairFlags(*ptrA, *ptrB); 
+  NxU32 flags = _ptr->getShapePairFlags(*ptrA, *ptrB);
 
   if (value == true) {
     flags |= NX_IGNORE_PAIR;
@@ -1387,7 +1386,7 @@ get_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB) {
 
   NxShape *ptrA = shapeA.ptr();
   NxShape *ptrB = shapeB.ptr();
-  NxU32 flags = _ptr->getShapePairFlags(*ptrA, *ptrB); 
+  NxU32 flags = _ptr->getShapePairFlags(*ptrA, *ptrB);
 
   return (flags && NX_IGNORE_PAIR) ? true : false;
 }
@@ -1396,7 +1395,7 @@ get_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB) {
 //     Function: PhysxScene::set_actor_group_pair_flag
 //       Access: Published
 //  Description: With this method one can set contact reporting
-//               flags between actors belonging to a pair of groups. 
+//               flags between actors belonging to a pair of groups.
 //
 //               It is possible to assign each actor to a group
 //               using PhysxActor::set_group(). This is a different
@@ -1424,7 +1423,7 @@ set_actor_group_pair_flag(unsigned int g1, unsigned int g2,
 
   nassertv(_error_type == ET_ok);
 
-  NxU32 flags = _ptr->getActorGroupPairFlags(g1, g2); 
+  NxU32 flags = _ptr->getActorGroupPairFlags(g1, g2);
   if (value == true) {
     flags |= flag;
   }
@@ -1445,7 +1444,7 @@ get_actor_group_pair_flag(unsigned int g1, unsigned int g2,
                           PhysxContactPairFlag flag) {
 
   nassertr(_error_type == ET_ok, false);
-  NxU32 flags = _ptr->getActorGroupPairFlags(g1, g2); 
+  NxU32 flags = _ptr->getActorGroupPairFlags(g1, g2);
   return (flags && flag) ? true : false;
 }
 
@@ -1606,7 +1605,7 @@ get_filter_op2() const {
 //     Function: PhysxScene::set_group_collision_flag
 //       Access: Published
 //  Description: Specifies if collision should be performed by a
-//               pair of shape groups. 
+//               pair of shape groups.
 //
 //               It is possible to assign each shape to a collision
 //               groups using PhysxShape::set_group(). With this
@@ -1674,9 +1673,9 @@ is_hardware_scene() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxScene::set_dominance_group_pair
 //       Access: Published
-//  Description: Specifies the dominance behavior of constraints 
+//  Description: Specifies the dominance behavior of constraints
 //               between two actors with two certain dominance
-//               groups. 
+//               groups.
 //
 //               It is possible to assign each actor to a dominance
 //               groups using PhysxActor::set_dominance_group().

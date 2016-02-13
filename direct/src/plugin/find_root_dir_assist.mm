@@ -1,4 +1,4 @@
-// Filename: filename_assist.mm
+// Filename: find_root_dir_assist.mm
 // Created by:  drose (13Apr09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@
 //     Function: NSString_to_cpp_string
 //  Description: Copy the Objective-C string to a C++ string.
 ////////////////////////////////////////////////////////////////////
-static string 
+static string
 NSString_to_cpp_string(NSString *str) {
   size_t length = [str length];
   string result;
@@ -36,44 +36,44 @@ NSString_to_cpp_string(NSString *str) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: call_NSSearchPathForDirectories
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-static string 
+static string
 call_NSSearchPathForDirectories(NSSearchPathDirectory dirkey, NSSearchPathDomainMask domain) {
   // Ensure that Carbon has been initialized, and that we have an
   // auto-release pool.
   NSApplicationLoad();
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; 
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
   NSArray *paths = NSSearchPathForDirectoriesInDomains(dirkey, domain, YES);
   string result;
   if ([paths count] != 0) {
     result = NSString_to_cpp_string([paths objectAtIndex:0]);
   }
-  [pool release]; 
+  [pool release];
 
   return result;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_osx_home_directory
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 static string
 get_osx_home_directory() {
   NSApplicationLoad();
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; 
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
   NSString *dir = NSHomeDirectory();
   string result = NSString_to_cpp_string(dir);
-  [pool release]; 
+  [pool release];
 
   return result;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: find_osx_root_dir
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string
 find_osx_root_dir() {

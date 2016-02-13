@@ -40,6 +40,11 @@ PUBLISHED:
   bool is_equivalent_to(const EggMaterial &other, int eq) const;
   bool sorts_less_than(const EggMaterial &other, int eq) const;
 
+  INLINE void set_base(const LColor &base);
+  INLINE void clear_base();
+  INLINE bool has_base() const;
+  INLINE LColor get_base() const;
+
   INLINE void set_diff(const LColor &diff);
   INLINE void clear_diff();
   INLINE bool has_diff() const;
@@ -65,26 +70,62 @@ PUBLISHED:
   INLINE bool has_shininess() const;
   INLINE double get_shininess() const;
 
+  INLINE void set_roughness(double roughness);
+  INLINE void clear_roughness();
+  INLINE bool has_roughness() const;
+  INLINE double get_roughness() const;
+
+  INLINE void set_metallic(double metallic);
+  INLINE void clear_metallic();
+  INLINE bool has_metallic() const;
+  INLINE double get_metallic() const;
+
+  INLINE void set_ior(double ior);
+  INLINE void clear_ior();
+  INLINE bool has_ior() const;
+  INLINE double get_ior() const;
+
   INLINE void set_local(bool local);
   INLINE void clear_local();
   INLINE bool has_local() const;
   INLINE bool get_local() const;
 
+PUBLISHED:
+  MAKE_PROPERTY2(base, has_base, get_base, set_base, clear_base);
+  MAKE_PROPERTY2(diff, has_diff, get_diff, set_diff, clear_diff);
+  MAKE_PROPERTY2(amb, has_amb, get_amb, set_amb, clear_amb);
+  MAKE_PROPERTY2(emit, has_emit, get_emit, set_emit, clear_emit);
+  MAKE_PROPERTY2(spec, has_spec, get_spec, set_spec, clear_spec);
+  MAKE_PROPERTY2(shininess, has_shininess, get_shininess, set_shininess, clear_shininess);
+  MAKE_PROPERTY2(roughness, has_roughness, get_roughness, set_roughness, clear_roughness);
+  MAKE_PROPERTY2(metallic, has_metallic, get_metallic, set_metallic, clear_metallic);
+  MAKE_PROPERTY2(ior, has_ior, get_ior, set_ior, clear_ior);
+
+  MAKE_PROPERTY2(local, has_local, get_local, set_local, clear_local);
+
 private:
   enum Flags {
-    F_diff      = 0x001,
-    F_amb       = 0x002,
-    F_emit      = 0x004,
-    F_spec      = 0x008,
-    F_shininess = 0x010,
-    F_local     = 0x020
+    F_base      = 0x001,
+    F_diff      = 0x002,
+    F_amb       = 0x004,
+    F_emit      = 0x008,
+    F_spec      = 0x010,
+    F_shininess = 0x020,
+    F_roughness = 0x040,
+    F_metallic  = 0x080,
+    F_ior       = 0x100,
+    F_local     = 0x200
   };
 
+  LColor _base;
   LColor _diff;
   LColor _amb;
   LColor _emit;
   LColor _spec;
   double _shininess;
+  double _roughness;
+  double _metallic;
+  double _ior;
   bool _local;
   int _flags;
 

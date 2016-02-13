@@ -42,6 +42,11 @@ PUBLISHED:
   INLINE void set_max_velocity(PN_stdfloat max_vel);
   INLINE PN_stdfloat get_max_velocity() const;
 
+PUBLISHED:
+  MAKE_PROPERTY(offset, get_offset, set_offset);
+  MAKE_PROPERTY(reach, get_reach, set_reach);
+  MAKE_PROPERTY(max_velocity, get_max_velocity, set_max_velocity);
+
 protected:
   PN_stdfloat set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
   virtual bool handle_entries();

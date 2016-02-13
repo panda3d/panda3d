@@ -95,6 +95,7 @@ PUBLISHED:
     T_int,
     T_byte,
     T_short,
+    T_half_float,
   };
 
   enum Format {
@@ -160,7 +161,10 @@ PUBLISHED:
     F_rgba8i, // 8 integer bits per R,G,B,A channel
 
     F_r11_g11_b10, // unsigned floating-point, 11 Red, 11 Green, 10 Blue Bits
+    F_rgb9_e5,
+    F_rgb10_a2,
 
+    F_rg,
   };
 
   // Deprecated.  See SamplerState.FilterType.
@@ -201,13 +205,14 @@ PUBLISHED:
     // GSG::get_supports_compressed_texture_format() to query the
     // available compression modes for a particular GSG.
     CM_fxt1,
-    CM_dxt1,
-    CM_dxt2,
-    CM_dxt3,
-    CM_dxt4,
-    CM_dxt5,
+    CM_dxt1, // BC1: RGB with optional binary alpha.
+    CM_dxt2, // Like DXT3, but assumes premultiplied alpha
+    CM_dxt3, // BC2: RGB with uncompressed 4-bit alpha.
+    CM_dxt4, // Like DXT5, but assumes premultiplied alpha
+    CM_dxt5, // BC3: RGB with separately compressed 8-bit alpha.
     CM_pvr1_2bpp,
     CM_pvr1_4bpp,
+    CM_rgtc, // BC4/BC5: 1 or 2 channels, individually compressed.
   };
 
   enum QualityLevel {
@@ -568,6 +573,7 @@ public:
 
 protected:
   class CData;
+  class RamImage;
 
   virtual void reconsider_dirty();
 
@@ -633,6 +639,15 @@ protected:
                              QualityLevel quality_level,
                              GraphicsStateGuardianBase *gsg);
   bool do_uncompress_ram_image(CData *cdata);
+
+  static void do_compress_ram_image_bc4(const RamImage &src, RamImage &dest,
+                                        int x_size, int y_size, int z_size);
+  static void do_compress_ram_image_bc5(const RamImage &src, RamImage &dest,
+                                        int x_size, int y_size, int z_size);
+  static void do_uncompress_ram_image_bc4(const RamImage &src, RamImage &dest,
+                                          int x_size, int y_size, int z_size);
+  static void do_uncompress_ram_image_bc5(const RamImage &src, RamImage &dest,
+                                          int x_size, int y_size, int z_size);
   bool do_has_all_ram_mipmap_images(const CData *cdata) const;
 
   bool do_reconsider_z_size(CData *cdata, int z, const LoaderOptions &options);
@@ -738,21 +753,31 @@ private:
                                         int n, istream &in);
   static PTA_uchar read_dds_level_rgba8(Texture *tex, CData *cdata, const DDSHeader &header,
                                         int n, istream &in);
+  static PTA_uchar read_dds_level_abgr16(Texture *tex, CData *cdata, const DDSHeader &header,
+                                         int n, istream &in);
+  static PTA_uchar read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header,
+                                         int n, istream &in);
   static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata,
                                                        const DDSHeader &header,
                                                        int n, istream &in);
   static PTA_uchar read_dds_level_luminance_uncompressed(Texture *tex, CData *cdata,
                                                          const DDSHeader &header,
                                                          int n, istream &in);
-  static PTA_uchar read_dds_level_dxt1(Texture *tex, CData *cdata,
-                                       const DDSHeader &header,
-                                       int n, istream &in);
-  static PTA_uchar read_dds_level_dxt23(Texture *tex, CData *cdata,
-                                        const DDSHeader &header,
-                                        int n, istream &in);
-  static PTA_uchar read_dds_level_dxt45(Texture *tex, CData *cdata,
-                                        const DDSHeader &header,
-                                        int n, istream &in);
+  static PTA_uchar read_dds_level_bc1(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
+  static PTA_uchar read_dds_level_bc2(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
+  static PTA_uchar read_dds_level_bc3(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
+  static PTA_uchar read_dds_level_bc4(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
+  static PTA_uchar read_dds_level_bc5(Texture *tex, CData *cdata,
+                                      const DDSHeader &header,
+                                      int n, istream &in);
 
   void clear_prepared(int view, PreparedGraphicsObjects *prepared_objects);
 

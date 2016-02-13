@@ -12,48 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::Default Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase2)::
-FLOATNAME(LVecBase2)() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase2)::
-FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy) : _v(copy._v) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase2) &FLOATNAME(LVecBase2)::
-operator = (const FLOATNAME(LVecBase2) &copy) {
-  TAU_PROFILE("void LVecBase2::operator = (LVecBase2 &)", " ", TAU_USER);
-  _v = copy._v;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::Fill Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase2) &FLOATNAME(LVecBase2)::
-operator = (FLOATTYPE fill_value) {
-  fill(fill_value);
-  return *this;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Constructor
 //       Access: Published
@@ -108,15 +66,6 @@ unit_y() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase2)::
-~FLOATNAME(LVecBase2)() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Indexing Operator
 //       Access: Published
 //  Description:
@@ -143,7 +92,7 @@ operator [](int i) {
 //       Access: Published, Static
 //  Description: Returns 2: the number of components of a LVecBase2.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(LVecBase2)::
+CONSTEXPR int FLOATNAME(LVecBase2)::
 size() {
   return 2;
 }
@@ -274,8 +223,8 @@ get_data() const {
 //       Access: Published
 //  Description: Returns the number of elements in the vector, two.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(LVecBase2)::
-get_num_components() const {
+CONSTEXPR int FLOATNAME(LVecBase2)::
+get_num_components() {
   return 2;
 }
 
@@ -416,6 +365,22 @@ normalize() {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
+normalized() const {
+  FLOATTYPE l2 = length_squared();
+  if (l2 == (FLOATTYPE)0.0f) {
+    return FLOATNAME(LVecBase2)(0.0f);
+  }
+  return (*this) / csqrt(l2);
 }
 
 ////////////////////////////////////////////////////////////////////

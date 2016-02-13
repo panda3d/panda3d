@@ -129,6 +129,7 @@ public:
 private:
   static TypeHandle _type_handle;
   friend class PandaNode;
+  friend class NodePath;
 };
 
 INLINE ostream &operator << (ostream &out, const NodePathComponent &comp);

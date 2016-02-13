@@ -27,7 +27,7 @@ DCDeclaration::
 ////////////////////////////////////////////////////////////////////
 //     Function: DCDeclaration::as_class
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCClass *DCDeclaration::
 as_class() {
@@ -37,7 +37,7 @@ as_class() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCDeclaration::as_class
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const DCClass *DCDeclaration::
 as_class() const {
@@ -47,7 +47,7 @@ as_class() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCDeclaration::as_switch
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DCSwitch *DCDeclaration::
 as_switch() {
@@ -57,7 +57,7 @@ as_switch() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCDeclaration::as_switch
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const DCSwitch *DCDeclaration::
 as_switch() const {
@@ -65,10 +65,10 @@ as_switch() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCDeclaration::output
-//       Access : Published, Virtual
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCDeclaration::output
+//       Access: Published, Virtual
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DCDeclaration::
 output(ostream &out) const {
@@ -76,10 +76,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : DCDeclaration::
-//       Access : Published
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: DCDeclaration::
+//       Access: Published
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void DCDeclaration::
 write(ostream &out, int indent_level) const {

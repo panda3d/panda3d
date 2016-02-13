@@ -14,7 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Default Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -23,7 +23,7 @@ FLOATNAME(LOrientation)() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Copy Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -33,7 +33,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)& c) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
-//       Access: public
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -43,7 +43,7 @@ FLOATNAME(LOrientation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: vector + twist
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -60,7 +60,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LVector3) &point_at, FLOATTYPE twist) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: matrix3
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -70,7 +70,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LMatrix3) &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
-//       Access: public
+//       Access: Public
 //  Description: matrix4
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
@@ -80,7 +80,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::operator *
-//       Access: public
+//       Access: Public
 //  Description: Orientation * rotation = Orientation
 //               Applies a rotation to an orientation.
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ operator * (const FLOATNAME(LRotation) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::operator *
-//       Access: public
+//       Access: Public
 //  Description: Orientation * Orientation
 //               This is a meaningless operation, and will always
 //               simply return the rhs.

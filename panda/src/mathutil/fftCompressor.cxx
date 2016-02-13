@@ -686,7 +686,7 @@ read_reals(DatagramIterator &di, vector_stdfloat &array) {
 //               it is set false, the hprs are decompressed according
 //               to the old, broken hpr calculation; if true, the hprs
 //               are decompressed according to the new, correct hpr
-//               calculation.  See temp_hpr_fix.
+//               calculation.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
 read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
@@ -732,11 +732,11 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
     if (okflag) {
       for (int i = 0; i < (int)m00.size(); i++) {
         LMatrix3 mat(m00[i], m01[i], m02[i],
-                      m10[i], m11[i], m12[i],
-                      m20[i], m21[i], m22[i]);
+                     m10[i], m11[i], m12[i],
+                     m20[i], m21[i], m22[i]);
         LVecBase3 scale, shear, hpr;
         if (new_hpr) {
-          decompose_matrix_new_hpr(mat, scale, shear, hpr);
+          decompose_matrix(mat, scale, shear, hpr);
         } else {
           decompose_matrix_old_hpr(mat, scale, shear, hpr);
         }
@@ -799,7 +799,7 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
       }
       LVecBase3 scale, shear, hpr;
       if (new_hpr) {
-        decompose_matrix_new_hpr(mat, scale, shear, hpr);
+        decompose_matrix(mat, scale, shear, hpr);
       } else {
         decompose_matrix_old_hpr(mat, scale, shear, hpr);
       }
@@ -820,7 +820,7 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
 read_hprs(DatagramIterator &di, pvector<LVecBase3> &array) {
-  return read_hprs(di, array, temp_hpr_fix);
+  return read_hprs(di, array, true);
 }
 
 

@@ -30,7 +30,7 @@
 #include <android/window.h>
 #include <android/log.h>
 
-extern struct android_app* panda_android_app;
+extern IMPORT_CLASS struct android_app* panda_android_app;
 
 TypeHandle AndroidGraphicsWindow::_type_handle;
 

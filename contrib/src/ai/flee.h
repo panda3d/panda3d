@@ -1,7 +1,6 @@
-////////////////////////////////////////////////////////////////////////
-// Filename    : flee.h
-// Created by  : Deepak, John, Navin
-// Date        :  24 Oct 09
+// Filename: flee.h
+// Created by: Deepak, John, Navin (24Oct09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -22,7 +21,6 @@
 class AICharacter;
 
 class EXPCL_PANDAAI Flee {
-
 public:
   AICharacter *_ai_char;
 

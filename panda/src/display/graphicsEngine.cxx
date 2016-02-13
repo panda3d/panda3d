@@ -1152,6 +1152,8 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
+  nassertv(sattr->get_shader() != (Shader *)NULL);
+
   ReMutexHolder holder(_lock);
 
   CPT(RenderState) state = RenderState::make(sattr);
@@ -2328,50 +2330,6 @@ auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
           << "which are currently enabled, because 'textures_auto_power_2' is\n"
           << "true.  Panda's automatic mechanisms assume that if one\n"
           << "window supports non-power-of-two textures, then they all will.\n"
-          << "This assumption works for most games, but not all.\n"
-          << "In particular, it can fail if the game creates multiple windows\n"
-          << "on multiple displays with different video cards.\n";
-      }
-    }
-  }
-
-  if (shader_auto_utilization && (shader_utilization != SUT_none)) {
-    display_cat.error()
-      << "Invalid panda config file: if you set the config-variable\n"
-      << "shader_auto_utilization to true, you must set the config-variable"
-      << "shader_utilization to 'none'.\n";
-    shader_utilization = SUT_none; // Not a fix.  Just suppresses further error messages.
-  }
-
-  if (shader_auto_utilization && !Shader::have_shader_utilization()) {
-    if (gsg->get_supports_basic_shaders()) {
-      Shader::set_shader_utilization(SUT_basic);
-    } else {
-      Shader::set_shader_utilization(SUT_none);
-    }
-  }
-
-  if ((Shader::get_shader_utilization() != SUT_none) &&
-      (!gsg->get_supports_basic_shaders())) {
-
-    // Overaggressive configuration detected
-
-    display_cat.error()
-      << "The 'shader_utilization' config variable is set, meaning\n"
-      << "that panda may try to generate shaders.  However, the video \n"
-      << "driver I'm trying to use does not support shaders.\n";
-
-    if (shader_utilization == SUT_none) {
-      display_cat.error()
-        << "The 'shader_utilization' setting did not come from the config\n"
-        << "file.  In other words, it was altered procedurally.\n";
-
-      if (shader_auto_utilization) {
-        display_cat.error()
-          << "It is possible that it was set by panda's automatic mechanisms,\n"
-          << "which are currently enabled, because 'shader_auto_utilization' is\n"
-          << "true.  Panda's automatic mechanisms assume that if one\n"
-          << "window supports shaders, then they all will.\n"
           << "This assumption works for most games, but not all.\n"
           << "In particular, it can fail if the game creates multiple windows\n"
           << "on multiple displays with different video cards.\n";

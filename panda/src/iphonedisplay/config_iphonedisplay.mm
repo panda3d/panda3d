@@ -1,4 +1,4 @@
-// Filename: config_iphonedisplay.cxx
+// Filename: config_iphonedisplay.mm
 // Created by:  drose (08Apr09)
 //
 ////////////////////////////////////////////////////////////////////

@@ -22,7 +22,7 @@ TypeHandle PhysxForceFieldShapeGroup::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxForceFieldShapeGroup::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxForceFieldShapeGroup::
 link(NxForceFieldShapeGroup *groupPtr) {
@@ -50,7 +50,7 @@ link(NxForceFieldShapeGroup *groupPtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxForceFieldShapeGroup::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxForceFieldShapeGroup::
 unlink() {
@@ -120,10 +120,10 @@ get_force_field() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxForceFieldShapeGroup::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the force field shape group
-//                object to a  descriptor.
+//     Function: PhysxForceFieldShapeGroup::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the force field shape group
+//               object to a  descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxForceFieldShapeGroup::
 save_to_desc(PhysxForceFieldShapeGroupDesc &groupDesc) const {
@@ -136,7 +136,7 @@ save_to_desc(PhysxForceFieldShapeGroupDesc &groupDesc) const {
 //     Function: PhysxForceFieldShapeGroup::set_name
 //       Access: Published
 //  Description: Sets a name string for the object that can be
-//               retrieved with get_name(). 
+//               retrieved with get_name().
 //               This is for debugging and is not used by the
 //               engine.
 ////////////////////////////////////////////////////////////////////

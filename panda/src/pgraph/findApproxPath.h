@@ -1,4 +1,4 @@
-// Filename: FindApproxPath.h
+// Filename: findApproxPath.h
 // Created by:  drose (13Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ public:
   void add_match_inexact_type(TypeHandle type, int flags);
   void add_match_tag(const string &key, int flags);
   void add_match_tag_value(const string &key, const string &value, int flags);
-  
+
   void add_match_one(int flags);
   void add_match_many(int flags);
   void add_match_pointer(PandaNode *pointer, int flags);

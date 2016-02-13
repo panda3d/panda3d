@@ -13,8 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_center_color
-//      Access : public
+//     Function: set_center_color
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
 set_center_color(const LColor& c) {
@@ -22,8 +22,8 @@ set_center_color(const LColor& c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_edge_color
-//      Access : public
+//     Function: set_edge_color
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
 set_edge_color(const LColor& c) {
@@ -31,8 +31,8 @@ set_edge_color(const LColor& c) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_life_scale
-//      Access : public
+//     Function: set_life_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
 set_life_scale(SparkleParticleRenderer::SparkleParticleLifeScale ls) {
@@ -40,8 +40,8 @@ set_life_scale(SparkleParticleRenderer::SparkleParticleLifeScale ls) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_birth_radius
-//      Access : public
+//     Function: set_birth_radius
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
 set_birth_radius(PN_stdfloat radius) {
@@ -49,8 +49,8 @@ set_birth_radius(PN_stdfloat radius) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_death_radius
-//      Access : public
+//     Function: set_death_radius
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
 set_death_radius(PN_stdfloat radius) {
@@ -58,8 +58,8 @@ set_death_radius(PN_stdfloat radius) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_center_color
-//      Access : public
+//     Function: get_center_color
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE const LColor& SparkleParticleRenderer::
 get_center_color() const {
@@ -67,8 +67,8 @@ get_center_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_edge_color
-//      Access : public
+//     Function: get_edge_color
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE const LColor& SparkleParticleRenderer::
 get_edge_color() const {
@@ -76,8 +76,8 @@ get_edge_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_life_scale
-//      Access : public
+//     Function: get_life_scale
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE SparkleParticleRenderer::SparkleParticleLifeScale SparkleParticleRenderer::
 get_life_scale() const {
@@ -85,8 +85,8 @@ get_life_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_birth_radius
-//      Access : public
+//     Function: get_birth_radius
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat SparkleParticleRenderer::
 get_birth_radius() const {
@@ -94,8 +94,8 @@ get_birth_radius() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_death_radius
-//      Access : public
+//     Function: get_death_radius
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat SparkleParticleRenderer::
 get_death_radius() const {
@@ -103,8 +103,8 @@ get_death_radius() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_radius
-//      Access : public
+//     Function: get_radius
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat SparkleParticleRenderer::
 get_radius(BaseParticle *bp) {

@@ -1306,6 +1306,74 @@ static const UnicodeLatinMap::Entry latin_map[] = {
 static const size_t latin_map_length = sizeof(latin_map) / sizeof(UnicodeLatinMap::Entry);
 #endif
 
+static const wchar_t combining_accent_map[] = {
+  0x0000, // none
+  0x0301, // acute
+  0x0000, // acute_and_dot_above
+  0x0306, // breve
+  0x0000, // breve_and_acute
+  0x0000, // breve_and_dot_below
+  0x0000, // breve_and_grave
+  0x0000, // breve_and_hook_above
+  0x0000, // breve_and_tilde
+  0x032e, // breve_below
+  0x030c, // caron
+  0x0000, // caron_and_dot_above
+  0x0327, // cedilla
+  0x0000, // cedilla_and_acute
+  0x0000, // cedilla_and_breve
+  0x0302, // circumflex
+  0x0000, // circumflex_and_acute
+  0x0000, // circumflex_and_dot_below
+  0x0000, // circumflex_and_grave
+  0x0000, // circumflex_and_hook_above
+  0x0000, // circumflex_and_tilde
+  0x032d, // circumflex_below
+  0x0326, // comma_below
+  0x0000, // curl
+  0x0308, // diaeresis
+  0x0000, // diaeresis_and_acute
+  0x0000, // diaeresis_and_caron
+  0x0000, // diaeresis_and_grave
+  0x0000, // diaeresis_and_macron
+  0x0324, // diaeresis_below
+  0x0307, // dot_above
+  0x0000, // dot_above_and_macron
+  0x0323, // dot_below
+  0x0000, // dot_below_and_dot_above
+  0x0000, // dot_below_and_macron
+  0x030b, // double_acute
+  0x030f, // double_grave
+  0x0300, // grave
+  0x0328, // hook
+  0x0309, // hook_above
+  0x031b, // horn
+  0x0000, // horn_and_acute
+  0x0000, // horn_and_dot_below
+  0x0000, // horn_and_grave
+  0x0000, // horn_and_hook_above
+  0x0000, // horn_and_tilde
+  0x0311, // inverted_breve
+  0x0000, // line_below
+  0x0304, // macron
+  0x0000, // macron_and_acute
+  0x0000, // macron_and_diaeresis
+  0x0000, // macron_and_grave
+  0x0328, // ogonek
+  0x0000, // ogonek_and_macron
+  0x030a, // ring_above
+  0x0000, // ring_above_and_acute
+  0x0325, // ring_below
+  0x0000, // stroke
+  0x0000, // stroke_and_acute
+  0x0000, // stroke_and_hook
+  0x0303, // tilde
+  0x0000, // tilde_and_acute
+  0x0000, // tilde_and_diaeresis
+  0x0000, // tilde_and_macron
+  0x0330, // tilde_below
+  0x0000, // topbar
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: UnicodeLatinMap::look_up
@@ -1330,6 +1398,18 @@ look_up(wchar_t character) {
     }
     return NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnicodeLatinMap::get_combining_accent
+//       Access: Public, Static
+//  Description: Returns the unicode code point for the combining
+//               character corresponding with the given accent type,
+//               or 0 if none is recorded.
+////////////////////////////////////////////////////////////////////
+wchar_t UnicodeLatinMap::
+get_combining_accent(AccentType accent) {
+  return combining_accent_map[(size_t)accent];
 }
 
 ////////////////////////////////////////////////////////////////////

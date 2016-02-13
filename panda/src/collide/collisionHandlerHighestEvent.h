@@ -1,4 +1,4 @@
-// Filename: collisionHandlerEvent.h
+// Filename: collisionHandlerHighestEvent.h
 // Created by:  drose (16Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -38,13 +38,13 @@ PUBLISHED:
   CollisionHandlerHighestEvent();
 
 public:
-  virtual void begin_group();  
+  virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);
-  virtual bool end_group();  
+  virtual bool end_group();
 private:
   double _collider_distance;
   PT(CollisionEntry) _closest_collider;
-  
+
 
 public:
   static TypeHandle get_class_type() {

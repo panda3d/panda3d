@@ -1,4 +1,4 @@
-// Filename: awWebCore.h
+// Filename: awWebView.h
 // Created by:  rurbino (12Oct09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ class EXPCL_PANDAAWESOMIUM AwWebView : public TypedReferenceCount{
 PUBLISHED:
 
   /**
-  * Mouse button enumerations, used with WebView::injectMouseDown 
+  * Mouse button enumerations, used with WebView::injectMouseDown
   * and WebView::injectMouseUp
   */
   enum MouseButton {
@@ -44,7 +44,7 @@ PUBLISHED:
    */
   struct Rect {
     int x, y, width, height;
-    
+
     Rect();
     Rect(int x, int y, int width, int height);
     bool isEmpty() const;
@@ -53,24 +53,24 @@ PUBLISHED:
 
 PUBLISHED:
   AwWebView(Awesomium::WebView * webView);
-  
+
   virtual ~AwWebView();
-  
+
   INLINE void destroy(void);
-  
+
   INLINE void setListener(Awesomium::WebViewListener * listener);
 
   INLINE Awesomium::WebViewListener* getListener();
-  
+
   // VC7 linker doesn't like wstring from VS2008, hence using the all regular string version
   void loadURL2(const string& url, const string& frameName ="", const string& username="" , const string& password="");
-  
+
   // VC7 linker doesn't like wstring from VS2008, hence using the all regular string version
   void loadHTML2(const std::string& html, const std::string& frameName = "");
-  
+
   // VC7 linker doesn't like wstring from VS2008, hence using the all regular string version
   void loadFile2(const std::string& file, const std::string& frameName = "" );
-  
+
   INLINE void goToHistoryOffset(int offset);
 
   // VC7 linker doesn't like wstring from VS2008, hence using the all regular string version
@@ -101,7 +101,7 @@ PUBLISHED:
   }
 
   INLINE void injectKeyEvent(bool press, int modifiers, int windowsCode, int nativeCode=0);
-  
+
 private:
   Awesomium::WebView * _myWebView;
 

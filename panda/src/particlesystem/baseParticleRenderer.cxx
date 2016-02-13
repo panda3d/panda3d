@@ -20,9 +20,9 @@
 #include "compassEffect.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleRender::BaseParticleRenderer
-//      Access : Published
-// Description : Default Constructor
+//     Function: BaseParticleRender::BaseParticleRenderer
+//       Access: Published
+//  Description: Default Constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
 BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
@@ -37,9 +37,9 @@ BaseParticleRenderer(ParticleRendererAlphaMode alpha_mode) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleRender::BaseParticleRenderer
-//      Access : Published
-// Description : Copy Constructor
+//     Function: BaseParticleRender::BaseParticleRenderer
+//       Access: Published
+//  Description: Copy Constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
 BaseParticleRenderer(const BaseParticleRenderer& copy) :
@@ -54,18 +54,18 @@ BaseParticleRenderer(const BaseParticleRenderer& copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleRender::~BaseParticleRenderer
-//      Access : Published
-// Description : Destructor
+//     Function: BaseParticleRender::~BaseParticleRenderer
+//       Access: Published
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 BaseParticleRenderer::
 ~BaseParticleRenderer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleRender::set_ignore_scale
-//      Access : Published
-// Description : Sets the "ignore scale" flag.  When this is true,
+//     Function: BaseParticleRender::set_ignore_scale
+//       Access: Published
+//  Description: Sets the "ignore scale" flag.  When this is true,
 //               particles will be drawn as if they had no scale,
 //               regardless of whatever scale might be inherited from
 //               above the render node in the scene graph.
@@ -87,10 +87,10 @@ set_ignore_scale(bool ignore_scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : BaseParticleRender::output
-//       Access : Published
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: BaseParticleRender::output
+//       Access: Published
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
 output(ostream &out) const {
@@ -100,10 +100,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : BaseParticleRender::write
-//       Access : Published
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: BaseParticleRender::write
+//       Access: Published
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
 write(ostream &out, int indent) const {
@@ -116,9 +116,9 @@ write(ostream &out, int indent) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleRender::update_alpha_state
-//      Access : Private
-// Description : handles the base class part of alpha updating.
+//     Function: BaseParticleRender::update_alpha_state
+//       Access: Private
+//  Description: handles the base class part of alpha updating.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
 update_alpha_mode(ParticleRendererAlphaMode am) {
@@ -134,9 +134,9 @@ update_alpha_mode(ParticleRendererAlphaMode am) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleRender::enable_alpha
-//      Access : Private
-// Description : Builds an intermediate node and transition that
+//     Function: BaseParticleRender::enable_alpha
+//       Access: Private
+//  Description: Builds an intermediate node and transition that
 //               enables alpha channeling.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
@@ -146,9 +146,9 @@ enable_alpha() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : BaseParticleRender::disable_alpha
-//      Access : Private
-// Description : kills the intermediate alpha node/arc
+//     Function: BaseParticleRender::disable_alpha
+//       Access: Private
+//  Description: kills the intermediate alpha node/arc
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
 disable_alpha() {

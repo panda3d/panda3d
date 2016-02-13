@@ -1,4 +1,4 @@
-// Filename: PolylightNodeEffect.I
+// Filename: polylightNode.I
 // Created by:  sshodhan (02Jun04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -141,7 +141,7 @@ set_attenuation(PolylightNode::Attenuation_Type type){
   nassertr(type == ALINEAR || type == AQUADRATIC,false);
   _attenuation_type=type;
   return true;
-  
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -262,7 +262,7 @@ is_flickering() const {
 INLINE bool PolylightNode::
 set_flicker_type(PolylightNode::Flicker_Type type){
   nassertr(type == FRANDOM || type == FSIN,false);
-  
+
   _flicker_type=type;
   return true;
 }
@@ -350,7 +350,7 @@ get_step_size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightNode::set_color
 //       Access: Published
-//  Description: Set the light's color... 
+//  Description: Set the light's color...
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
 set_color(const LColor &color) {
@@ -376,7 +376,7 @@ set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b) {
   _color[0] = r;
   _color[1] = g;
   _color[2] = b;
-  _color[3] = 1.0;  
+  _color[3] = 1.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -394,7 +394,7 @@ get_color() const {
 //       Access: Published
 //  Description: This differs from get_color in that when applying
 //               the light color we need to make sure that a color
-//               flattening external to the PolylightNode is not 
+//               flattening external to the PolylightNode is not
 //               ignored.
 ////////////////////////////////////////////////////////////////////
 INLINE LColor PolylightNode::
@@ -408,9 +408,9 @@ get_color_scenegraph() const {
       return ca->get_color();
     }
   }
-    
+
   return _color;
- 
+
 }
 
 

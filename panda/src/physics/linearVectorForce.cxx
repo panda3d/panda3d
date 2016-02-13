@@ -22,9 +22,9 @@
 TypeHandle LinearVectorForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearVectorForce
-//       Access : Public
-//  Description : Vector Constructor
+//     Function: LinearVectorForce
+//       Access: Public
+//  Description: Vector Constructor
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
 LinearVectorForce(const LVector3& vec, PN_stdfloat a, bool mass) :
@@ -33,9 +33,9 @@ LinearVectorForce(const LVector3& vec, PN_stdfloat a, bool mass) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearVectorForce
-//       Access : Public
-//  Description : Default/Piecewise constructor
+//     Function: LinearVectorForce
+//       Access: Public
+//  Description: Default/Piecewise constructor
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
 LinearVectorForce(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat a, bool mass) :
@@ -44,9 +44,9 @@ LinearVectorForce(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat a, bo
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearVectorForce
-//       Access : Public
-//  Description : Copy Constructor
+//     Function: LinearVectorForce
+//       Access: Public
+//  Description: Copy Constructor
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
 LinearVectorForce(const LinearVectorForce &copy) :
@@ -55,18 +55,18 @@ LinearVectorForce(const LinearVectorForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearVectorForce
-//       Access : Public
-//  Description : Destructor
+//     Function: LinearVectorForce
+//       Access: Public
+//  Description: Destructor
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
 ~LinearVectorForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public, virtual
-// Description : copier
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 LinearForce *LinearVectorForce::
 make_copy() {
@@ -74,9 +74,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_child_vector
-//      Access : Public
-// Description : vector access
+//     Function: get_child_vector
+//       Access: Public
+//  Description: vector access
 ////////////////////////////////////////////////////////////////////
 LVector3 LinearVectorForce::
 get_child_vector(const PhysicsObject *) {
@@ -84,10 +84,10 @@ get_child_vector(const PhysicsObject *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearVectorForce::
 output(ostream &out) const {
@@ -97,10 +97,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearVectorForce::
 write(ostream &out, unsigned int indent) const {

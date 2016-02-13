@@ -67,51 +67,27 @@ set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
 
   switch (cs) {
   case CS_zup_right:
-    if (temp_hpr_fix) {
-      set(scale._v(0), shear._v(0) * scale._v(0), 0.0f,
-          0.0f, scale._v(1), 0.0f,
-          shear._v(1) * scale._v(2), shear._v(2) * scale._v(2), scale._v(2));
-    } else {
-      set(scale._v(0), 0.0f, 0.0f,
-          shear._v(0) * scale._v(1), scale._v(1), 0.0f,
-          shear._v(1) * scale._v(2), shear._v(2) * scale._v(2), scale._v(2));
-    }
+    set(scale._v(0), shear._v(0) * scale._v(0), 0.0f,
+        0.0f, scale._v(1), 0.0f,
+        shear._v(1) * scale._v(2), shear._v(2) * scale._v(2), scale._v(2));
     break;
 
   case CS_zup_left:
-    if (temp_hpr_fix) {
-      set(scale._v(0), shear._v(0) * scale._v(0), 0.0f,
-          0.0f, scale._v(1), 0.0f,
-          -shear._v(1) * scale._v(2), -shear._v(2) * scale._v(2), scale._v(2));
-    } else {
-      set(scale._v(0), 0.0f, 0.0f,
-          shear._v(0) * scale._v(1), scale._v(1), 0.0f,
-          -shear._v(1) * scale._v(2), -shear._v(2) * scale._v(2), scale._v(2));
-    }
+    set(scale._v(0), shear._v(0) * scale._v(0), 0.0f,
+        0.0f, scale._v(1), 0.0f,
+        -shear._v(1) * scale._v(2), -shear._v(2) * scale._v(2), scale._v(2));
     break;
 
   case CS_yup_right:
-    if (temp_hpr_fix) {
-      set(scale._v(0), 0.0f, shear._v(1) * scale._v(0),
-          shear._v(0) * scale._v(1), scale._v(1), shear._v(2) * scale._v(1),
-          0.0f, 0.0f, scale._v(2));
-    } else {
-      set(scale._v(0), 0.0f, 0.0f,
-          shear._v(0) * scale._v(1), scale._v(1), shear._v(2) * scale._v(1),
-          shear._v(1) * scale._v(2), 0.0f, scale._v(2));
-    }
+    set(scale._v(0), 0.0f, shear._v(1) * scale._v(0),
+        shear._v(0) * scale._v(1), scale._v(1), shear._v(2) * scale._v(1),
+        0.0f, 0.0f, scale._v(2));
     break;
 
   case CS_yup_left:
-    if (temp_hpr_fix) {
-      set(scale._v(0), 0.0f, -shear._v(1) * scale._v(0),
-          shear._v(0) * scale._v(1), scale._v(1), -shear._v(2) * scale._v(1),
-          0.0f, 0.0f, scale._v(2));
-    } else {
-      set(scale._v(0), 0.0f, 0.0f,
-          shear._v(0) * scale._v(1), scale._v(1), -shear._v(2) * scale._v(1),
-          -shear._v(1) * scale._v(2), 0.0f, scale._v(2));
-    }
+    set(scale._v(0), 0.0f, -shear._v(1) * scale._v(0),
+        shear._v(0) * scale._v(1), scale._v(1), -shear._v(2) * scale._v(1),
+        0.0f, 0.0f, scale._v(2));
     break;
 
   case CS_default:

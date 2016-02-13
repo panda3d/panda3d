@@ -94,8 +94,8 @@ extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
 // thing is, like everything else, to graft the reference to the
 // remote hostname into the one global filesystem, with something like
 // /hosts/hostname/path/to/file.  We observe the Unix convention for
-// internal names used in Panda; this makes operations like
-// Filename::get_dirname() simpler and more internally consistent.
+// internal names used in Panda; this makes operations
+// like Filename::get_dirname() simpler and more internally consistent.
 
 // This string hard-defines the prefix that we use internally to
 // indicate that the next directory component name should be treated
@@ -105,8 +105,8 @@ extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
 // created in order to read the first config file).  Windows purists
 // might be tempted to define this to a double slash so that internal
 // Panda filenames more closely resemble their Windows counterparts.
-// That might actually work, but it will cause problems with
-// Filename::standardize().
+// That might actually work, but it will cause problems
+// with Filename::standardize().
 
 // We use const char * instead of string to avoid static-init ordering
 // issues.
@@ -212,7 +212,7 @@ convert_pathname(const string &unix_style_pathname) {
              unix_style_pathname.substr(0, hosts_prefix_length) == hosts_prefix) {
     // A filename like /hosts/fooby gets turned into \\fooby.
     windows_pathname = "\\\\" + front_to_back_slash(unix_style_pathname.substr(hosts_prefix_length));
-    
+
   } else {
     // It starts with a slash, but the first part is not a single
     // letter.
@@ -335,7 +335,7 @@ from_os_specific(const string &os_specific, Filename::Type type) {
   const string &panda_root = get_panda_root();
 
   // If the initial prefix is the same as panda_root, remove it.
-  if (!panda_root.empty() && panda_root != string("\\") && 
+  if (!panda_root.empty() && panda_root != string("\\") &&
       panda_root.length() < result.length()) {
     bool matches = true;
     size_t p;
@@ -1080,7 +1080,7 @@ make_canonical() {
     // The root directory is a special case.
     return true;
   }
-  
+
 #ifndef WIN32
   // Use realpath in order to resolve symlinks properly
   char newpath [PATH_MAX + 1];
@@ -1130,7 +1130,7 @@ make_true_case() {
   // First, we have to convert it to its short name, then back to its
   // long name--that seems to be the trick to force Windows to throw
   // away the case we give it and get the actual file case.
-  
+
   wchar_t short_name[MAX_PATH + 1];
   DWORD l = GetShortPathNameW(os_specific.c_str(), short_name, MAX_PATH + 1);
   if (l == 0) {
@@ -1142,7 +1142,7 @@ make_true_case() {
   // the specified length if the short_name length wasn't enough--but also
   // according to the Windows docs, MAX_PATH will always be enough.
   assert(l < MAX_PATH + 1);
-  
+
   wchar_t long_name[MAX_PATH + 1];
   l = GetLongPathNameW(short_name, long_name, MAX_PATH + 1);
   if (l == 0) {
@@ -1202,14 +1202,14 @@ to_os_specific() const {
   Filename standard(*this);
   standard.standardize();
 
-#ifdef IS_OSX 
+#ifdef IS_OSX
   if (get_type() == T_dso) {
     std::string workname = standard.get_fullpath();
     size_t dot = workname.rfind('.');
     if (dot != string::npos) {
       if (workname.substr(dot) == ".so") {
         string dyLibBase = workname.substr(0, dot)+".dylib";
-        return dyLibBase; 
+        return dyLibBase;
       }
     }
   }
@@ -1287,7 +1287,7 @@ to_os_short_name() const {
 
 #ifdef WIN32
   wstring os_specific = to_os_specific_w();
-  
+
   wchar_t short_name[MAX_PATH + 1];
   DWORD l = GetShortPathNameW(os_specific.c_str(), short_name, MAX_PATH + 1);
   if (l == 0) {
@@ -1324,7 +1324,7 @@ to_os_long_name() const {
 
 #ifdef WIN32
   wstring os_specific = to_os_specific_w();
-  
+
   wchar_t long_name[MAX_PATH + 1];
   DWORD l = GetLongPathNameW(os_specific.c_str(), long_name, MAX_PATH + 1);
   if (l == 0) {
@@ -1582,7 +1582,7 @@ compare_timestamps(const Filename &other,
   }
   // !other_exists
   assert(!other_exists);
-  
+
   // This file exists, the other one doesn't.
   return other_missing_is_old ? 1 : -1;
 }
@@ -2473,7 +2473,7 @@ touch() const {
     CloseHandle(fhandle);
     return false;
   }
-  
+
   if (!SetFileTime(fhandle, NULL, NULL, &ftnow)) {
     CloseHandle(fhandle);
     return false;
@@ -2689,10 +2689,10 @@ copy_to(const Filename &other) const {
   if (!other_filename.open_write(out)) {
     return false;
   }
-        
+
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
-  
+
   in.read(buffer, buffer_size);
   size_t count = in.gcount();
   while (count != 0) {
@@ -2903,12 +2903,12 @@ get_hash() const {
 //               atomic_read_contents().
 ////////////////////////////////////////////////////////////////////
 bool Filename::
-atomic_compare_and_exchange_contents(string &orig_contents, 
-                                     const string &old_contents, 
+atomic_compare_and_exchange_contents(string &orig_contents,
+                                     const string &old_contents,
                                      const string &new_contents) const {
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE, 
+  HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
                              0, NULL, OPEN_ALWAYS,
                              FILE_ATTRIBUTE_NORMAL, NULL);
   while (hfile == INVALID_HANDLE_VALUE) {
@@ -2916,18 +2916,18 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     if (error == ERROR_SHARING_VIOLATION) {
       // If the file is locked by another process, yield and try again.
       Sleep(0);
-      hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE, 
+      hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
                           0, NULL, OPEN_ALWAYS,
                           FILE_ATTRIBUTE_NORMAL, NULL);
     } else {
-      cerr << "Couldn't open file: " << os_specific 
+      cerr << "Couldn't open file: " << os_specific
            << ", error " << error << "\n";
       return false;
     }
   }
 
   if (hfile == INVALID_HANDLE_VALUE) {
-    cerr << "Couldn't open file: " << os_specific 
+    cerr << "Couldn't open file: " << os_specific
          << ", error " << GetLastError() << "\n";
     return false;
   }
@@ -2939,7 +2939,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 
   DWORD bytes_read;
   if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
-    cerr << "Error reading file: " << os_specific 
+    cerr << "Error reading file: " << os_specific
          << ", error " << GetLastError() << "\n";
     CloseHandle(hfile);
     return false;
@@ -2948,7 +2948,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     orig_contents += string(buf, bytes_read);
 
     if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
-      cerr << "Error reading file: " << os_specific 
+      cerr << "Error reading file: " << os_specific
            << ", error " << GetLastError() << "\n";
       CloseHandle(hfile);
       return false;
@@ -2962,7 +2962,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     DWORD bytes_written;
     if (!WriteFile(hfile, new_contents.data(), new_contents.size(),
                    &bytes_written, NULL)) {
-      cerr << "Error writing file: " << os_specific 
+      cerr << "Error writing file: " << os_specific
            << ", error " << GetLastError() << "\n";
       CloseHandle(hfile);
       return false;
@@ -2994,7 +2994,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     close(fd);
     return false;
   }
-    
+
   ssize_t bytes_read = read(fd, buf, buf_size);
   while (bytes_read > 0) {
     orig_contents += string(buf, bytes_read);
@@ -3023,7 +3023,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     perror(os_specific.c_str());
     return false;
   }
-  
+
   return match;
 #endif  // WIN32_VC
 }
@@ -3049,7 +3049,7 @@ bool Filename::
 atomic_read_contents(string &contents) const {
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ, 
+  HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ,
                              FILE_SHARE_READ, NULL, OPEN_ALWAYS,
                              FILE_ATTRIBUTE_NORMAL, NULL);
   while (hfile == INVALID_HANDLE_VALUE) {
@@ -3057,11 +3057,11 @@ atomic_read_contents(string &contents) const {
     if (error == ERROR_SHARING_VIOLATION) {
       // If the file is locked by another process, yield and try again.
       Sleep(0);
-      hfile = CreateFileW(os_specific.c_str(), GENERIC_READ, 
+      hfile = CreateFileW(os_specific.c_str(), GENERIC_READ,
                           FILE_SHARE_READ, NULL, OPEN_ALWAYS,
-                          FILE_ATTRIBUTE_NORMAL, NULL);      
+                          FILE_ATTRIBUTE_NORMAL, NULL);
     } else {
-      cerr << "Couldn't open file: " << os_specific 
+      cerr << "Couldn't open file: " << os_specific
            << ", error " << error << "\n";
       return false;
     }
@@ -3074,7 +3074,7 @@ atomic_read_contents(string &contents) const {
 
   DWORD bytes_read;
   if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
-    cerr << "Error reading file: " << os_specific 
+    cerr << "Error reading file: " << os_specific
          << ", error " << GetLastError() << "\n";
     CloseHandle(hfile);
     return false;
@@ -3083,7 +3083,7 @@ atomic_read_contents(string &contents) const {
     contents += string(buf, bytes_read);
 
     if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
-      cerr << "Error reading file: " << os_specific 
+      cerr << "Error reading file: " << os_specific
            << ", error " << GetLastError() << "\n";
       CloseHandle(hfile);
       return false;
@@ -3115,7 +3115,7 @@ atomic_read_contents(string &contents) const {
     close(fd);
     return false;
   }
-    
+
   ssize_t bytes_read = read(fd, buf, buf_size);
   while (bytes_read > 0) {
     contents += string(buf, bytes_read);
@@ -3247,7 +3247,7 @@ locate_hash() {
     if (_hash_end == string::npos) {
       _hash_end = string::npos;
       _hash_start = string::npos;
-      
+
     } else {
       _hash_start = _hash_end;
       ++_hash_end;
@@ -3367,13 +3367,13 @@ r_make_canonical(const Filename &cwd) {
   // the directory above.
 
   Filename dir(get_dirname());
-  
+
   if (dir.empty()) {
     // No dirname means the file is in this directory.
     set_dirname(cwd);
     return true;
   }
-  
+
   if (!dir.r_make_canonical(cwd)) {
     return false;
   }

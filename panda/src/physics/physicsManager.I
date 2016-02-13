@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : attach_physical
-//      Access : Public
-// Description : Registers a Physical class with the manager
+//     Function: attach_physical
+//       Access: Public
+//  Description: Registers a Physical class with the manager
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_physical(Physical *p) {
@@ -29,9 +29,9 @@ attach_physical(Physical *p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : attach_linear_force
-//      Access : Public
-// Description : Adds a global linear force to the physics manager
+//     Function: attach_linear_force
+//       Access: Public
+//  Description: Adds a global linear force to the physics manager
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 add_linear_force(LinearForce *f) {
@@ -45,9 +45,9 @@ add_linear_force(LinearForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : attach_physicalnode
-//      Access : Public
-// Description : Please call attach_physical_node instead.
+//     Function: attach_physicalnode
+//       Access: Public
+//  Description: Please call attach_physical_node instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_physicalnode(PhysicalNode *p) {
@@ -59,9 +59,9 @@ attach_physicalnode(PhysicalNode *p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : attach_physical_node
-//      Access : Public
-// Description : Registers a physicalnode with the manager
+//     Function: attach_physical_node
+//       Access: Public
+//  Description: Registers a physicalnode with the manager
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_physical_node(PhysicalNode *p) {
@@ -72,9 +72,9 @@ attach_physical_node(PhysicalNode *p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : clear_linear_forces
-//      Access : Public
-// Description : Resets the physics manager force vector
+//     Function: clear_linear_forces
+//       Access: Public
+//  Description: Resets the physics manager force vector
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 clear_linear_forces() {
@@ -82,9 +82,9 @@ clear_linear_forces() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : attach_angular_force
-//      Access : Public
-// Description : Adds a global angular force to the physics manager
+//     Function: attach_angular_force
+//       Access: Public
+//  Description: Adds a global angular force to the physics manager
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 add_angular_force(AngularForce *f) {
@@ -97,9 +97,9 @@ add_angular_force(AngularForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : clear_angular_forces
-//      Access : Public
-// Description : Resets the physics manager force vector
+//     Function: clear_angular_forces
+//       Access: Public
+//  Description: Resets the physics manager force vector
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 clear_angular_forces() {
@@ -107,9 +107,9 @@ clear_angular_forces() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : clear_physicals
-//      Access : Public
-// Description : Resets the physics manager objects vector
+//     Function: clear_physicals
+//       Access: Public
+//  Description: Resets the physics manager objects vector
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 clear_physicals() {
@@ -117,9 +117,9 @@ clear_physicals() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_viscosity
-//      Access : Public
-// Description : Set the global viscosity.
+//     Function: set_viscosity
+//       Access: Public
+//  Description: Set the global viscosity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 set_viscosity(PN_stdfloat viscosity) {
@@ -127,9 +127,9 @@ set_viscosity(PN_stdfloat viscosity) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_viscosity
-//      Access : Public
-// Description : Get the global viscosity.
+//     Function: get_viscosity
+//       Access: Public
+//  Description: Get the global viscosity.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat PhysicsManager::
 get_viscosity() const {
@@ -137,9 +137,9 @@ get_viscosity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : attach_linear_integrator
-//      Access : Public
-// Description : Hooks a linear integrator into the manager
+//     Function: attach_linear_integrator
+//       Access: Public
+//  Description: Hooks a linear integrator into the manager
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_linear_integrator(LinearIntegrator *i) {
@@ -148,9 +148,9 @@ attach_linear_integrator(LinearIntegrator *i) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : attach_angular_integrator
-//      Access : Public
-// Description : Hooks an angular integrator into the manager
+//     Function: attach_angular_integrator
+//       Access: Public
+//  Description: Hooks an angular integrator into the manager
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
 attach_angular_integrator(AngularIntegrator *i) {

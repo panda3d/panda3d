@@ -1,4 +1,4 @@
-// Filename: cppBison.y
+// Filename: cppBison.yxx
 // Created by:  drose (16Jan99)
 //
 ////////////////////////////////////////////////////////////////////
@@ -1524,6 +1524,14 @@ maybe_initialize_or_function_body:
         | '=' const_expr ';'
 {
   $$ = $2;
+}
+        | '=' KW_DEFAULT ';'
+{
+  $$ = new CPPExpression(CPPExpression::get_default());
+}
+        | '=' KW_DELETE ';'
+{
+  $$ = new CPPExpression(CPPExpression::get_delete());
 }
         | '=' '{' structure_init '}'
 {

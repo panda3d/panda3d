@@ -52,13 +52,12 @@ bool DtoolCanThisBeAPandaInstance(PyObject *self) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////////
-//  Function : DTOOL_Call_ExtractThisPointerForType
-//
+////////////////////////////////////////////////////////////////////
+//     Function: DTOOL_Call_ExtractThisPointerForType
 //  These are the wrappers that allow for down and upcast from type ..
 //      needed by the Dtool py interface.. Be very careful if you muck with these
 //      as the generated code depends on how this is set up..
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer) {
   if (DtoolCanThisBeAPandaInstance(self)) {
     *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, classdef);
@@ -376,12 +375,11 @@ PyObject *_Dtool_Return(PyObject *value) {
   return value;
 }
 
-////////////////////////////////////////////////////////////////////////
-//  Function : DTool_CreatePyInstanceTyped
-//
+////////////////////////////////////////////////////////////////////
+//     Function: DTool_CreatePyInstanceTyped
 // this function relies on the behavior of typed objects in the panda system.
 //
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &known_class_type, bool memory_rules, bool is_const, int type_index) {
   // We can't do the NULL check here like in DTool_CreatePyInstance, since
   // the caller will have to get the type index to pass to this function
@@ -389,23 +387,15 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   // really NULL for whatever reason.
   nassertr(local_this_in != NULL, NULL);
 
-  /////////////////////////////////////////////////////
   // IF the class is possibly a run time typed object
-  /////////////////////////////////////////////////////
   if (type_index > 0) {
-    /////////////////////////////////////////////////////
     // get best fit class...
-    /////////////////////////////////////////////////////
     Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(type_index);
     if (target_class != NULL) {
-      /////////////////////////////////////////////////////
       // cast to the type...
-      //////////////////////////////////////////////////////
       void *new_local_this = target_class->_Dtool_DowncastInterface(local_this_in, &known_class_type);
       if (new_local_this != NULL) {
-        /////////////////////////////////////////////
         // ask class to allocate an instance..
-        /////////////////////////////////////////////
         Dtool_PyInstDef *self = (Dtool_PyInstDef *) target_class->_PyType.tp_new(&target_class->_PyType, NULL, NULL);
         if (self != NULL) {
           self->_ptr_to_object = new_local_this;
@@ -419,10 +409,8 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
     }
   }
 
-  /////////////////////////////////////////////////////
   // if we get this far .. just wrap the thing in the known type ??
   //    better than aborting...I guess....
-  /////////////////////////////////////////////////////
   Dtool_PyInstDef *self = (Dtool_PyInstDef *) known_class_type._PyType.tp_new(&known_class_type._PyType, NULL, NULL);
   if (self != NULL) {
     self->_ptr_to_object = local_this_in;
@@ -434,10 +422,10 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   return (PyObject *)self;
 }
 
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // DTool_CreatePyInstance .. wrapper function to finalize the existance of a general
 //    dtool py instance..
-////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const) {
   if (local_this == NULL) {
     // This is actually a very common case, so let's allow this, but return
@@ -457,9 +445,9 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
   return (PyObject *)self;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 /// Th Finalizer for simple instances..
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject *type, bool memory_rules, bool is_const) {
   // lets put some code in here that checks to see the memory is properly configured..
   // prior to my call ..
@@ -471,11 +459,11 @@ int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject 
   return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // A helper function to glue method definition together .. that can not be done
 // at code generation time because of multiple generation passes in interrogate..
 //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
   for (; in->ml_name != NULL; in++) {
     if (themap.find(in->ml_name) == themap.end()) {
@@ -484,13 +472,13 @@ void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //  ** HACK ** alert..
 //
 //      Need to keep a runtime type dictionary ... that is forward declared of typed object.
 //        We rely on the fact that typed objects are uniquly defined by an integer.
 //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 void
 RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype) {
   pair<NamedTypeMap::iterator, bool> result =
@@ -573,8 +561,6 @@ LookupRuntimeTypedClass(TypeHandle handle) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
 Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
   RuntimeTypeMap::iterator di = runtime_type_map.find(type);
   if (di != runtime_type_map.end()) {
@@ -589,7 +575,6 @@ Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
   return NULL;
 }
 
-///////////////////////////////////////////////////////////////////////////////
 #if PY_MAJOR_VERSION >= 3
 PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], PyModuleDef *module_def) {
 #else
@@ -700,14 +685,14 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
   return module;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 ///  HACK.... Be careful
 //
 //  Dtool_BorrowThisReference
 //      This function can be used to grab the "THIS" pointer from an object and use it
 //      Required to support historical inheritance in the form of "is this instance of"..
 //
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
   PyObject *from_in = NULL;
   PyObject *to_in = NULL;
@@ -736,9 +721,9 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
   return (PyObject *) NULL;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // We do expose a dictionay for dtool classes .. this should be removed at some point..
-//////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   PyObject *self;
   PyObject *subject;
@@ -758,7 +743,7 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   return Py_None;
 }
 
-///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 Py_hash_t DTOOL_PyObject_HashPointer(PyObject *self) {
   if (self != NULL && DtoolCanThisBeAPandaInstance(self)) {
     Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;

@@ -1,4 +1,4 @@
-// Filename: CollisionHandlerGravity.cxx
+// Filename: collisionHandlerGravity.cxx
 // Created by:  drose (16Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -51,13 +51,7 @@ CollisionHandlerGravity::
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::set_highest_collision
 //       Access: Protected
-//  Description: 
-//               
-//               
-//
-//               
-//               
-//               
+//  Description:
 ////////////////////////////////////////////////////////////////////
 #define OLD_COLLISION_HANDLER_GRAVITY 0
 #if OLD_COLLISION_HANDLER_GRAVITY
@@ -67,7 +61,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   bool got_max = false;
   PN_stdfloat max_height = 0.0f;
   CollisionEntry *highest = NULL;
-  
+
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
     CollisionEntry *entry = (*ei);
@@ -108,7 +102,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     // Add only the one that we're impacting with:
     add_entry(highest);
   }
-  
+
   return max_height;
 }
 #else
@@ -176,7 +170,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     highest->write(cout, 2);
     cout<<endl;
   #endif
-  
+
   // We only collide with things we are impacting with.
   // Remove the collisions:
   _current_colliding.clear();
@@ -191,7 +185,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     }
   }
 
-  
+
   // Set the contact normal so that other code can make use of the
   // surface slope:
   if (highest->get_into()->is_of_type(CollisionPlane::get_class_type())) {
@@ -208,7 +202,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   } else {
     _contact_normal = highest->get_surface_normal(from_node_path);
   }
-  
+
   return max_height;
 }
 #endif
@@ -276,7 +270,7 @@ handle_entries() {
             adjust = max(adjust, gravity_adjust);
           }
           _current_velocity -= _gravity * dt;
-          // Record the airborne height in case someone else needs it: 
+          // Record the airborne height in case someone else needs it:
           _airborne_height = -(max_height + _offset) + adjust;
           assert(_airborne_height >= -0.001f);
         }
@@ -315,7 +309,7 @@ handle_entries() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::apply_linear_force
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerGravity::
 apply_linear_force(ColliderDef &def, const LVector3 &force) {

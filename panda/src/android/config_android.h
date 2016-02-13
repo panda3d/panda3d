@@ -23,10 +23,10 @@
 
 #include <jni.h>
 
-NotifyCategoryDeclNoExport(android);
+NotifyCategoryDecl(android, EXPORT_CLASS, EXPORT_TEMPL);
 extern void init_libandroid();
 
-extern struct android_app* panda_android_app;
+extern EXPORT_CLASS struct android_app* panda_android_app;
 
 extern jclass    jni_PandaActivity;
 extern jmethodID jni_PandaActivity_readBitmapHeader;

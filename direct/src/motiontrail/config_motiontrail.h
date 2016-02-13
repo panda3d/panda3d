@@ -1,4 +1,4 @@
-// Filename: config_interval.h
+// Filename: config_motiontrail.h
 // Created by:  drose (27Aug02)
 //
 ////////////////////////////////////////////////////////////////////

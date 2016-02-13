@@ -20,7 +20,7 @@ TypeHandle PhysxConvexForceFieldShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxConvexForceFieldShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxConvexForceFieldShape::
 link(NxForceFieldShape *shapePtr) {
@@ -38,7 +38,7 @@ link(NxForceFieldShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxConvexForceFieldShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxConvexForceFieldShape::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxConvexForceFieldShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxConvexForceFieldShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxConvexForceFieldShape::
 save_to_desc(PhysxConvexForceFieldShapeDesc &shapeDesc) const {

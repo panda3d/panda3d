@@ -1,6 +1,6 @@
-// Filename: pandadx.cxx
+// Filename: pandadx9.cxx
 // Created by:  masad (15Jan04)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pandadx9.h"

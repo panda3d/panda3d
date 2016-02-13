@@ -1,4 +1,4 @@
-// Filename: glCgShaderContext_src.h
+// Filename: glCgShaderContext_src.I
 // Created by: rdb (27Jun14)
 //
 ////////////////////////////////////////////////////////////////////

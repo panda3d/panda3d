@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_vector
-//      Access : Public
-// Description : encapsulating wrapper
+//     Function: set_vector
+//       Access: Public
+//  Description: encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearVectorForce::
 set_vector(const LVector3& v) {
@@ -23,9 +23,9 @@ set_vector(const LVector3& v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_vector
-//      Access : Public
-// Description : piecewise encapsulating wrapper
+//     Function: set_vector
+//       Access: Public
+//  Description: piecewise encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearVectorForce::
 set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
@@ -33,9 +33,9 @@ set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_local_vector
-//      Access : Public
-// Description :
+//     Function: get_local_vector
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3 LinearVectorForce::
 get_local_vector() const {

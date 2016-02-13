@@ -1,4 +1,4 @@
-// Filename: renderState_ext.h
+// Filename: graphicsWindow_ext.h
 // Created by:  CFSworks (11Oct14)
 //
 ////////////////////////////////////////////////////////////////////

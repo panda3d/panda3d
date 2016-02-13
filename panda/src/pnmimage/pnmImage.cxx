@@ -1797,6 +1797,43 @@ fill_distance_outside(const PNMImage &mask, float threshold, int radius) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::indirect_1d_lookup
+//       Access: Published
+//  Description: index_image is a WxH grayscale image, while
+//               pixel_values is an Nx1 color (or grayscale) image.
+//               Typically pixel_values will be a 256x1 image.
+//
+//               Fills the PNMImage with a new image the same width
+//               and height as index_image, with the same number of
+//               channels as pixel_values.
+//
+//               Each pixel of the new image is computed with the
+//               formula:
+//
+//               new_image(x, y) = pixel_values(index_image(x, y)[channel], 0)
+//
+//               No interpolation is performed; the nearest value in
+//               pixel_values is discovered.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+indirect_1d_lookup(const PNMImage &index_image, int channel,
+                   const PNMImage &pixel_values) {
+  clear(index_image.get_x_size(), index_image.get_y_size(),
+        pixel_values.get_num_channels(), pixel_values.get_maxval());
+
+  for (int yi = 0; yi < get_y_size(); ++yi) {
+    for (int xi = 0; xi < get_x_size(); ++xi) {
+      int v = int(index_image.get_channel(xi, yi, channel) * (pixel_values.get_x_size() - 1) + 0.5);
+      nassertv(v >= 0 && v < pixel_values.get_x_size());
+      set_xel_val(xi, yi, pixel_values.get_xel_val(v, 0));
+      if (has_alpha()) {
+        set_alpha_val(xi, yi, pixel_values.get_alpha_val(v, 0));
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::rescale
 //       Access: Published
 //  Description: Rescales the RGB channel values so that any values in

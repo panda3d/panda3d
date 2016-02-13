@@ -12,50 +12,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: LVector2::Default Constructor
+//     Function: LVector2::Constructor
 //       Access: Public
-//  Description:
+//  Description: Constructs a new LVector2 from a LVecBase2
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector2)::
-FLOATNAME(LVector2)() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector2::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector2)::
-FLOATNAME(LVector2)(const FLOATNAME(LVecBase2) &copy) : FLOATNAME(LVecBase2)(copy) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector2::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector2) &FLOATNAME(LVector2)::
-operator = (const FLOATNAME(LVecBase2) &copy) {
-  FLOATNAME(LVecBase2)::operator = (copy);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector2::Copy Fill Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector2) &FLOATNAME(LVector2)::
-operator = (FLOATTYPE fill_value) {
-  FLOATNAME(LVecBase2)::operator = (fill_value);
-  return *this;
+FLOATNAME(LVector2)(const FLOATNAME(LVecBase2)& copy) :
+  FLOATNAME(LVecBase2)(copy)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector2::Constructor
 //       Access: Public
-//  Description:
+//  Description: Constructs a new LVector2 with all components set
+//               to the fill value.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector2)::
 FLOATNAME(LVector2)(FLOATTYPE fill_value) :
@@ -175,6 +148,18 @@ operator / (FLOATTYPE scalar) const {
 }
 
 #ifndef FLOATTYPE_IS_INT
+////////////////////////////////////////////////////////////////////
+//     Function: LVector2::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector2)::
+normalized() const {
+  return FLOATNAME(LVecBase2)::normalized();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector2::project
 //       Access: Published

@@ -19,7 +19,7 @@
 
 #include "cppType.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPTypeProxy
 // Description : This is a special kind of type that is a placeholder
 //               for some type, currently unknown, that will be filled

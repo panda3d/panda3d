@@ -171,11 +171,11 @@ register_with_read_factory() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : test_transform
-//       Access : private
-//  Description : this tests the transform to make sure it's within
-//                the specified limits.  It's done so we can assert
-//                to see when an invalid transform is being applied.
+//     Function: test_transform
+//       Access: Private
+//  Description: This tests the transform to make sure it's within
+//               the specified limits.  It's done so we can assert
+//               to see when an invalid transform is being applied.
 ////////////////////////////////////////////////////////////////////
 void ModelNode::
 test_transform(const TransformState *ts) const {
@@ -189,12 +189,12 @@ test_transform(const TransformState *ts) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : transform_changed
-//       Access : private, virtual
-//  Description : node hook.  This function handles outside
-//                (non-physics) actions on the actor
-//                and updates the internal representation of the node.
-//                i.e. copy from PandaNode to PhysicsObject
+//     Function: transform_changed
+//       Access: Private, Virtual
+//  Description: node hook.  This function handles outside
+//               (non-physics) actions on the actor
+//               and updates the internal representation of the node.
+//               i.e. copy from PandaNode to PhysicsObject
 ////////////////////////////////////////////////////////////////////
 void ModelNode::
 transform_changed() {

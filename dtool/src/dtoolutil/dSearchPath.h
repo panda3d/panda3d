@@ -20,7 +20,7 @@
 #include "filename.h"
 #include "pvector.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : DSearchPath
 // Description : This class stores a list of directories that can be
 //               searched, in order, to locate a particular file.  It

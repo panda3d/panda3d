@@ -242,7 +242,7 @@ verify_window_sizes(int numsizes, int *dimen) {
   return num_valid_modes;
 }
 
-//////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow::close_window
 //       Access: Public
 //  Description: Some cleanup is necessary for directx closeup of window.

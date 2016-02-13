@@ -1,9 +1,9 @@
 #ifndef __SOCKET_PORTABLE_H__
-#define __SOCKET_PORTABLE_H__ 
-//////////////////////////////////////////////////////////////////
+#define __SOCKET_PORTABLE_H__
+////////////////////////////////////////////////////////////////////
 // Lots of stuff to make network socket-based io transparent across multiple
 //  platforms
-//////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 const int ALL_OK = 0;
 const int BASIC_ERROR = -1;
@@ -121,7 +121,7 @@ inline int init_network()
     int answer = WSAStartup(0x0101, &mydata);
     if (answer != 0)
         return BASIC_ERROR;
-    
+
     return ALL_OK;
 }
 
@@ -269,7 +269,7 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 #include <arpa/inet.h>
 #include <unistd.h>
 
-typedef struct sockaddr_in AddressType; 
+typedef struct sockaddr_in AddressType;
 
 typedef int SOCKET;
 const SOCKET BAD_SOCKET = -1;
@@ -290,7 +290,7 @@ inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
 {
     return (int)send(a, buff, (size_t)len, 0);
 }
-///////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
 {
     return (int)sendto(a, buffer, (size_t)buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
@@ -361,7 +361,7 @@ const long LOCAL_NONBLOCK = 1;
 const int LOCAL_BLOCKING_ERROR = EAGAIN;
 const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 
-#else 
+#else
 /************************************************************************
 * NO DEFINITION => GIVE COMPILATION ERROR
 ************************************************************************/

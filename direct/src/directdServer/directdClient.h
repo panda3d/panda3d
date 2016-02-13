@@ -14,7 +14,10 @@
 
 #include "directd.h"
 
-// Description: DirectDClient is a test app for DriectDServer.
+////////////////////////////////////////////////////////////////////
+//       Class : DirectDClient
+// Description : DirectDClient is a test app for DirectDServer.
+////////////////////////////////////////////////////////////////////
 class DirectDClient: public DirectD {
 public:
   DirectDClient();
@@ -25,4 +28,3 @@ public:
 protected:
   void cli_command(const string& cmd);
 };
-

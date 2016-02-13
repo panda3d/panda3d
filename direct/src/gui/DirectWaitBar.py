@@ -33,7 +33,7 @@ class DirectWaitBar(DirectFrame):
             ('barColor',       (1, 0, 0, 1),       self.setBarColor),
             ('barTexture',     None,               self.setBarTexture),
             ('barRelief',      DGG.FLAT,           self.setBarRelief),
-            ('sortOrder',      NO_FADE_SORT_INDEX, None),
+            ('sortOrder',      DGG.NO_FADE_SORT_INDEX, None),
             )
         if 'text' in kw:
             textoptiondefs = (

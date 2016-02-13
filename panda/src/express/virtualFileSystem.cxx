@@ -32,12 +32,12 @@ VirtualFileSystem *VirtualFileSystem::_global_ptr = NULL;
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VirtualFileSystem::
 VirtualFileSystem() :
   vfs_case_sensitive
-("vfs-case-sensitive", 
+("vfs-case-sensitive",
 #ifdef NDEBUG
  false,  // The default for a production build is not case-sensitive;
          // this avoids runtime overhead to verify case sensitivity.
@@ -74,7 +74,7 @@ VirtualFileSystem() :
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VirtualFileSystem::
 ~VirtualFileSystem() {
@@ -89,7 +89,7 @@ VirtualFileSystem::
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 mount(Multifile *multifile, const Filename &mount_point, int flags) {
-  PT(VirtualFileMountMultifile) new_mount = 
+  PT(VirtualFileMountMultifile) new_mount =
     new VirtualFileMountMultifile(multifile);
   return mount(new_mount, mount_point, flags);
 }
@@ -115,14 +115,14 @@ mount(Multifile *multifile, const Filename &mount_point, int flags) {
 //               be a virtual file already appearing within the vfs
 //               filespace.  However, it is possible to mount such a
 //               file; see mount_loop() for this.
-////
+//
 //               Note that a mounted VirtualFileSystem directory is
 //               fully case-sensitive, unlike the native Windows file
 //               system, so you must refer to files within the virtual
 //               file system with exactly the right case.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-mount(const Filename &physical_filename, const Filename &mount_point, 
+mount(const Filename &physical_filename, const Filename &mount_point,
       int flags, const string &password) {
   if (!physical_filename.exists()) {
     express_cat->warning()
@@ -169,7 +169,7 @@ mount(const Filename &physical_filename, const Filename &mount_point,
 //               recursively mounting a multifile like this.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-mount_loop(const Filename &virtual_filename, const Filename &mount_point, 
+mount_loop(const Filename &virtual_filename, const Filename &mount_point,
            int flags, const string &password) {
   PT(VirtualFile) file = get_file(virtual_filename, false);
   if (file == NULL) {
@@ -237,7 +237,7 @@ unmount(Multifile *multifile) {
     (*wi) = mount;
 
     if (mount->is_exact_type(VirtualFileMountMultifile::get_class_type())) {
-      VirtualFileMountMultifile *mmount = 
+      VirtualFileMountMultifile *mmount =
         DCAST(VirtualFileMountMultifile, mount);
       if (mmount->get_multifile() == multifile) {
         // Remove this one.  Don't increment wi.
@@ -282,7 +282,7 @@ unmount(const Filename &physical_filename) {
     (*wi) = mount;
 
     if (mount->is_exact_type(VirtualFileMountSystem::get_class_type())) {
-      VirtualFileMountSystem *smount = 
+      VirtualFileMountSystem *smount =
         DCAST(VirtualFileMountSystem, mount);
       if (smount->get_physical_filename() == physical_filename) {
         // Remove this one.  Don't increment wi.
@@ -291,14 +291,14 @@ unmount(const Filename &physical_filename) {
             << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
         }
         mount->_file_system = NULL;
-        
+
       } else {
         // Don't remove this one.
         ++wi;
       }
 
     } else if (mount->is_exact_type(VirtualFileMountMultifile::get_class_type())) {
-      VirtualFileMountMultifile *mmount = 
+      VirtualFileMountMultifile *mmount =
         DCAST(VirtualFileMountMultifile, mount);
       if (mmount->get_multifile()->get_multifile_name() == physical_filename) {
         // Remove this one.  Don't increment wi.
@@ -608,7 +608,7 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
   int num_directories = searchpath.get_num_directories();
   for (int i = 0; i < num_directories; ++i) {
     Filename match(searchpath.get_directory(i), filename);
-    if (searchpath.get_directory(i) == "." && 
+    if (searchpath.get_directory(i) == "." &&
         filename.is_fully_qualified()) {
       // A special case for the "." directory: to avoid prefixing an
       // endless stream of ./ in front of files, if the filename
@@ -831,7 +831,7 @@ get_global_ptr() {
     init_libexpress();
 
     _global_ptr = new VirtualFileSystem;
-    
+
     // Set up the default mounts.  First, there is always the root
     // mount.
     _global_ptr->mount("/", "/", 0);
@@ -849,21 +849,21 @@ get_global_ptr() {
       string mount_desc = mounts.get_unique_value(i);
 
       // The vfs-mount syntax is:
-      
+
       // vfs-mount system-filename mount-point [options]
-      
+
       // The last two spaces mark the beginning of the mount point,
       // and of the options, respectively.  There might be multiple
       // spaces in the system filename, which are part of the
       // filename.
-      
+
       // The last space marks the beginning of the mount point.
       // Spaces before that are part of the system filename.
       size_t space = mount_desc.rfind(' ');
       if (space == string::npos) {
         express_cat.warning()
           << "No space in vfs-mount descriptor: " << mount_desc << "\n";
-        
+
       } else {
         string mount_point = mount_desc.substr(space + 1);
         while (space > 0 && isspace(mount_desc[space - 1])) {
@@ -871,7 +871,7 @@ get_global_ptr() {
         }
         mount_desc = mount_desc.substr(0, space);
         string options;
-        
+
         space = mount_desc.rfind(' ');
         if (space != string::npos) {
           // If there's another space, we have the optional options field.
@@ -882,10 +882,10 @@ get_global_ptr() {
           }
           mount_desc = mount_desc.substr(0, space);
         }
-        
+
         mount_desc = ExecutionEnvironment::expand_string(mount_desc);
         Filename physical_filename = Filename::from_os_specific(mount_desc);
-        
+
         int flags;
         string password;
         parse_options(options, flags, password);
@@ -899,7 +899,7 @@ get_global_ptr() {
     if (!vfs_mount_ramdisk.empty()) {
       string mount_point = vfs_mount_ramdisk;
       string options;
-        
+
       size_t space = mount_point.rfind(' ');
       if (space != string::npos) {
         // If there's a space, we have the optional options field.
@@ -909,7 +909,7 @@ get_global_ptr() {
         }
         mount_point = mount_point.substr(0, space);
       }
-        
+
       int flags;
       string password;
       parse_options(options, flags, password);
@@ -1114,7 +1114,7 @@ close_read_write_file(iostream *stream) {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 atomic_compare_and_exchange_contents(const Filename &filename, string &orig_contents,
-                                     const string &old_contents, 
+                                     const string &old_contents,
                                      const string &new_contents) {
   PT(VirtualFile) file = create_file(filename);
   if (file == NULL) {
@@ -1157,7 +1157,7 @@ scan_mount_points(vector_string &names, const Filename &path) const {
   Mounts::const_iterator mi;
   for (mi = _mounts.begin(); mi != _mounts.end(); ++mi) {
     VirtualFileMount *mount = (*mi);
-    
+
     string mount_point = mount->get_mount_point();
     if (prefix.empty()) {
       // The indicated path is the root.  Is the mount point on the
@@ -1183,7 +1183,7 @@ scan_mount_points(vector_string &names, const Filename &path) const {
   }
 }
 
-        
+
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::parse_options
 //       Access: Public, Static
@@ -1205,7 +1205,7 @@ parse_options(const string &options, int &flags, string &password) {
     q = options.find(',', p);
   }
   parse_option(options.substr(p), flags, password);
-}      
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::parse_option
@@ -1313,13 +1313,13 @@ do_get_file(const Filename &filename, int open_flags) const {
       }
     } else if (mount_point.empty()) {
       // This is the root mount point; all files are in here.
-      if (consider_match(found_file, composite_file, mount, strpath, 
+      if (consider_match(found_file, composite_file, mount, strpath,
                          pathname, false, open_flags)) {
         return found_file;
       }
 #ifdef HAVE_ZLIB
       if (vfs_implicit_pz) {
-        if (consider_match(found_file, composite_file, mount, strpath_pz, 
+        if (consider_match(found_file, composite_file, mount, strpath_pz,
                            pathname, true, open_flags)) {
           return found_file;
         }
@@ -1332,7 +1332,7 @@ do_get_file(const Filename &filename, int open_flags) const {
       // This pathname falls within this mount system.
       Filename local_filename = strpath.substr(mount_point.length() + 1);
       Filename local_filename_pz = strpath_pz.substr(mount_point.length() + 1);
-      if (consider_match(found_file, composite_file, mount, local_filename, 
+      if (consider_match(found_file, composite_file, mount, local_filename,
                          pathname, false, open_flags)) {
         return found_file;
       }
@@ -1389,7 +1389,7 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
                VirtualFileMount *mount, const Filename &local_filename,
                const Filename &original_filename, bool implicit_pz_file,
                int open_flags) const {
-  PT(VirtualFile) vfile = 
+  PT(VirtualFile) vfile =
     mount->make_virtual_file(local_filename, original_filename, false, open_flags);
   if (!vfile->has_file() && ((open_flags & OF_allow_nonexist) == 0)) {
     // Keep looking.
@@ -1470,7 +1470,7 @@ consider_mount_mf(const Filename &filename) {
     }
 
     PT(Multifile) multifile = new Multifile;
-   
+
     istream *stream = file->open_read_file(false);
     if (stream == (istream *)NULL) {
       // Couldn't read file.
@@ -1490,7 +1490,7 @@ consider_mount_mf(const Filename &filename) {
     express_cat->info()
       << "Implicitly mounting " << dirname << "\n";
 
-    PT(VirtualFileMountMultifile) new_mount = 
+    PT(VirtualFileMountMultifile) new_mount =
       new VirtualFileMountMultifile(multifile);
     return do_mount(new_mount, dirname, MF_read_only);
   }

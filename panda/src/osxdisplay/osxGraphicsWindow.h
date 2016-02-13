@@ -1,3 +1,5 @@
+// Filename: osxGraphicsWindow.h
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -32,7 +34,7 @@ OSStatus report_agl_error(const string &comment);
 ////////////////////////////////////////////////////////////////////
 class osxGraphicsWindow : public GraphicsWindow {
 public:
-  osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -48,10 +50,10 @@ public:
   virtual void begin_flip();
   virtual void end_flip();
   virtual void process_events();
-  
+
   virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
-  
+
   virtual void mouse_mode_absolute();
   virtual void mouse_mode_relative();
 
@@ -73,7 +75,7 @@ private:
   //
 
 public: // do not call direct ..
-  OSStatus handle_key_input(EventHandlerCallRef myHandler, EventRef event, 
+  OSStatus handle_key_input(EventHandlerCallRef myHandler, EventRef event,
                             Boolean keyDown);
   OSStatus handle_text_input(EventHandlerCallRef myHandler, EventRef event);
   OSStatus handle_window_mouse_events(EventHandlerCallRef myHandler, EventRef event);
@@ -107,10 +109,10 @@ private:
 
   CGImageRef _pending_icon;
   CGImageRef _current_icon;
-  
+
   int _ID;
-  static osxGraphicsWindow *full_screen_window; 
-  
+  static osxGraphicsWindow *full_screen_window;
+
 #ifdef HACK_SCREEN_HASH_CONTEXT
   AGLContext _holder_aglcontext;
 #endif

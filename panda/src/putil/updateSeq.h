@@ -68,6 +68,7 @@ PUBLISHED:
   INLINE UpdateSeq operator ++ (int);
 
   INLINE AtomicAdjust::Integer get_seq() const;
+  MAKE_PROPERTY(seq, get_seq);
 
   INLINE void output(ostream &out) const;
 

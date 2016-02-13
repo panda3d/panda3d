@@ -29,8 +29,8 @@
 // Description : The streambuf object that implements
 //               IChunkedStream.
 ////////////////////////////////////////////////////////////////////
-// No need to export from DLL.
 class ChunkedStreamBuf : public streambuf {
+  // No need to export from DLL.
 public:
   ChunkedStreamBuf();
   virtual ~ChunkedStreamBuf();

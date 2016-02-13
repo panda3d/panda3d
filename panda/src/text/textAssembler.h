@@ -315,7 +315,7 @@ private:
                  const LPoint3 &centroid,
                  const TextProperties *properties, GlyphPlacement &placement) const;
   bool 
-  tack_on_accent(char accent_mark, CheesyPosition position,
+  tack_on_accent(wchar_t accent_mark, CheesyPosition position,
                  CheesyTransform transform,
                  const LPoint3 &min_vert, const LPoint3 &max_vert,
                  const LPoint3 &centroid,

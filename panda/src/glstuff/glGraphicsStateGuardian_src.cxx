@@ -155,14 +155,14 @@ static const string default_vshader =
   "attribute vec4 p3d_Color;\n"
   "attribute vec2 p3d_MultiTexCoord0;\n"
   "varying vec2 texcoord;\n"
-  "varying vec4 color;\n"
+  "varying lowp vec4 color;\n"
 #endif
   "uniform mat4 p3d_ModelViewProjectionMatrix;\n"
   "uniform vec4 p3d_ColorScale;\n"
   "void main(void) {\n"
   "  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\n"
   "  texcoord = p3d_MultiTexCoord0;\n"
-  "  color = p3d_Color * p3d_ColorScale;\n"
+  "  color = p3d_Color;\n"
   "}\n";
 
 static const string default_fshader =
@@ -171,18 +171,23 @@ static const string default_fshader =
   "in vec2 texcoord;\n"
   "in vec4 color;\n"
   "out vec4 p3d_FragColor;"
+  "uniform sampler2D p3d_Texture0;\n"
+  "uniform vec4 p3d_TexAlphaOnly;\n"
 #else
   "precision mediump float;\n"
   "varying vec2 texcoord;\n"
-  "varying vec4 color;\n"
+  "varying lowp vec4 color;\n"
+  "uniform lowp sampler2D p3d_Texture0;\n"
+  "uniform lowp vec4 p3d_TexAlphaOnly;\n"
 #endif
-  "uniform sampler2D p3d_Texture0;\n"
   "void main(void) {\n"
 #ifndef OPENGLES
   "  p3d_FragColor = texture(p3d_Texture0, texcoord);\n"
-  "  p3d_FragColor *= color;\n"
+  "  p3d_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
+  "  p3d_FragColor = color;\n"
 #else
   "  gl_FragColor = texture2D(p3d_Texture0, texcoord).bgra;\n"
+  "  gl_FragColor += p3d_TexAlphaOnly;\n" // Hack for text rendering
   "  gl_FragColor *= color;\n"
 #endif
   "}\n";
@@ -1035,6 +1040,16 @@ reset() {
         break;
       }
     }
+
+#ifndef OPENGLES
+    // The OpenGL spec states that these are not reported by the above
+    // mechanism, so we have to check for the extension ourselves.
+    if (is_at_least_gl_version(3, 0) ||
+        has_extension("GL_ARB_texture_compression_rgtc") ||
+        has_extension("GL_EXT_texture_compression_rgtc")) {
+      _compressed_texture_formats.set_bit(Texture::CM_rgtc);
+    }
+#endif
   }
 
 #ifdef OPENGLES_2
@@ -2487,15 +2502,32 @@ reset() {
 
 #ifndef OPENGLES
   _supports_get_program_binary = false;
+  _program_binary_formats.clear();
 
   if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_get_program_binary")) {
     _glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)
       get_extension_func("glGetProgramBinary");
+    _glProgramBinary = (PFNGLPROGRAMBINARYPROC)
+      get_extension_func("glProgramBinary");
     _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
       get_extension_func("glProgramParameteri");
 
-    if (_glGetProgramBinary != NULL && _glProgramParameteri != NULL) {
+    GLint num_binary_formats = 0;
+    if (_glGetProgramBinary != NULL &&
+        _glProgramBinary != NULL &&
+        _glProgramParameteri != NULL) {
+      glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_binary_formats);
+    }
+
+    if (num_binary_formats > 0) {
       _supports_get_program_binary = true;
+
+      GLenum *binary_formats = (GLenum *)alloca(sizeof(GLenum) * num_binary_formats);
+      glGetIntegerv(GL_PROGRAM_BINARY_FORMATS, (GLint *)binary_formats);
+
+      for (int i = 0; i < num_binary_formats; ++i) {
+        _program_binary_formats.insert(binary_formats[i]);
+      }
     }
   }
 #endif
@@ -2682,6 +2714,23 @@ reset() {
   _error_count = 0;
 
   report_my_gl_errors();
+
+#ifndef OPENGLES
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Supported shader binary formats:\n";
+    GLCAT.debug() << " ";
+
+    pset<GLenum>::const_iterator it;
+    for (it = _program_binary_formats.begin();
+         it != _program_binary_formats.end(); ++it) {
+      char number[16];
+      sprintf(number, "0x%04X", *it);
+      GLCAT.debug(false) << " " << number << "";
+    }
+    GLCAT.debug(false) << "\n";
+  }
+#endif
 
 #ifndef OPENGLES
   if (_gl_shadlang_ver_major >= 4 || has_extension("GL_NV_gpu_program5")) {
@@ -6539,9 +6588,12 @@ do_issue_depth_test() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_alpha_test() {
+#ifndef OPENGLES_1
   if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     enable_alpha_test(false);
-  } else {
+  } else
+#endif
+  {
     const AlphaTestAttrib *target_alpha_test;
     _target_rs->get_attrib_def(target_alpha_test);
 
@@ -6719,7 +6771,7 @@ do_issue_material() {
 
   call_glMaterialfv(face, GL_SPECULAR, material->get_specular());
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
-  glMaterialf(face, GL_SHININESS, min(material->get_shininess(), (PN_stdfloat)128.0));
+  glMaterialf(face, GL_SHININESS, max(min(material->get_shininess(), (PN_stdfloat)128), (PN_stdfloat)0));
 
   if (material->has_ambient() && material->has_diffuse()) {
     // The material has both an ambient and diffuse specified.  This
@@ -6802,9 +6854,13 @@ do_issue_blending() {
 
   unsigned int color_channels =
     target_color_write->get_channels() & _color_write_mask;
+
+#ifndef OPENGLES_1
   if (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write)) {
     color_channels &= ~(ColorWriteAttrib::C_alpha);
   }
+#endif
+
   if (color_channels == ColorWriteAttrib::C_off) {
     int color_write_slot = ColorWriteAttrib::get_class_slot();
     enable_multisample_alpha_one(false);
@@ -8081,6 +8137,12 @@ get_component_type(Texture::ComponentType component_type) {
     return GL_BYTE;
   case Texture::T_short:
     return GL_SHORT;
+
+#ifndef OPENGLES
+  case Texture::T_half_float:
+    return GL_HALF_FLOAT;
+#endif
+
   default:
     GLCAT.error() << "Invalid Texture::Type value!\n";
     return GL_UNSIGNED_BYTE;
@@ -8110,6 +8172,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
       case Texture::F_r11_g11_b10:
+      case Texture::F_rgb9_e5:
         // This shouldn't be possible.
         nassertr(false, GL_RGB);
         break;
@@ -8122,6 +8185,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba16:
       case Texture::F_rgba32:
       case Texture::F_rgba8i:
+      case Texture::F_rgb10_a2:
         return GL_COMPRESSED_RGBA;
 
       case Texture::F_rgb:
@@ -8147,6 +8211,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_r32i:
         return GL_COMPRESSED_RED;
 
+      case Texture::F_rg:
       case Texture::F_rg8i:
       case Texture::F_rg16:
       case Texture::F_rg32:
@@ -8240,6 +8305,20 @@ get_external_image_format(Texture *tex) const {
       break;
 #endif  // OPENGLES
 
+    case Texture::CM_rgtc:
+#ifndef OPENGLES
+      if (tex->get_format() == Texture::F_luminance) {
+        return GL_COMPRESSED_LUMINANCE_LATC1_EXT;
+      } else if (tex->get_format() == Texture::F_luminance_alpha) {
+        return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+      } else if (tex->get_num_components() == 1) {
+        return GL_COMPRESSED_RED_RGTC1;
+      } else {
+        return GL_COMPRESSED_RG_RGTC2;
+      }
+#endif
+      break;
+
     case Texture::CM_default:
     case Texture::CM_off:
     case Texture::CM_dxt2:
@@ -8274,13 +8353,14 @@ get_external_image_format(Texture *tex) const {
 #endif
 
   case Texture::F_alpha:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
     return GL_ALPHA;
 #else
     return GL_RED;
 #endif
 
 #ifndef OPENGLES_1
+  case Texture::F_rg:
   case Texture::F_rg16:
   case Texture::F_rg32:
     return GL_RG;
@@ -8294,6 +8374,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgb32:
   case Texture::F_srgb:
   case Texture::F_r11_g11_b10:
+  case Texture::F_rgb9_e5:
 #ifdef OPENGLES
     return GL_RGB;
 #else
@@ -8308,6 +8389,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgba16:
   case Texture::F_rgba32:
   case Texture::F_srgb_alpha:
+  case Texture::F_rgb10_a2:
 #ifdef OPENGLES_2
     return GL_RGBA;
 #else
@@ -8316,7 +8398,7 @@ get_external_image_format(Texture *tex) const {
 
   case Texture::F_luminance:
   case Texture::F_sluminance:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
     return GL_LUMINANCE;
 #else
     return GL_RED;
@@ -8324,7 +8406,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
   case Texture::F_sluminance_alpha:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
     return GL_LUMINANCE_ALPHA;
 #else
     return GL_RG;
@@ -8393,10 +8475,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_rgba8i:
       case Texture::F_r32i:
       case Texture::F_r11_g11_b10:
+      case Texture::F_rgb9_e5:
         // Unsupported; fall through to below.
         break;
 
       case Texture::F_rgbm:
+      case Texture::F_rgb10_a2:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
         }
@@ -8478,6 +8562,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       case Texture::F_blue:
       case Texture::F_r16:
       case Texture::F_r32:
+#ifndef OPENGLES
+        if (get_supports_compressed_texture_format(Texture::CM_rgtc) && !is_3d) {
+          return GL_COMPRESSED_RED_RGTC1;
+        }
+#endif
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
@@ -8489,8 +8578,14 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
         break;
 
+      case Texture::F_rg:
       case Texture::F_rg16:
       case Texture::F_rg32:
+#ifndef OPENGLES
+        if (get_supports_compressed_texture_format(Texture::CM_rgtc) && !is_3d) {
+          return GL_COMPRESSED_RG_RGTC2;
+        }
+#endif
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         }
@@ -8622,6 +8717,20 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
     case Texture::CM_pvr1_4bpp:
       break;
 #endif
+
+    case Texture::CM_rgtc:
+#ifndef OPENGLES
+      if (tex->get_format() == Texture::F_luminance) {
+        return GL_COMPRESSED_LUMINANCE_LATC1_EXT;
+      } else if (tex->get_format() == Texture::F_luminance_alpha) {
+        return GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+      } else if (tex->get_num_components() == 1) {
+        return GL_COMPRESSED_RED_RGTC1;
+      } else if (tex->get_num_components() == 2) {
+        return GL_COMPRESSED_RG_RGTC2;
+      }
+#endif
+      break;
 
     case Texture::CM_default:
     case Texture::CM_off:
@@ -8870,14 +8979,14 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
 
   case Texture::F_alpha:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
     return force_sized ? GL_ALPHA8 : GL_ALPHA;
 #else
     return force_sized ? GL_R8 : GL_RED;
 #endif
 
   case Texture::F_luminance:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float) {
       return GL_LUMINANCE16F_ARB;
@@ -8895,7 +9004,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #endif
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
-#ifdef SUPPORT_FIXED_FUNCTION
+#if defined(SUPPORT_FIXED_FUNCTION) || defined(OPENGLES)
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float || tex->get_component_type() == Texture::T_unsigned_short) {
       return GL_LUMINANCE_ALPHA16F_ARB;
@@ -8905,6 +9014,11 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
       return force_sized ? GL_LUMINANCE8_ALPHA8 : GL_LUMINANCE_ALPHA;
     }
 #else
+    return force_sized ? GL_RG8 : GL_RG;
+#endif
+
+#ifndef OPENGLES
+  case Texture::F_rg:
     return force_sized ? GL_RG8 : GL_RG;
 #endif
 
@@ -8931,6 +9045,12 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #ifndef OPENGLES
   case Texture::F_r11_g11_b10:
     return GL_R11F_G11F_B10F;
+
+  case Texture::F_rgb9_e5:
+    return GL_RGB9_E5;
+
+  case Texture::F_rgb10_a2:
+    return GL_RGB10_A2;
 #endif
 
   default:
@@ -8984,8 +9104,19 @@ is_compressed_format(GLenum format) {
   case GL_COMPRESSED_RGB_FXT1_3DFX:
   case GL_COMPRESSED_RGBA_FXT1_3DFX:
 
+  case GL_COMPRESSED_RED_RGTC1:
+  case GL_COMPRESSED_SIGNED_RED_RGTC1:
+  case GL_COMPRESSED_RG_RGTC2:
+  case GL_COMPRESSED_SIGNED_RG_RGTC2:
+  case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
+  case GL_COMPRESSED_SIGNED_LUMINANCE_LATC1_EXT:
+  case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
+  case GL_COMPRESSED_SIGNED_LUMINANCE_ALPHA_LATC2_EXT:
+
   case GL_COMPRESSED_RGB:
+  case GL_COMPRESSED_SRGB_EXT:
   case GL_COMPRESSED_RGBA:
+  case GL_COMPRESSED_SRGB_ALPHA_EXT:
   case GL_COMPRESSED_ALPHA:
   case GL_COMPRESSED_LUMINANCE:
   case GL_COMPRESSED_LUMINANCE_ALPHA:
@@ -9756,9 +9887,12 @@ set_state_and_transform(const RenderState *target,
 #ifdef SUPPORT_FIXED_FUNCTION
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
-      !_state_mask.get_bit(alpha_test_slot) ||
-      (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test) !=
-       _state_shader->get_flag(ShaderAttrib::F_subsume_alpha_test))) {
+      !_state_mask.get_bit(alpha_test_slot)
+#ifndef OPENGLES_1
+      || (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test) !=
+          _state_shader->get_flag(ShaderAttrib::F_subsume_alpha_test))
+#endif
+      ) {
     //PStatGPUTimer timer(this, _draw_set_state_alpha_test_pcollector);
     do_issue_alpha_test();
     _state_mask.set_bit(alpha_test_slot);
@@ -9862,9 +9996,12 @@ set_state_and_transform(const RenderState *target,
       _target_rs->get_attrib(color_blend_slot) != _state_rs->get_attrib(color_blend_slot) ||
       !_state_mask.get_bit(transparency_slot) ||
       !_state_mask.get_bit(color_write_slot) ||
-      !_state_mask.get_bit(color_blend_slot) ||
-      (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) !=
-       _state_shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
+      !_state_mask.get_bit(color_blend_slot)
+#ifndef OPENGLES_1
+      || (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) !=
+          _state_shader->get_flag(ShaderAttrib::F_disable_alpha_write))
+#endif
+      ) {
     //PStatGPUTimer timer(this, _draw_set_state_blending_pcollector);
     do_issue_blending();
     _state_mask.set_bit(transparency_slot);
@@ -11065,9 +11202,13 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     }
   }
 
-  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps) {
+  if (sampler.uses_mipmaps() && !gtc->_uses_mipmaps && !gl_ignore_mipmaps) {
     // The texture wasn't created with mipmaps, but we are trying
     // to sample it with mipmaps.  We will need to reload it.
+    GLCAT.info()
+      << "reloading texture " << gtc->get_texture()->get_name()
+      << " with mipmaps\n";
+
     apply_texture(gtc);
     gtc->mark_needs_reload();
     bool okflag = upload_texture(gtc, false, true);
@@ -11132,6 +11273,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   if (!get_supports_compressed_texture_format(image_compression)) {
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
+
+    // If this triggers, Panda cannot decompress the texture.  Compile
+    // with libsquish support or precompress the texture.
+    nassertr(!image.is_null(), false);
   }
 
   int mipmap_bias = 0;
@@ -11389,7 +11534,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
 #ifndef OPENGLES // OpenGL ES doesn't have GL_TEXTURE_MAX_LEVEL.
-    if (_supports_texture_lod) {
+    if (is_at_least_gl_version(1, 2)) {
       // By the time we get here, we have a pretty good prediction for
       // the number of mipmaps we're going to have, so tell the GL that's
       // all it's going to get.
@@ -11404,14 +11549,14 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 #endif
 
-#if !defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES_2)
+#if !defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES)
     // Do we need to apply a swizzle mask to emulate these deprecated
     // texture formats?
     switch (tex->get_format()) {
     case Texture::F_alpha:
-      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_ONE);
-      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_ONE);
-      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_ONE);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_ZERO);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_ZERO);
+      glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
       glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_RED);
       break;
 
@@ -11470,6 +11615,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
       gtc->_width = width;
       gtc->_height = height;
       gtc->_depth = depth;
+      gtc->update_data_size_bytes(get_texture_memory_size(gtc));
+
       needs_reload = false;
     }
   } else {
@@ -11904,7 +12051,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
               << "No mipmap level " << n << " defined for " << tex->get_name()
               << "\n";
 #ifndef OPENGLES
-            if (_supports_texture_lod) {
+            if (is_at_least_gl_version(1, 2)) {
               // Tell the GL we have no more mipmaps for it to use.
               glTexParameteri(texture_target, GL_TEXTURE_MAX_LEVEL, n - mipmap_bias);
             }
@@ -12124,7 +12271,7 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES
   // Turn off mipmaps for the simple texture.
-  if (tex->uses_mipmaps() && _supports_texture_lod) {
+  if (tex->uses_mipmaps() && is_at_least_gl_version(1, 2)) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
   }
 #endif
@@ -12580,6 +12727,16 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_float;
     format = Texture::F_r11_g11_b10;
     break;
+
+  case GL_RGB9_E5:
+    type = Texture::T_float;
+    format = Texture::F_rgb9_e5;
+    break;
+
+  case GL_RGB10_A2:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgb10_a2;
+    break;
 #endif
 
 #ifdef OPENGLES_2
@@ -12750,6 +12907,32 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_rgba;
     compression = Texture::CM_fxt1;
     break;
+  case GL_COMPRESSED_LUMINANCE_LATC1_EXT:
+    format = Texture::F_luminance;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT:
+    format = Texture::F_luminance_alpha;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_RED_RGTC1:
+    format = Texture::F_red;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_SIGNED_RED_RGTC1:
+    type = Texture::T_byte;
+    format = Texture::F_red;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_RG_RGTC2:
+    format = Texture::F_rg;
+    compression = Texture::CM_rgtc;
+    break;
+  case GL_COMPRESSED_SIGNED_RG_RGTC2:
+    type = Texture::T_byte;
+    format = Texture::F_rg;
+    compression = Texture::CM_rgtc;
+    break;
 #endif
   default:
     GLCAT.warning()
@@ -12790,7 +12973,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
     GLint highest_level = num_expected_levels;
 #ifndef OPENGLES
-    if (_supports_texture_lod) {
+    if (is_at_least_gl_version(1, 2)) {
       glGetTexParameteriv(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
       highest_level = min(highest_level, num_expected_levels);
     }
@@ -12823,6 +13006,10 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     nassertr(false, false);
     return false;
 #else
+
+  // Make sure the GL driver does not align textures, otherwise we get corrupt
+  // memory, since we don't take alignment into account.
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
   if (target == GL_TEXTURE_CUBE_MAP) {
     // A cube map, compressed or uncompressed.  This we must extract

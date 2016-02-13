@@ -1,4 +1,4 @@
-// Filename: mayaEggImport.cxx
+// Filename: mayaEggLoader.cxx
 // Created by:  jyelon (20Jul05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -91,8 +91,8 @@ class MayaEggLoader
 public:
   bool ConvertEggData(EggData *data,    bool merge, bool model, bool anim, bool respect_normals);
   bool ConvertEggFile(const char *name, bool merge, bool model, bool anim, bool respect_normals);
-  
-  
+
+
 public:
   void          TraverseEggNode(EggNode *node, EggGroup *context, string delim);
   MayaEggMesh  *GetMesh(EggVertexPool *pool, EggGroup *parent);
@@ -157,9 +157,9 @@ MColor MakeMayaColor(const LColor &vec)
   return MColor(vec[0], vec[1], vec[2], vec[3]);
 }
 
-// [gjeon] to create enum attribute, 
+// [gjeon] to create enum attribute,
 // fieldNames is a stringArray of enum names, and filedIndex is the default index value
-MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName, 
+MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName,
                               MStringArray fieldNames, unsigned fieldIndex) {
   MStatus stat;
 
@@ -171,7 +171,7 @@ MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName
   }
 
   MFnEnumAttribute fnAttr;
-  MObject newAttr = fnAttr.create( fullName, briefName, 
+  MObject newAttr = fnAttr.create( fullName, briefName,
                                    0, &stat );
   if ( MS::kSuccess != stat ) {
     mayaloader_cat.error()
@@ -189,10 +189,10 @@ MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName
     return stat;
   }
 
-  fnAttr.setKeyable( true ); 
-  fnAttr.setReadable( true ); 
-  fnAttr.setWritable( true ); 
-  fnAttr.setStorable( true ); 
+  fnAttr.setKeyable( true );
+  fnAttr.setReadable( true );
+  fnAttr.setWritable( true );
+  fnAttr.setStorable( true );
 
   // Now add the new attribute to this dependency node
   stat = fnDN.addAttribute(newAttr, MFnDependencyNode::kLocalDynamicAttr);
@@ -205,11 +205,11 @@ MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName
   return stat;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // MayaEggTex
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 class MayaEggTex
 {
@@ -219,7 +219,7 @@ public:
   MObject _file_texture;
   MObject _shader;
   MObject _shading_group;
-  
+
   MFnSingleIndexedComponent _component;
   void AssignNames(void);
 };
@@ -301,8 +301,8 @@ MayaEggTex *MayaEggLoader::GetTex(EggTexture* etex)
       // [gjeon] to create alpha channel connection
       LoaderOptions options;
       PT(Texture) tex = TexturePool::load_texture(etex->get_fullpath(), 0, false, options);
-      if (((tex != NULL) && (tex->get_num_components() == 4)) 
-          || (etex->get_format() == EggTexture::F_alpha) 
+      if (((tex != NULL) && (tex->get_num_components() == 4))
+          || (etex->get_format() == EggTexture::F_alpha)
           || (etex->get_format() == EggTexture::F_luminance_alpha))
         dgmod.connect(filetex.findPlug("outTransparency"),shader.findPlug("transparency"));
     }
@@ -318,16 +318,16 @@ MayaEggTex *MayaEggLoader::GetTex(EggTexture* etex)
   res->_file_texture = filetex.object();
   res->_shader = shader.object();
   res->_shading_group = sgroup.object();
-  
+
   _tex_tab[fn] = res;
   return res;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // MayaEggGroup
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 class MayaEggGroup
 {
@@ -387,7 +387,7 @@ MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
     MStringArray eggFlags;
     for (int i = 0; i < context->get_num_object_types(); i++) {
       eggFlags.append(MString(context->get_object_type(i).c_str()));
-    }    
+    }
 
     for (unsigned i = 0; i < eggFlags.length(); i++) {
       MString attrName = "eggObjectTypes";
@@ -412,11 +412,11 @@ MayaEggGroup *MayaEggLoader::FindGroup(EggGroup *group)
   return _group_tab[group];
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // MayaEggJoint
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 class MayaEggJoint
 {
@@ -626,17 +626,17 @@ void MayaEggJoint::CreateMayaBone(MayaEggGroup *eggParent)
     }
   }
   ikj.set(mtm);
-  
+
   _joint = ikj.object();
   ikj.getPath(_joint_dag_path);
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // MayaEggGeom : base abstract class of MayaEggMesh and MayaEggNurbsSurface
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 typedef pair<double, EggGroup *> MayaEggWeight;
 
@@ -647,7 +647,7 @@ struct MayaEggVertex
   LTexCoordd             _uv;
   vector<MayaEggWeight> _weights;
   double                _sumWeights; // [gjeon] to be used in normalizing weights
-  int                   _index; 
+  int                   _index;
   int                   _external_index; // masad: use egg's index directly
 };
 
@@ -722,16 +722,16 @@ typedef phash_set<MayaEggVertex, MEV_Compare> VertTable;
 class MayaEggGeom
 {
 public:
-  
+
   EggVertexPool      *_pool;
   MObject             _transNode;
   MObject             _shapeNode;
   EggGroup            *_parent;
   MDagPath            _shape_dag_path;
-  int                 _vert_count;  
+  int                 _vert_count;
 
   string _name;
-  
+
   MFloatPointArray    _vertexArray;
   MVectorArray        _normalArray;
   MColorArray         _vertColorArray;
@@ -740,7 +740,7 @@ public:
 
   MStringArray        _eggObjectTypes;
   VertTable  _vert_tab;
-  
+
   bool                _renameTrans;
 
   int GetVert(EggVertex *vert, EggGroup *context);
@@ -784,7 +784,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
     vtx._weights.push_back(MayaEggWeight(membership, egg_joint));
     vtx._sumWeights += membership; // [gjeon] to be used in normalizing weights
   }
-  
+
   if (vtx._weights.size()==0) {
     if (context != 0) {
       vtx._weights.push_back(MayaEggWeight(1.0, context));
@@ -807,7 +807,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
   if (vti != _vert_tab.end()) {
     /*    if ((remaining_weight) > 0.01) {
       mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vti->_index << endl;
-      } */   
+      } */
     if (mayaloader_cat.is_spam()) {
       ostringstream stream;
       stream << "(" << vti->_pos << " " << vti->_normal << " " << vti->_uv << ")\n";
@@ -824,13 +824,13 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
     }
     return vti->_index;
   }
-  
+
   //_vert_count++;
   vtx._index = _vert_count++;
   /*
   if ((remaining_weight) > 0.01) {
     mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vtx._index << endl;
-    } */   
+    } */
 
   _vertexArray.append(MakeMayaPoint(vtx._pos));
   if (vert->has_normal()) {
@@ -870,7 +870,7 @@ void MayaEggGeom::AssignNames(void)
   string shape_name = string(dntrans.name().asChar());
   string numbers ("0123456789");
   size_t found;
-  
+
   found=shape_name.find_last_not_of(numbers);
   if (found!=string::npos)
     shape_name.insert(found+1, "Shape");
@@ -891,7 +891,7 @@ EggGroup *MayaEggGeom::GetControlJoint(void)
     return 0;
   }
   switch (vert->_weights.size()) {
-  case 0: 
+  case 0:
     for (++vert; vert != _vert_tab.end(); ++vert) {
       if (vert->_weights.size() != 0) {
         return CTRLJOINT_DEFORM;
@@ -924,11 +924,11 @@ void MayaEggGeom::AddEggFlag(MString fieldName) {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // MayaEggMesh
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 typedef phash_map<LTexCoordd, int>             TVertTable;
 typedef phash_map<LColor, int>                CVertTable;
 
@@ -948,10 +948,10 @@ public:
   int                 _cvert_count;
   int                 _face_count;
   vector<MayaEggTex*> _face_tex;
-  
+
   TVertTable _tvert_tab;
   CVertTable _cvert_tab;
-  
+
   int GetTVert(const LTexCoordd &uv);
   int GetCVert(const LColor &col);
   int AddFace(unsigned numVertices, MIntArray mvertIndices, MIntArray mtvertIndices, MayaEggTex *tex);
@@ -1060,11 +1060,11 @@ void MayaEggMesh::ConnectTextures(void)
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // MayaEggNurbsSurface
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 class MayaEggNurbsSurface : public MayaEggGeom
 {
 public:
@@ -1149,7 +1149,7 @@ void MayaEggNurbsSurface::PrintData(void)
 {
   if (mayaloader_cat.is_debug()) {
     mayaloader_cat.debug() << "nurbsSurface : " << _name << endl;
-    
+
     mayaloader_cat.debug() << "u_form : " << _uForm << endl;
     mayaloader_cat.debug() << "v_form : " << _vForm << endl;
   }
@@ -1160,7 +1160,7 @@ void MayaEggNurbsSurface::PrintData(void)
     MPoint cv =_cvArray[i];
     mayaloader_cat.debug() << cv[0] << " " << cv[1] << " " << cv[2] << endl;
   }
-  
+
   for (unsigned i = 0; i < _uKnotArray.length(); i++)
   {
     mayaloader_cat.debug() << _uKnotArray[i] << endl;
@@ -1173,11 +1173,11 @@ void MayaEggNurbsSurface::PrintData(void)
   */
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
-// MayaAnim: 
+// MayaAnim:
 //
-///////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 class MayaAnim
 {
 public:
@@ -1211,11 +1211,11 @@ void MayaAnim::PrintData(void)
   _pool->write(mayaloader_cat.debug(), 0);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // MayaEggLoader functions
 //
-///////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
 {
@@ -1259,11 +1259,11 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
     cmd = cmd + " ";
     cmd = cmd + joint.name();
   }
-  
+
   MFnDependencyNode shape(M->_shapeNode);
   cmd = cmd + " ";
   cmd = cmd + shape.name();
-  
+
   MStatus status;
   MDGModifier dgmod;
   if (mayaloader_cat.is_spam()) {
@@ -1276,16 +1276,16 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
     mayaloader_cat.spam() << spamCmd << ": total = " << joints.size() << endl;
   }
   status = dgmod.commandToExecute(cmd);
-  if (status != MStatus::kSuccess) { 
+  if (status != MStatus::kSuccess) {
     perror("skinCluster commandToExecute");
-    return; 
+    return;
   }
   status = dgmod.doIt();
   if (status != MStatus::kSuccess) {
     perror("skinCluster doIt");
-    return; 
+    return;
   }
-  
+
   MPlugArray oldplugs;
   MPlug inPlug;
   if (shape.typeName() == "mesh") {
@@ -1293,7 +1293,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   } else if (shape.typeName() == "nurbsSurface") {
     inPlug = shape.findPlug("create");
   } else {
-    // we only support mesh and nurbsSurface    
+    // we only support mesh and nurbsSurface
     return;
   }
 
@@ -1305,11 +1305,11 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   MIntArray influenceIndices;
   MFnSingleIndexedComponent component;
   component.create(MFn::kMeshVertComponent); // [gjeon] Interestingly, we can use MFn::kMeshVertComponent for NURBS surface, too
-  component.setCompleteData(M->_vert_count);  
+  component.setCompleteData(M->_vert_count);
   for (unsigned int i=0; i<joints.size(); i++) {
     unsigned int index = skinCluster.indexForInfluenceObject(joints[i]->_joint_dag_path, &status);
     if (status != MStatus::kSuccess) {
-      perror("skinCluster index"); 
+      perror("skinCluster index");
       return;
     }
     influenceIndices.append((int)index);
@@ -1356,21 +1356,21 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // TraverseEggData
 //
 // We have an EggData in memory, and now we're going to copy that
 // over into the maya scene graph.
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string delim)
 {
   vector<int> vertIndices;
   vector<int> tvertIndices;
   vector<int> cvertIndices;
-  
+
   string delstring = " ";
 
   if (node->is_of_type(EggPolygon::get_class_type())) {
@@ -1387,7 +1387,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
 
     MayaEggTex *tex = 0;
     LMatrix3d uvtrans = LMatrix3d::ident_mat();
- 
+
     if (poly->has_texture()) {
       EggTexture *etex = poly->get_texture(0);
       if (mayaloader_cat.is_spam()) {
@@ -1399,7 +1399,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     } else {
       tex = GetTex(NULL);
     }
-    
+
     EggPolygon::const_iterator ci;
     MayaEggMesh *mesh = GetMesh(poly->get_pool(), context);
     if (mayaloader_cat.is_spam()) {
@@ -1442,7 +1442,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
       mesh->_faceColorArray.append(MakeMayaColor(poly->get_color()));
     }
     mesh->AddFace(numVertices, mvertIndices, mtvertIndices, tex);
-    
+
     // [gjeon] to handle double-sided flag
     if (poly->get_bface_flag()) {
       mesh->AddEggFlag("double-sided");
@@ -1462,7 +1462,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     case EggGroup::BT_point_camera_relative:
       mesh->AddEggFlag("billboard-point");
       break;
-     
+
     default:
       ;
     }
@@ -1488,7 +1488,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     // [gjeon] finding textures
     MayaEggTex *tex = 0;
     LMatrix3d uvtrans = LMatrix3d::ident_mat();
- 
+
     if (eggNurbsSurface->has_texture()) {
       EggTexture *etex = eggNurbsSurface->get_texture(0);
       tex = GetTex(etex);
@@ -1512,7 +1512,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
         surface->_cvArray.append(MakeMPoint(vtx->get_pos3()));
       }
     }
-    
+
     // [gjeon] building u knotArray
     for (int i = 1; i < eggNurbsSurface->get_num_u_knots()-1; i++) {
       surface->_uKnotArray.append(eggNurbsSurface->get_u_knot(i));
@@ -1619,12 +1619,12 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
         mayaloader_cat.debug() << delim+delstring << "found an EggXfmSAnim: " << node->get_name() << endl;
       }
     }
-    
+
     EggGroupNode::const_iterator ci;
     for (ci = group->begin(); ci != group->end(); ++ci) {
       TraverseEggNode(*ci, context, delim+delstring);
     }
-  } 
+  }
 }
 
 bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool anim, bool respect_normals)
@@ -1634,7 +1634,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     return false;
   }
 
-  /*  
+  /*
   if ((anim) || (!model)) {
     mayaloader_cat.error() << "Currently, only model-loading is implemented.\n";
     return false;
@@ -1652,7 +1652,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   TexTable::const_iterator ti;
   SurfaceTable::const_iterator si;
   AnimTable::const_iterator ei;
-  
+
   if (MGlobal::isYAxisUp()) {
     data->set_coordinate_system(CS_yup_right);
   } else {
@@ -1663,7 +1663,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     mayaloader_cat.debug() << "root node: " << data->get_type() << endl;
   }
   TraverseEggNode(data, NULL, "");
-  
+
   MStatus status;
 
   MFnSet collision_set;
@@ -1681,7 +1681,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     //    MStatus status;
     MFnMesh mfn;
     MString cset;
-    
+
     MayaEggGroup *parentNode = FindGroup(mesh->_parent);
     MObject parent = MObject::kNullObj;
     if (parentNode) {
@@ -1755,7 +1755,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       }
     }
 
-    // lets try to set normals per vertex 
+    // lets try to set normals per vertex
     if (respect_normals) {
       status = mfn.setVertexNormals(mesh->_normalArray, mesh->_vertNormalIndices, MSpace::kTransform);
       if (status != MStatus::kSuccess) {
@@ -1766,7 +1766,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     if (mayaloader_cat.is_spam()) {
       mayaloader_cat.spam() << "vertex normals set." << endl;
     }
-   
+
     // lets try to set colors per vertex
     /*
     MDGModifier dgmod;
@@ -1796,7 +1796,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
 
     //    MStatus status;
     MFnNurbsSurface mfnNurbsSurface;
-    
+
     MayaEggGroup *parentNode = FindGroup(surface->_parent);
     MObject parent = MObject::kNullObj;
     if (parentNode) {
@@ -1819,7 +1819,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       surface->_transNode = parent;
     }
 
-    // [gjeon] add eggFlag attributes if any exists   
+    // [gjeon] add eggFlag attributes if any exists
     for (unsigned i = 0; i < surface->_eggObjectTypes.length(); i++) {
       MString attrName = "eggObjectTypes";
       attrName += (int)(i + 1);
@@ -1897,9 +1897,9 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   if (mayaloader_cat.is_spam()) {
     mayaloader_cat.spam() << "went past tex AssignNames" << endl;
   }
- 
+
   if (mayaloader_cat.is_debug()) {
-    mayaloader_cat.debug() << "-fri: " << _frame_rate << " -sf: " << _start_frame 
+    mayaloader_cat.debug() << "-fri: " << _frame_rate << " -sf: " << _start_frame
                            << " -ef: " << _end_frame << endl;
   }
 
@@ -1946,7 +1946,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
 
     MTransformationMatrix matrix( mMat );
     MVector trans = matrix.translation(MSpace::kTransform, &status);
-      
+
     double rot[3];
     MTransformationMatrix::RotationOrder order = MTransformationMatrix::kXYZ;
     status = matrix.getRotation(rot, order);
@@ -2018,7 +2018,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
 
   //  ResumeSetKeyMode();
   //  ResumeAnimate();
-  
+
   mayaloader_cat.info() << "Egg import successful\n";
   return true;
 }
@@ -2194,13 +2194,13 @@ MObject MayaEggLoader::GetDependencyNode(string givenName)
   } else
     name = givenName;
 
-  /* 
-  //masad: I do not think you want to return a mesh node 
+  /*
+  //masad: I do not think you want to return a mesh node
   //because keyframes should only apply to joint nodes.
   MeshTable::const_iterator ci;
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MayaEggMesh *mesh = (*ci).second;
-    
+
     string meshName = mesh->_pool->get_name();
     int nsize = meshName.size();
     if ((nsize > 6) && (meshName.rfind(".verts")==(nsize-6))) {
@@ -2227,16 +2227,16 @@ MObject MayaEggLoader::GetDependencyNode(string givenName)
       node = joint->_joint;
       return node;
     }
-  }  
-  
+  }
+
   return node;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //
 // The two global functions that form the API of this module.
 //
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
 bool MayaLoadEggData(EggData *data, bool merge, bool model, bool anim, bool respect_normals)
 {

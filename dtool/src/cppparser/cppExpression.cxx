@@ -207,6 +207,19 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
+CPPExpression(bool value) :
+  CPPDeclaration(CPPFile())
+{
+  _type = T_boolean;
+  _u._boolean = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPExpression::
 CPPExpression(unsigned long long value) :
   CPPDeclaration(CPPFile())
 {
@@ -495,6 +508,30 @@ get_nullptr() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::get_default
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+const CPPExpression &CPPExpression::
+get_default() {
+  static CPPExpression expr(0);
+  expr._type = T_default;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::get_delete
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+const CPPExpression &CPPExpression::
+get_delete() {
+  static CPPExpression expr(0);
+  expr._type = T_delete;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Destructor
 //       Access: Public
 //  Description:
@@ -515,6 +552,9 @@ evaluate() const {
   switch (_type) {
   case T_nullptr:
     return Result((void *)0);
+
+  case T_boolean:
+    return Result((int)_u._boolean);
 
   case T_integer:
     return Result((int)_u._integer);
@@ -556,8 +596,12 @@ evaluate() const {
     if (r1._type != RT_error) {
       CPPSimpleType *stype = _u._typecast._to->as_simple_type();
       if (stype != NULL) {
-        if (stype->_type == CPPSimpleType::T_int) {
+        if (stype->_type == CPPSimpleType::T_bool) {
+          return Result(r1.as_boolean());
+
+        } else if (stype->_type == CPPSimpleType::T_int) {
           return Result(r1.as_integer());
+
         } else if (stype->_type == CPPSimpleType::T_float ||
                    stype->_type == CPPSimpleType::T_double) {
           return Result(r1.as_real());
@@ -855,6 +899,9 @@ determine_type() const {
   case T_nullptr:
     return nullptr_type;
 
+  case T_boolean:
+    return bool_type;
+
   case T_integer:
     return int_type;
 
@@ -1036,6 +1083,7 @@ is_fully_specified() const {
 
   switch (_type) {
   case T_nullptr:
+  case T_boolean:
   case T_integer:
   case T_real:
   case T_string:
@@ -1288,6 +1336,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
   switch (_type) {
   case T_nullptr:
     out << "nullptr";
+    break;
+
+  case T_boolean:
+    out << (_u._boolean ? "true" : "false");
     break;
 
   case T_integer:
@@ -1619,6 +1671,14 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     }
     break;
 
+  case T_default:
+    out << "default";
+    break;
+
+  case T_delete:
+    out << "delete";
+    break;
+
   default:
     out << "(** invalid operand type " << (int)_type << " **)";
   }
@@ -1716,6 +1776,9 @@ is_equal(const CPPDeclaration *other) const {
   case T_nullptr:
     return true;
 
+  case T_boolean:
+    return _u._boolean == ot->_u._boolean;
+
   case T_integer:
     return _u._integer == ot->_u._integer;
 
@@ -1795,6 +1858,9 @@ is_less(const CPPDeclaration *other) const {
   switch (_type) {
   case T_nullptr:
     return false;
+
+  case T_boolean:
+    return _u._boolean < ot->_u._boolean;
 
   case T_integer:
     return _u._integer < ot->_u._integer;

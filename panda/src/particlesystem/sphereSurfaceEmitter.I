@@ -15,9 +15,9 @@
 #include "config_particlesystem.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_radius
-//      Access : public
-// Description : radius set
+//     Function: set_radius
+//       Access: Public
+//  Description: radius set
 ////////////////////////////////////////////////////////////////////
 
 INLINE void SphereSurfaceEmitter::
@@ -26,9 +26,9 @@ set_radius(PN_stdfloat r) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_radius
-//      Access : public
-// Description : radius get
+//     Function: get_radius
+//       Access: Public
+//  Description: radius get
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat SphereSurfaceEmitter::

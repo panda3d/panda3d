@@ -1134,8 +1134,8 @@ scan_function(CPPInstance *function) {
     return;
   }
 
-  if ((function->_storage_class & CPPInstance::SC_static) != 0) {
-    // The function is static, so can't be exported.
+  if ((function->_storage_class & (CPPInstance::SC_static | CPPInstance::SC_deleted)) != 0) {
+    // The function is static or deleted, so can't be exported.
     return;
   }
 
@@ -2684,6 +2684,52 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
     }
   }
 
+  // See if we need to generate an implicit default constructor.
+  CPPFunctionGroup *constructor = cpptype->get_constructor();
+  if (constructor == (CPPFunctionGroup *)NULL && cpptype->is_default_constructible()) {
+    // Make a default constructor.
+    CPPType *void_type = TypeManager::get_void_type();
+    CPPParameterList *params = new CPPParameterList;
+    CPPFunctionType *ftype = new CPPFunctionType(void_type, params, CPPFunctionType::F_constructor);
+
+    // Now make up an instance for the default constructor.
+    CPPInstance *function = new CPPInstance(ftype, cpptype->get_simple_name());
+    function->_storage_class |= CPPInstance::SC_inline | CPPInstance::SC_defaulted;
+    function->_vis = V_published;
+
+    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(), 0);
+    if (find(itype._constructors.begin(), itype._constructors.end(),
+             index) == itype._constructors.end()) {
+      itype._constructors.push_back(index);
+    }
+  }
+
+  // See if we need to generate an implicit copy constructor.
+  CPPInstance *copy_constructor = cpptype->get_copy_constructor();
+  if (copy_constructor == (CPPInstance *)NULL &&
+      cpptype->is_copy_constructible()) {
+    // Make an implicit copy constructor.
+    CPPType *const_ref_type = TypeManager::wrap_const_reference(cpptype);
+    CPPInstance *param = new CPPInstance(const_ref_type, NULL);
+
+    CPPType *void_type = TypeManager::get_void_type();
+    CPPParameterList *params = new CPPParameterList;
+    params->_parameters.push_back(param);
+    const int flags = CPPFunctionType::F_constructor | CPPFunctionType::F_copy_constructor;
+    CPPFunctionType *ftype = new CPPFunctionType(void_type, params, flags);
+
+    // Now make up an instance for the copy constructor.
+    CPPInstance *function = new CPPInstance(ftype, cpptype->get_simple_name());
+    function->_storage_class |= CPPInstance::SC_inline | CPPInstance::SC_defaulted;
+    function->_vis = V_published;
+
+    FunctionIndex index = get_function(function, "", cpptype, cpptype->get_scope(), 0);
+    if (find(itype._constructors.begin(), itype._constructors.end(),
+             index) == itype._constructors.end()) {
+      itype._constructors.push_back(index);
+    }
+  }
+
   if ((itype._flags & InterrogateType::F_inherited_destructor) != 0) {
     // If we have inherited our virtual destructor from our base
     // class, go ahead and assign the same function index.
@@ -2818,6 +2864,11 @@ define_method(CPPInstance *function, InterrogateType &itype,
 
   if (function->is_template()) {
     // The function is a template function, not a true function.
+    return;
+  }
+
+  if (function->_storage_class & CPPInstance::SC_deleted) {
+    // It was explicitly marked as deleted.
     return;
   }
 

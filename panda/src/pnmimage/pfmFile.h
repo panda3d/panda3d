@@ -50,6 +50,7 @@ PUBLISHED:
   BLOCKING bool load(const PNMImage &pnmimage);
   BLOCKING bool store(PNMImage &pnmimage) const;
   BLOCKING bool store_mask(PNMImage &pnmimage) const;
+  BLOCKING bool store_mask(PNMImage &pnmimage, const LVecBase4f &min_point, const LVecBase4f &max_point) const;
 
   INLINE bool is_valid() const;
   MAKE_PROPERTY(valid, is_valid);

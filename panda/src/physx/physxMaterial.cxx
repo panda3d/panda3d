@@ -21,7 +21,7 @@ TypeHandle PhysxMaterial::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMaterial::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxMaterial::
 link(NxMaterial *materialPtr) {
@@ -38,7 +38,7 @@ link(NxMaterial *materialPtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMaterial::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxMaterial::
 unlink() {
@@ -54,7 +54,7 @@ unlink() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMaterial::release
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxMaterial::
 release() {
@@ -99,10 +99,10 @@ get_material_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxMaterial::load_from_desc
-//       Access : Published
-//  Description : Loads the entire state of the material from a 
-//                descriptor with a single call.
+//     Function: PhysxMaterial::load_from_desc
+//       Access: Published
+//  Description: Loads the entire state of the material from a
+//               descriptor with a single call.
 ////////////////////////////////////////////////////////////////////
 void PhysxMaterial::
 load_from_desc(const PhysxMaterialDesc &materialDesc) {
@@ -112,10 +112,10 @@ load_from_desc(const PhysxMaterialDesc &materialDesc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxMaterial::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the material object to a 
-//                descriptor.
+//     Function: PhysxMaterial::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the material object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxMaterial::
 save_to_desc(PhysxMaterialDesc & materialDesc) const {
@@ -127,7 +127,7 @@ save_to_desc(PhysxMaterialDesc & materialDesc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMaterial::set_restitution
 //       Access: Published
-//  Description: Sets the coefficient of restitution. 
+//  Description: Sets the coefficient of restitution.
 //               A coefficient of 0 makes the object bounce as
 //               little as possible, higher values up to 1.0 result
 //               in more bounce.
@@ -154,7 +154,7 @@ get_restitution() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMaterial::set_static_friction
 //       Access: Published
-//  Description: Sets the coefficient of static friction. 
+//  Description: Sets the coefficient of static friction.
 //               The coefficient of static friction should be in the
 //               range [0, +inf].
 //               If the flag MF_anisotropic is set, then this value
@@ -183,7 +183,7 @@ get_static_friction() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxMaterial::set_dynamic_friction
 //       Access: Published
-//  Description: Sets the coefficient of dynamic friction. 
+//  Description: Sets the coefficient of dynamic friction.
 //               The coefficient of dynamic friction should be in
 //               [0, +inf]. If set to greater than staticFriction,
 //               the effective value of staticFriction will be
@@ -304,7 +304,7 @@ get_flag(PhysxMaterialFlag flag) const {
 //     Function: PhysxMaterial::set_dir_of_anisotropy
 //       Access: Published
 //  Description: Sets the shape space direction (unit vector) of
-//               anisotropy. This is only used if the flag 
+//               anisotropy. This is only used if the flag
 //               MF_anisotropic is set.
 ////////////////////////////////////////////////////////////////////
 void PhysxMaterial::

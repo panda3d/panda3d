@@ -14,7 +14,7 @@
 
 BEGIN_PUBLISH
 
-INLINE_LINMATH void
+EXPCL_PANDA_LINMATH void
 compose_matrix(FLOATNAME(LMatrix3) &mat,
                const FLOATNAME(LVecBase3) &scale,
                const FLOATNAME(LVecBase3) &shear,
@@ -34,7 +34,7 @@ compose_matrix(FLOATNAME(LMatrix4) &mat,
                const FLOATTYPE components[num_matrix_components],
                CoordinateSystem cs = CS_default);
 
-INLINE_LINMATH bool
+EXPCL_PANDA_LINMATH bool
 decompose_matrix(const FLOATNAME(LMatrix3) &mat,
                  FLOATNAME(LVecBase3) &scale,
                  FLOATNAME(LVecBase3) &shear,
@@ -91,26 +91,6 @@ decompose_matrix(const FLOATNAME(LMatrix4) &mat,
 // use.  New code should not call these functions directly; use the
 // unqualified functions, above, instead.
 
-EXPCL_PANDA_LINMATH void
-compose_matrix_old_hpr(FLOATNAME(LMatrix3) &mat,
-                       const FLOATNAME(LVecBase3) &scale,
-                       const FLOATNAME(LVecBase3) &shear,
-                       const FLOATNAME(LVecBase3) &hpr,
-                       CoordinateSystem cs = CS_default);
-
-INLINE_LINMATH void
-compose_matrix_old_hpr(FLOATNAME(LMatrix4) &mat,
-                       const FLOATNAME(LVecBase3) &scale,
-                       const FLOATNAME(LVecBase3) &shear,
-                       const FLOATNAME(LVecBase3) &hpr,
-                       const FLOATNAME(LVecBase3) &translate,
-                       CoordinateSystem cs = CS_default);
-
-INLINE_LINMATH void
-compose_matrix_old_hpr(FLOATNAME(LMatrix4) &mat,
-                       const FLOATTYPE components[num_matrix_components],
-                       CoordinateSystem cs = CS_default);
-
 EXPCL_PANDA_LINMATH bool
 decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
                          FLOATNAME(LVecBase3) &scale,
@@ -118,65 +98,8 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
                          FLOATNAME(LVecBase3) &hpr,
                          CoordinateSystem cs = CS_default);
 
-INLINE_LINMATH bool
-decompose_matrix_old_hpr(const FLOATNAME(LMatrix4) &mat,
-                         FLOATNAME(LVecBase3) &scale,
-                         FLOATNAME(LVecBase3) &shear,
-                         FLOATNAME(LVecBase3) &hpr,
-                         FLOATNAME(LVecBase3) &translate,
-                         CoordinateSystem cs = CS_default);
-
-INLINE_LINMATH bool
-decompose_matrix_old_hpr(const FLOATNAME(LMatrix4) &mat,
-                         FLOATTYPE components[num_matrix_components],
-                         CoordinateSystem CS = CS_default);
-
-
-EXPCL_PANDA_LINMATH void
-compose_matrix_new_hpr(FLOATNAME(LMatrix3) &mat,
-                       const FLOATNAME(LVecBase3) &scale,
-                       const FLOATNAME(LVecBase3) &shear,
-                       const FLOATNAME(LVecBase3) &hpr,
-                       CoordinateSystem cs = CS_default);
-
-INLINE_LINMATH void
-compose_matrix_new_hpr(FLOATNAME(LMatrix4) &mat,
-                       const FLOATNAME(LVecBase3) &scale,
-                       const FLOATNAME(LVecBase3) &shear,
-                       const FLOATNAME(LVecBase3) &hpr,
-                       const FLOATNAME(LVecBase3) &translate,
-                       CoordinateSystem cs = CS_default);
-
-INLINE_LINMATH void
-compose_matrix_new_hpr(FLOATNAME(LMatrix4) &mat,
-                       const FLOATTYPE components[num_matrix_components],
-                       CoordinateSystem cs = CS_default);
-
-EXPCL_PANDA_LINMATH bool
-decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
-                         FLOATNAME(LVecBase3) &scale,
-                         FLOATNAME(LVecBase3) &shear,
-                         FLOATNAME(LVecBase3) &hpr,
-                         CoordinateSystem cs = CS_default);
-
-INLINE_LINMATH bool
-decompose_matrix_new_hpr(const FLOATNAME(LMatrix4) &mat,
-                         FLOATNAME(LVecBase3) &scale,
-                         FLOATNAME(LVecBase3) &shear,
-                         FLOATNAME(LVecBase3) &hpr,
-                         FLOATNAME(LVecBase3) &translate,
-                         CoordinateSystem cs = CS_default);
-
-INLINE_LINMATH bool
-decompose_matrix_new_hpr(const FLOATNAME(LMatrix4) &mat,
-                         FLOATTYPE components[num_matrix_components],
-                         CoordinateSystem CS = CS_default);
-
-
 EXPCL_PANDA_LINMATH FLOATNAME(LVecBase3)
 old_to_new_hpr(const FLOATNAME(LVecBase3) &old_hpr);
-EXPCL_PANDA_LINMATH FLOATNAME(LVecBase3)
-new_to_old_hpr(const FLOATNAME(LVecBase3) &new_hpr);
 
 END_PUBLISH
 

@@ -1,4 +1,4 @@
-// Filename: occlusionQueryContext.I
+// Filename: timerQueryContext.I
 // Created by:  rdb (22Aug14)
 //
 ////////////////////////////////////////////////////////////////////

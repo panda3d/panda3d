@@ -32,6 +32,9 @@
 #include "look_at.h"
 #include "texturePool.h"
 #include "character.h"
+#include "animBundle.h"
+#include "animBundleNode.h"
+#include "animChannelMatrixXfmTable.h"
 #include "pvector.h"
 
 #include "pandaIOSystem.h"
@@ -169,7 +172,7 @@ build_graph() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::find_ndoe
+//     Function: AssimpLoader::find_node
 //       Access: Private
 //  Description: Finds a node by name.
 ////////////////////////////////////////////////////////////////////
@@ -418,8 +421,7 @@ load_material(size_t index) {
 //  Description: Creates a CharacterJoint from an aiNode
 ////////////////////////////////////////////////////////////////////
 void AssimpLoader::
-create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node)
-{
+create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node) {
   const aiMatrix4x4 &t = node.mTransformation;
   LMatrix4 mat(t.a1, t.b1, t.c1, t.d1,
                 t.a2, t.b2, t.c2, t.d2,
@@ -427,9 +429,93 @@ create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *pare
                 t.a4, t.b4, t.c4, t.d4);
   PT(CharacterJoint) joint = new CharacterJoint(character, bundle, parent, node.mName.C_Str(), mat);
 
+  assimp_cat.debug()
+    << "Creating joint for: " << node.mName.C_Str() << "\n";
+
   for (size_t i = 0; i < node.mNumChildren; ++i) {
     if (_bonemap.find(node.mChildren[i]->mName.C_Str()) != _bonemap.end()) {
       create_joint(character, bundle, joint, *node.mChildren[i]);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AssimpLoader::create_anim_channel
+//       Access: Private
+//  Description: Creates a AnimChannelMatrixXfmTable from an aiNodeAnim
+////////////////////////////////////////////////////////////////////
+void AssimpLoader::
+create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *parent, const aiNode &node) {
+  PT(AnimChannelMatrixXfmTable) group = new AnimChannelMatrixXfmTable(parent, node.mName.C_Str());
+
+  // See if there is a channel for this node
+  aiNodeAnim *node_anim = NULL;
+  for (size_t i = 0; i < anim.mNumChannels; ++i) {
+    if (anim.mChannels[i]->mNodeName == node.mName) {
+      node_anim = anim.mChannels[i];
+    }
+  }
+
+  if (node_anim) {
+    assimp_cat.debug()
+      << "Found channel for node: " << node.mName.C_Str() << "\n";
+    //assimp_cat.debug()
+    //  << "Num Position Keys " << node_anim->mNumPositionKeys << "\n";
+    //assimp_cat.debug()
+    //  << "Num Rotation Keys " << node_anim->mNumRotationKeys << "\n";
+    //assimp_cat.debug()
+    //  << "Num Scaling Keys " << node_anim->mNumScalingKeys << "\n";
+
+    // Convert positions
+    PTA_stdfloat tablex = PTA_stdfloat::empty_array(node_anim->mNumPositionKeys);
+    PTA_stdfloat tabley = PTA_stdfloat::empty_array(node_anim->mNumPositionKeys);
+    PTA_stdfloat tablez = PTA_stdfloat::empty_array(node_anim->mNumPositionKeys);
+    for (size_t i = 0; i < node_anim->mNumPositionKeys; ++i) {
+      tablex[i] = node_anim->mPositionKeys[i].mValue.x;
+      tabley[i] = node_anim->mPositionKeys[i].mValue.y;
+      tablez[i] = node_anim->mPositionKeys[i].mValue.z;
+    }
+    group->set_table('x', tablex);
+    group->set_table('y', tabley);
+    group->set_table('z', tablez);
+
+    // Convert rotations
+    PTA_stdfloat tableh = PTA_stdfloat::empty_array(node_anim->mNumRotationKeys);
+    PTA_stdfloat tablep = PTA_stdfloat::empty_array(node_anim->mNumRotationKeys);
+    PTA_stdfloat tabler = PTA_stdfloat::empty_array(node_anim->mNumRotationKeys);
+    for (size_t i = 0; i < node_anim->mNumRotationKeys; ++i) {
+      aiQuaternion ai_quat = node_anim->mRotationKeys[i].mValue;
+      LVecBase3 hpr = LQuaternion(ai_quat.w, ai_quat.x, ai_quat.y, ai_quat.z).get_hpr();
+      tableh[i] = hpr.get_x();
+      tablep[i] = hpr.get_y();
+      tabler[i] = hpr.get_z();
+    }
+    group->set_table('h', tableh);
+    group->set_table('p', tablep);
+    group->set_table('r', tabler);
+
+    // Convert scales
+    PTA_stdfloat tablei = PTA_stdfloat::empty_array(node_anim->mNumScalingKeys);
+    PTA_stdfloat tablej = PTA_stdfloat::empty_array(node_anim->mNumScalingKeys);
+    PTA_stdfloat tablek = PTA_stdfloat::empty_array(node_anim->mNumScalingKeys);
+    for (size_t i = 0; i < node_anim->mNumScalingKeys; ++i) {
+      tablei[i] = node_anim->mScalingKeys[i].mValue.x;
+      tablej[i] = node_anim->mScalingKeys[i].mValue.y;
+      tablek[i] = node_anim->mScalingKeys[i].mValue.z;
+    }
+    group->set_table('i', tablei);
+    group->set_table('j', tablej);
+    group->set_table('k', tablek);
+  }
+  else {
+    assimp_cat.debug()
+      << "No channel found for node: " << node.mName.C_Str() << "\n";
+  }
+
+
+  for (size_t i = 0; i < node.mNumChildren; ++i) {
+    if (_bonemap.find(node.mChildren[i]->mName.C_Str()) != _bonemap.end()) {
+      create_anim_channel(anim, bundle, group, *node.mChildren[i]);
     }
   }
 }
@@ -456,17 +542,27 @@ load_mesh(size_t index) {
       _bonemap[bone.mName.C_Str()] = node;
     }
 
-    // Find the root bone node
-    const aiNode *root = _bonemap[mesh.mBones[0]->mName.C_Str()];
-    while (root->mParent && _bonemap.find(root->mParent->mName.C_Str()) != _bonemap.end()) {
-      root = root->mParent;
-    }
-
     // Now create a character from the bones
     character = new Character(mesh.mName.C_Str());
     PT(CharacterJointBundle) bundle = character->get_bundle(0);
     PT(PartGroup) skeleton = new PartGroup(bundle, "<skeleton>");
-    create_joint(character, bundle, skeleton, *root);
+
+    for (size_t i = 0; i < mesh.mNumBones; ++i) {
+      const aiBone &bone = *mesh.mBones[i];
+
+      // Find the root bone node
+      const aiNode *root = _bonemap[bone.mName.C_Str()];
+      while (root->mParent && _bonemap.find(root->mParent->mName.C_Str()) != _bonemap.end()) {
+        root = root->mParent;
+      }
+
+      // Don't process this root if we already have a joint for it
+      if (character->find_joint(root->mName.C_Str())) {
+        continue;
+      }
+
+      create_joint(character, bundle, skeleton, *root);
+    }
   }
 
   // Create transform blend table
@@ -475,7 +571,14 @@ load_mesh(size_t index) {
   if (character) {
     for (size_t i = 0; i < mesh.mNumBones; ++i) {
       const aiBone &bone = *mesh.mBones[i];
-      CPT(JointVertexTransform) jvt = new JointVertexTransform(character->find_joint(bone.mName.C_Str()));
+      CharacterJoint *joint = character->find_joint(bone.mName.C_Str());
+      if (joint == NULL) {
+        assimp_cat.debug()
+          << "Could not find joint for bone: " << bone.mName.C_Str() << "\n";
+        continue;
+      }
+
+      CPT(JointVertexTransform) jvt = new JointVertexTransform(joint);
 
       for (size_t j = 0; j < bone.mNumWeights; ++j) {
           const aiVertexWeight &weight = bone.mWeights[j];
@@ -507,6 +610,69 @@ load_mesh(size_t index) {
 
   PT(GeomVertexArrayFormat) tb_aformat = new GeomVertexArrayFormat;
   tb_aformat->add_column(InternalName::make("transform_blend"), 1, Geom::NT_uint16, Geom::C_index);
+
+  // Check to see if we need to convert any animations
+  for (size_t i = 0; i < _scene->mNumAnimations; ++i) {
+    aiAnimation &ai_anim = *_scene->mAnimations[i];
+    bool convert_anim = false;
+
+    assimp_cat.debug()
+      << "Checking to see if anim (" << ai_anim.mName.C_Str() << ") matches character (" << mesh.mName.C_Str() << ")\n";
+    for (size_t j = 0; j < ai_anim.mNumChannels; ++j) {
+      assimp_cat.debug()
+        << "Searching for " << ai_anim.mChannels[j]->mNodeName.C_Str() << " in bone map" << "\n";
+      if (_bonemap.find(ai_anim.mChannels[j]->mNodeName.C_Str()) != _bonemap.end()) {
+        convert_anim = true;
+        break;
+      }
+    }
+
+    if (convert_anim) {
+      assimp_cat.debug()
+        << "Found animation (" << ai_anim.mName.C_Str() << ") for character (" << mesh.mName.C_Str() << ")\n";
+
+      // Now create the animation
+      unsigned int frames = 0;
+      for (size_t j = 0; j < ai_anim.mNumChannels; ++j) {
+        if (ai_anim.mChannels[j]->mNumPositionKeys > frames) {
+          frames = ai_anim.mChannels[j]->mNumPositionKeys;
+        }
+        if (ai_anim.mChannels[j]->mNumRotationKeys > frames) {
+          frames = ai_anim.mChannels[j]->mNumRotationKeys;
+        }
+        if (ai_anim.mChannels[j]->mNumScalingKeys > frames) {
+          frames = ai_anim.mChannels[j]->mNumScalingKeys;
+        }
+      }
+      PN_stdfloat fps = frames / (ai_anim.mTicksPerSecond * ai_anim.mDuration);
+      assimp_cat.debug()
+        << "FPS " << fps << "\n";
+      assimp_cat.debug()
+        << "Frames " << frames << "\n";
+
+      PT(AnimBundle) bundle = new AnimBundle(mesh.mName.C_Str(), fps, frames);
+      PT(AnimGroup) skeleton = new AnimGroup(bundle, "<skeleton>");
+
+      for (size_t i = 0; i < mesh.mNumBones; ++i) {
+        const aiBone &bone = *mesh.mBones[i];
+
+        // Find the root bone node
+        const aiNode *root = _bonemap[bone.mName.C_Str()];
+        while (root->mParent && _bonemap.find(root->mParent->mName.C_Str()) != _bonemap.end()) {
+          root = root->mParent;
+        }
+
+        // Only convert root nodes
+        if (root->mName == bone.mName) {
+          create_anim_channel(ai_anim, bundle, skeleton, *root);
+
+          // Attach the animation to the character node
+          PT(AnimBundleNode) bundle_node = new AnimBundleNode(bone.mName.C_Str(), bundle);
+          character->add_child(bundle_node);
+        }
+      }
+    }
+  }
 
   //TODO: if there is only one UV set, hackily iterate over the texture stages and clear the texcoord name things
 

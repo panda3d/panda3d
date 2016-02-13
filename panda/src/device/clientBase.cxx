@@ -200,7 +200,7 @@ do_poll() {
 #ifdef OLD_HAVE_IPC
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::st_callback
-//       Access: Private, static
+//       Access: Private, Static
 //  Description: Call back function for thread (if thread has been
 //               spawned).  A call back function must be static, so
 //               this merely calls the non-static member callback In

@@ -15,9 +15,9 @@
 #include "ringEmitter.h"
 
 ////////////////////////////////////////////////////////////////////
-//    Function : RingEmitter
-//      Access : Public
-// Description : constructor
+//     Function: RingEmitter
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 RingEmitter::
 RingEmitter() :
@@ -26,9 +26,9 @@ RingEmitter() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : RingEmitter
-//      Access : Public
-// Description : copy constructor
+//     Function: RingEmitter
+//       Access: Public
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 RingEmitter::
 RingEmitter(const RingEmitter &copy) :
@@ -44,18 +44,18 @@ RingEmitter(const RingEmitter &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~RingEmitter
-//      Access : Public
-// Description : destructor
+//     Function: ~RingEmitter
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 RingEmitter::
 ~RingEmitter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : make_copy
-//      Access : Public
-// Description : copier
+//     Function: make_copy
+//       Access: Public
+//  Description: copier
 ////////////////////////////////////////////////////////////////////
 BaseParticleEmitter *RingEmitter::
 make_copy() {
@@ -63,9 +63,9 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : RingEmitter::assign_initial_position
-//      Access : Public
-// Description : Generates a location for a new particle
+//     Function: RingEmitter::assign_initial_position
+//       Access: Public
+//  Description: Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void RingEmitter::
 assign_initial_position(LPoint3& pos) {
@@ -75,7 +75,7 @@ assign_initial_position(LPoint3& pos) {
     if (_theta > 1.0)
       _theta = _theta - 1.0;
   }
-  else 
+  else
   {
     _theta = NORMALIZED_RAND();
   }
@@ -91,9 +91,9 @@ assign_initial_position(LPoint3& pos) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : RingEmitter::assign_initial_velocity
-//      Access : Public
-// Description : Generates a velocity for a new particle
+//     Function: RingEmitter::assign_initial_velocity
+//       Access: Public
+//  Description: Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void RingEmitter::
 assign_initial_velocity(LVector3& vel) {
@@ -115,10 +115,10 @@ assign_initial_velocity(LVector3& vel) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void RingEmitter::
 output(ostream &out) const {
@@ -128,10 +128,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void RingEmitter::
 write(ostream &out, int indent) const {

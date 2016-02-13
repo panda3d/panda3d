@@ -54,6 +54,9 @@ PUBLISHED:
 
   bool run();
 
+PUBLISHED:
+  MAKE_PROPERTY(progress, get_progress);
+
 private:
   Filename _multifile_name;
   PT(Multifile) _multifile;

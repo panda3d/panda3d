@@ -31,13 +31,6 @@ ConfigVariableBool paranoid_hpr_quat
           "decompose operations against the quaternion-matrix and matrix-hpr "
           "operations.  This only has effect if NDEBUG is not defined."));
 
-ConfigVariableBool temp_hpr_fix
-("temp-hpr-fix", true,
- PRC_DESC("Set this true to compute hpr's correctly.  Historically, Panda has "
-          "applied these in the wrong order, and roll was backwards relative "
-          "to the other two.  Set this false if you need compatibility with "
-          "Panda's old hpr calculations."));
-
 ConfigVariableBool no_singular_invert
 ("no-singular-invert", false,
  PRC_DESC("Set this true to make singular-invert warning messages generate an "

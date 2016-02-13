@@ -18,27 +18,27 @@
 #include "config_physics.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function : AngularEulerIntegrator
-//       Access : Public
-//  Description : constructor
+//     Function: AngularEulerIntegrator
+//       Access: Public
+//  Description: constructor
 ////////////////////////////////////////////////////////////////////
 AngularEulerIntegrator::
 AngularEulerIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : AngularEulerIntegrator
-//       Access : Public
-//  Description : destructor
+//     Function: AngularEulerIntegrator
+//       Access: Public
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 AngularEulerIntegrator::
 ~AngularEulerIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : Integrate
-//       Access : Public
-//  Description : Integrate a step of motion (based on dt) by
+//     Function: Integrate
+//       Access: Public
+//  Description: Integrate a step of motion (based on dt) by
 //                applying every force in force_vec to every object
 //                in obj_vec.
 ////////////////////////////////////////////////////////////////////
@@ -132,7 +132,7 @@ child_integrate(Physical *physical,
     #else
     //accum_quat*=viscosityDamper;
     //LOrientation orientation = current_object->get_orientation();
-    
+
     //accum_quat.normalize();
     // x = x + v * t + 0.5 * a * t * t
     orientation = orientation * ((rot_quat * dt) * (accum_quat * (0.5 * dt * dt)));
@@ -150,10 +150,10 @@ child_integrate(Physical *physical,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularEulerIntegrator::
 output(ostream &out) const {
@@ -163,10 +163,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void AngularEulerIntegrator::
 write(ostream &out, unsigned int indent) const {

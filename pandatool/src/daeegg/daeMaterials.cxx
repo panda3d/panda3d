@@ -92,7 +92,7 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
       daeegg_cat.spam() << "Processing effect, material semantic is " << semantic << endl;
       // Set the material parameters
       egg_material->set_amb(TO_COLOR(effect_common->GetAmbientColor()));
-      ////We already process transparency using blend modes
+      // We already process transparency using blend modes
       //LVecBase4 diffuse = TO_COLOR(effect_common->GetDiffuseColor());
       //diffuse.set_w(diffuse.get_w() * (1.0f - effect_common->GetOpacity()));
       //egg_material->set_diff(diffuse);

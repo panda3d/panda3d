@@ -334,7 +334,7 @@ set_bin_flash_active(int bin_index, bool active) {
 //     Function: CullBinManager::set_bin_flash_color
 //       Access: Published
 //  Description: Changes the flash color for the given bin index.
-
+//
 //               This method is not available in release builds.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullBinManager::

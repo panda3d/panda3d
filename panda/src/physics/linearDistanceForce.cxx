@@ -17,9 +17,9 @@
 TypeHandle LinearDistanceForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearDistanceForce
-//      Access : Protected
-// Description : Simple constructor
+//     Function: LinearDistanceForce
+//       Access: Protected
+//  Description: Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearDistanceForce::
 LinearDistanceForce(const LPoint3& p, FalloffType ft, PN_stdfloat r, PN_stdfloat a, bool m) :
@@ -29,9 +29,9 @@ LinearDistanceForce(const LPoint3& p, FalloffType ft, PN_stdfloat r, PN_stdfloat
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : LinearDistanceForce
-//      Access : Protected
-// Description : copy constructor
+//     Function: LinearDistanceForce
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 LinearDistanceForce::
 LinearDistanceForce(const LinearDistanceForce &copy) :
@@ -42,19 +42,19 @@ LinearDistanceForce(const LinearDistanceForce &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : ~LinearDistanceForce
-//      Access : Protected
-// Description : destructor
+//     Function: ~LinearDistanceForce
+//       Access: Protected
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 LinearDistanceForce::
 ~LinearDistanceForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: output
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearDistanceForce::
 output(ostream &out) const {
@@ -64,10 +64,10 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void LinearDistanceForce::
 write(ostream &out, unsigned int indent) const {

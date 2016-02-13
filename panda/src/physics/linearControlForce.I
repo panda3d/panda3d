@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : clear_physics_object
-//      Access : Public
-// Description : encapsulating wrapper
+//     Function: clear_physics_object
+//       Access: Public
+//  Description: encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearControlForce::
 clear_physics_object() {
@@ -23,9 +23,9 @@ clear_physics_object() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_physics_object
-//      Access : Public
-// Description : encapsulating wrapper
+//     Function: set_physics_object
+//       Access: Public
+//  Description: encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearControlForce::
 set_physics_object(const PhysicsObject *po) {
@@ -33,9 +33,9 @@ set_physics_object(const PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_physics_object
-//      Access : Public
-// Description : piecewise encapsulating wrapper
+//     Function: get_physics_object
+//       Access: Public
+//  Description: piecewise encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(PhysicsObject) LinearControlForce::
 get_physics_object() const {
@@ -43,9 +43,9 @@ get_physics_object() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_vector
-//      Access : Public
-// Description : encapsulating wrapper
+//     Function: set_vector
+//       Access: Public
+//  Description: encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearControlForce::
 set_vector(const LVector3& v) {
@@ -53,9 +53,9 @@ set_vector(const LVector3& v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_vector
-//      Access : Public
-// Description : piecewise encapsulating wrapper
+//     Function: set_vector
+//       Access: Public
+//  Description: piecewise encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearControlForce::
 set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
@@ -63,9 +63,9 @@ set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_local_vector
-//      Access : Public
-// Description :
+//     Function: get_local_vector
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3 LinearControlForce::
 get_local_vector() const {

@@ -64,6 +64,9 @@ PUBLISHED:
   INLINE void set_interior(const LColor &interior);
   INLINE const LColor &get_interior() const;
 
+  INLINE void set_distance_field_radius(int radius);
+  INLINE int get_distance_field_radius() const;
+
   INLINE int generate_into(const string &text,
                            PNMImage &dest_image, int x, int y);
   int generate_into(const wstring &text,
@@ -87,6 +90,7 @@ private:
   bool _interior_flag;
   LColor _fg;
   LColor _interior;
+  int _distance_field_radius;
 };
 
 #include "pnmTextMaker.I"

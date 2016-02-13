@@ -14,43 +14,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVector4::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector4)::
-FLOATNAME(LVector4)() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVector4::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4)::
 FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(copy) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector4::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector4) &FLOATNAME(LVector4)::
-operator = (const FLOATNAME(LVecBase4) &copy) {
-  FLOATNAME(LVecBase4)::operator = (copy);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector4::Copy Fill Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector4) &FLOATNAME(LVector4)::
-operator = (FLOATTYPE fill_value) {
-  FLOATNAME(LVecBase4)::operator = (fill_value);
-  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +106,26 @@ unit_w() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector4::get_xyz
+//       Access: Published
+//  Description: Returns the x, y and z component of this vector
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector4)::
+get_xyz() const {
+  return FLOATNAME(LVector3)(_v(0), _v(1), _v(2));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector4::get_xy
+//       Access: Published
+//  Description: Returns the x and y component of this vector
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector4)::
+get_xy() const {
+  return FLOATNAME(LVector2)(_v(0), _v(1));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVector4::unary -
 //       Access: Public
 //  Description:
@@ -207,6 +196,19 @@ operator / (FLOATTYPE scalar) const {
 }
 
 #ifndef FLOATTYPE_IS_INT
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector4::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
+normalized() const {
+  return FLOATNAME(LVecBase4)::normalized();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::project
 //       Access: Published

@@ -1,7 +1,7 @@
-// Filename: textMaker.cxx
+// Filename: pnmTextMaker.cxx
 // Created by:  drose (03Apr02)
 //
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // PANDA 3D SOFTWARE
 // Copyright (c) Carnegie Mellon University.  All rights reserved.
 //
@@ -55,7 +55,8 @@ PNMTextMaker(const PNMTextMaker &copy) :
   _align(copy._align),
   _interior_flag(copy._interior_flag),
   _fg(copy._fg),
-  _interior(copy._interior)
+  _interior(copy._interior),
+  _distance_field_radius(copy._distance_field_radius)
 {
 }
 
@@ -94,7 +95,7 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
   // First, measure the total width in pixels.
   int width = calc_width(text);
 
-  int xp = x; 
+  int xp = x;
   int yp = y;
 
   switch (_align) {
@@ -180,6 +181,7 @@ initialize() {
   _interior_flag = false;
   _fg.set(0.0f, 0.0f, 0.0f, 1.0f);
   _interior.set(0.5f, 0.5f, 0.5f, 1.0f);
+  _distance_field_radius = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,15 +212,61 @@ make_glyph(int glyph_index) {
 
   } else {
     PNMImage &glyph_image = glyph->_image;
-    glyph_image.clear(bitmap.width, bitmap.rows, 3);
-    copy_bitmap_to_pnmimage(bitmap, glyph_image);
 
-    glyph->_top = slot->bitmap_top;
-    glyph->_left = slot->bitmap_left;
+    if (_distance_field_radius != 0) {
+      // Ask FreeType to extract the contours out of the outline
+      // description.
+      decompose_outline(slot->outline);
 
-    if (_interior_flag) {
-      glyph->determine_interior();
+      PN_stdfloat tex_x_size, tex_y_size, tex_x_orig, tex_y_orig;
+      FT_BBox bounds;
+      TransparencyAttrib::Mode alpha_mode;
+
+      // Calculate suitable texture dimensions for the signed distance field.
+      // This is the same calculation that Freetype uses in its bitmap renderer.
+      FT_Outline_Get_CBox(&slot->outline, &bounds);
+
+      bounds.xMin = bounds.xMin & ~63;
+      bounds.yMin = bounds.yMin & ~63;
+      bounds.xMax = (bounds.xMax + 63) & ~63;
+      bounds.yMax = (bounds.yMax + 63) & ~63;
+
+      tex_x_size = (bounds.xMax - bounds.xMin) >> 6;
+      tex_y_size = (bounds.yMax - bounds.yMin) >> 6;
+      tex_x_orig = (bounds.xMin >> 6);
+      tex_y_orig = (bounds.yMax >> 6);
+
+      if (tex_x_size == 0 || tex_y_size == 0) {
+        // If we got an empty bitmap, it's a special case.
+      } else {
+        int outline = 0;
+
+        int int_x_size = (int)ceil(tex_x_size);
+        int int_y_size = (int)ceil(tex_y_size);
+
+        outline = _distance_field_radius;
+        int_x_size += outline * 2;
+        int_y_size += outline * 2;
+
+        glyph_image.clear(int_x_size, int_y_size, 1);
+        render_distance_field(glyph_image, outline, bounds.xMin, bounds.yMin);
+
+        glyph->_top = tex_y_orig + outline * _scale_factor;
+        glyph->_left = tex_x_orig + outline * _scale_factor;
+
+      }
+    } else {
+      glyph_image.clear(bitmap.width, bitmap.rows, 3);
+      copy_bitmap_to_pnmimage(bitmap, glyph_image);
+
+      glyph->_top = slot->bitmap_top;
+      glyph->_left = slot->bitmap_left;
+
+      if (_interior_flag) {
+        glyph->determine_interior();
+      }
     }
+
     glyph->rescale(_scale_factor);
   }
 

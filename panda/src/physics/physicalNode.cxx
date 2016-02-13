@@ -18,20 +18,20 @@
 TypeHandle PhysicalNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysicalNode
-//       Access : public
-//  Description : default constructor
+//     Function: PhysicalNode
+//       Access: Public
+//  Description: default constructor
 ////////////////////////////////////////////////////////////////////
 PhysicalNode::
 PhysicalNode(const string &name) :
-  PandaNode(name) 
+  PandaNode(name)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysicalNode
-//       Access : protected
-//  Description : copy constructor
+//     Function: PhysicalNode
+//       Access: Protected
+//  Description: copy constructor
 ////////////////////////////////////////////////////////////////////
 PhysicalNode::
 PhysicalNode(const PhysicalNode &copy) :
@@ -39,18 +39,18 @@ PhysicalNode(const PhysicalNode &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : ~PhysicalNode
-//       Access : protected, virtual
-//  Description : destructor
+//     Function: ~PhysicalNode
+//       Access: Protected, Virtual
+//  Description: destructor
 ////////////////////////////////////////////////////////////////////
 PhysicalNode::
 ~PhysicalNode() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : make_copy
-//       Access : public, virtual
-//  Description : dynamic child copy
+//     Function: make_copy
+//       Access: Public, Virtual
+//  Description: dynamic child copy
 ////////////////////////////////////////////////////////////////////
 PandaNode *PhysicalNode::
 make_copy() const {
@@ -58,9 +58,9 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : add_physicals_from
-//       Access : public
-//  Description : append operation
+//     Function: add_physicals_from
+//       Access: Public
+//  Description: append operation
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
@@ -75,9 +75,9 @@ add_physicals_from(const PhysicalNode &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : remove_physical
-//       Access : public
-//  Description : remove operation
+//     Function: remove_physical
+//       Access: Public
+//  Description: remove operation
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
 remove_physical(Physical *physical) {
@@ -90,9 +90,9 @@ remove_physical(Physical *physical) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : remove_physical
-//       Access : public
-//  Description : remove operation
+//     Function: remove_physical
+//       Access: Public
+//  Description: remove operation
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
 remove_physical(int index) {
@@ -106,10 +106,10 @@ remove_physical(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Public
-//  Description : Write a string representation of this instance to
-//                <out>.
+//     Function: write
+//       Access: Public
+//  Description: Write a string representation of this instance to
+//               <out>.
 ////////////////////////////////////////////////////////////////////
 void PhysicalNode::
 write(ostream &out, unsigned int indent) const {

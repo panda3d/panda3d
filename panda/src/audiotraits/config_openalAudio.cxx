@@ -47,7 +47,7 @@ init_libOpenALAudio() {
   if (initialized) {
     return;
   }
-  
+
   initialized = true;
   OpenALAudioManager::init_type();
   OpenALAudioSound::init_type();
@@ -63,7 +63,7 @@ init_libOpenALAudio() {
 //  Description: This function is called when the dynamic library is
 //               loaded; it should return the Create_AudioManager
 //               function appropriate to create an OpenALAudioManager.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 Create_AudioManager_proc *
 get_audio_manager_func_openal_audio() {
   init_libOpenALAudio();

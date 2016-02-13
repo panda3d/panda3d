@@ -13,8 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-// Function : get_precomputed_linear_matrices
-//   Access : protected
+//     Function: get_precomputed_linear_matrices
+//       Access: Protected
 ////////////////////////////////////////////////////////////////////
 INLINE const BaseIntegrator::MatrixVector &BaseIntegrator::
 get_precomputed_linear_matrices() const {
@@ -22,8 +22,8 @@ get_precomputed_linear_matrices() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function : get_precomputed_angular_matrices
-//   Access : protected
+//     Function: get_precomputed_angular_matrices
+//       Access: Protected
 ////////////////////////////////////////////////////////////////////
 INLINE const BaseIntegrator::MatrixVector &BaseIntegrator::
 get_precomputed_angular_matrices() const {

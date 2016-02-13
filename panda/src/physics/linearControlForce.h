@@ -17,15 +17,15 @@
 
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : LinearControlForce
-// Description : Simple directed vector force.  This force is 
+// Description : Simple directed vector force.  This force is
 //               different from the others in that it can be
 //               global and still only affect a single object.
 //               That might not make sense for a physics simulation,
 //               but it's very handy for a game.  I.e. this is
 //               the force applied by user on the selected object.
-////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearControlForce : public LinearForce {
 PUBLISHED:
   LinearControlForce(const PhysicsObject *po = 0, PN_stdfloat a = 1.0f,
@@ -41,7 +41,7 @@ PUBLISHED:
   INLINE void set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
 
   INLINE LVector3 get_local_vector() const;
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

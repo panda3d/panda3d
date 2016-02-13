@@ -29,7 +29,7 @@ TypeHandle AnimChannelMatrixDynamic::_type_handle;
 //     Function: AnimChannelMatrixDynamic::Constructor
 //       Access: Protected
 //  Description: For use only with the bam reader.
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 AnimChannelMatrixDynamic::
 AnimChannelMatrixDynamic() {
 }
@@ -43,7 +43,7 @@ AnimChannelMatrixDynamic() {
 //               called by make_copy() only.
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixDynamic::
-AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy) : 
+AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy) :
   AnimChannelMatrix(parent, copy),
   _value_node(copy._value_node),
   _value(copy._value),
@@ -58,7 +58,7 @@ AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixDynamic::
 AnimChannelMatrixDynamic(const string &name)
-  : AnimChannelMatrix(name) 
+  : AnimChannelMatrix(name)
 {
   _value = TransformState::make_identity();
   _last_value = NULL;  // This is impossible; thus, has_changed() will

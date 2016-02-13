@@ -1,4 +1,4 @@
-// Filename: collisionHandlerEvent.cxx
+// Filename: collisionHandlerHighestEvent.cxx
 // Created by:  drose (16Mar02)
 //
 ////////////////////////////////////////////////////////////////////

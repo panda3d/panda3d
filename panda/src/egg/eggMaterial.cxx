@@ -39,11 +39,15 @@ EggMaterial(const string &mref_name)
 EggMaterial::
 EggMaterial(const EggMaterial &copy)
   : EggNode(copy),
+    _base(copy._base),
     _diff(copy._diff),
     _amb(copy._amb),
     _emit(copy._emit),
     _spec(copy._spec),
     _shininess(copy._shininess),
+    _roughness(copy._roughness),
+    _metallic(copy._metallic),
+    _ior(copy._ior),
     _local(copy._local),
     _flags(copy._flags)
 {
@@ -59,6 +63,19 @@ EggMaterial(const EggMaterial &copy)
 void EggMaterial::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Material>");
+
+  if (has_base()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> baser { " << get_base()[0] << " }\n";
+    indent(out, indent_level + 2)
+      << "<Scalar> baseg { " << get_base()[1] << " }\n";
+    indent(out, indent_level + 2)
+      << "<Scalar> baseb { " << get_base()[2] << " }\n";
+    if (get_base()[3] != 1.0) {
+      indent(out, indent_level + 2)
+        << "<Scalar> basea { " << get_base()[3] << " }\n";
+    }
+  }
 
   if (has_diff()) {
     indent(out, indent_level + 2)
@@ -117,6 +134,21 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> shininess { " << get_shininess() << " }\n";
   }
 
+  if (has_roughness()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> roughness { " << get_roughness() << " }\n";
+  }
+
+  if (has_metallic()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> metallic { " << get_metallic() << " }\n";
+  }
+
+  if (has_ior()) {
+    indent(out, indent_level + 2)
+      << "<Scalar> ior { " << get_ior() << " }\n";
+  }
+
   if (has_local()) {
     indent(out, indent_level + 2)
       << "<Scalar> local { " << get_local() << " }\n";
@@ -147,11 +179,15 @@ bool EggMaterial::
 is_equivalent_to(const EggMaterial &other, int eq) const {
   if (eq & E_attributes) {
     if (_flags != other._flags ||
+        (has_base() && get_base() != other.get_base()) ||
         (has_diff() && get_diff() != other.get_diff()) ||
         (has_amb() && get_amb() != other.get_amb()) ||
         (has_emit() && get_emit() != other.get_emit()) ||
         (has_spec() && get_spec() != other.get_spec()) ||
         (has_shininess() && get_shininess() != other.get_shininess()) ||
+        (has_roughness() && get_roughness() != other.get_roughness()) ||
+        (has_metallic() && get_metallic() != other.get_metallic()) ||
+        (has_ior() && get_ior() != other.get_ior()) ||
         (has_local() && get_local() != other.get_local())) {
       return false;
     }
@@ -195,6 +231,15 @@ sorts_less_than(const EggMaterial &other, int eq) const {
     }
     if (has_shininess() && get_shininess() != other.get_shininess()) {
       return get_shininess() < other.get_shininess();
+    }
+    if (has_roughness() && get_roughness() != other.get_roughness()) {
+      return get_roughness() < other.get_roughness();
+    }
+    if (has_metallic() && get_metallic() != other.get_metallic()) {
+      return get_metallic() < other.get_metallic();
+    }
+    if (has_ior() && get_ior() != other.get_ior()) {
+      return get_ior() < other.get_ior();
     }
     if (has_local() && get_local() != other.get_local()) {
       return get_local() < other.get_local();

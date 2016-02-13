@@ -1,4 +1,4 @@
-// Filename: InterfaceMakerPythonNative.h
+// Filename: interfaceMakerPythonNative.h
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE

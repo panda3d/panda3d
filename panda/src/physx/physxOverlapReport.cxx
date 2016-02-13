@@ -1,4 +1,4 @@
-// Filename: physOverlapReport.cxx
+// Filename: physxOverlapReport.cxx
 // Created by:  enn0x (21Oct09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxOverlapReport::onEvent
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool PhysxOverlapReport::
 onEvent(NxU32 nbEntities, NxShape **entities) {
@@ -34,7 +34,7 @@ onEvent(NxU32 nbEntities, NxShape **entities) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxOverlapReport::get_num_overlaps
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 unsigned int PhysxOverlapReport::
 get_num_overlaps() const {
@@ -45,7 +45,7 @@ get_num_overlaps() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxOverlapReport::get_first_overlap
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxShape *PhysxOverlapReport::
 get_first_overlap() {
@@ -57,7 +57,7 @@ get_first_overlap() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxOverlapReport::get_next_overlap
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxShape *PhysxOverlapReport::
 get_next_overlap() {
@@ -73,7 +73,7 @@ get_next_overlap() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxOverlapReport::get_overlap
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PhysxShape *PhysxOverlapReport::
 get_overlap(unsigned int idx) {

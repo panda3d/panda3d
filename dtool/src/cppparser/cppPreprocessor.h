@@ -35,7 +35,7 @@ class CPPExpression;
 
 //#define CPP_VERBOSE_LEX
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPPreprocessor
 // Description :
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +87,8 @@ public:
   typedef set<string> Includes;
   Includes _quote_includes;
   Includes _angle_includes;
+
+  set<Filename> _explicit_files;
 
   // This is normally true, to indicate that the preprocessor should
   // decode identifiers like foo::bar<snarf> into a single IDENTIFIER,

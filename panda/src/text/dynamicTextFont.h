@@ -99,10 +99,7 @@ PUBLISHED:
 
   INLINE void set_render_mode(RenderMode render_mode);
   INLINE RenderMode get_render_mode() const;
-  INLINE void set_winding_order(WindingOrder winding_order);
-  INLINE WindingOrder get_winding_order() const;
   MAKE_PROPERTY(render_mode, get_render_mode, set_render_mode);
-  MAKE_PROPERTY(winding_order, get_winding_order, set_winding_order);
 
   INLINE void set_fg(const LColor &fg);
   INLINE const LColor &get_fg() const;
@@ -134,7 +131,7 @@ private:
   void initialize();
   void update_filters();
   void determine_tex_format();
-  TextGlyph *make_glyph(int character, FT_Face face, int glyph_index);
+  CPT(TextGlyph) make_glyph(int character, FT_Face face, int glyph_index);
   void copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph);
   void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
   void blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
@@ -143,15 +140,6 @@ private:
 
   void render_wireframe_contours(TextGlyph *glyph);
   void render_polygon_contours(TextGlyph *glyph, bool face, bool extrude);
-
-  static int outline_move_to(const FT_Vector *to, void *user);
-  static int outline_line_to(const FT_Vector *to, void *user);
-  static int outline_conic_to(const FT_Vector *control,
-                              const FT_Vector *to, void *user);
-  static int outline_cubic_to(const FT_Vector *control1, 
-                              const FT_Vector *control2, 
-                              const FT_Vector *to, void *user);
-  int outline_nurbs(NurbsCurveResult *ncr);
 
   int _texture_margin;
   PN_stdfloat _poly_margin;
@@ -162,7 +150,6 @@ private:
   int _anisotropic_degree;
 
   RenderMode _render_mode;
-  WindingOrder _winding_order;
 
   LColor _fg, _bg, _outline_color;
   PN_stdfloat _outline_width;
@@ -177,7 +164,7 @@ private:
 
   // This doesn't need to be a reference-counting pointer, because the
   // reference to each glyph is kept by the DynamicTextPage object.
-  typedef pmap<int, TextGlyph *> Cache;
+  typedef pmap<int, const TextGlyph *> Cache;
   Cache _cache;
 
   // This is a list of the glyphs that do not have any printable
@@ -186,28 +173,6 @@ private:
   // in the above table.
   typedef pvector< PT(TextGlyph) > EmptyGlyphs;
   EmptyGlyphs _empty_glyphs;
-
-  class ContourPoint {
-  public:
-    INLINE ContourPoint(const LPoint2 &p, const LVector2 &in, 
-                        const LVector2 &out);
-    INLINE ContourPoint(PN_stdfloat px, PN_stdfloat py, PN_stdfloat tx, PN_stdfloat ty);
-    INLINE void connect_to(const LVector2 &out);
-    LPoint2 _p;
-    LVector2 _in, _out;  // tangents into and out of the vertex.
-  };
-  typedef pvector<ContourPoint> Points;
-
-  class Contour {
-  public:
-    Points _points;
-    bool _is_solid;
-    int _start_vertex;
-  };
-
-  typedef pvector<Contour> Contours;
-  Contours _contours;
-  LPoint2 _q;  // The "current point".
 
 public:
   static TypeHandle get_class_type() {

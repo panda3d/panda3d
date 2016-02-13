@@ -21,11 +21,8 @@
 TypeHandle Buffered_DatagramConnection::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-// Function name    :  Buffered_DatagramConnection::SendMessage
-// Description      : send the message
-//
-// Return type      : bool
-// Argument         : DataGram &msg
+//     Function: Buffered_DatagramConnection::SendMessage
+//  Description: send the message
 ////////////////////////////////////////////////////////////////////
 bool Buffered_DatagramConnection::
 SendMessage(const Datagram &msg) {

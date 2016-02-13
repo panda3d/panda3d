@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_radius
-//      Access : public
-// Description : radius set
+//     Function: set_radius
+//       Access: Public
+//  Description: radius set
 ////////////////////////////////////////////////////////////////////
 
 INLINE void RingEmitter::
@@ -24,9 +24,9 @@ set_radius(PN_stdfloat r) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_angle
-//      Access : public
-// Description : angle of elevation set
+//     Function: set_angle
+//       Access: Public
+//  Description: angle of elevation set
 ////////////////////////////////////////////////////////////////////
 
 INLINE void RingEmitter::
@@ -35,9 +35,9 @@ set_angle(PN_stdfloat angle) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_radius_spread
-//      Access : public
-// Description : radius_spread set
+//     Function: set_radius_spread
+//       Access: Public
+//  Description: radius_spread set
 ////////////////////////////////////////////////////////////////////
 
 INLINE void RingEmitter::
@@ -46,9 +46,9 @@ set_radius_spread(PN_stdfloat spread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_uniform_emission
-//      Access : public
-// Description : uniform_emission set               
+//     Function: set_uniform_emission
+//       Access: Public
+//  Description: uniform_emission set
 ////////////////////////////////////////////////////////////////////
 
 INLINE void RingEmitter::
@@ -57,9 +57,9 @@ set_uniform_emission(int uniform_emission) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_radius
-//      Access : public
-// Description : radius get
+//     Function: get_radius
+//       Access: Public
+//  Description: radius get
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat RingEmitter::
@@ -68,9 +68,9 @@ get_radius() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_angle
-//      Access : public
-// Description : angle of elevation get
+//     Function: get_angle
+//       Access: Public
+//  Description: angle of elevation get
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat RingEmitter::
@@ -79,9 +79,9 @@ get_angle() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_radius_spread
-//      Access : public
-// Description : radius_spread get
+//     Function: get_radius_spread
+//       Access: Public
+//  Description: radius_spread get
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat RingEmitter::
@@ -90,9 +90,9 @@ get_radius_spread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_uniform_emission
-//      Access : public
-// Description : uniform_emission get               
+//     Function: get_uniform_emission
+//       Access: Public
+//  Description: uniform_emission get
 ////////////////////////////////////////////////////////////////////
 
 INLINE int RingEmitter::

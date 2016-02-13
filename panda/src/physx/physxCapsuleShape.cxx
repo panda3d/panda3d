@@ -20,7 +20,7 @@ TypeHandle PhysxCapsuleShape::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxCapsuleShape::link
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxCapsuleShape::
 link(NxShape *shapePtr) {
@@ -38,7 +38,7 @@ link(NxShape *shapePtr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PhysxCapsuleShape::unlink
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PhysxCapsuleShape::
 unlink() {
@@ -51,10 +51,10 @@ unlink() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : PhysxCapsuleShape::save_to_desc
-//       Access : Published
-//  Description : Saves the state of the shape object to a 
-//                descriptor.
+//     Function: PhysxCapsuleShape::save_to_desc
+//       Access: Published
+//  Description: Saves the state of the shape object to a
+//               descriptor.
 ////////////////////////////////////////////////////////////////////
 void PhysxCapsuleShape::
 save_to_desc(PhysxCapsuleShapeDesc &shapeDesc) const {

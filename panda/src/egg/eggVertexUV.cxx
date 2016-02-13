@@ -99,7 +99,7 @@ EggVertexUV::
 //  Description: Creates a new EggVertexUV that contains the
 //               averaged values of the two given objects.  It is
 //               an error if they don't have the same name.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 PT(EggVertexUV) EggVertexUV::
 make_average(const EggVertexUV *first, const EggVertexUV *second) {
   nassertr(first->get_name() == second->get_name(), NULL);

@@ -704,6 +704,12 @@ issue_parameters(int altered) {
       case Shader::SMP_cell15:
         GLf(cgGLSetParameter1)(p, data[15]);
         continue;
+      case Shader::SMP_cell14:
+        GLf(cgGLSetParameter1)(p, data[14]);
+        continue;
+      case Shader::SMP_cell13:
+        GLf(cgGLSetParameter1)(p, data[13]);
+        continue;
       }
     }
   }

@@ -20,7 +20,7 @@
 #include "cppDeclaration.h"
 #include "cppIdentifier.h"
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //       Class : CPPMakeProperty
 // Description : This is a MAKE_PROPERTY() declaration appearing
 //               within a class body.  It means to generate a property

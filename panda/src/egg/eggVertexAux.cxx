@@ -71,7 +71,7 @@ EggVertexAux::
 //  Description: Creates a new EggVertexAux that contains the
 //               averaged values of the two given objects.  It is
 //               an error if they don't have the same name.
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 PT(EggVertexAux) EggVertexAux::
 make_average(const EggVertexAux *first, const EggVertexAux *second) {
   nassertr(first->get_name() == second->get_name(), NULL);

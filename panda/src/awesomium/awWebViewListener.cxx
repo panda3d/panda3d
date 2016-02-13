@@ -1,4 +1,4 @@
-// Filename: awWebView.cxx
+// Filename: awWebViewListener.cxx
 // Created by:  rurbino (12Oct09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@
 TypeHandle AwWebViewListener::_type_handle;
 
 AwWebViewListener::
-AwWebViewListener()  {  
+AwWebViewListener()  {
   awesomium_cat.info() << "constructing WebViewListner" ;
 }
 
@@ -44,7 +44,7 @@ void AwWebViewListener::onFinishLoading() {
     */
 void AwWebViewListener::onCallback(const std::string& name, const Awesomium::JSArguments& args) {
 }
-    
+
     /**
     * This event is fired when a page title is received.
     *
@@ -72,7 +72,7 @@ void AwWebViewListener::onChangeKeyboardFocus(bool isFocused) {
 }
 
     /**
-    * This event is fired when the target URL has changed. This is usually the result of 
+    * This event is fired when the target URL has changed. This is usually the result of
     * hovering over a link on the page.
     *
     * @param    url The updated target URL (or empty if the target URL is cleared).

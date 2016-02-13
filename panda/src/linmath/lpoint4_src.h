@@ -18,10 +18,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_LINMATH FLOATNAME(LPoint4) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
-  INLINE_LINMATH FLOATNAME(LPoint4)();
+  INLINE_LINMATH FLOATNAME(LPoint4)() DEFAULT_CTOR;
   INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LPoint4) &operator = (const FLOATNAME(LVecBase4) &copy);
-  INLINE_LINMATH FLOATNAME(LPoint4) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
@@ -34,6 +32,12 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_y();
   INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_z();
   INLINE_LINMATH static const FLOATNAME(LPoint4) &unit_w();
+
+  INLINE_LINMATH FLOATNAME(LPoint3) get_xyz() const;
+  INLINE_LINMATH FLOATNAME(LPoint2) get_xy() const;
+
+  MAKE_PROPERTY(xyz, get_xyz);
+  MAKE_PROPERTY(xy, get_xy);
 
   INLINE_LINMATH FLOATNAME(LPoint4) operator - () const;
 
@@ -53,6 +57,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint4) operator / (FLOATTYPE scalar) const;
 
 #ifndef FLOATTYPE_IS_INT
+  INLINE_LINMATH FLOATNAME(LPoint4) normalized() const;
   INLINE_LINMATH FLOATNAME(LPoint4) project(const FLOATNAME(LVecBase4) &onto) const;
 #endif
 

@@ -14,43 +14,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LPoint3::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LPoint3)::
-FLOATNAME(LPoint3)() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LPoint3::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint3)::
 FLOATNAME(LPoint3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(copy) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint3::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LPoint3) &FLOATNAME(LPoint3)::
-operator = (const FLOATNAME(LVecBase3) &copy) {
-  FLOATNAME(LVecBase3)::operator = (copy);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint3::Copy Fill Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LPoint3) &FLOATNAME(LPoint3)::
-operator = (FLOATTYPE fill_value) {
-  FLOATNAME(LVecBase3)::operator = (fill_value);
-  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,6 +199,18 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 }
 
 #ifndef FLOATTYPE_IS_INT
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint3::normalized
+//       Access: Published
+//  Description: Normalizes the vector and returns the normalized
+//               vector as a copy. If the vector was a zero-length
+//               vector, a zero length vector will be returned.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+normalized() const {
+  return FLOATNAME(LVecBase3)::normalized();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint3::project
 //       Access: Published

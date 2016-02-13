@@ -457,7 +457,6 @@ SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(RTDIST)
-SdkLocateVisualStudio(MSVC_VERSION)
 SdkLocateWindows(WINDOWS_SDK)
 SdkLocatePhysX()
 SdkLocateSpeedTree()
@@ -496,6 +495,7 @@ if RUNTIME and not HOST_URL:
 
 if GetHost() == 'windows' and GetTarget() == 'windows':
     COMPILER = "MSVC"
+    SdkLocateVisualStudio(MSVC_VERSION)
 else:
     COMPILER = "GCC"
 
@@ -737,6 +737,9 @@ if (COMPILER=="GCC"):
         if (os.path.isdir("/usr/PCBSD")):
             IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
             LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
+
+    if GetTarget() != "windows":
+        PkgDisable("DIRECTCAM")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
@@ -1169,7 +1172,7 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
 
-        if not GetLinkAllStatic():
+        if not GetLinkAllStatic() and 'NOHIDDEN' not in opts:
             cmd += ' -fvisibility=hidden'
 
         # Mac-specific flags.
@@ -1625,7 +1628,8 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
             else:
                 cmd = cxx + ' -shared'
-                if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
+                if "MODULE" not in opts or GetTarget() == 'android':
+                    cmd += " -Wl,-soname=" + os.path.basename(dll)
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
         for x in obj:
@@ -4324,7 +4328,7 @@ if (GetTarget() == 'windows' and not RUNTIME):
 # DIRECTORY: panda/metalibs/pandadx9/
 #
 
-if PkgSkip("DX9")==0 and not RUNTIME:
+if GetTarget() == 'windows' and PkgSkip("DX9")==0 and not RUNTIME:
   OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9',  'NVIDIACG', 'CGDX9']
   TargetAdd('p3dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
   TargetAdd('p3dxgsg9_composite1.obj', opts=OPTS, input='p3dxgsg9_composite1.cxx')
@@ -4804,7 +4808,7 @@ if (not RUNTIME and GetTarget() == 'android'):
   TargetAdd('libp3android.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3android.dll', opts=['JNIGRAPHICS'])
 
-  TargetAdd('android_native_app_glue.obj', opts=OPTS, input='android_native_app_glue.c')
+  TargetAdd('android_native_app_glue.obj', opts=OPTS + ['NOHIDDEN'], input='android_native_app_glue.c')
   TargetAdd('android_main.obj', opts=OPTS, input='android_main.cxx')
 
   if (not RTDIST and PkgSkip("PVIEW")==0):
@@ -4969,6 +4973,21 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('libp3showbase_igate.obj', input='libp3showbase.in', opts=["DEPENDENCYONLY"])
 
 #
+# DIRECTORY: direct/src/motiontrail/
+#
+
+if (PkgSkip("DIRECT")==0):
+  OPTS=['DIR:direct/src/motiontrail', 'BUILDING:DIRECT']
+  TargetAdd('p3motiontrail_cMotionTrail.obj', opts=OPTS, input='cMotionTrail.cxx')
+  TargetAdd('p3motiontrail_config_motiontrail.obj', opts=OPTS, input='config_motiontrail.cxx')
+
+  OPTS=['DIR:direct/src/motiontrail']
+  IGATEFILES=GetDirectoryContents('direct/src/motiontrail', ["*.h", "cMotionTrail.cxx"])
+  TargetAdd('libp3motiontrail.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3motiontrail.in', opts=['IMOD:panda3d.direct', 'ILIB:libp3motiontrail', 'SRCDIR:direct/src/motiontrail'])
+  TargetAdd('libp3motiontrail_igate.obj', input='libp3motiontrail.in', opts=["DEPENDENCYONLY"])
+
+#
 # DIRECTORY: direct/metalibs/direct/
 #
 
@@ -4990,6 +5009,8 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('libp3direct.dll', input='p3distributed_config_distributed.obj')
   TargetAdd('libp3direct.dll', input='p3distributed_cConnectionRepository.obj')
   TargetAdd('libp3direct.dll', input='p3distributed_cDistributedSmoothNodeBase.obj')
+  TargetAdd('libp3direct.dll', input='p3motiontrail_config_motiontrail.obj')
+  TargetAdd('libp3direct.dll', input='p3motiontrail_cMotionTrail.obj')
   TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER', 'WINGDI'])
 
@@ -4999,6 +5020,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct_module.obj', input='libp3deadrec.in')
   TargetAdd('direct_module.obj', input='libp3interval.in')
   TargetAdd('direct_module.obj', input='libp3distributed.in')
+  TargetAdd('direct_module.obj', input='libp3motiontrail.in')
   TargetAdd('direct_module.obj', opts=OPTS)
   TargetAdd('direct_module.obj', opts=['IMOD:panda3d.direct', 'ILIB:direct', 'IMPORT:panda3d.core'])
 
@@ -5007,6 +5029,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct.pyd', input='libp3deadrec_igate.obj')
   TargetAdd('direct.pyd', input='libp3interval_igate.obj')
   TargetAdd('direct.pyd', input='libp3distributed_igate.obj')
+  TargetAdd('direct.pyd', input='libp3motiontrail_igate.obj')
 
   TargetAdd('direct.pyd', input='direct_module.obj')
   TargetAdd('direct.pyd', input='libp3direct.dll')

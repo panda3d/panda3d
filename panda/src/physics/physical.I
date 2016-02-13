@@ -15,9 +15,9 @@
 #include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
-//    Function : clear_linear_forces
-//      Access : Public
-// Description : Erases the linear force list
+//     Function: clear_linear_forces
+//       Access: Public
+//  Description: Erases the linear force list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 clear_linear_forces() {
@@ -26,9 +26,9 @@ clear_linear_forces() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : clear_angular_forces
-//      Access : Public
-// Description : Erases the angular force list
+//     Function: clear_angular_forces
+//       Access: Public
+//  Description: Erases the angular force list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 clear_angular_forces() {
@@ -37,9 +37,9 @@ clear_angular_forces() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : clear_physics_objects
-//      Access : Public
-// Description : Erases the object list
+//     Function: clear_physics_objects
+//       Access: Public
+//  Description: Erases the object list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 clear_physics_objects() {
@@ -48,9 +48,9 @@ clear_physics_objects() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_linear_force
-//      Access : Public
-// Description : Adds a linear force to the force list
+//     Function: add_linear_force
+//       Access: Public
+//  Description: Adds a linear force to the force list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 add_linear_force(LinearForce *f) {
@@ -58,9 +58,9 @@ add_linear_force(LinearForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_angular_force
-//      Access : Public
-// Description : Adds an angular force to the force list
+//     Function: add_angular_force
+//       Access: Public
+//  Description: Adds an angular force to the force list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 add_angular_force(AngularForce *f) {
@@ -68,9 +68,9 @@ add_angular_force(AngularForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : remove_linear_force
-//      Access : Public
-// Description : removes a linear force from the force list
+//     Function: remove_linear_force
+//       Access: Public
+//  Description: removes a linear force from the force list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 remove_linear_force(LinearForce *f) {
@@ -88,9 +88,9 @@ remove_linear_force(LinearForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : remove_angular_force
-//      Access : Public
-// Description : removes an angular force from the force list
+//     Function: remove_angular_force
+//       Access: Public
+//  Description: removes an angular force from the force list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 remove_angular_force(AngularForce *f) {
@@ -106,9 +106,9 @@ remove_angular_force(AngularForce *f) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : add_physics_object
-//      Access : Public
-// Description : Adds an object to the physics object vector
+//     Function: add_physics_object
+//       Access: Public
+//  Description: Adds an object to the physics object vector
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 add_physics_object(PhysicsObject *po) {
@@ -116,8 +116,8 @@ add_physics_object(PhysicsObject *po) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_physics_manager
-//      Access : Public
+//     Function: get_physics_manager
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PhysicsManager *Physical::
 get_physics_manager() const {
@@ -125,8 +125,8 @@ get_physics_manager() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_phys_body
-//      Access : Public
+//     Function: get_phys_body
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PhysicsObject *Physical::
 get_phys_body() const {
@@ -134,8 +134,8 @@ get_phys_body() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_physical_node
-//      Access : Public
+//     Function: get_physical_node
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PhysicalNode *Physical::
 get_physical_node() const {
@@ -143,8 +143,8 @@ get_physical_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_physical_node_path
-//      Access : Public
+//     Function: get_physical_node_path
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath Physical::
 get_physical_node_path() const {
@@ -152,8 +152,8 @@ get_physical_node_path() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_object_vector
-//      Access : Public
+//     Function: get_object_vector
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE const PhysicsObject::Vector &Physical::
 get_object_vector() const {
@@ -161,8 +161,8 @@ get_object_vector() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_linear_forces
-//      Access : Public
+//     Function: get_linear_forces
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE const Physical::LinearForceVector &Physical::
 get_linear_forces() const {
@@ -170,8 +170,8 @@ get_linear_forces() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_angular_forces
-//      Access : Public
+//     Function: get_angular_forces
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE const Physical::AngularForceVector &Physical::
 get_angular_forces() const {
@@ -179,8 +179,8 @@ get_angular_forces() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_num_linear_forces
-//      Access : Public
+//     Function: get_num_linear_forces
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE int Physical::
 get_num_linear_forces() const {
@@ -188,8 +188,8 @@ get_num_linear_forces() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_linear_force
-//      Access : Public
+//     Function: get_linear_force
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PT(LinearForce) Physical::
 get_linear_force(int index) const {
@@ -198,8 +198,8 @@ get_linear_force(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_num_angular_forces
-//      Access : Public
+//     Function: get_num_angular_forces
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE int Physical::
 get_num_angular_forces() const {
@@ -207,8 +207,8 @@ get_num_angular_forces() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_angular_force
-//      Access : Public
+//     Function: get_angular_force
+//       Access: Public
 ////////////////////////////////////////////////////////////////////
 INLINE PT(AngularForce) Physical::
 get_angular_force(int index) const {
@@ -217,9 +217,9 @@ get_angular_force(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_viscosity
-//      Access : Public
-// Description : Set the local viscosity.
+//     Function: set_viscosity
+//       Access: Public
+//  Description: Set the local viscosity.
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
 set_viscosity(PN_stdfloat viscosity) {
@@ -227,9 +227,9 @@ set_viscosity(PN_stdfloat viscosity) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_viscosity
-//      Access : Public
-// Description : Get the local viscosity.
+//     Function: get_viscosity
+//       Access: Public
+//  Description: Get the local viscosity.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat Physical::
 get_viscosity() const {

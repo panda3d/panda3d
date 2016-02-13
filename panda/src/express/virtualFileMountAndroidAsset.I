@@ -1,4 +1,4 @@
-// Filename: virtualFileMountAndroidAsset.cxx
+// Filename: virtualFileMountAndroidAsset.I
 // Created by:  rdb (21Jan13)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountAndroidAsset::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VirtualFileMountAndroidAsset::
 VirtualFileMountAndroidAsset(AAssetManager *mgr, const string &apk_path) :
@@ -27,7 +27,7 @@ VirtualFileMountAndroidAsset(AAssetManager *mgr, const string &apk_path) :
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountAndroidAsset::AssetStream::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFileMountAndroidAsset::AssetStream::
 AssetStream(AAsset *asset) :

@@ -244,10 +244,11 @@ create_texture(DXScreenData &scrn) {
     case 1:
       if (num_alpha_bits > 0) {
         _d3d_format = D3DFMT_A8;
+      } else {
+        _d3d_format = D3DFMT_L8;
       }
       break;
     case 2:
-      nassertr(false && (num_alpha_bits > 0), false);
       _d3d_format = D3DFMT_A8L8;
       break;
     case 3:
@@ -417,12 +418,24 @@ create_texture(DXScreenData &scrn) {
     case Texture::CM_dxt5:
       CHECK_FOR_FMT(DXT5);
       break;
+    case Texture::CM_rgtc:
+      if (num_color_channels == 1) {
+        CHECK_FOR_FMT(ATI1);
+      } else {
+        CHECK_FOR_FMT(ATI2);
+      }
+      break;
     }
 
     // We don't support the compressed format.  Fall through.
   }
 
   if (compress_texture) {
+    if (num_color_channels == 1) {
+      CHECK_FOR_FMT(ATI1);
+    } else if (num_alpha_bits == 0 && num_color_channels == 2) {
+      CHECK_FOR_FMT(ATI2);
+    }
     if (num_alpha_bits <= 1) {
       CHECK_FOR_FMT(DXT1);
     } else if (num_alpha_bits <= 4) {
@@ -542,7 +555,7 @@ create_texture(DXScreenData &scrn) {
         CHECK_FOR_FMT(D16);
       } else {
         if (scrn._supported_tex_formats_mask & INTZ_FLAG) {
-          target_pixel_format = (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z');
+          target_pixel_format = D3DFMT_INTZ;
           goto found_matching_format;
         }
 
@@ -587,7 +600,7 @@ create_texture(DXScreenData &scrn) {
         CHECK_FOR_FMT(D32);
       } else {
         if (scrn._supported_tex_formats_mask & INTZ_FLAG) {
-          target_pixel_format = (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z');
+          target_pixel_format = D3DFMT_INTZ;
           goto found_matching_format;
         }
 
@@ -689,7 +702,7 @@ create_texture(DXScreenData &scrn) {
     << "; NeedLuminance: " << needs_luminance << endl;
   goto error_exit;
 
-  ///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
  found_matching_format:
   // We found a suitable format that matches the texture's format.
@@ -716,7 +729,7 @@ create_texture(DXScreenData &scrn) {
           << "GetDesc failed in create_texture: " << D3DERRORSTRING(hr);
       } else {
         if (target_pixel_format != surface_desc.Format &&
-            target_pixel_format != MAKEFOURCC('I', 'N', 'T', 'Z')) {
+            target_pixel_format != D3DFMT_INTZ) {
           if (dxgsg9_cat.is_debug()) {
             dxgsg9_cat.debug()
               << "Chose format " << D3DFormatStr(surface_desc.Format)
@@ -859,6 +872,25 @@ create_texture(DXScreenData &scrn) {
         dxgsg9_cat.debug()
           << "create_texture: generating mipmaps for " << tex->get_name()
           << endl;
+      }
+    }
+
+    // DirectX will corrupt memory if we try to load mipmaps smaller than
+    // 4x4 for ATI1 or ATI2 textures.
+    if (target_pixel_format == D3DFMT_ATI1 ||
+        target_pixel_format == D3DFMT_ATI2) {
+
+      UINT dimension = min(target_height, target_width);
+      mip_level_count = 0;
+      while (dimension >= 4) {
+        ++mip_level_count;
+        dimension >>= 1;
+      }
+
+      if ((UINT)tex->get_num_ram_mipmap_images() < mip_level_count) {
+        // We also have to generate mipmaps on the CPU for these.
+        tex->generate_ram_mipmap_images();
+        mip_level_count = min(mip_level_count, (UINT)tex->get_num_ram_mipmap_images());
       }
     }
   } else {
@@ -1252,6 +1284,11 @@ extract_texture_data(DXScreenData &screen) {
     break;
   case D3DFMT_DXT5:
     compression = Texture::CM_dxt5;
+    div = 4;
+    break;
+  case D3DFMT_ATI1:
+  case D3DFMT_ATI2:
+    compression = Texture::CM_rgtc;
     div = 4;
     break;
 
@@ -1669,7 +1706,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: calculate_row_byte_length
-//       Access: Private, hidden
+//       Access: Private, Hidden
 //  Description: local helper function, which calculates the
 //               'row_byte_length' or 'pitch' needed for calling
 //               D3DXLoadSurfaceFromMemory.
@@ -1682,6 +1719,7 @@ static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFOR
     // check for compressed textures and adjust source_row_byte_length and source_format accordingly
     switch (tex_format) {
       case D3DFMT_DXT1:
+      case D3DFMT_ATI1:
           // for dxt1 compressed textures, the row_byte_lenght is "the width of one row of cells, in bytes"
           // cells are 4 pixels wide, take up 8 bytes, and at least 1 cell has to be there.
           source_row_byte_length = max(1,width / 4)*8;
@@ -1690,6 +1728,7 @@ static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFOR
       case D3DFMT_DXT3:
       case D3DFMT_DXT4:
       case D3DFMT_DXT5:
+      case D3DFMT_ATI2:
           // analogue as above, but cells take up 16 bytes
           source_row_byte_length = max(1,width / 4)*16;
         break;
@@ -1813,15 +1852,27 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
 #ifdef DO_PSTATS
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_row_byte_length * height);
 #endif
-  hr = D3DXLoadSurfaceFromMemory
-    (mip_surface, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pixels,
-      source_format, source_row_byte_length, (PALETTEENTRY*)NULL,
-      &source_size, mip_filter, (D3DCOLOR)0x0);
-  if (FAILED(hr)) {
-    dxgsg9_cat.error()
-      << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
-      << ", mip_level " << mip_level
-      << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+  if (source_format == D3DFMT_ATI1 || source_format == D3DFMT_ATI2) {
+    // These formats are not supported by D3DXLoadSurfaceFromMemory.
+    D3DLOCKED_RECT rect;
+    _d3d_2d_texture->LockRect(mip_level, &rect, 0, D3DLOCK_DISCARD);
+
+    unsigned char *dest = (unsigned char *)rect.pBits;
+    memcpy(dest, pixels, view_size);
+
+    _d3d_2d_texture->UnlockRect(mip_level);
+
+  } else {
+    hr = D3DXLoadSurfaceFromMemory
+      (mip_surface, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pixels,
+        source_format, source_row_byte_length, (PALETTEENTRY*)NULL,
+        &source_size, mip_filter, (D3DCOLOR)0x0);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
+        << ", mip_level " << mip_level
+        << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+    }
   }
 
 exit_FillMipmapSurf:
@@ -1949,6 +2000,13 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
     break;
   case Texture::CM_dxt5:
     source_format = D3DFMT_DXT5;
+    break;
+  case Texture::CM_rgtc:
+    if (tex->get_num_components() == 1) {
+      source_format = D3DFMT_ATI1;
+    } else {
+      source_format = D3DFMT_ATI2;
+    }
     break;
   default:
     // no known compression format.. no adjustment
@@ -2369,7 +2427,7 @@ d3d_format_to_bytes_per_pixel (D3DFORMAT format)
     case D3DFMT_D24S8:
     case D3DFMT_D32:
     case (D3DFORMAT)MAKEFOURCC('D', 'F', '2', '4'):
-    case (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'):
+    case D3DFMT_INTZ:
       bytes_per_pixel = 4.0f;
       break;
 
@@ -2385,12 +2443,14 @@ d3d_format_to_bytes_per_pixel (D3DFORMAT format)
       break;
 
     case D3DFMT_DXT1:
+    case D3DFMT_ATI1:
       bytes_per_pixel = 0.5f;
       break;
     case D3DFMT_DXT2:
     case D3DFMT_DXT3:
     case D3DFMT_DXT4:
     case D3DFMT_DXT5:
+    case D3DFMT_ATI2:
       bytes_per_pixel = 1.0f;
       break;
   }

@@ -40,7 +40,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggToFlt::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggToFlt::
 EggToFlt() :
@@ -118,7 +118,7 @@ dispatch_attr(const string &opt, const string &arg, void *var) {
          << " requires either \"none\", \"new\", or \"all\".\n";
     return false;
   }
-   
+
   return true;
 }
 
@@ -128,7 +128,7 @@ dispatch_attr(const string &opt, const string &arg, void *var) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void EggToFlt::
-traverse(EggNode *egg_node, FltBead *flt_node, 
+traverse(EggNode *egg_node, FltBead *flt_node,
          FltGeometry::BillboardType billboard) {
   if (egg_node->is_of_type(EggPolygon::get_class_type()) ||
       egg_node->is_of_type(EggPoint::get_class_type())) {
@@ -182,11 +182,11 @@ convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
   if (egg_primitive->is_of_type(EggPoint::get_class_type())) {
     // A series of points, instead of a polygon.
     flt_face->_draw_type = FltFace::DT_omni_light;
-      
+
   } else if (egg_primitive->get_bface_flag()) {
     // A polygon whose backface is visible.
     flt_face->_draw_type = FltFace::DT_solid_no_cull;
-      
+
   } else {
     // A normal polygon.
     flt_face->_draw_type = FltFace::DT_solid_cull_backface;
@@ -241,17 +241,17 @@ convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
 //     Function: EggToFlt::convert_group
 //       Access: Private
 //  Description: Converts an egg group to the corresponding flt group,
-//              and adds it to the indicated parent node.  Also
-//              recurses on the children of the egg group.
+//               and adds it to the indicated parent node.  Also
+//               recurses on the children of the egg group.
 ////////////////////////////////////////////////////////////////////
 void EggToFlt::
-convert_group(EggGroup *egg_group, FltBead *flt_node, 
+convert_group(EggGroup *egg_group, FltBead *flt_node,
               FltGeometry::BillboardType billboard) {
   ostringstream egg_syntax;
 
   FltGroup *flt_group = new FltGroup(_flt_header);
   flt_node->add_child(flt_group);
-  
+
   flt_group->set_id(egg_group->get_name());
 
   switch (egg_group->get_billboard_type()) {
@@ -273,11 +273,11 @@ convert_group(EggGroup *egg_group, FltBead *flt_node,
   default:
     break;
   }
-  
+
   if (egg_group->has_transform()) {
     apply_transform(egg_group, flt_group);
   }
-  
+
   if (egg_group->get_switch_flag()) {
     if (egg_group->get_switch_fps() != 0.0) {
       // A sequence animation.
@@ -301,7 +301,7 @@ convert_group(EggGroup *egg_group, FltBead *flt_node,
   egg_group->write_render_mode(egg_syntax, 2);
 
   apply_egg_syntax(egg_syntax.str(), flt_group);
-  
+
   EggGroup::iterator ci;
   for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
     traverse(*ci, flt_group, billboard);
@@ -324,7 +324,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
     switch (egg_transform->get_component_type(i)) {
     case EggTransform::CT_translate2d:
       {
-        FltTransformTranslate *translate = 
+        FltTransformTranslate *translate =
           new FltTransformTranslate(_flt_header);
         LVector2d v2 = egg_transform->get_component_vec2(i);
         translate->set(LPoint3d::zero(), LVector3d(v2[0], v2[1], 0.0));
@@ -334,7 +334,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
     case EggTransform::CT_translate3d:
       {
-        FltTransformTranslate *translate = 
+        FltTransformTranslate *translate =
           new FltTransformTranslate(_flt_header);
         translate->set(LPoint3d::zero(), egg_transform->get_component_vec3(i));
         flt_node->add_transform_step(translate);
@@ -343,7 +343,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
     case EggTransform::CT_rotate2d:
       {
-        FltTransformRotateAboutEdge *rotate = 
+        FltTransformRotateAboutEdge *rotate =
           new FltTransformRotateAboutEdge(_flt_header);
         rotate->set(LPoint3d::zero(), LPoint3d(0.0, 0.0, 1.0),
                     egg_transform->get_component_number(i));
@@ -353,7 +353,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
     case EggTransform::CT_rotx:
       {
-        FltTransformRotateAboutEdge *rotate = 
+        FltTransformRotateAboutEdge *rotate =
           new FltTransformRotateAboutEdge(_flt_header);
         rotate->set(LPoint3d::zero(), LPoint3d(1.0, 0.0, 0.0),
                     egg_transform->get_component_number(i));
@@ -363,7 +363,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
     case EggTransform::CT_roty:
       {
-        FltTransformRotateAboutEdge *rotate = 
+        FltTransformRotateAboutEdge *rotate =
           new FltTransformRotateAboutEdge(_flt_header);
         rotate->set(LPoint3d::zero(), LPoint3d(0.0, 1.0, 0.0),
                     egg_transform->get_component_number(i));
@@ -373,7 +373,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
     case EggTransform::CT_rotz:
       {
-        FltTransformRotateAboutEdge *rotate = 
+        FltTransformRotateAboutEdge *rotate =
           new FltTransformRotateAboutEdge(_flt_header);
         rotate->set(LPoint3d::zero(), LPoint3d(0.0, 0.0, 1.0),
                     egg_transform->get_component_number(i));
@@ -383,7 +383,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
     case EggTransform::CT_rotate3d:
       {
-        FltTransformRotateAboutEdge *rotate = 
+        FltTransformRotateAboutEdge *rotate =
           new FltTransformRotateAboutEdge(_flt_header);
         rotate->set(LPoint3d::zero(), egg_transform->get_component_vec3(i),
                     egg_transform->get_component_number(i));
@@ -419,7 +419,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
     case EggTransform::CT_matrix3:
       {
-        FltTransformGeneralMatrix *matrix = 
+        FltTransformGeneralMatrix *matrix =
           new FltTransformGeneralMatrix(_flt_header);
         const LMatrix3d &m = egg_transform->get_component_mat3(i);
         LMatrix4d mat4(m(0, 0), m(0, 1), 0.0, m(0, 2),
@@ -433,7 +433,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
 
     case EggTransform::CT_matrix4:
       {
-        FltTransformGeneralMatrix *matrix = 
+        FltTransformGeneralMatrix *matrix =
           new FltTransformGeneralMatrix(_flt_header);
         matrix->set_matrix(egg_transform->get_component_mat4(i));
         flt_node->add_transform_step(matrix);
@@ -477,7 +477,7 @@ void EggToFlt::
 apply_egg_syntax(const string &egg_syntax, FltRecord *flt_record) {
   if (!egg_syntax.empty()) {
     ostringstream out;
-    out << "<egg> {\n" 
+    out << "<egg> {\n"
         << egg_syntax
         << "}";
     flt_record->set_comment(out.str());

@@ -40,6 +40,8 @@ typedef struct _CGprogram   *CGprogram;
 typedef struct _CGparameter *CGparameter;
 #endif
 
+class BamCacheRecord;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : Shader
 //      Summary: The Shader class is meant to select the Shader Language,
@@ -103,9 +105,11 @@ PUBLISHED:
   INLINE bool get_error_flag() const;
   INLINE ShaderLanguage get_language() const;
 
-  INLINE static ShaderUtilization get_shader_utilization();
-  INLINE static void set_shader_utilization(ShaderUtilization utl);
-  INLINE static bool have_shader_utilization();
+  INLINE bool has_fullpath() const;
+  INLINE const Filename &get_fullpath() const;
+
+  INLINE bool get_cache_compiled_shader() const;
+  INLINE void set_cache_compiled_shader(bool flag);
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
@@ -194,6 +198,12 @@ public:
 
     SMO_inv_texmat_i,
 
+    // Additional properties for PBR materials
+    SMO_attr_material2,
+
+    // Hack for text rendering.  Don't use in user shaders.
+    SMO_tex_is_alpha_i,
+
     SMO_INVALID
   };
 
@@ -272,6 +282,8 @@ public:
     SMP_upper3x3,
     SMP_transpose3x3,
     SMP_cell15,
+    SMP_cell14,
+    SMP_cell13,
   };
 
   enum ShaderStateDep {
@@ -288,6 +300,7 @@ public:
     SSD_tex_matrix    = 0x200,
     SSD_frame         = 0x400,
     SSD_projection    = 0x800,
+    SSD_texture      = 0x1000,
   };
 
   enum ShaderBug {
@@ -502,6 +515,9 @@ public:
 
   void clear_parameters();
 
+  void set_compiled(unsigned int format, const char *data, size_t length);
+  bool get_compiled(unsigned int &format, string &binary) const;
+
 private:
 #ifdef HAVE_CG
   ShaderArgClass cg_parameter_class(CGparameter p);
@@ -552,18 +568,25 @@ public:
 
 protected:
   ShaderFile _filename;
+  Filename _fullpath;
   int _parse;
   bool _loaded;
   ShaderLanguage _language;
-  pvector<Filename> _included_files;
+
+  typedef pvector<Filename> Filenames;
+  Filenames _included_files;
 
   // Stores full paths, and includes the fullpaths of the shaders
   // themselves as well as the includes.
-  pvector<Filename> _source_files;
+  Filenames _source_files;
   time_t _last_modified;
 
+  PT(BamCacheRecord) _record;
+  bool _cache_compiled_shader;
+  unsigned int _compiled_format;
+  string _compiled_binary;
+
   static ShaderCaps _default_caps;
-  static ShaderUtilization _shader_utilization;
   static int _shaders_generated;
 
   typedef pmap<ShaderFile, PT(Shader)> ShaderTable;
@@ -582,11 +605,12 @@ private:
 
   Shader(ShaderLanguage lang);
 
-  bool read(const ShaderFile &sfile);
-  bool do_read_source(string &into, const Filename &fn);
+  bool read(const ShaderFile &sfile, BamCacheRecord *record = NULL);
+  bool do_read_source(string &into, const Filename &fn, BamCacheRecord *record);
   bool r_preprocess_source(ostream &out, const Filename &fn,
                            const Filename &source_dir,
-                           set<Filename> &open_files, int depth = 0);
+                           set<Filename> &open_files,
+                           BamCacheRecord *record, int depth = 0);
 
   bool check_modified() const;
 

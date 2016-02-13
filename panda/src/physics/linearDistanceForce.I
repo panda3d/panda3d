@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_falloff_type
-//      Access : Public
-// Description : falloff_type encapsulating wrap
+//     Function: set_falloff_type
+//       Access: Public
+//  Description: falloff_type encapsulating wrap
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearDistanceForce::
 set_falloff_type(FalloffType ft) {
@@ -23,9 +23,9 @@ set_falloff_type(FalloffType ft) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_radius
-//      Access : Public
-// Description : set the radius
+//     Function: set_radius
+//       Access: Public
+//  Description: set the radius
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearDistanceForce::
 set_radius(PN_stdfloat r) {
@@ -33,9 +33,9 @@ set_radius(PN_stdfloat r) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_force_center
-//      Access : Public
-// Description : set the force center
+//     Function: set_force_center
+//       Access: Public
+//  Description: set the force center
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearDistanceForce::
 set_force_center(const LPoint3& p) {
@@ -43,9 +43,9 @@ set_force_center(const LPoint3& p) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_falloff_type
-//      Access : public
-// Description : falloff_type query
+//     Function: get_falloff_type
+//       Access: Public
+//  Description: falloff_type query
 ////////////////////////////////////////////////////////////////////
 INLINE LinearDistanceForce::FalloffType LinearDistanceForce::
 get_falloff_type() const {
@@ -53,9 +53,9 @@ get_falloff_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_radius
-//      Access : public
-// Description : radius query
+//     Function: get_radius
+//       Access: Public
+//  Description: radius query
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat LinearDistanceForce::
 get_radius() const {
@@ -63,9 +63,9 @@ get_radius() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_force_center
-//      Access : public
-// Description : force_center query
+//     Function: get_force_center
+//       Access: Public
+//  Description: force_center query
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3 LinearDistanceForce::
 get_force_center() const {
@@ -73,9 +73,9 @@ get_force_center() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_scalar_term
-//      Access : private
-// Description : calculate the term based on falloff
+//     Function: get_scalar_term
+//       Access: Private
+//  Description: calculate the term based on falloff
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat LinearDistanceForce::
 get_scalar_term() const {

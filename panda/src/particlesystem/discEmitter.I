@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_radius
-//      Access : Public
-// Description : radius assignment
+//     Function: set_radius
+//       Access: Public
+//  Description: radius assignment
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
@@ -24,9 +24,9 @@ set_radius(PN_stdfloat r) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_outer_angle
-//      Access : Public
-// Description : aoe assignement
+//     Function: set_outer_angle
+//       Access: Public
+//  Description: aoe assignement
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
@@ -35,9 +35,9 @@ set_outer_angle(PN_stdfloat o_angle) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_inner_angle
-//      Access : Public
-// Description : aoe assignment
+//     Function: set_inner_angle
+//       Access: Public
+//  Description: aoe assignment
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
@@ -46,9 +46,9 @@ set_inner_angle(PN_stdfloat i_angle) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_outer_magnitude
-//      Access : public
-// Description : mag assignment
+//     Function: set_outer_magnitude
+//       Access: Public
+//  Description: mag assignment
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
@@ -57,9 +57,9 @@ set_outer_magnitude(PN_stdfloat o_mag) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_inner_magnitude
-//      Access : public
-// Description : mag assignment
+//     Function: set_inner_magnitude
+//       Access: Public
+//  Description: mag assignment
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
@@ -68,9 +68,9 @@ set_inner_magnitude(PN_stdfloat i_mag) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : set_cubic_lerping
-//      Access : public
-// Description : clerp flag
+//     Function: set_cubic_lerping
+//       Access: Public
+//  Description: clerp flag
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
@@ -79,9 +79,9 @@ set_cubic_lerping(bool clerp) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_radius
-//      Access : Public
-// Description : radius accessor
+//     Function: get_radius
+//       Access: Public
+//  Description: radius accessor
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat DiscEmitter::
@@ -90,9 +90,9 @@ get_radius() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_outer_angle
-//      Access : Public
-// Description : aoe accessor
+//     Function: get_outer_angle
+//       Access: Public
+//  Description: aoe accessor
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat DiscEmitter::
@@ -101,9 +101,9 @@ get_outer_angle() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_inner_angle
-//      Access : Public
-// Description : aoe accessor
+//     Function: get_inner_angle
+//       Access: Public
+//  Description: aoe accessor
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat DiscEmitter::
@@ -112,9 +112,9 @@ get_inner_angle() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_outer_magnitude
-//      Access : public
-// Description : mag accessor
+//     Function: get_outer_magnitude
+//       Access: Public
+//  Description: mag accessor
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat DiscEmitter::
@@ -123,9 +123,9 @@ get_outer_magnitude() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_inner_magnitude
-//      Access : public
-// Description : mag accessor
+//     Function: get_inner_magnitude
+//       Access: Public
+//  Description: mag accessor
 ////////////////////////////////////////////////////////////////////
 
 INLINE PN_stdfloat DiscEmitter::
@@ -134,9 +134,9 @@ get_inner_magnitude() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function : get_cubic_lerping
-//      Access : public
-// Description : clerp flag accessor
+//     Function: get_cubic_lerping
+//       Access: Public
+//  Description: clerp flag accessor
 ////////////////////////////////////////////////////////////////////
 
 INLINE bool DiscEmitter::
