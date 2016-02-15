@@ -200,6 +200,10 @@ output(ostream &out) const {
     out << "UNARY_MINUS";
     break;
 
+  case UNARY_PLUS:
+    out << "UNARY_PLUS";
+    break;
+
   case UNARY_NEGATE:
     out << "UNARY_NEGATE";
     break;

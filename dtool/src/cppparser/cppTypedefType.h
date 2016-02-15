@@ -65,6 +65,7 @@ public:
 
   CPPType *_type;
   CPPIdentifier *_ident;
+  bool _using;
 
 protected:
   virtual bool is_equal(const CPPDeclaration *other) const;

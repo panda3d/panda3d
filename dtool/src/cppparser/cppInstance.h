@@ -64,6 +64,8 @@ public:
     // These are for =default and =delete functions.
     SC_defaulted    = 0x4000,
     SC_deleted      = 0x8000,
+
+    SC_thread_local = 0x10000,
   };
 
   CPPInstance(CPPType *type, const string &name, int storage_class = 0);
@@ -119,6 +121,7 @@ public:
 
   int _storage_class;
   CPPExpression *_alignment;
+  int _bit_width;
 
 private:
   typedef map<const CPPTemplateParameterList *, CPPInstance *, CPPTPLCompare> Instantiations;

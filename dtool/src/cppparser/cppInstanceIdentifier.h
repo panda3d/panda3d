@@ -57,10 +57,13 @@ public:
   CPPType *unroll_type(CPPType *start_type);
 
   void add_modifier(CPPInstanceIdentifierType type);
-  void add_func_modifier(CPPParameterList *params, int flags);
+  void add_func_modifier(CPPParameterList *params, int flags,
+                         CPPType *trailing_return_type = NULL);
   void add_scoped_pointer_modifier(CPPIdentifier *scoping);
   void add_array_modifier(CPPExpression *expr);
   void add_initializer_modifier(CPPParameterList *params);
+
+  void add_trailing_return_type(CPPType *type);
 
   CPPParameterList *get_initializer() const;
 
@@ -72,7 +75,8 @@ public:
   class Modifier {
   public:
     Modifier(CPPInstanceIdentifierType type);
-    static Modifier func_type(CPPParameterList *params, int flags);
+    static Modifier func_type(CPPParameterList *params, int flags,
+                              CPPType *trailing_return_type);
     static Modifier array_type(CPPExpression *expr);
     static Modifier scoped_pointer_type(CPPIdentifier *scoping);
     static Modifier initializer_type(CPPParameterList *params);
@@ -82,9 +86,12 @@ public:
     int _func_flags;
     CPPIdentifier *_scoping;
     CPPExpression *_expr;
+    CPPType *_trailing_return_type;
   };
   typedef vector<Modifier> Modifiers;
   Modifiers _modifiers;
+
+  int _bit_width;
 
 private:
   CPPType *

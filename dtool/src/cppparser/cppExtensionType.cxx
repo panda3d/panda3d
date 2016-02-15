@@ -214,10 +214,10 @@ is_equivalent(const CPPType &other) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPExtensionType::
-output(ostream &out, int, CPPScope *scope, bool) const {
+output(ostream &out, int, CPPScope *scope, bool complete) const {
   if (_ident != NULL) {
     // If we have a name, use it.
-    if (cppparser_output_class_keyword) {
+    if (complete || cppparser_output_class_keyword) {
       out << _type << " ";
     }
     out << _ident->get_local_name(scope);

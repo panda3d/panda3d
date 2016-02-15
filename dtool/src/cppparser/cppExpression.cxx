@@ -356,9 +356,10 @@ CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2,
 //               operation.
 ////////////////////////////////////////////////////////////////////
 CPPExpression CPPExpression::
-typecast_op(CPPType *type, CPPExpression *op1) {
+typecast_op(CPPType *type, CPPExpression *op1, Type cast_type) {
+  assert(cast_type >= T_typecast && cast_type <= T_reinterpret_cast);
   CPPExpression expr(0);
-  expr._type = T_typecast;
+  expr._type = cast_type;
   expr._u._typecast._to = type;
   expr._u._typecast._op1 = op1;
   return expr;
@@ -407,6 +408,36 @@ new_op(CPPType *type, CPPExpression *op1) {
     expr._u._typecast._to = type;
     expr._u._typecast._op1 = op1;
   }
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::named typeid_op constructor
+//       Access: Public, Static
+//  Description: Creates an expression that represents a use of the
+//               typeid operator.
+////////////////////////////////////////////////////////////////////
+CPPExpression CPPExpression::
+typeid_op(CPPType *type, CPPType *std_type_info) {
+  CPPExpression expr(0);
+  expr._type = T_typeid_type;
+  expr._u._typeid._type = type;
+  expr._u._typeid._std_type_info = std_type_info;
+  return expr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPExpression::named typeid_op constructor
+//       Access: Public, Static
+//  Description: Creates an expression that represents a use of the
+//               typeid operator.
+////////////////////////////////////////////////////////////////////
+CPPExpression CPPExpression::
+typeid_op(CPPExpression *op1, CPPType *std_type_info) {
+  CPPExpression expr(0);
+  expr._type = T_typeid_expr;
+  expr._u._typeid._expr = op1;
+  expr._u._typeid._std_type_info = std_type_info;
   return expr;
 }
 
@@ -591,6 +622,10 @@ evaluate() const {
     return Result();
 
   case T_typecast:
+  case T_static_cast:
+  case T_dynamic_cast:
+  case T_const_cast:
+  case T_reinterpret_cast:
     assert(_u._typecast._op1 != NULL);
     r1 = _u._typecast._op1->evaluate();
     if (r1._type != RT_error) {
@@ -705,6 +740,9 @@ evaluate() const {
 
     case UNARY_MINUS:
       return (r1._type == RT_real) ? Result(-r1.as_real()) : Result(-r1.as_integer());
+
+    case UNARY_PLUS:
+      return r1;
 
     case UNARY_STAR:
     case UNARY_REF:
@@ -835,6 +873,10 @@ evaluate() const {
   case T_raw_literal:
     return Result();
 
+  case T_typeid_type:
+  case T_typeid_expr:
+    return Result();
+
   default:
     cerr << "**invalid operand**\n";
     abort();
@@ -940,6 +982,10 @@ determine_type() const {
     return (CPPType *)NULL;
 
   case T_typecast:
+  case T_static_cast:
+  case T_dynamic_cast:
+  case T_const_cast:
+  case T_reinterpret_cast:
   case T_construct:
   case T_default_construct:
     return _u._typecast._to;
@@ -973,7 +1019,34 @@ determine_type() const {
       return int_type;
 
     case UNARY_MINUS:
-      return t1;
+    case UNARY_PLUS:
+      if (t1 != NULL) {
+        switch (t1->get_subtype()) {
+        case CPPDeclaration::ST_array:
+          // Decay into pointer.
+          return CPPType::new_type(new CPPPointerType(t1->as_array_type()->_element_type));
+
+        case CPPDeclaration::ST_enum:
+          // Convert into integral type.
+          return t1->as_enum_type()->get_element_type();
+
+        case CPPDeclaration::ST_simple:
+          {
+            CPPSimpleType *simple_type = t1->as_simple_type();
+            if ((simple_type->_flags & CPPSimpleType::F_short) != 0 ||
+                simple_type->_type == CPPSimpleType::T_bool ||
+                simple_type->_type == CPPSimpleType::T_wchar_t ||
+                simple_type->_type == CPPSimpleType::T_char16_t) {
+              // Integer promotion.
+              return int_type;
+            }
+          }
+          // Fall through.
+        default:
+          return t1;
+        }
+      }
+      return NULL;
 
     case UNARY_STAR:
     case '[': // Array element reference
@@ -1059,6 +1132,10 @@ determine_type() const {
     }
     return NULL;
 
+  case T_typeid_type:
+  case T_typeid_expr:
+    return _u._typeid._std_type_info;
+
   default:
     cerr << "**invalid operand**\n";
     abort();
@@ -1103,6 +1180,10 @@ is_fully_specified() const {
     return _u._ident->is_fully_specified();
 
   case T_typecast:
+  case T_static_cast:
+  case T_dynamic_cast:
+  case T_const_cast:
+  case T_reinterpret_cast:
   case T_construct:
   case T_new:
     return (_u._typecast._to->is_fully_specified() &&
@@ -1135,6 +1216,12 @@ is_fully_specified() const {
 
   case T_raw_literal:
     return _u._literal._value->is_fully_specified();
+
+  case T_typeid_type:
+    return _u._typeid._type->is_fully_specified();
+
+  case T_typeid_expr:
+    return _u._typeid._expr->is_fully_specified();
 
   default:
     return true;
@@ -1215,6 +1302,10 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     break;
 
   case T_typecast:
+  case T_static_cast:
+  case T_dynamic_cast:
+  case T_const_cast:
+  case T_reinterpret_cast:
   case T_construct:
   case T_new:
     rep->_u._typecast._op1 =
@@ -1252,6 +1343,20 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
       _u._op._op1->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
     any_changed = any_changed || (rep->_u._op._op1 != _u._op._op1);
+    break;
+
+  case T_typeid_type:
+    rep->_u._typeid._type =
+      _u._typeid._type->substitute_decl(subst, current_scope, global_scope)
+      ->as_type();
+    any_changed = any_changed || (rep->_u._typeid._type != _u._typeid._type);
+    break;
+
+  case T_typeid_expr:
+    rep->_u._typeid._expr =
+      _u._typeid._expr->substitute_decl(subst, current_scope, global_scope)
+      ->as_expression();
+    any_changed = any_changed || (rep->_u._typeid._expr != _u._typeid._expr);
     break;
 
   default:
@@ -1295,6 +1400,10 @@ is_tbd() const {
     return true;
 
   case T_typecast:
+  case T_static_cast:
+  case T_dynamic_cast:
+  case T_const_cast:
+  case T_reinterpret_cast:
   case T_construct:
   case T_new:
   case T_default_construct:
@@ -1320,6 +1429,12 @@ is_tbd() const {
       return true;
     }
     return false;
+
+  case T_typeid_type:
+    return _u._typeid._type->is_tbd();
+
+  case T_typeid_expr:
+    return _u._typeid._expr->is_tbd();
 
   default:
     return false;
@@ -1450,6 +1565,38 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     out << ")";
     break;
 
+  case T_static_cast:
+    out << "static_cast<";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << ">(";
+    _u._typecast._op1->output(out, indent_level, scope, false);
+    out << ")";
+    break;
+
+  case T_dynamic_cast:
+    out << "dynamic_cast<";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << ">(";
+    _u._typecast._op1->output(out, indent_level, scope, false);
+    out << ")";
+    break;
+
+  case T_const_cast:
+    out << "const_cast<";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << ">(";
+    _u._typecast._op1->output(out, indent_level, scope, false);
+    out << ")";
+    break;
+
+  case T_reinterpret_cast:
+    out << "reinterpret_cast<";
+    _u._typecast._to->output(out, indent_level, scope, false);
+    out << ">(";
+    _u._typecast._op1->output(out, indent_level, scope, false);
+    out << ")";
+    break;
+
   case T_construct:
     _u._typecast._to->output(out, indent_level, scope, false);
     out << "(";
@@ -1504,6 +1651,11 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 
     case UNARY_MINUS:
       out << '-';
+      _u._op._op1->output(out, indent_level, scope, false);
+      break;
+
+    case UNARY_PLUS:
+      out << '+';
       _u._op._op1->output(out, indent_level, scope, false);
       break;
 
@@ -1599,11 +1751,9 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
       break;
 
     case '.':
-      out << "(";
       _u._op._op1->output(out, indent_level, scope, false);
       out << ".";
       _u._op._op2->output(out, indent_level, scope, false);
-      out << ")";
       break;
 
     case POINTSAT:
@@ -1669,6 +1819,18 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
       assert(name.substr(0, 12) == "operator \"\" ");
       out << name.substr(12);
     }
+    break;
+
+  case T_typeid_type:
+    out << "typeid(";
+    _u._typeid._type->output(out, indent_level, scope, false);
+    out << ")";
+    break;
+
+  case T_typeid_expr:
+    out << "typeid(";
+    _u._typeid._expr->output(out, indent_level, scope, false);
+    out << ")";
     break;
 
   case T_default:
@@ -1802,6 +1964,10 @@ is_equal(const CPPDeclaration *other) const {
     return *_u._ident == *ot->_u._ident;
 
   case T_typecast:
+  case T_static_cast:
+  case T_dynamic_cast:
+  case T_const_cast:
+  case T_reinterpret_cast:
   case T_construct:
   case T_new:
     return _u._typecast._to == ot->_u._typecast._to &&
@@ -1831,6 +1997,12 @@ is_equal(const CPPDeclaration *other) const {
   case T_raw_literal:
     return _str == ot->_str &&
       _u._literal._operator == ot->_u._literal._operator;
+
+  case T_typeid_type:
+    return _u._typeid._type == ot->_u._typeid._type;
+
+  case T_typeid_expr:
+    return _u._typeid._expr == ot->_u._typeid._expr;
 
   default:
     cerr << "(** invalid operand type " << (int)_type << " **)";
@@ -1885,6 +2057,10 @@ is_less(const CPPDeclaration *other) const {
     return *_u._ident < *ot->_u._ident;
 
   case T_typecast:
+  case T_static_cast:
+  case T_dynamic_cast:
+  case T_const_cast:
+  case T_reinterpret_cast:
   case T_construct:
   case T_new:
     if (_u._typecast._to != ot->_u._typecast._to) {
@@ -1924,6 +2100,12 @@ is_less(const CPPDeclaration *other) const {
       return _u._literal._operator < ot->_u._literal._operator;
     }
     return _str < ot->_str;
+
+  case T_typeid_type:
+    return _u._typeid._type < ot->_u._typeid._type;
+
+  case T_typeid_expr:
+    return *_u._typeid._expr < *ot->_u._typeid._expr;
 
   default:
     cerr << "(** invalid operand type " << (int)_type << " **)";

@@ -1368,6 +1368,50 @@ skip_cpp_comment(int c) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::skip_digit_separator
+//       Access: Private
+//  Description: Skips a C++14 digit separator that has just been
+//               found through peek().
+////////////////////////////////////////////////////////////////////
+int CPPPreprocessor::
+skip_digit_separator(int c) {
+  if (c != '\'') {
+    return c;
+  }
+
+  get();
+  c = peek();
+
+  if (isdigit(c)) {
+    return c;
+  }
+
+  YYLTYPE loc;
+  loc.file = get_file();
+  loc.first_line = get_line_number();
+  loc.first_column = get_col_number();
+  loc.last_line = loc.first_line;
+  loc.last_column = loc.first_column;
+
+  if (c != '\'') {
+    // This assumes that this isn't a character constant directly follows
+    // a digit sequence, like 123'a' -- I can't think of a situation
+    // where that's legal anyway, though.
+    error("digit separator cannot occur at end of digit sequence", loc);
+    return c;
+  }
+
+  while (c == '\'') {
+    get();
+    ++loc.last_column;
+    c = peek();
+  }
+  error("adjacent digit separators", loc);
+
+  return c;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::process_directive
 //       Access: Private
 //  Description:
@@ -2395,7 +2439,8 @@ extract_manifest_args_inline(const string &name, int num_args,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_number
 //       Access: Private
-//  Description:
+//  Description: Assuming that we've just read a digit or a period
+//               indicating the start of a number, read the rest.
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_number(int c) {
@@ -2410,16 +2455,16 @@ get_number(int c) {
   bool leading_zero = (c == '0');
   bool decimal_point = (c == '.');
 
-  c = peek();
+  c = skip_digit_separator(peek());
 
-  if (leading_zero && c == 'x') {
+  if (leading_zero && (c == 'x' || c == 'X')) {
     // Here we have a hex number.
     num += get();
     c = peek();
 
     while (c != EOF && (isdigit(c) || (tolower(c) >= 'a' && tolower(c) <= 'f'))) {
       num += get();
-      c = peek();
+      c = skip_digit_separator(peek());
     }
 
     loc.last_line = get_line_number();
@@ -2429,11 +2474,30 @@ get_number(int c) {
     result.u.integer = strtol(num.c_str(), (char **)NULL, 16);
 
     return get_literal(INTEGER, loc, num, result);
+
+  } else if (leading_zero && (c == 'b' || c == 'B')) {
+    // A C++14-style binary number.
+    get();
+    c = peek();
+    string bin(1, (char)c);
+
+    while (c != EOF && (c == '0' || c == '1')) {
+      bin += get();
+      c = skip_digit_separator(peek());
+    }
+
+    loc.last_line = get_line_number();
+    loc.last_column = get_col_number();
+
+    YYSTYPE result;
+    result.u.integer = strtol(bin.c_str(), (char **)NULL, 2);
+
+    return get_literal(INTEGER, loc, bin, result);
   }
 
   while (c != EOF && isdigit(c)) {
     num += get();
-    c = peek();
+    c = skip_digit_separator(peek());
   }
 
   if (c == '.' && !decimal_point) {
@@ -2459,7 +2523,7 @@ get_number(int c) {
       }
       while (c != EOF && isdigit(c)) {
         num += get();
-        c = peek();
+        c = skip_digit_separator(peek());
       }
     }
 
@@ -2517,6 +2581,7 @@ check_keyword(const string &name) {
   if (name == "__const") return KW_CONST;
   if (name == "__const__") return KW_CONST;
   if (name == "constexpr") return KW_CONSTEXPR;
+  if (name == "const_cast") return KW_CONST_CAST;
   if (name == "decltype") return KW_DECLTYPE;
   if (name == "default") return KW_DEFAULT;
   if (name == "delete") return KW_DELETE;
@@ -2530,6 +2595,7 @@ check_keyword(const string &name) {
   if (name == "explicit") return KW_EXPLICIT;
   if (name == "__published") return KW_PUBLISHED;
   if (name == "false") return KW_FALSE;
+  if (name == "final") return KW_FINAL;
   if (name == "float") return KW_FLOAT;
   if (name == "friend") return KW_FRIEND;
   if (name == "for") return KW_FOR;
@@ -2549,10 +2615,12 @@ check_keyword(const string &name) {
   if (name == "nullptr") return KW_NULLPTR;
   if (name == "new") return KW_NEW;
   if (name == "operator") return KW_OPERATOR;
+  if (name == "override") return KW_OVERRIDE;
   if (name == "private") return KW_PRIVATE;
   if (name == "protected") return KW_PROTECTED;
   if (name == "public") return KW_PUBLIC;
   if (name == "register") return KW_REGISTER;
+  if (name == "reinterpret_cast") return KW_REINTERPRET_CAST;
   if (name == "return") return KW_RETURN;
   if (name == "short") return KW_SHORT;
   if (name == "signed") return KW_SIGNED;
@@ -2562,10 +2630,12 @@ check_keyword(const string &name) {
   if (name == "static_cast") return KW_STATIC_CAST;
   if (name == "struct") return KW_STRUCT;
   if (name == "template") return KW_TEMPLATE;
+  if (name == "thread_local") return KW_THREAD_LOCAL;
   if (name == "throw") return KW_THROW;
   if (name == "true") return KW_TRUE;
   if (name == "try") return KW_TRY;
   if (name == "typedef") return KW_TYPEDEF;
+  if (name == "typeid") return KW_TYPEID;
   if (name == "typename") return KW_TYPENAME;
   if (name == "union") return KW_UNION;
   if (name == "unsigned") return KW_UNSIGNED;
@@ -2588,10 +2658,6 @@ check_keyword(const string &name) {
   if (name == "or_eq") return OREQUAL;
   if (name == "xor") return '^';
   if (name == "xor_eq") return XOREQUAL;
-
-  if (!cpp_longlong_keyword.empty() && name == cpp_longlong_keyword) {
-    return KW_LONGLONG;
-  }
 
   return 0;
 }

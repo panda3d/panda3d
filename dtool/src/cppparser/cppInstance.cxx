@@ -39,7 +39,8 @@ CPPInstance(CPPType *type, const string &name, int storage_class) :
   _type(type),
   _ident(new CPPIdentifier(name)),
   _storage_class(storage_class),
-  _alignment(NULL)
+  _alignment(NULL),
+  _bit_width(-1)
 {
   _initializer = NULL;
 }
@@ -55,7 +56,8 @@ CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class) :
   _type(type),
   _ident(ident),
   _storage_class(storage_class),
-  _alignment(NULL)
+  _alignment(NULL),
+  _bit_width(-1)
 {
   _initializer = NULL;
 }
@@ -79,6 +81,7 @@ CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
   ii->_ident = NULL;
   _storage_class = storage_class;
   _initializer = NULL;
+  _bit_width = ii->_bit_width;
 
   CPPParameterList *params = ii->get_initializer();
   if (params != (CPPParameterList *)NULL) {
@@ -106,7 +109,8 @@ CPPInstance(const CPPInstance &copy) :
   _ident(copy._ident),
   _initializer(copy._initializer),
   _storage_class(copy._storage_class),
-  _alignment(copy._alignment)
+  _alignment(copy._alignment),
+  _bit_width(copy._bit_width)
 {
   assert(_type != NULL);
 }
@@ -612,6 +616,9 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
   if (_storage_class & SC_constexpr) {
     out << "constexpr ";
   }
+  if (_storage_class & SC_thread_local) {
+    out << "thread_local ";
+  }
 
   string name;
   if (_ident != NULL) {
@@ -625,6 +632,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
 
   } else {
     _type->output_instance(out, indent_level, scope, complete, "", name);
+  }
+
+  if (_bit_width != -1) {
+    out << " : " << _bit_width;
   }
 
   if (_storage_class & SC_pure_virtual) {

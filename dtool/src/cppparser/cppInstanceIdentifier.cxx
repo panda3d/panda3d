@@ -43,10 +43,11 @@ Modifier(CPPInstanceIdentifierType type) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
-func_type(CPPParameterList *params, int flags) {
+func_type(CPPParameterList *params, int flags, CPPType *trailing_return_type) {
   Modifier mod(IIT_func);
   mod._func_params = params;
   mod._func_flags = flags;
+  mod._trailing_return_type = trailing_return_type;
   return mod;
 }
 
@@ -93,7 +94,9 @@ initializer_type(CPPParameterList *params) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstanceIdentifier::
-CPPInstanceIdentifier(CPPIdentifier *ident) : _ident(ident) {
+CPPInstanceIdentifier(CPPIdentifier *ident) :
+  _ident(ident),
+  _bit_width(-1) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +131,7 @@ add_modifier(CPPInstanceIdentifierType type) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPInstanceIdentifier::
-add_func_modifier(CPPParameterList *params, int flags) {
+add_func_modifier(CPPParameterList *params, int flags, CPPType *trailing_return_type) {
   // As a special hack, if we added a parameter list to an operator
   // function, check if the parameter list is empty.  If it is, this
   // is really a unary operator, so set the unary_op flag.  Operators
@@ -146,7 +149,12 @@ add_func_modifier(CPPParameterList *params, int flags) {
     flags |= CPPFunctionType::F_operator;
   }
 
-  _modifiers.push_back(Modifier::func_type(params, flags));
+  if (trailing_return_type != NULL) {
+    // Remember whether trailing return type notation was used.
+    flags |= CPPFunctionType::F_trailing_return_type;
+  }
+
+  _modifiers.push_back(Modifier::func_type(params, flags, trailing_return_type));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,6 +194,25 @@ add_array_modifier(CPPExpression *expr) {
 void CPPInstanceIdentifier::
 add_initializer_modifier(CPPParameterList *params) {
   _modifiers.push_back(Modifier::initializer_type(params));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPInstanceIdentifier::add_trailing_return_type
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CPPInstanceIdentifier::
+add_trailing_return_type(CPPType *type) {
+  // This is an awkward hack.  Improve in the future.
+  if (!_modifiers.empty()) {
+    Modifier &mod = _modifiers.back();
+    if (mod._type == IIT_func) {
+      mod._trailing_return_type = type;
+      mod._func_flags |= CPPFunctionType::F_trailing_return_type;
+      return;
+    }
+  }
+  cerr << "trailing return type can only be added to a function\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,6 +264,8 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 CPPType *CPPInstanceIdentifier::
 r_unroll_type(CPPType *start_type,
               CPPInstanceIdentifier::Modifiers::const_iterator mi) {
+  assert(start_type != NULL);
+
   start_type = CPPType::new_type(start_type);
 
   if (mi == _modifiers.end()) {
@@ -298,6 +327,14 @@ r_unroll_type(CPPType *start_type,
   case IIT_func:
     {
       CPPType *return_type = r_unroll_type(start_type, mi);
+      if (mod._trailing_return_type != (CPPType *)NULL) {
+        CPPSimpleType *simple_type = return_type->as_simple_type();
+        if (simple_type != NULL && simple_type->_type == CPPSimpleType::T_auto) {
+          return_type = mod._trailing_return_type;
+        } else {
+          cerr << "function with trailing return type needs auto\n";
+        }
+      }
       result = new CPPFunctionType(return_type, mod._func_params,
                                    mod._func_flags);
     }

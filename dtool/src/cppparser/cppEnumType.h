@@ -37,6 +37,8 @@ public:
   CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
               CPPScope *current_scope, const CPPFile &file);
 
+  CPPType *get_element_type();
+
   CPPInstance *add_element(const string &name,
                            CPPExpression *value = (CPPExpression *)NULL);
 

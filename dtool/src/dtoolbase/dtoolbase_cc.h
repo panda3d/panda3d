@@ -36,8 +36,8 @@ using namespace std;
 #define TYPENAME typename
 #define CONSTEXPR constexpr
 #define NOEXCEPT noexcept
-#define FINAL
-#define OVERRIDE
+#define FINAL final
+#define OVERRIDE override
 #define MOVE(x) x
 #define DEFAULT_CTOR = default
 

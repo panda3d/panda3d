@@ -59,6 +59,29 @@ CPPEnumType(CPPIdentifier *ident, CPPType *element_type,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPEnumType::get_element_type
+//       Access: Public
+//  Description: Returns the integral type used to store enum values.
+////////////////////////////////////////////////////////////////////
+CPPType *CPPEnumType::
+get_element_type() {
+  if (_element_type == NULL) {
+    // This enum is untyped.  Use a suitable default, ie. 'int'.
+    // In the future, we might want to check whether it fits in an int.
+    static CPPType *default_element_type = NULL;
+    if (default_element_type == NULL) {
+      default_element_type =
+        CPPType::new_type(new CPPConstType(new CPPSimpleType(CPPSimpleType::T_int, 0)));
+    }
+
+    return default_element_type;
+  } else {
+    // This enum has an explicit type, so use that.
+    return CPPType::new_type(new CPPConstType(_element_type));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::add_element
 //       Access: Public
 //  Description:
@@ -67,22 +90,8 @@ CPPInstance *CPPEnumType::
 add_element(const string &name, CPPExpression *value) {
   CPPIdentifier *ident = new CPPIdentifier(name);
   ident->_native_scope = _parent_scope;
-  CPPInstance *inst;
 
-  static CPPType *default_element_type = NULL;
-  if (_element_type == NULL) {
-    // This enum is untyped.  Use a suitable default, ie. 'int'.
-    if (default_element_type == NULL) {
-      default_element_type =
-        CPPType::new_type(new CPPConstType(new CPPSimpleType(CPPSimpleType::T_int, 0)));
-    }
-
-    inst = new CPPInstance(default_element_type, ident);
-  } else {
-    // This enum has an explicit type, so use that.
-    inst = new CPPInstance(CPPType::new_type(new CPPConstType(_element_type)), ident);
-  }
-
+  CPPInstance *inst = new CPPInstance(get_element_type(), ident);
   inst->_storage_class |= CPPInstance::SC_constexpr;
   _elements.push_back(inst);
 

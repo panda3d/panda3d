@@ -25,7 +25,8 @@ CPPTypedefType::
 CPPTypedefType(CPPType *type, const string &name, CPPScope *current_scope) :
   CPPType(CPPFile()),
   _type(type),
-  _ident(new CPPIdentifier(name))
+  _ident(new CPPIdentifier(name)),
+  _using(false)
 {
   if (_ident != NULL) {
     _ident->_native_scope = current_scope;
@@ -49,7 +50,8 @@ CPPTypedefType::
 CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope) :
   CPPType(CPPFile()),
   _type(type),
-  _ident(ident)
+  _ident(ident),
+  _using(false)
 {
   if (_ident != NULL) {
     _ident->_native_scope = current_scope;
@@ -68,8 +70,10 @@ CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope) :
 CPPTypedefType::
 CPPTypedefType(CPPType *type, CPPInstanceIdentifier *ii,
                CPPScope *current_scope, const CPPFile &file) :
-  CPPType(file)
+  CPPType(file),
+  _using(false)
 {
+  assert(ii != NULL);
   _type = ii->unroll_type(type);
   _ident = ii->_ident;
   ii->_ident = NULL;
@@ -363,8 +367,14 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   }
 
   if (complete) {
-    out << "typedef ";
-    _type->output_instance(out, indent_level, scope, false, "", name);
+    if (_using) {
+      // It was declared using the "using" keyword.
+      out << "using " << name << " = ";
+      _type->output(out, 0, scope, false);
+    } else {
+      out << "typedef ";
+      _type->output_instance(out, indent_level, scope, false, "", name);
+    }
   } else {
     out << name;
   }
@@ -401,7 +411,7 @@ is_equal(const CPPDeclaration *other) const {
   const CPPTypedefType *ot = ((CPPDeclaration *)other)->as_typedef_type();
   assert(ot != NULL);
 
-  return (*_type == *ot->_type) && (*_ident == *ot->_ident);
+  return (*_type == *ot->_type) && (*_ident == *ot->_ident) && (_using == ot->_using);
 }
 
 ////////////////////////////////////////////////////////////////////

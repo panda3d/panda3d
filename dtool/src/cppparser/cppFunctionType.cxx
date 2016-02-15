@@ -193,12 +193,44 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 void CPPFunctionType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete,
        int num_default_parameters) const {
-  _return_type->output(out, indent_level, scope, complete);
-  out << "(";
-  _parameters->output(out, scope, true, num_default_parameters);
-  out << ")";
-  if (_flags & F_const_method) {
-    out << " const";
+
+  if (_flags & F_trailing_return_type) {
+    // It was declared using trailing return type, so let's format it that way.
+    out << "auto(";
+    _parameters->output(out, scope, true, num_default_parameters);
+    out << ")";
+    if (_flags & F_const_method) {
+      out << " const";
+    }
+    if (_flags & F_noexcept) {
+      out << " noexcept";
+    }
+    if (_flags & F_final) {
+      out << " final";
+    }
+    if (_flags & F_override) {
+      out << " override";
+    }
+    out << " -> ";
+    _return_type->output(out, indent_level, scope, false);
+
+  } else {
+    _return_type->output(out, indent_level, scope, complete);
+    out << "(";
+    _parameters->output(out, scope, true, num_default_parameters);
+    out << ")";
+    if (_flags & F_const_method) {
+      out << " const";
+    }
+    if (_flags & F_noexcept) {
+      out << " noexcept";
+    }
+    if (_flags & F_final) {
+      out << " final";
+    }
+    if (_flags & F_override) {
+      out << " override";
+    }
   }
 }
 
@@ -241,6 +273,18 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
     // No return type for constructors and destructors.
     out << prename << name << str;
 
+  } else if (_flags & F_trailing_return_type) {
+    // It was declared using trailing return type, so let's format it that way.
+    out << "auto ";
+
+    if (prename.empty()) {
+      out << name;
+    } else {
+      out << "(" << prename << name << ")";
+    }
+
+    out << str;
+
   } else {
     if (prename.empty()) {
       _return_type->output_instance(out, indent_level, scope, complete,
@@ -256,6 +300,17 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   }
   if (_flags & F_noexcept) {
     out << " noexcept";
+  }
+  if (_flags & F_final) {
+    out << " final";
+  }
+  if (_flags & F_override) {
+    out << " override";
+  }
+
+  if (_flags & F_trailing_return_type) {
+    out << " -> ";
+    _return_type->output(out, indent_level, scope, false);
   }
 }
 

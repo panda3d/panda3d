@@ -48,7 +48,8 @@ CPPStructType(CPPStructType::Type type, CPPIdentifier *ident,
               CPPScope *current_scope, CPPScope *scope,
               const CPPFile &file) :
   CPPExtensionType(type, ident, current_scope, file),
-  _scope(scope)
+  _scope(scope),
+  _final(false)
 {
   _subst_decl_recursive_protect = false;
   _incomplete = true;
@@ -64,7 +65,8 @@ CPPStructType(const CPPStructType &copy) :
   CPPExtensionType(copy),
   _scope(copy._scope),
   _incomplete(copy._incomplete),
-  _derivation(copy._derivation)
+  _derivation(copy._derivation),
+  _final(copy._final)
 {
   _subst_decl_recursive_protect = false;
 }
@@ -80,6 +82,7 @@ operator = (const CPPStructType &copy) {
   _scope = copy._scope;
   _incomplete = copy._incomplete;
   _derivation = copy._derivation;
+  _final = copy._final;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,6 +100,15 @@ append_derivation(CPPType *base, CPPVisibility vis, bool is_virtual) {
     while (def != NULL) {
       base = def->_type;
       def = base->as_typedef_type();
+    }
+
+    if (vis == V_unknown && base->as_extension_type() != NULL) {
+      // Default visibility.
+      if (base->as_extension_type()->_type == T_class) {
+        vis = V_private;
+      } else {
+        vis = V_public;
+      }
     }
 
     Base b;
@@ -794,10 +806,14 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
       out << _type;
     }
 
+    if (_final) {
+      out << " final";
+    }
+
     // Show any derivation we may have
     if (!_derivation.empty()) {
       Derivation::const_iterator di = _derivation.begin();
-      out << ": " << *di;
+      out << " : " << *di;
       ++di;
       while (di != _derivation.end()) {
         out << ", " << *di;

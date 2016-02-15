@@ -78,6 +78,7 @@ public:
 
   CPPScope *_scope;
   bool _incomplete;
+  bool _final;
 
   class Base {
   public:

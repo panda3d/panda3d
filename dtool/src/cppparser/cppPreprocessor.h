@@ -126,6 +126,7 @@ private:
   int skip_comment(int c);
   int skip_c_comment(int c);
   int skip_cpp_comment(int c);
+  int skip_digit_separator(int c);
   int process_directive(int c);
 
   int get_preprocessor_command(int c, string &command);

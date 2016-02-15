@@ -272,10 +272,6 @@ void show_help() {
     << "        function wrappers already, from some external source.  This is most\n"
     << "        useful in conjunction with -true-names.\n\n"
 
-    << "  -longlong typename\n"
-    << "        Specify the name of the 64-bit integer type for the current compiler.\n"
-    << "        By default, this is \"long long\".\n\n"
-
     << "  -promiscuous\n"
     << "        Export *all* public symbols, functions, and classes seen, even those\n"
     << "        not explicitly marked to be published.\n\n"
@@ -436,6 +432,7 @@ main(int argc, char **argv) {
       break;
 
     case CO_longlong:
+      cerr << "Warning: ignoring deprecated -longlong option.\n";
       cpp_longlong_keyword = optarg;
       break;
 

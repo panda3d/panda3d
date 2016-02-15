@@ -39,6 +39,9 @@ public:
     F_noexcept          = 0x080,
     F_copy_constructor  = 0x200,
     F_move_constructor  = 0x400,
+    F_trailing_return_type = 0x800,
+    F_final             = 0x1000,
+    F_override          = 0x2000,
   };
 
   CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
