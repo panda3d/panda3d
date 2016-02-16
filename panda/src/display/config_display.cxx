@@ -22,9 +22,11 @@
 #include "graphicsPipe.h"
 #include "graphicsOutput.h"
 #include "graphicsBuffer.h"
-#include "graphicsWindow.h"
 #include "graphicsDevice.h"
+#include "graphicsWindow.h"
+#include "graphicsWindowInputDevice.h"
 #include "graphicsWindowProcCallbackData.h"
+#include "mouseAndKeyboard.h"
 #include "nativeWindowHandle.h"
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
@@ -501,7 +503,9 @@ init_libdisplay() {
   GraphicsPipe::init_type();
   GraphicsStateGuardian::init_type();
   GraphicsWindow::init_type();
+  GraphicsWindowInputDevice::init_type();
   GraphicsWindowProcCallbackData::init_type();
+  MouseAndKeyboard::init_type();
   NativeWindowHandle::init_type();
   ParasiteBuffer::init_type();
   StandardMunger::init_type();

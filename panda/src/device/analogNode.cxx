@@ -30,7 +30,7 @@ AnalogNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
 {
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
-  _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _xy = new EventStoreVec2(LPoint2(0));
 
   nassertv(client != (ClientBase *)NULL);
   PT(ClientDevice) device =
@@ -49,7 +49,23 @@ AnalogNode(ClientBase *client, const string &device_name) :
     return;
   }
 
-  _analog = DCAST(ClientAnalogDevice, device);
+  _analog = device;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnalogNode::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+AnalogNode::
+AnalogNode(InputDevice *device) :
+  DataNode(device->get_name()),
+  _analog(device)
+{
+  _xy_output = define_output("xy", EventStoreVec2::get_class_type());
+  _xy = new EventStoreVec2(LPoint2(0));
+
+  nassertv(device != (InputDevice *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,9 +90,7 @@ write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
   if (_analog != (ClientAnalogDevice *)NULL) {
-    _analog->acquire();
     _analog->write_controls(out, indent_level + 2);
-    _analog->unlock();
   }
 }
 
@@ -100,8 +114,6 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     _analog->poll();
 
     LPoint2 out(0.0f, 0.0f);
-
-    _analog->acquire();
     for (int i = 0; i < max_outputs; i++) {
       if (_outputs[i]._index >= 0 &&
           _analog->is_control_known(_outputs[i]._index)) {
@@ -112,7 +124,6 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
         }
       }
     }
-    _analog->unlock();
     _xy->set_value(out);
     output.set_data(_xy_output, EventParameter(_xy));
   }

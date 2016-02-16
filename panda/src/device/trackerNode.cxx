@@ -51,7 +51,7 @@ TrackerNode(ClientBase *client, const string &device_name) :
     return;
   }
 
-  _tracker = DCAST(ClientTrackerDevice, device);
+  _tracker = device;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,18 +60,19 @@ TrackerNode(ClientBase *client, const string &device_name) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TrackerNode::
-TrackerNode(ClientTrackerDevice *device) :
-  DataNode(device->get_device_name()),
+TrackerNode(InputDevice *device) :
+  DataNode(device->get_name()),
   _tracker(device)
 {
   _transform_output = define_output("transform", TransformState::get_class_type());
 
   _transform = TransformState::make_identity();
 
-  nassertv(device != (ClientTrackerDevice *)NULL);
-  ClientBase *client = device->get_client();
-  nassertv(client != (ClientBase *)NULL);
-  set_tracker_coordinate_system(client->get_coordinate_system());
+  nassertv(device != (InputDevice *)NULL);
+  nassertv(device->has_tracker());
+
+  //TODO: get coordinate system from tracker object?
+  set_tracker_coordinate_system(CS_default);
   set_graph_coordinate_system(CS_default);
 }
 
@@ -105,9 +106,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
   if (is_valid()) {
     _tracker->poll();
-    _tracker->acquire();
-    _data = _tracker->get_data();
-    _tracker->unlock();
+    _data = _tracker->get_tracker();
 
     _data.get_orient().extract_to_matrix(_mat);
     if (_tracker_cs != _graph_cs) {

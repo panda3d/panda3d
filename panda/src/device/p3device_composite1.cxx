@@ -5,4 +5,8 @@
 #include "clientDevice.cxx"
 #include "clientDialDevice.cxx"
 #include "clientTrackerDevice.cxx"
-
+#include "evdevInputDevice.cxx"
+#include "inputDevice.cxx"
+#include "inputDeviceManager.cxx"
+#include "inputDeviceSet.cxx"
+#include "linuxJoystickDevice.cxx"

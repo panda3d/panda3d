@@ -144,7 +144,6 @@ get_device(TypeHandle device_type, const string &device_name) {
 
   if (device != (ClientDevice *)NULL) {
     dbn.insert(DevicesByName::value_type(device_name, device));
-    device->_is_connected = true;
   }
 
   return device;

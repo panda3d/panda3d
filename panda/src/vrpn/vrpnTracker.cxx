@@ -123,11 +123,10 @@ vrpn_position_callback(void *userdata, const vrpn_TRACKERCB info) {
     VrpnTrackerDevice *device = (*di);
     if (device->get_sensor() == info.sensor &&
         device->get_data_type() == VrpnTrackerDevice::DT_position) {
-      device->acquire();
-      device->_data.set_time(VrpnClient::convert_to_secs(info.msg_time));
-      device->_data.set_pos(LPoint3(info.pos[0], info.pos[1], info.pos[2]));
-      device->_data.set_orient(LOrientation(info.quat[3], info.quat[0], info.quat[1], info.quat[2]));
-      device->unlock();
+      device->set_tracker(LPoint3(info.pos[0], info.pos[1], info.pos[2]),
+                          LOrientation(info.quat[3], info.quat[0],
+                                       info.quat[1], info.quat[2]),
+                          VrpnClient::convert_to_secs(info.msg_time));
     }
   }
 }
@@ -152,13 +151,10 @@ vrpn_velocity_callback(void *userdata, const vrpn_TRACKERVELCB info) {
     VrpnTrackerDevice *device = (*di);
     if (device->get_sensor() == info.sensor &&
         device->get_data_type() == VrpnTrackerDevice::DT_velocity) {
-      device->acquire();
-      device->_data.set_time(VrpnClient::convert_to_secs(info.msg_time));
-      device->_data.set_pos(LPoint3(info.vel[0], info.vel[1], info.vel[2]));
-      device->_data.set_orient(LOrientation(info.vel_quat[3], info.vel_quat[0],
-                                             info.vel_quat[1], info.vel_quat[2]));
-      device->_data.set_dt(info.vel_quat_dt);
-      device->unlock();
+      device->set_tracker(LPoint3(info.vel[0], info.vel[1], info.vel[2]),
+                          LOrientation(info.vel_quat[3], info.vel_quat[0],
+                                       info.vel_quat[1], info.vel_quat[2]),
+                          VrpnClient::convert_to_secs(info.msg_time));
     }
   }
 }
@@ -183,13 +179,10 @@ vrpn_acceleration_callback(void *userdata, const vrpn_TRACKERACCCB info) {
     VrpnTrackerDevice *device = (*di);
     if (device->get_sensor() == info.sensor &&
         device->get_data_type() == VrpnTrackerDevice::DT_acceleration) {
-      device->acquire();
-      device->_data.set_time(VrpnClient::convert_to_secs(info.msg_time));
-      device->_data.set_pos(LPoint3(info.acc[0], info.acc[1], info.acc[2]));
-      device->_data.set_orient(LOrientation(info.acc_quat[3], info.acc_quat[0],
-                                             info.acc_quat[1], info.acc_quat[2]));
-      device->_data.set_dt(info.acc_quat_dt);
-      device->unlock();
+      device->set_tracker(LPoint3(info.acc[0], info.acc[1], info.acc[2]),
+                          LOrientation(info.acc_quat[3], info.acc_quat[0],
+                                       info.acc_quat[1], info.acc_quat[2]),
+                          VrpnClient::convert_to_secs(info.msg_time));
     }
   }
 }

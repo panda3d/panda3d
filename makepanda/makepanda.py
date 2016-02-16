@@ -578,6 +578,7 @@ if (COMPILER == "MSVC"):
     LibName("WINGDI", "gdi32.lib")
     LibName("ADVAPI", "advapi32.lib")
     LibName("IPHLPAPI", "iphlpapi.lib")
+    LibName("SETUPAPI", "setupapi.lib")
     LibName("GL", "opengl32.lib")
     LibName("GLES", "libgles_cm.lib")
     LibName("GLES2", "libGLESv2.lib")
@@ -3646,6 +3647,21 @@ if (not RUNTIME):
   TargetAdd('libp3dgraph_igate.obj', input='libp3dgraph.in', opts=["DEPENDENCYONLY"])
 
 #
+# DIRECTORY: panda/src/device/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/device', 'BUILDING:PANDA']
+  TargetAdd('p3device_composite1.obj', opts=OPTS, input='p3device_composite1.cxx')
+  TargetAdd('p3device_composite2.obj', opts=OPTS, input='p3device_composite2.cxx')
+
+  OPTS=['DIR:panda/src/device']
+  IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3device.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3device.in', opts=['IMOD:panda3d.core', 'ILIB:libp3device', 'SRCDIR:panda/src/device'])
+  TargetAdd('libp3device_igate.obj', input='libp3device.in', opts=["DEPENDENCYONLY"])
+
+#
 # DIRECTORY: panda/src/display/
 #
 
@@ -3668,21 +3684,6 @@ if (not RUNTIME):
     OPTS=['DIR:panda/src/display']
     TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
     TargetAdd('libp3subprocbuffer.ilb', input='subprocessWindowBuffer.obj')
-
-#
-# DIRECTORY: panda/src/device/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/device', 'BUILDING:PANDA']
-  TargetAdd('p3device_composite1.obj', opts=OPTS, input='p3device_composite1.cxx')
-  TargetAdd('p3device_composite2.obj', opts=OPTS, input='p3device_composite2.cxx')
-
-  OPTS=['DIR:panda/src/device']
-  IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite*.cxx"])
-  TargetAdd('libp3device.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3device.in', opts=['IMOD:panda3d.core', 'ILIB:libp3device', 'SRCDIR:panda/src/device'])
-  TargetAdd('libp3device_igate.obj', input='libp3device.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pnmtext/
@@ -3853,8 +3854,8 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG',
-      'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
+  OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'TIFF',
+      'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'SETUPAPI',
       'SQUISH', 'NVIDIACG', 'VORBIS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')

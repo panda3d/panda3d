@@ -294,6 +294,10 @@ class ShowBase(DirectObject.DirectObject):
         self.physicsMgrEnabled = 0
         self.physicsMgrAngular = 0
 
+        ## This is the global input device manager, which keeps track of
+        ## connected input devices.
+        self.devices = InputDeviceManager.getGlobalPtr()
+
         self.createStats()
 
         self.AppHasAudioFocus = 1
@@ -1827,6 +1831,9 @@ class ShowBase(DirectObject.DirectObject):
         return Task.cont
 
     def __dataLoop(self, state):
+        # Check if there were newly connected devices.
+        self.devices.update()
+
         # traverse the data graph.  This reads all the control
         # inputs (from the mouse and keyboard, for instance) and also
         # directly acts upon them (for instance, to move the avatar).

@@ -35,7 +35,7 @@ class DatagramIterator;
 //               is desired.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_EVENT ButtonEventList : public ParamValueBase {
-public:
+PUBLISHED:
   INLINE ButtonEventList();
   INLINE ButtonEventList(const ButtonEventList &copy);
   INLINE void operator = (const ButtonEventList &copy);

@@ -119,8 +119,6 @@ vrpn_button_callback(void *userdata, const vrpn_BUTTONCB info) {
   Devices::iterator di;
   for (di = self->_devices.begin(); di != self->_devices.end(); ++di) {
     VrpnButtonDevice *device = (*di);
-    device->acquire();
     device->set_button_state(info.button, info.state != 0);
-    device->unlock();
   }
 }

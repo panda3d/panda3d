@@ -1,3 +1,5 @@
+#include "gamepadButton.cxx"
+#include "globalPointerRegistry.cxx"
 #include "ioPtaDatagramFloat.cxx"
 #include "ioPtaDatagramInt.cxx"
 #include "ioPtaDatagramShort.cxx"

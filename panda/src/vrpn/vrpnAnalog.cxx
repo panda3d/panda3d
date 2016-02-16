@@ -115,7 +115,6 @@ vrpn_analog_callback(void *userdata, const vrpn_ANALOGCB info) {
   Devices::iterator di;
   for (di = self->_devices.begin(); di != self->_devices.end(); ++di) {
     VrpnAnalogDevice *device = (*di);
-    device->acquire();
     for (int i = 0; i < info.num_channel; i++) {
       if (vrpn_cat.is_debug()) {
         if (device->get_control_state(i) != info.channel[i]) {
@@ -125,6 +124,5 @@ vrpn_analog_callback(void *userdata, const vrpn_ANALOGCB info) {
       }
       device->set_control_state(i, info.channel[i]);
     }
-    device->unlock();
   }
 }

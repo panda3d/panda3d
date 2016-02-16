@@ -20,18 +20,6 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ClientTrackerDevice::
 ClientTrackerDevice(ClientBase *client, const string &device_name):
-  ClientDevice(client, get_class_type(), device_name)
+  ClientDevice(client, get_class_type(), device_name, IDF_has_tracker)
 {
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: ClientTrackerDevice::get_data
-//       Access: Public
-//  Description: Returns the TrackerData that this device is
-//               reporting.
-////////////////////////////////////////////////////////////////////
-INLINE const TrackerData &ClientTrackerDevice::
-get_data() const {
-  return _data;
-}
-

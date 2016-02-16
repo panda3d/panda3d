@@ -146,7 +146,7 @@ move_pointer(int device, int x, int y) {
   if (device == 0) {
     // Move the system mouse pointer.
     if (!_properties.get_foreground() )
-      //      !_input_devices[0].get_pointer().get_in_window())
+      //      !_input->get_pointer().get_in_window())
       {
         // If the window doesn't have input focus, or the mouse isn't
         // currently within the window, forget it.
@@ -157,14 +157,14 @@ move_pointer(int device, int x, int y) {
     get_client_rect_screen(_hWnd, &view_rect);
 
     SetCursorPos(view_rect.left + x, view_rect.top + y);
-    _input_devices[0].set_pointer_in_window(x, y);
+    _input->set_pointer_in_window(x, y);
     return true;
   } else {
     // Move a raw mouse.
     if ((device < 1)||(device >= (int)_input_devices.size())) {
       return false;
     }
-    _input_devices[device].set_pointer_in_window(x, y);
+    //_input_devices[device].set_pointer_in_window(x, y);
     return true;
   }
 }
@@ -587,7 +587,6 @@ open_window() {
 //               initializes a parallel array, _input_device_handle,
 //               with the win32 handle of each raw input device.
 ////////////////////////////////////////////////////////////////////
-
 void WinGraphicsWindow::
 initialize_input_devices() {
   UINT nInputDevices;
@@ -597,9 +596,10 @@ initialize_input_devices() {
 
   // Clear the handle array, and set up the system keyboard/mouse
   memset(_input_device_handle, 0, sizeof(_input_device_handle));
-  GraphicsWindowInputDevice device =
+  PT(GraphicsWindowInputDevice) device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
+  _input = device;
 
   // Try initializing the Raw Input function pointers.
   if (pRegisterRawInputDevices==0) {
@@ -656,9 +656,9 @@ initialize_input_devices() {
           }
           if (pound2) *pound2 = '.';
           _input_device_handle[_input_devices.size()] = pRawInputDeviceList[i].hDevice;
-          GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_only(this, psName);
-          device.set_pointer_in_window(0,0);
-          add_input_device(device);
+          //GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_only(this, psName);
+          //device.set_pointer_in_window(0,0);
+          //add_input_device(device);
         }
       }
     }
@@ -1578,8 +1578,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-    _input_devices[0].button_down(MouseButton::button(0), get_message_time());
+    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input->button_down(MouseButton::button(0), get_message_time());
 
     // A button-click in the window means to grab the keyboard focus.
     set_focus();
@@ -1590,8 +1590,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-    _input_devices[0].button_down(MouseButton::button(1), get_message_time());
+    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input->button_down(MouseButton::button(1), get_message_time());
     // A button-click in the window means to grab the keyboard focus.
     set_focus();
     return 0;
@@ -1601,8 +1601,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     SetCapture(hwnd);
-    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-    _input_devices[0].button_down(MouseButton::button(2), get_message_time());
+    _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input->button_down(MouseButton::button(2), get_message_time());
     // A button-click in the window means to grab the keyboard focus.
     set_focus();
     return 0;
@@ -1614,11 +1614,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
       SetCapture(hwnd);
       int whichButton = GET_XBUTTON_WPARAM(wparam);
-      _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+      _input->set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
       if (whichButton == XBUTTON1) {
-        _input_devices[0].button_down(MouseButton::button(3), get_message_time());
+        _input->button_down(MouseButton::button(3), get_message_time());
       } else if (whichButton == XBUTTON2) {
-        _input_devices[0].button_down(MouseButton::button(4), get_message_time());
+        _input->button_down(MouseButton::button(4), get_message_time());
       }
     }
     return 0;
@@ -1628,7 +1628,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     ReleaseCapture();
-    _input_devices[0].button_up(MouseButton::button(0), get_message_time());
+    _input->button_up(MouseButton::button(0), get_message_time());
     return 0;
 
   case WM_MBUTTONUP:
@@ -1636,7 +1636,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     ReleaseCapture();
-    _input_devices[0].button_up(MouseButton::button(1), get_message_time());
+    _input->button_up(MouseButton::button(1), get_message_time());
     return 0;
 
   case WM_RBUTTONUP:
@@ -1644,7 +1644,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       resend_lost_keypresses();
     }
     ReleaseCapture();
-    _input_devices[0].button_up(MouseButton::button(2), get_message_time());
+    _input->button_up(MouseButton::button(2), get_message_time());
     return 0;
 
   case WM_XBUTTONUP:
@@ -1655,9 +1655,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       ReleaseCapture();
       int whichButton = GET_XBUTTON_WPARAM(wparam);
       if (whichButton == XBUTTON1) {
-        _input_devices[0].button_up(MouseButton::button(3), get_message_time());
+        _input->button_up(MouseButton::button(3), get_message_time());
       } else if (whichButton == XBUTTON2) {
-        _input_devices[0].button_up(MouseButton::button(4), get_message_time());
+        _input->button_up(MouseButton::button(4), get_message_time());
       }
     }
     return 0;
@@ -1777,7 +1777,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     if (ime_aware) {
       wstring ws;
-      _input_devices[0].candidate(ws, 0, 0, 0);
+      _input->candidate(ws, 0, 0, 0);
     }
 
     break;
@@ -1808,7 +1808,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                                                ime_buffer, ime_buffer_size_bytes);
         size_t num_chars = result_size / sizeof(wchar_t);
         for (size_t i = 0; i < num_chars; ++i) {
-          _input_devices[0].keystroke(ime_buffer[i]);
+          _input->keystroke(ime_buffer[i]);
         }
       }
 
@@ -1821,7 +1821,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, ime_buffer, ime_buffer_size);
         size_t num_chars = result_size / sizeof(wchar_t);
 
-        _input_devices[0].candidate(wstring(ime_buffer, num_chars),
+        _input->candidate(wstring(ime_buffer, num_chars),
                                     min(cursor_pos, delta_start),
                                     max(cursor_pos, delta_start),
                                     cursor_pos);
@@ -1843,7 +1843,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // poorly defined.  Now we are using RegisterClassW etc., which
     // means WM_CHAR is absolutely supposed to be utf-16.
     if (!_ime_open) {
-      _input_devices[0].keystroke(wparam);
+      _input->keystroke(wparam);
     }
     break;
 
@@ -1975,7 +1975,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if (lptstr != NULL)  {
               char *pChar;
               for (pChar=lptstr; *pChar!=NULL; pChar++) {
-                _input_devices[0].keystroke((uchar)*pChar);
+                _input->keystroke((uchar)*pChar);
               }
               GlobalUnlock(hglb);
             }
@@ -2098,7 +2098,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         << "killfocus\n";
     }
 
-    _input_devices[0].focus_lost(get_message_time());
+    _input->focus_lost(get_message_time());
     properties.set_foreground(false);
     system_changed_properties(properties);
     break;
@@ -2409,9 +2409,9 @@ show_error_message(DWORD message_id) {
 ////////////////////////////////////////////////////////////////////
 void WinGraphicsWindow::
 handle_keypress(ButtonHandle key, int x, int y, double time) {
-  _input_devices[0].set_pointer_in_window(x, y);
+  _input->set_pointer_in_window(x, y);
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_down(key, time);
+    _input->button_down(key, time);
   }
 }
 
@@ -2425,7 +2425,7 @@ handle_keypress(ButtonHandle key, int x, int y, double time) {
 void WinGraphicsWindow::
 handle_keyresume(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_resume_down(key, time);
+    _input->button_resume_down(key, time);
   }
 }
 
@@ -2437,7 +2437,7 @@ handle_keyresume(ButtonHandle key, double time) {
 void WinGraphicsWindow::
 handle_keyrelease(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_up(key, time);
+    _input->button_up(key, time);
   }
 }
 
@@ -2449,7 +2449,7 @@ handle_keyrelease(ButtonHandle key, double time) {
 void WinGraphicsWindow::
 handle_raw_keypress(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].raw_button_down(key, time);
+    _input->raw_button_down(key, time);
   }
 }
 
@@ -2461,7 +2461,7 @@ handle_raw_keypress(ButtonHandle key, double time) {
 void WinGraphicsWindow::
 handle_raw_keyrelease(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].raw_button_up(key, time);
+    _input->raw_button_up(key, time);
   }
 }
 
@@ -2777,7 +2777,7 @@ handle_raw_input(HRAWINPUT hraw) {
   if (raw->header.hDevice == 0) {
     return;
   }
-
+/*
   for (int i = 1; i < (int)(_input_devices.size()); ++i) {
     if (_input_device_handle[i] == raw->header.hDevice) {
       int adjx = raw->data.mouse.lLastX;
@@ -2786,9 +2786,9 @@ handle_raw_input(HRAWINPUT hraw) {
       if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) {
         _input_devices[i].set_pointer_in_window(adjx, adjy);
       } else {
-        int oldx = _input_devices[i].get_raw_pointer().get_x();
-        int oldy = _input_devices[i].get_raw_pointer().get_y();
-        _input_devices[i].set_pointer_in_window(oldx + adjx, oldy + adjy);
+        //int oldx = _input_devices[i].get_raw_pointer().get_x();
+        //int oldy = _input_devices[i].get_raw_pointer().get_y();
+        //_input_devices[i].set_pointer_in_window(oldx + adjx, oldy + adjy);
       }
 
       if (raw->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_DOWN) {
@@ -2823,6 +2823,7 @@ handle_raw_input(HRAWINPUT hraw) {
       }
     }
   }
+*/
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2832,7 +2833,7 @@ handle_raw_input(HRAWINPUT hraw) {
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
 handle_mouse_motion(int x, int y) {
-  _input_devices[0].set_pointer_in_window(x, y);
+  _input->set_pointer_in_window(x, y);
   return false;
 }
 
@@ -2844,7 +2845,7 @@ handle_mouse_motion(int x, int y) {
 void WinGraphicsWindow::
 handle_mouse_exit() {
   // note: 'mouse_motion' is considered the 'entry' event
-  _input_devices[0].set_pointer_out_of_window();
+  _input->set_pointer_out_of_window();
 }
 
 ////////////////////////////////////////////////////////////////////
