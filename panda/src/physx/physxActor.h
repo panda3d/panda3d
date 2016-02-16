@@ -181,7 +181,6 @@ PUBLISHED:
 public:
   void update_transform(const LMatrix4f &m);
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -200,7 +199,6 @@ private:
   PT(PhysxController) _controller;
   string _name;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

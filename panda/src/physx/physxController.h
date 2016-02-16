@@ -89,7 +89,6 @@ private:
   NxQuat _up_quat_inv;
   NxHeightFieldAxis _up_axis;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

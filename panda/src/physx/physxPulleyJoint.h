@@ -42,7 +42,6 @@ PUBLISHED:
   bool get_flag(PhysxPulleyJointFlag flag) const;
   PhysxMotorDesc get_motor() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -52,7 +51,6 @@ public:
 private:
   NxPulleyJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

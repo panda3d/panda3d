@@ -44,7 +44,6 @@
 #include "mayaEggLoader.h"
 #include "notifyCategoryProxy.h"
 
-////////////////////////////////////////////////////////////////////
 
 class MayaEggImporter : public MPxFileTranslator
 {

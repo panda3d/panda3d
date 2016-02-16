@@ -174,7 +174,6 @@ virtual void  setForceFieldMaterial (NxForceFieldMaterial)=0
 public:
   void update();
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -189,7 +188,7 @@ private:
   PT(PhysxSoftBodyNode) _node;
   string _name;
 
-////////////////////////////////////////////////////////////////////
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

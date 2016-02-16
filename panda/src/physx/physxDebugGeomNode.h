@@ -88,7 +88,6 @@ private:
   PT(Geom) _geom_triangles;
   PT(GeomTriangles) _prim_triangles;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

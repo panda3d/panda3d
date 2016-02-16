@@ -49,7 +49,6 @@ private:
   PT(PhysxWheelShape) _wheelShape;
   NodePath _np;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

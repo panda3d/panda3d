@@ -48,7 +48,6 @@ PUBLISHED:
   void set_dimensions(const LVector3f &dimensions);
   LVector3f get_dimensions() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxShape *ptr() const { return (NxShape *)_ptr; };
 
@@ -58,7 +57,6 @@ public:
 private:
   NxBoxShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

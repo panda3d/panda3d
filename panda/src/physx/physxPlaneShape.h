@@ -60,7 +60,6 @@ PUBLISHED:
 
   void set_plane(const LVector3f &normal, float d);
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxShape *ptr() const { return (NxShape *)_ptr; };
 
@@ -70,7 +69,6 @@ public:
 private:
   NxPlaneShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

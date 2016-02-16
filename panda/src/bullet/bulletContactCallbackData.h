@@ -51,7 +51,6 @@ private:
   int _index0;
   int _index1;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -53,7 +53,6 @@ private:
   CPT(BulletShape) _shape_a;
   CPT(BulletShape) _shape_b;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

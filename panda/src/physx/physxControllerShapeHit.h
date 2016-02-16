@@ -43,7 +43,6 @@ PUBLISHED:
 private:
   const NxControllerShapeHit &_hit;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

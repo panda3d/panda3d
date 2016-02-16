@@ -61,7 +61,6 @@ private:
   unsigned int _numTexcoords;
   float *_texcoords;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

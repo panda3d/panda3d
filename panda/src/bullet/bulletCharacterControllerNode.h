@@ -79,7 +79,6 @@ private:
   bool _linear_movement_is_local;
   PN_stdfloat _angular_movement;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

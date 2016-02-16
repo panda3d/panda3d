@@ -53,7 +53,6 @@ public:
   LVecBase3 get_local_scale() const;
   void set_local_scale(const LVecBase3 &scale);
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -39,7 +39,6 @@ PUBLISHED:
   void save_to_desc(PhysxPointOnLineJointDesc &jointDesc) const;
   void load_from_desc(const PhysxPointOnLineJointDesc &jointDesc);
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -49,7 +48,6 @@ public:
 private:
   NxPointOnLineJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

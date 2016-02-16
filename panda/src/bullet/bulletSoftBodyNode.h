@@ -227,7 +227,6 @@ private:
   static int get_point_index(LVecBase3 p, PTA_LVecBase3 points);
   static int next_line(const char *buffer);
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

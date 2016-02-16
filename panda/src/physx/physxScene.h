@@ -219,7 +219,6 @@ PUBLISHED:
   PhysxFilterOp get_filter_op2() const;
   PhysxConstraintDominance get_dominance_group_pair(unsigned int g1, unsigned int g2);
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -262,7 +261,6 @@ private:
   static PStatCollector _pcollector_cloth;
   static PStatCollector _pcollector_softbody;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

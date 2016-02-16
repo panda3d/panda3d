@@ -28,7 +28,6 @@ class EXPCL_PANDAPHYSX PhysxSoftBodyMesh : public PhysxObject {
 PUBLISHED:
   unsigned int get_reference_count() const;
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -47,7 +46,6 @@ public:
 private:
   NxSoftBodyMesh *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

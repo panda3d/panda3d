@@ -44,7 +44,6 @@ public:
 private:
   btMultiSphereShape *_shape;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

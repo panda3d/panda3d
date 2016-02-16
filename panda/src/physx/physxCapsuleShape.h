@@ -56,7 +56,6 @@ PUBLISHED:
   float get_radius() const;
   float get_height() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxShape *ptr() const { return (NxShape *)_ptr; };
 
@@ -66,7 +65,6 @@ public:
 private:
   NxCapsuleShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

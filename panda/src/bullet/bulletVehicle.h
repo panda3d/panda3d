@@ -103,7 +103,6 @@ private:
 
   static btVector3 get_axis(int idx);
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

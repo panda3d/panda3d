@@ -33,7 +33,7 @@ PUBLISHED:
   void set_extents(const LVector3f &extents);
   LVector3f get_extents() const;
 
-////////////////////////////////////////////////////////////////////
+
 public:
   INLINE NxController *ptr() const { return (NxController *)_ptr; };
 
@@ -43,7 +43,7 @@ public:
 private:
   NxBoxController *_ptr;
 
-////////////////////////////////////////////////////////////////////
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

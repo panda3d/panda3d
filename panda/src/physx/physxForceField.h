@@ -52,7 +52,6 @@ PUBLISHED:
   PhysxForceFieldShapeGroup *get_shape_group(unsigned int idx) const;
   MAKE_SEQ(get_shape_groups, get_num_shape_groups, get_shape_group);
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -69,7 +68,6 @@ private:
   NxForceField *_ptr;
   string _name;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

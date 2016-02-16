@@ -53,7 +53,7 @@ private:
   NxU32 _feature_index0;
   NxU32 _feature_index1;
 
-////////////////////////////////////////////////////////////////////
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

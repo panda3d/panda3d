@@ -42,7 +42,7 @@ private:
   PandaNode *_node1;
   bool _collide;
 
-////////////////////////////////////////////////////////////////////
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

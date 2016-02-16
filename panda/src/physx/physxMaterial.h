@@ -82,7 +82,6 @@ PUBLISHED:
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level=0) const;
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -95,7 +94,6 @@ public:
 private:
   NxMaterial *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

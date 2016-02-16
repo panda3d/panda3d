@@ -41,7 +41,6 @@ PUBLISHED:
   float get_radius() const;
   float get_height() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxForceFieldShape *ptr() const { return (NxForceFieldShape *)_ptr; };
 
@@ -51,7 +50,6 @@ public:
 private:
   NxCapsuleForceFieldShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

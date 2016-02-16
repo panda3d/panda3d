@@ -68,7 +68,6 @@ public:
 private:
   NxHeightField *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

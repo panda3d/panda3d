@@ -93,7 +93,6 @@ PUBLISHED:
 public:
   void update();
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -108,7 +107,6 @@ private:
   PT(PhysxClothNode) _node;
   string _name;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

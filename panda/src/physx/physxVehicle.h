@@ -46,7 +46,6 @@ PUBLISHED:
 
 private:
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -59,7 +58,6 @@ private:
   PT(PhysxActor) _actor;
   PT(PhysxScene) _scene;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

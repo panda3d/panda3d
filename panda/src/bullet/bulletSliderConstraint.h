@@ -81,7 +81,6 @@ public:
 private:
   btSliderConstraint *_constraint;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

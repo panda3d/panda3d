@@ -70,7 +70,6 @@ private:
 
 //TODO btRotationalLimitMotor *  getRotationalLimitMotor (int index) 
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

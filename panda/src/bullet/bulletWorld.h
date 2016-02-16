@@ -249,7 +249,6 @@ private:
   BulletVehicles _vehicles;
   BulletConstraints _constraints;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -44,7 +44,6 @@ PUBLISHED:
   bool get_flag(PhysxSphericalJointFlag flag) const;
   PhysxProjectionMode get_projection_mode() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -54,7 +53,6 @@ public:
 private:
   NxSphericalJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

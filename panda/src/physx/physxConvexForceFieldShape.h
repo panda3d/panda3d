@@ -33,7 +33,6 @@ PUBLISHED:
 
   void save_to_desc(PhysxConvexForceFieldShapeDesc &shapeDesc) const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxForceFieldShape *ptr() const { return (NxForceFieldShape *)_ptr; };
 
@@ -43,7 +42,6 @@ public:
 private:
   NxConvexForceFieldShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

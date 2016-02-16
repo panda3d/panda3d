@@ -65,8 +65,6 @@ throw_event(const string &event_name,
   EventQueue::get_global_event_queue()->queue_event(event);
 }
 
-////////////////////////////////////////////////////////////////////
-
 INLINE void
 throw_event_directly(EventHandler& handler,
                      const CPT_Event &event) {

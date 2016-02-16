@@ -701,8 +701,6 @@ create_texture(DXScreenData &scrn) {
     << "; NeedLuminance: " << needs_luminance << endl;
   goto error_exit;
 
-////////////////////////////////////////////////////////////////////
-
  found_matching_format:
   // We found a suitable format that matches the texture's format.
 

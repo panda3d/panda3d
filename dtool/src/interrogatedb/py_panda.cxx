@@ -742,7 +742,6 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   return Py_None;
 }
 
-////////////////////////////////////////////////////////////////////
 Py_hash_t DTOOL_PyObject_HashPointer(PyObject *self) {
   if (self != NULL && DtoolCanThisBeAPandaInstance(self)) {
     Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;

@@ -50,7 +50,6 @@ PUBLISHED:
 
   float get_radius() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxShape *ptr() const { return (NxShape *)_ptr; };
 
@@ -60,7 +59,6 @@ public:
 private:
   NxSphereShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

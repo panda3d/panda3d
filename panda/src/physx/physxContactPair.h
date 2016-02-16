@@ -53,7 +53,6 @@ private:
   NxContactPair _pair;
   pvector<PhysxContactPoint> _contacts;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

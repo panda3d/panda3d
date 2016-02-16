@@ -90,7 +90,6 @@ private:
   string _name;
   PT(PhysxCcdSkeleton) _skel;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

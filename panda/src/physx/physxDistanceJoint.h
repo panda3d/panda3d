@@ -35,7 +35,6 @@ PUBLISHED:
   void save_to_desc(PhysxDistanceJointDesc &jointDesc) const;
   void load_from_desc(const PhysxDistanceJointDesc &jointDesc);
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -45,7 +44,6 @@ public:
 private:
   NxDistanceJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

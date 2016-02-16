@@ -34,7 +34,6 @@ PUBLISHED:
 
   void save_to_desc(PhysxConvexShapeDesc &shapeDesc) const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxShape *ptr() const { return (NxShape *)_ptr; };
 
@@ -44,7 +43,6 @@ public:
 private:
   NxConvexShape *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

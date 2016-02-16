@@ -30,7 +30,6 @@ class EXPCL_PANDAPHYSX PhysxCcdSkeleton : public PhysxObject {
 PUBLISHED:
   unsigned int get_reference_count() const;
 
-////////////////////////////////////////////////////////////////////
 PUBLISHED:
   void release();
 
@@ -49,7 +48,6 @@ public:
 private:
   NxCCDSkeleton *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -57,7 +57,6 @@ private:
 
   btPairCachingGhostObject *_ghost;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

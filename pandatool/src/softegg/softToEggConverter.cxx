@@ -1012,11 +1012,10 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
   SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible );
   softegg_cat.spam() << "model visibility: " << visible << endl;
 
-////////////////////////////////////////////////////////////////////
   // Only create egg polygon data if: the node is visible, and its not
   // a NULL or a Joint, and we're outputing polys (or if we are outputing
   // NURBS and the model is a poly mesh or a face)
-////////////////////////////////////////////////////////////////////
+
   if ( visible &&
        (type != SAA_MNILL) &&
        (type != SAA_MJNT) &&
@@ -1251,9 +1250,7 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
   softegg_cat.spam() << "model visibility: " << visible << endl;
   softegg_cat.spam() << "nurbs!!!surface!!!" << endl;
 
-////////////////////////////////////////////////////////////////////
   // check to see if its a nurbs surface
-////////////////////////////////////////////////////////////////////
   if ( (type == SAA_MNSRF) && ( visible ) && (( make_nurbs )
                                               || ( !make_nurbs && !make_poly &&  make_duv )) )
     {

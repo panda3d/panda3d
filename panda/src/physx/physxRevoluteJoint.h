@@ -54,7 +54,6 @@ PUBLISHED:
   PhysxMotorDesc get_motor() const;
   PhysxSpringDesc get_spring() const;
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -64,7 +63,6 @@ public:
 private:
   NxRevoluteJoint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

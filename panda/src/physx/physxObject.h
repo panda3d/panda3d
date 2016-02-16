@@ -60,7 +60,6 @@ private:
   PythonTagData _python_tag_data;
 #endif // HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

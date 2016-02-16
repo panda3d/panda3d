@@ -43,7 +43,6 @@ PUBLISHED:
   void set_drive_orientation(const LQuaternionf &quat);
   void set_drive_position(const LPoint3f &pos);
 
-////////////////////////////////////////////////////////////////////
 public:
   INLINE NxJoint *ptr() const { return (NxJoint *)_ptr; };
 
@@ -53,7 +52,6 @@ public:
 private:
   NxD6Joint *_ptr;
 
-////////////////////////////////////////////////////////////////////
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
