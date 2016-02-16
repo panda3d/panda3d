@@ -1,16 +1,15 @@
-// Filename: vector_PT_EggTexture.h
-// Created by:  drose (01May01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vector_PT_EggTexture.h
+ * @author drose
+ * @date 2001-05-01
+ */
 
 #ifndef VECTOR_PT_EGGTEXTURE_H
 #define VECTOR_PT_EGGTEXTURE_H

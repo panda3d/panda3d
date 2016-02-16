@@ -1,8 +1,4 @@
-/* Filename: contextSwitch.h
- * Created by:  drose (21Jun07)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file contextSwitch.h
+ * @author drose
+ * @date 2007-06-21
+ */
 
 #ifndef CONTEXTSWITCH_H
 #define CONTEXTSWITCH_H

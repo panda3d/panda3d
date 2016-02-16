@@ -1,17 +1,17 @@
-// Filename: shader.I
-// Heavily Modified:  jyelon (Sep05)
-// Updated by: fperazzi, PandaSE(06Apr10)
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shader.I
+ * @author jyelon
+ * @date 2005-09
+ * @author fperazzi, PandaSE
+ * @date 2010-04-06
+ */
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::get_filename

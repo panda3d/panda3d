@@ -1,84 +1,77 @@
-// Filename: fmodAudioManager.h
-// Created by:  cort (January 22, 2003)
-// Extended by: ben  (October 22, 2003)
-// Prior system by: cary
-// Rewrite [for new Version of FMOD-EX] by: Stan Rosenbaum "Staque" - Spring 2006
-//
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////
-//
-//Hello, all future Panda audio code people! This is my errata
-//documentation to help any future programmer maintain FMOD and PANDA.
-//
-//This documentation more then that is needed, but I wanted to go all
-//out, with the documentation. Because I was a totally newbie at
-//programming [especially with C/C++] this semester I want to make
-//sure future code maintainers have that insight I did not when
-//starting on the PANDA project here at the ETC/CMU.
-//
-//As of Spring 2006, Panda's FMOD audio support has been pretty much
-//completely rewritten. This has been done so PANDA can use FMOD-EX
-//[or AKA FMOD 4] and some of its new features.
-//
-//First, the FMOD-EX API itself has been completely rewritten compared
-//to previous versions. FMOD now handles any type of audio files, wave
-//audio [WAV, AIF, MP3, OGG, etc...] or musical file [MID, TRACKERS]
-//as the same type of an object. The API has also been structured more
-//like a sound studio, with 'sounds' and 'channels'. This will be
-//covered more in the FmodAudioSound.h/.cxx sources.
-//
-//Second, FMOD now offers virtually unlimited sounds to be played at
-//once via their virtual channels system. Actually the theoretical
-//limit is around 4000, but that is still a lot. What you need to know
-//about this, is that even thought you might only hear 32 sound being
-//played at once, FMOD will keep playing any additional sounds, and
-//swap those on virtual channels in and out with those on real
-//channels depending on priority, or distance [if you are dealing with
-//3D audio].
-//
-//Third, FMOD's DSP support has been added. So you can now add GLOBAL
-//or SOUND specific DSP effects. Right not you can only use FMOD's
-//built in DSP effects.  But adding support for FMOD's support of VST
-//effects shouldn't be that hard.
-//
-//As for the FmodManager itself, it is pretty straight forward, I
-//hope. As a manager class, it will create the FMOD system with the
-//"_system" variable which is an instance of FMOD::SYSTEM. (Actually,
-//we create only one global _system variable now, and share it with
-//all outstanding FmodManager objects--this appears to be the way FMOD
-//wants to work.)  The FmodManager class is also the one responsible
-//for creation of Sounds, DSP, and maintaining the GLOBAL DSP chains
-//[The GLOBAL DSP chain is the DSP Chain which affects ALL the
-//sounds].
-//
-//Any way that is it for an intro, lets move on to looking at the rest
-//of the code.
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fmodAudioManager.h
+ * @author cort
+ * @date 2003-01-22
+ * @author ben
+ * @date 2003-10-22
+ * Prior system by: cary
+ * @author Stan Rosenbaum "Staque" - Spring 2006
+ * 
+ * Hello, all future Panda audio code people! This is my errata
+ * documentation to help any future programmer maintain FMOD and PANDA.
+ * 
+ * This documentation more then that is needed, but I wanted to go all
+ * out, with the documentation. Because I was a totally newbie at
+ * programming [especially with C/C++] this semester I want to make
+ * sure future code maintainers have that insight I did not when
+ * starting on the PANDA project here at the ETC/CMU.
+ * 
+ * As of Spring 2006, Panda's FMOD audio support has been pretty much
+ * completely rewritten. This has been done so PANDA can use FMOD-EX
+ * [or AKA FMOD 4] and some of its new features.
+ * 
+ * First, the FMOD-EX API itself has been completely rewritten compared
+ * to previous versions. FMOD now handles any type of audio files, wave
+ * audio [WAV, AIF, MP3, OGG, etc...] or musical file [MID, TRACKERS]
+ * as the same type of an object. The API has also been structured more
+ * like a sound studio, with 'sounds' and 'channels'. This will be
+ * covered more in the FmodAudioSound.h/.cxx sources.
+ * 
+ * Second, FMOD now offers virtually unlimited sounds to be played at
+ * once via their virtual channels system. Actually the theoretical
+ * limit is around 4000, but that is still a lot. What you need to know
+ * about this, is that even thought you might only hear 32 sound being
+ * played at once, FMOD will keep playing any additional sounds, and
+ * swap those on virtual channels in and out with those on real
+ * channels depending on priority, or distance [if you are dealing with
+ * 3D audio].
+ * 
+ * Third, FMOD's DSP support has been added. So you can now add GLOBAL
+ * or SOUND specific DSP effects. Right not you can only use FMOD's
+ * built in DSP effects.  But adding support for FMOD's support of VST
+ * effects shouldn't be that hard.
+ * 
+ * As for the FmodManager itself, it is pretty straight forward, I
+ * hope. As a manager class, it will create the FMOD system with the
+ * "_system" variable which is an instance of FMOD::SYSTEM. (Actually,
+ * we create only one global _system variable now, and share it with
+ * all outstanding FmodManager objects--this appears to be the way FMOD
+ * wants to work.)  The FmodManager class is also the one responsible
+ * for creation of Sounds, DSP, and maintaining the GLOBAL DSP chains
+ * [The GLOBAL DSP chain is the DSP Chain which affects ALL the
+ * sounds].
+ * 
+ * Any way that is it for an intro, lets move on to looking at the rest
+ * of the code.
+ */
 
 #ifndef __FMOD_AUDIO_MANAGER_H__
 #define __FMOD_AUDIO_MANAGER_H__
 
-//First the includes.
+// First the includes.
 #include "pandabase.h"
 #include "pset.h"
 
 #include "audioManager.h"
 
-//The Includes needed for FMOD
+// The includes needed for FMOD
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
@@ -89,9 +82,7 @@ extern void fmod_audio_errcheck(const char *context, FMOD_RESULT n);
 class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   friend class FmodAudioSound;
 
- public:
-
-  //Constructor and Destructor
+public:
   FmodAudioManager();
   virtual ~FmodAudioManager();
 
@@ -201,11 +192,7 @@ private:
 
   FMOD_OUTPUTTYPE _saved_outputtype;
 
-////////////////////////////////////////////////////////////////////
-  //These are needed for Panda's Pointer System. DO NOT ERASE!
-////////////////////////////////////////////////////////////////////
-
- public:
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -221,13 +208,8 @@ private:
     return get_class_type();
   }
 
- private:
+private:
   static TypeHandle _type_handle;
-
-////////////////////////////////////////////////////////////////////
-  //DONE
-////////////////////////////////////////////////////////////////////
-
 };
 
 EXPCL_FMOD_AUDIO AudioManager *Create_FmodAudioManager();

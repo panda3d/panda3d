@@ -1,16 +1,15 @@
-// Filename: convert_srgb_sse2.cxx
-// Created by:  rdb (13Nov14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file convert_srgb_sse2.cxx
+ * @author rdb
+ * @date 2014-11-13
+ */
 
 // This file should always be compiled with SSE2 support.  These
 // functions will only be called when SSE2 support is detected at

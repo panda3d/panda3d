@@ -1,16 +1,15 @@
-// Filename: baseParticleEmitter.h
-// Created by:  charles (14Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file baseParticleEmitter.h
+ * @author charles
+ * @date 2000-06-14
+ */
 
 #ifndef BASEPARTICLEEMITTER_H
 #define BASEPARTICLEEMITTER_H
@@ -23,7 +22,7 @@
 
 #include "mathNumbers.h"
 
-////////////////////////////////////////////////////////////// //////
+////////////////////////////////////////////////////////////////////
 //       Class : BaseParticleEmitter
 // Description : Describes a physical region in space in which
 //               particles are randomly generated.

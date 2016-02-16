@@ -1,8 +1,4 @@
-/* Filename: interrogate_request.h
- * Created by:  drose (01Aug00)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file interrogate_request.h
+ * @author drose
+ * @date 2000-08-01
+ */
 
 #ifndef INTERROGATE_REQUEST
 #define INTERROGATE_REQUEST

@@ -1,16 +1,15 @@
-// Filename: look_at_src.cxx
-// Created by:  drose (25Apr97)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file look_at_src.cxx
+ * @author drose
+ * @date 1997-04-25
+ */
 
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
 make_xi_mat(const FLOATNAME(LVector2) &x) {

@@ -1,18 +1,17 @@
-// Filename: mayaShader.cxx
-// Created by:  drose (01Feb00)
-// Modified 19Mar10 by ETC PandaSE team (see
-//   header comment for mayaToEgg.cxx for details)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaShader.cxx
+ * @author drose
+ * @date 2000-02-01
+ * Modified 19Mar10 by ETC PandaSE team (see
+ *   header comment for mayaToEgg.cxx for details)
+ */
 
 #include "mayaShader.h"
 #include "maya_funcs.h"

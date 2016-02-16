@@ -1,17 +1,17 @@
-// Filename: meshDrawer.h
-// Created by:  treeform (19dec08)
-// Changes by:  treeform (12jan10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file meshDrawer.h
+ * @author treeform
+ * @date 2008-12-19
+ * @author treeform
+ * @date 2010-01-12
+ */
 
 #ifndef MESHDRAWER_H
 #define MESHDRAWER_H

@@ -1,43 +1,42 @@
-// Filename: mayaToEgg.cxx
-// Created by:  drose (15Feb00)
-//
-// Additional Maintenance by the PandaSE team
-// Carnegie Mellon Entertainment Technology Center
-// Spring '10
-// Team Members:
-// Deepak Chandraskeran - producer / programmer
-// Andrew Gartner - programmer/technical artist
-// Federico Perazzi - programmer
-// Shuying Feng - programmer
-// Wei-Feng Huang - programmer
-// (Egger additions by Andrew Gartner and Wei-Feng Huang)
-// The egger can now support vertex color in a variety
-// of combinations with flat color and file color textures
-// (see set_vertex_color).  Also, there are two new 
-// command line options "legacy-shaders" and "texture-copy".
-// The first treats any Maya material/shader as if it were 
-// a legacy shader. Passing it through the legacy codepath.
-// This feature was originally intended to fix a bug where
-// flat-color was being ignored in the modern (Phong) codepath
-// However, with the new vertex and flat color functions it
-// may not be necessary.  Still, until the newer color functions
-// have been tried and tested more, the feature has been left in
-// to anticipate any problems that may arise. The texture copy
-// feature was added to provide a way to resolve build path issues
-// and can support both relative and absolute paths. The feature
-// will copy any file maps/textures to the specified directory
-// and update the egg file accordingly.
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaToEgg.cxx
+ * @author drose
+ * @date 2000-02-15
+ * 
+ * Additional Maintenance by the PandaSE team
+ * Carnegie Mellon Entertainment Technology Center
+ * Spring '10
+ * Team Members:
+ * Deepak Chandraskeran - producer / programmer
+ * Andrew Gartner - programmer/technical artist
+ * Federico Perazzi - programmer
+ * Shuying Feng - programmer
+ * Wei-Feng Huang - programmer
+ * (Egger additions by Andrew Gartner and Wei-Feng Huang)
+ * The egger can now support vertex color in a variety
+ * of combinations with flat color and file color textures
+ * (see set_vertex_color).  Also, there are two new
+ * command line options "legacy-shaders" and "texture-copy".
+ * The first treats any Maya material/shader as if it were
+ * a legacy shader. Passing it through the legacy codepath.
+ * This feature was originally intended to fix a bug where
+ * flat-color was being ignored in the modern (Phong) codepath
+ * However, with the new vertex and flat color functions it
+ * may not be necessary.  Still, until the newer color functions
+ * have been tried and tested more, the feature has been left in
+ * to anticipate any problems that may arise. The texture copy
+ * feature was added to provide a way to resolve build path issues
+ * and can support both relative and absolute paths. The feature
+ * will copy any file maps/textures to the specified directory
+ * and update the egg file accordingly.
+ */
 
 #include "mayaToEgg.h"
 #include "mayaToEggConverter.h"

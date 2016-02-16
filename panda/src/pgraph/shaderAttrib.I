@@ -1,18 +1,17 @@
-// Filename: shaderAttrib.I
-// Created by:  sshodhan (10Jul04)
-// Updated by: weifengh, PandaSE(15Apr10)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderAttrib.I
+ * @author sshodhan
+ * @date 2004-07-10
+ * @author weifengh, PandaSE
+ * @date 2010-04-15
+ */
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::Constructor

@@ -1,12 +1,10 @@
-/*
-  MaxEgg.cpp
-  Created by Steven "Sauce" Osman, 01/??/03
-  Modified by Ken Strickland, 02/25/03
-  Carnegie Mellon University, Entertainment Technology Center
+// Filename: MaxEgg.cpp
+// Created by: Steven "Sauce" Osman (Jan03)
+// Modified by: Ken Strickland (25Feb03)
+//
+// This file implements the classes that are used in the Panda 3D file
+// exporter for 3D Studio Max.
 
-  This file implements the classes that are used in the Panda 3D file
-  exporter for 3D Studio Max.
-*/
 
 #include "maxEgg.h"
 

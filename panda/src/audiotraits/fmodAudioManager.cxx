@@ -1,19 +1,17 @@
-// Filename: fmodAudioManager.cxx
-// Created by:  cort (January 22, 2003)
-// Prior system by: cary
-// Rewrite [for new Version of FMOD-EX] by: Stan Rosenbaum "Staque" - Spring 2006
-//
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file fmodAudioManager.cxx
+ * @author cort
+ * @date 2003-01-22
+ * Prior system by: cary
+ * @author Stan Rosenbaum "Staque" - Spring 2006
+ */
 
 #include "pandabase.h"
 #include "config_audio.h"

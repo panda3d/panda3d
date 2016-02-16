@@ -1,20 +1,21 @@
-// Filename: shaderGenerator.cxx
-// Created by: jyelon (15Dec07)
-// Updated by: weifengh, PandaSE(15Apr10)
-// Updated by: agartner, PandaSE(16Apr10) - bug fix to synthesize_shader;
-// TextureStage::M_modulate (before this, separate textures formatted as
-// alpha wiped color off resulting rgb)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file shaderGenerator.cxx
+ * @author jyelon
+ * @date 2007-12-15
+ * @author weifengh, PandaSE
+ * @date 2010-04-15
+ * @author agartner, PandaSE
+ * @date 2010-04-16
+ * TextureStage::M_modulate (before this, separate textures formatted as
+ * alpha wiped color off resulting rgb)
+ */
 
 #include "shaderGenerator.h"
 

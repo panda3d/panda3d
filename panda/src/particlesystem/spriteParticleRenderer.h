@@ -1,16 +1,15 @@
-// Filename: spriteParticleRenderer.h
-// Created by:  charles (13Jul00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file spriteParticleRenderer.h
+ * @author charles
+ * @date 2000-07-13
+ */
 
 #ifndef SPRITEPARTICLERENDERER_H
 #define SPRITEPARTICLERENDERER_H

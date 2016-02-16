@@ -1,16 +1,15 @@
-// Filename: atomicAdjustI386Impl.h
-// Created by:  drose (01Apr06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file atomicAdjustI386Impl.h
+ * @author drose
+ * @date 2006-04-01
+ */
 
 #ifndef ATOMICADJUSTI386IMPL_H
 #define ATOMICADJUSTI386IMPL_H

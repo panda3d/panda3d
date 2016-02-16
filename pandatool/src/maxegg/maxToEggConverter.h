@@ -1,17 +1,16 @@
-// Filename: maxToEggConverter.h
-// Created by Corey Revilla and Ken Strickland (6/22/03)
-// from mayaToEggConverter.cxx created by drose (10Nov99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxToEggConverter.h
+ * @author Corey Revilla and Ken Strickland
+ * @date 2003-06-22
+ * from mayaToEggConverter.cxx created by drose (10Nov99)
+ */
 
 #ifndef __maxToEggConverter__H
 #define __maxToEggConverter__H

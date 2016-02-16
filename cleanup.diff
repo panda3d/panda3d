@@ -1,0 +1,772 @@
+diff --git a/panda/src/audio/audioManager.cxx b/panda/src/audio/audioManager.cxx
+index baff6c3..e9bdfe1 100644
+--- a/panda/src/audio/audioManager.cxx
++++ b/panda/src/audio/audioManager.cxx
+@@ -1,5 +1,5 @@
+ // Filename: audioManager.cxx
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audio/audioManager.h b/panda/src/audio/audioManager.h
+index 4c0915a..2e9f123 100644
+--- a/panda/src/audio/audioManager.h
++++ b/panda/src/audio/audioManager.h
+@@ -1,5 +1,5 @@
+ // Filename: audioManager.h
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audio/audioSound.cxx b/panda/src/audio/audioSound.cxx
+index 30f8ee8..83bbc9a 100644
+--- a/panda/src/audio/audioSound.cxx
++++ b/panda/src/audio/audioSound.cxx
+@@ -1,5 +1,5 @@
+ // Filename: audioSound.cxx
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audio/audioSound.h b/panda/src/audio/audioSound.h
+index 163111e..381bbe2 100644
+--- a/panda/src/audio/audioSound.h
++++ b/panda/src/audio/audioSound.h
+@@ -1,5 +1,5 @@
+ // Filename: audioSound.h
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audio/nullAudioManager.cxx b/panda/src/audio/nullAudioManager.cxx
+index 8c3f53d..bd255b8 100644
+--- a/panda/src/audio/nullAudioManager.cxx
++++ b/panda/src/audio/nullAudioManager.cxx
+@@ -1,5 +1,5 @@
+ // Filename: nullAudioManager.cxx
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audio/nullAudioManager.h b/panda/src/audio/nullAudioManager.h
+index d86d913..401b6e2 100644
+--- a/panda/src/audio/nullAudioManager.h
++++ b/panda/src/audio/nullAudioManager.h
+@@ -1,5 +1,5 @@
+ // Filename: nullAudioManager.h
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audio/nullAudioSound.cxx b/panda/src/audio/nullAudioSound.cxx
+index 64e0fdf..5e67068 100644
+--- a/panda/src/audio/nullAudioSound.cxx
++++ b/panda/src/audio/nullAudioSound.cxx
+@@ -1,5 +1,5 @@
+ // Filename: nullAudioSound.cxx
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audio/nullAudioSound.h b/panda/src/audio/nullAudioSound.h
+index d3bbd58..c088ffc 100644
+--- a/panda/src/audio/nullAudioSound.h
++++ b/panda/src/audio/nullAudioSound.h
+@@ -1,5 +1,5 @@
+ // Filename: nullAudioSound.h
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audiotraits/fmodAudioManager.cxx b/panda/src/audiotraits/fmodAudioManager.cxx
+index 7864917..5d858b7 100644
+--- a/panda/src/audiotraits/fmodAudioManager.cxx
++++ b/panda/src/audiotraits/fmodAudioManager.cxx
+@@ -1,5 +1,5 @@
+ // Filename: fmodAudioManager.cxx
+-// Created by:  cort (January 22, 2003)
++// Created by:  cort (22Jan03)
+ // Prior system by: cary
+ // Rewrite [for new Version of FMOD-EX] by: Stan Rosenbaum "Staque" - Spring 2006
+ //
+diff --git a/panda/src/audiotraits/fmodAudioManager.h b/panda/src/audiotraits/fmodAudioManager.h
+index 52d6e22..022f81b 100644
+--- a/panda/src/audiotraits/fmodAudioManager.h
++++ b/panda/src/audiotraits/fmodAudioManager.h
+@@ -1,6 +1,6 @@
+ // Filename: fmodAudioManager.h
+-// Created by:  cort (January 22, 2003)
+-// Extended by: ben  (October 22, 2003)
++// Created by:  cort (22Jan03)
++// Extended by: ben  (22Oct03)
+ // Prior system by: cary
+ // Rewrite [for new Version of FMOD-EX] by: Stan Rosenbaum "Staque" - Spring 2006
+ //
+@@ -15,70 +15,66 @@
+ // with this source code in a file named "LICENSE."
+ //
+ ////////////////////////////////////////////////////////////////////
+-
+-
+-////////////////////////////////////////////////////////////////////
+ //
+-//Hello, all future Panda audio code people! This is my errata
+-//documentation to help any future programmer maintain FMOD and PANDA.
++// Hello, all future Panda audio code people! This is my errata
++// documentation to help any future programmer maintain FMOD and PANDA.
+ //
+-//This documentation more then that is needed, but I wanted to go all
+-//out, with the documentation. Because I was a totally newbie at
+-//programming [especially with C/C++] this semester I want to make
+-//sure future code maintainers have that insight I did not when
+-//starting on the PANDA project here at the ETC/CMU.
++// This documentation more then that is needed, but I wanted to go all
++// out, with the documentation. Because I was a totally newbie at
++// programming [especially with C/C++] this semester I want to make
++// sure future code maintainers have that insight I did not when
++// starting on the PANDA project here at the ETC/CMU.
+ //
+-//As of Spring 2006, Panda's FMOD audio support has been pretty much
+-//completely rewritten. This has been done so PANDA can use FMOD-EX
+-//[or AKA FMOD 4] and some of its new features.
++// As of Spring 2006, Panda's FMOD audio support has been pretty much
++// completely rewritten. This has been done so PANDA can use FMOD-EX
++// [or AKA FMOD 4] and some of its new features.
+ //
+-//First, the FMOD-EX API itself has been completely rewritten compared
+-//to previous versions. FMOD now handles any type of audio files, wave
+-//audio [WAV, AIF, MP3, OGG, etc...] or musical file [MID, TRACKERS]
+-//as the same type of an object. The API has also been structured more
+-//like a sound studio, with 'sounds' and 'channels'. This will be
+-//covered more in the FmodAudioSound.h/.cxx sources.
++// First, the FMOD-EX API itself has been completely rewritten compared
++// to previous versions. FMOD now handles any type of audio files, wave
++// audio [WAV, AIF, MP3, OGG, etc...] or musical file [MID, TRACKERS]
++// as the same type of an object. The API has also been structured more
++// like a sound studio, with 'sounds' and 'channels'. This will be
++// covered more in the FmodAudioSound.h/.cxx sources.
+ //
+-//Second, FMOD now offers virtually unlimited sounds to be played at
+-//once via their virtual channels system. Actually the theoretical
+-//limit is around 4000, but that is still a lot. What you need to know
+-//about this, is that even thought you might only hear 32 sound being
+-//played at once, FMOD will keep playing any additional sounds, and
+-//swap those on virtual channels in and out with those on real
+-//channels depending on priority, or distance [if you are dealing with
+-//3D audio].
++// Second, FMOD now offers virtually unlimited sounds to be played at
++// once via their virtual channels system. Actually the theoretical
++// limit is around 4000, but that is still a lot. What you need to know
++// about this, is that even thought you might only hear 32 sound being
++// played at once, FMOD will keep playing any additional sounds, and
++// swap those on virtual channels in and out with those on real
++// channels depending on priority, or distance [if you are dealing with
++// 3D audio].
+ //
+-//Third, FMOD's DSP support has been added. So you can now add GLOBAL
+-//or SOUND specific DSP effects. Right not you can only use FMOD's
+-//built in DSP effects.  But adding support for FMOD's support of VST
+-//effects shouldn't be that hard.
++// Third, FMOD's DSP support has been added. So you can now add GLOBAL
++// or SOUND specific DSP effects. Right not you can only use FMOD's
++// built in DSP effects.  But adding support for FMOD's support of VST
++// effects shouldn't be that hard.
+ //
+-//As for the FmodManager itself, it is pretty straight forward, I
+-//hope. As a manager class, it will create the FMOD system with the
+-//"_system" variable which is an instance of FMOD::SYSTEM. (Actually,
+-//we create only one global _system variable now, and share it with
+-//all outstanding FmodManager objects--this appears to be the way FMOD
+-//wants to work.)  The FmodManager class is also the one responsible
+-//for creation of Sounds, DSP, and maintaining the GLOBAL DSP chains
+-//[The GLOBAL DSP chain is the DSP Chain which affects ALL the
+-//sounds].
++// As for the FmodManager itself, it is pretty straight forward, I
++// hope. As a manager class, it will create the FMOD system with the
++// "_system" variable which is an instance of FMOD::SYSTEM. (Actually,
++// we create only one global _system variable now, and share it with
++// all outstanding FmodManager objects--this appears to be the way FMOD
++// wants to work.)  The FmodManager class is also the one responsible
++// for creation of Sounds, DSP, and maintaining the GLOBAL DSP chains
++// [The GLOBAL DSP chain is the DSP Chain which affects ALL the
++// sounds].
+ //
+-//Any way that is it for an intro, lets move on to looking at the rest
+-//of the code.
++// Any way that is it for an intro, lets move on to looking at the rest
++// of the code.
+ //
+ ////////////////////////////////////////////////////////////////////
+ 
+-
+ #ifndef __FMOD_AUDIO_MANAGER_H__
+ #define __FMOD_AUDIO_MANAGER_H__
+ 
+-//First the includes.
++// First the includes.
+ #include "pandabase.h"
+ #include "pset.h"
+ 
+ #include "audioManager.h"
+ 
+-//The Includes needed for FMOD
++// The includes needed for FMOD
+ #include <fmod.hpp>
+ #include <fmod_errors.h>
+ 
+@@ -89,9 +85,7 @@ extern void fmod_audio_errcheck(const char *context, FMOD_RESULT n);
+ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
+   friend class FmodAudioSound;
+ 
+- public:
+-
+-  //Constructor and Destructor
++public:
+   FmodAudioManager();
+   virtual ~FmodAudioManager();
+ 
+@@ -201,11 +195,7 @@ private:
+ 
+   FMOD_OUTPUTTYPE _saved_outputtype;
+ 
+-////////////////////////////////////////////////////////////////////
+-  //These are needed for Panda's Pointer System. DO NOT ERASE!
+-////////////////////////////////////////////////////////////////////
+-
+- public:
++public:
+   static TypeHandle get_class_type() {
+     return _type_handle;
+   }
+@@ -221,13 +211,8 @@ private:
+     return get_class_type();
+   }
+ 
+- private:
++private:
+   static TypeHandle _type_handle;
+-
+-////////////////////////////////////////////////////////////////////
+-  //DONE
+-////////////////////////////////////////////////////////////////////
+-
+ };
+ 
+ EXPCL_FMOD_AUDIO AudioManager *Create_FmodAudioManager();
+diff --git a/panda/src/audiotraits/fmodAudioSound.I b/panda/src/audiotraits/fmodAudioSound.I
+index 4d848d1..3898914 100644
+--- a/panda/src/audiotraits/fmodAudioSound.I
++++ b/panda/src/audiotraits/fmodAudioSound.I
+@@ -1,5 +1,5 @@
+ // Filename: fmodAudioSound.I
+-// Created by:  cort (January 22, 2003)
++// Created by:  cort (22Jan03)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audiotraits/fmodAudioSound.cxx b/panda/src/audiotraits/fmodAudioSound.cxx
+index 6747cde..1872446 100644
+--- a/panda/src/audiotraits/fmodAudioSound.cxx
++++ b/panda/src/audiotraits/fmodAudioSound.cxx
+@@ -1,6 +1,6 @@
+ // Filename: fmodAudioSound.cxx
+-// Created by:  cort (January 22, 2003)
+-// Extended by: ben  (October 22, 2003)
++// Created by:  cort (22Jan03)
++// Extended by: ben  (22Oct03)
+ // Prior system by: cary
+ // Rewrite [for new Version of FMOD-EX] by: Stan Rosenbaum "Staque" - Spring 2006
+ //
+diff --git a/panda/src/audiotraits/fmodAudioSound.h b/panda/src/audiotraits/fmodAudioSound.h
+index 774fcae..73285f5 100644
+--- a/panda/src/audiotraits/fmodAudioSound.h
++++ b/panda/src/audiotraits/fmodAudioSound.h
+@@ -1,5 +1,5 @@
+ // Filename: fmodAudioSound.h
+-// Created by:  cort (January 22, 2003)
++// Created by:  cort (22Jan03)
+ // Prior system by: cary
+ // Rewrite [for new Version of FMOD-EX] by: Stan Rosenbaum "Staque" - Spring 2006
+ //
+@@ -15,10 +15,6 @@
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+-//
+-//
+-////////////////////////////////////////////////////////////////////
+-//
+ // [FIRST READ FmodAudioManager for an Introduction if you haven't
+ // already].
+ //
+diff --git a/panda/src/audiotraits/milesAudioManager.cxx b/panda/src/audiotraits/milesAudioManager.cxx
+index 3f56ad5..6d6615a 100644
+--- a/panda/src/audiotraits/milesAudioManager.cxx
++++ b/panda/src/audiotraits/milesAudioManager.cxx
+@@ -1,5 +1,5 @@
+ // Filename: milesAudioManager.cxx
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audiotraits/milesAudioManager.h b/panda/src/audiotraits/milesAudioManager.h
+index f396629..c76308c 100644
+--- a/panda/src/audiotraits/milesAudioManager.h
++++ b/panda/src/audiotraits/milesAudioManager.h
+@@ -1,5 +1,5 @@
+ // Filename: milesAudioManager.h
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audiotraits/milesAudioSample.I b/panda/src/audiotraits/milesAudioSample.I
+index d092840..495b2d7 100644
+--- a/panda/src/audiotraits/milesAudioSample.I
++++ b/panda/src/audiotraits/milesAudioSample.I
+@@ -1,5 +1,5 @@
+ // Filename: milesAudioSample.I
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/audiotraits/milesAudioSample.cxx b/panda/src/audiotraits/milesAudioSample.cxx
+index 42245b7..bdb276b 100644
+--- a/panda/src/audiotraits/milesAudioSample.cxx
++++ b/panda/src/audiotraits/milesAudioSample.cxx
+@@ -1,5 +1,5 @@
+ // Filename: milesAudioSample.cxx
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/audiotraits/milesAudioSample.h b/panda/src/audiotraits/milesAudioSample.h
+index 5b23593..bb1afb1 100644
+--- a/panda/src/audiotraits/milesAudioSample.h
++++ b/panda/src/audiotraits/milesAudioSample.h
+@@ -1,5 +1,5 @@
+ // Filename: milesAudioSample.h
+-// Created by:  skyler (June 6, 2001)
++// Created by:  skyler (06Jun01)
+ // Prior system by: cary
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/awesomium/config_awesomium.cxx b/panda/src/awesomium/config_awesomium.cxx
+index 892a351..1f61088 100644
+--- a/panda/src/awesomium/config_awesomium.cxx
++++ b/panda/src/awesomium/config_awesomium.cxx
+@@ -8,7 +8,7 @@
+ //
+ // All use of this software is subject to the terms of the revised BSD
+ // license.  You should have received a copy of this license along
+-// with this source cawesomium in a file named "LICENSE."
++// with this source code in a file named "LICENSE."
+ //
+ ////////////////////////////////////////////////////////////////////
+ 
+diff --git a/panda/src/display/graphicsStateGuardian.cxx b/panda/src/display/graphicsStateGuardian.cxx
+index 1fbdd40..401aa34 100644
+--- a/panda/src/display/graphicsStateGuardian.cxx
++++ b/panda/src/display/graphicsStateGuardian.cxx
+@@ -1,5 +1,5 @@
+ // Filename: graphicsStateGuardian.cxx
+-// Created by:  drose (02eb99)
++// Created by:  drose (02Feb99)
+ // Updated by: fperazzi, PandaSE (05May10) (added fetch_ptr_parameter,
+ //  _max_2d_texture_array_layers, _supports_2d_texture_array,
+ //  get_supports_cg_profile)
+diff --git a/panda/src/display/graphicsStateGuardian.h b/panda/src/display/graphicsStateGuardian.h
+index 79ba8d1..fcebfdb 100644
+--- a/panda/src/display/graphicsStateGuardian.h
++++ b/panda/src/display/graphicsStateGuardian.h
+@@ -1,5 +1,5 @@
+ // Filename: graphicsStateGuardian.h
+-// Created by:  drose (02eb99)
++// Created by:  drose (02Feb99)
+ // Updated by: fperazzi, PandaSE (05May10) (added fetch_ptr_parameter,
+ //  _max_2d_texture_array_layers on z axis, get_supports_cg_profile)
+ //
+diff --git a/panda/src/display/touchInfo.cxx b/panda/src/display/touchInfo.cxx
+index 9a766c4..f861bea 100644
+--- a/panda/src/display/touchInfo.cxx
++++ b/panda/src/display/touchInfo.cxx
+@@ -1,5 +1,5 @@
+ // Filename: touchInfo.cxx
+-// Created by:  Walt Destler (May 25, 2010)
++// Created by:  Walt Destler (25May2010)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/display/touchInfo.h b/panda/src/display/touchInfo.h
+index b449c4b..12c90df 100644
+--- a/panda/src/display/touchInfo.h
++++ b/panda/src/display/touchInfo.h
+@@ -1,5 +1,5 @@
+ // Filename: touchInfo.h
+-// Created by:  Walt Destler (May 25, 2010)
++// Created by:  Walt Destler (25May2010)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/dxgsg9/dxShaderContext9.cxx b/panda/src/dxgsg9/dxShaderContext9.cxx
+index 0e86d46..25f7885 100644
+--- a/panda/src/dxgsg9/dxShaderContext9.cxx
++++ b/panda/src/dxgsg9/dxShaderContext9.cxx
+@@ -1,5 +1,5 @@
+ // Filename: dxShaderContext9.cxx
+-// Created by: jyelon (01Sep05), conversion aignacio (Jan-Mar06)
++// Created by: jyelon (01Sep05)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/egg/lexer.lxx b/panda/src/egg/lexer.lxx
+index b5b5b7d..ec8e59d 100644
+--- a/panda/src/egg/lexer.lxx
++++ b/panda/src/egg/lexer.lxx
+@@ -1,9 +1,7 @@
+-/*
+ // Filename: lexer.lxx
+ // Created by:  drose (16Jan99)
+ //
+ ////////////////////////////////////////////////////////////////////
+-*/
+ 
+ %{
+ #include "pandabase.h"
+diff --git a/panda/src/grutil/nodeVertexTransform.I b/panda/src/grutil/nodeVertexTransform.I
+index 97e4da3..e511996 100644
+--- a/panda/src/grutil/nodeVertexTransform.I
++++ b/panda/src/grutil/nodeVertexTransform.I
+@@ -1,5 +1,5 @@
+ // Filename: nodeVertexTransform.I
+-// Created by:  drose (22eb07)
++// Created by:  drose (22Feb07)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/grutil/nodeVertexTransform.cxx b/panda/src/grutil/nodeVertexTransform.cxx
+index decfc95..5a2a881 100644
+--- a/panda/src/grutil/nodeVertexTransform.cxx
++++ b/panda/src/grutil/nodeVertexTransform.cxx
+@@ -1,5 +1,5 @@
+ // Filename: nodeVertexTransform.cxx
+-// Created by:  drose (22eb07)
++// Created by:  drose (22Feb07)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/grutil/nodeVertexTransform.h b/panda/src/grutil/nodeVertexTransform.h
+index c7e31f4..d76dcbd 100644
+--- a/panda/src/grutil/nodeVertexTransform.h
++++ b/panda/src/grutil/nodeVertexTransform.h
+@@ -1,5 +1,5 @@
+ // Filename: nodeVertexTransform.h
+-// Created by:  drose (22eb07)
++// Created by:  drose (22Feb07)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/iphonedisplay/iPhoneGraphicsWindow.mm b/panda/src/iphonedisplay/iPhoneGraphicsWindow.mm
+index 1f2cbbd..c0b2628 100644
+--- a/panda/src/iphonedisplay/iPhoneGraphicsWindow.mm
++++ b/panda/src/iphonedisplay/iPhoneGraphicsWindow.mm
+@@ -4,10 +4,10 @@
+ ////////////////////////////////////////////////////////////////////
+ //
+ // PANDA 3D SOFTWARE
+-// Copyright (c) Carnegie Mellon University. All rights reserved.
++// Copyright (c) Carnegie Mellon University.  All rights reserved.
+ //
+ // All use of this software is subject to the terms of the revised BSD
+-// license. You should have received a copy of this license along
++// license.  You should have received a copy of this license along
+ // with this source code in a file named "LICENSE."
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/movies/inkblotVideo.I b/panda/src/movies/inkblotVideo.I
+index 6fe6c3d..2d17253 100644
+--- a/panda/src/movies/inkblotVideo.I
++++ b/panda/src/movies/inkblotVideo.I
+@@ -1,14 +1,13 @@
+-// Filename: inkblotVideo.I
+-// Created by: jyelon (02Jul07)
+-//
+-////////////////////////////////////////////////////////////////////
+-//
++// Filename: inkblotVideo.I
++// Created by: jyelon (02Jul07)
++//
++////////////////////////////////////////////////////////////////////
++//
+ // PANDA 3D SOFTWARE
+ // Copyright (c) Carnegie Mellon University.  All rights reserved.
+ //
+ // All use of this software is subject to the terms of the revised BSD
+ // license.  You should have received a copy of this license along
+ // with this source code in a file named "LICENSE."
+-//
+-////////////////////////////////////////////////////////////////////
+-
++//
++////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/nativenet/buffered_datagramreader.I b/panda/src/nativenet/buffered_datagramreader.I
+index e8cb866..3def805 100644
+--- a/panda/src/nativenet/buffered_datagramreader.I
++++ b/panda/src/nativenet/buffered_datagramreader.I
+@@ -1,43 +1,39 @@
++
+ ////////////////////////////////////////////////////////////////////
+ //     Function: Buffered_DatagramReader::GetMessageInplace
+ //  Description: A function that will peal a core message of the input buffer
+-//
+ ////////////////////////////////////////////////////////////////////
+-inline bool Buffered_DatagramReader::GetMessageFromBuffer(Datagram &inmsg)
+-{
+-	bool	answer = false;
+-	size_t DataAvail = FastAmountBeffered();
+-	if(DataAvail >= sizeof(short))
+-	{
+-		char *ff = FastGetMessageHead();
+-		unsigned short len=GetUnsignedShort(ff);
+-		len += sizeof(unsigned short);
+-		if(len <= DataAvail)
+-		{
+-			inmsg.assign(ff+2,len-2);
+-			_StartPos += len;
+-			answer = true;
+-		}
+-	}
+-	return answer;
++inline bool Buffered_DatagramReader::
++GetMessageFromBuffer(Datagram &inmsg) {
++  bool answer = false;
++  size_t DataAvail = FastAmountBeffered();
++  if (DataAvail >= sizeof(short)) {
++    char *ff = FastGetMessageHead();
++    unsigned short len=GetUnsignedShort(ff);
++    len += sizeof(unsigned short);
++    if (len <= DataAvail) {
++      inmsg.assign(ff + 2, len - 2);
++      _StartPos += len;
++      answer = true;
++    }
++  }
++  return answer;
+ }
+ ////////////////////////////////////////////////////////////////////
+ //     Function: Buffered_DatagramReader::Buffered_DatagramReader
+-//  Description: constructore .. passes size up to ring buffer
+-//
++//  Description: Constructor.  Passes size up to ring buffer.
+ ////////////////////////////////////////////////////////////////////
+-inline Buffered_DatagramReader::Buffered_DatagramReader(int in_size) : RingBuffer(in_size)
+-{
+-
++inline Buffered_DatagramReader::
++Buffered_DatagramReader(int in_size) : RingBuffer(in_size) {
+ }
++
+ ////////////////////////////////////////////////////////////////////
+ //     Function: Buffered_DatagramReader::ReSet
+-//  Description: Reaset all read content.. IE zero's out buffer...
+-//
+-//	If you lose framing this will not help
++//  Description: Reset all read content, ie. zeroes out buffer.
+ //
++//	         If you lose framing, this will not help.
+ ////////////////////////////////////////////////////////////////////
+-inline void Buffered_DatagramReader::ReSet(void)
+-{
+-	ResetContent();
++inline void Buffered_DatagramReader::
++ReSet(void) {
++  ResetContent();
+ }
+diff --git a/panda/src/osxdisplay/osxGraphicsWindow.mm b/panda/src/osxdisplay/osxGraphicsWindow.mm
+index de82a27..1747ed4 100644
+--- a/panda/src/osxdisplay/osxGraphicsWindow.mm
++++ b/panda/src/osxdisplay/osxGraphicsWindow.mm
+@@ -3,10 +3,10 @@
+ ////////////////////////////////////////////////////////////////////
+ //
+ // PANDA 3D SOFTWARE
+-// Copyright (c) Carnegie Mellon University. All rights reserved.
++// Copyright (c) Carnegie Mellon University.  All rights reserved.
+ //
+ // All use of this software is subject to the terms of the revised BSD
+-// license. You should have received a copy of this license along
++// license.  You should have received a copy of this license along
+ // with this source code in a file named "LICENSE."
+ //
+ ////////////////////////////////////////////////////////////////////
+diff --git a/panda/src/pgraph/cullTraverser.cxx b/panda/src/pgraph/cullTraverser.cxx
+index 2a92792..f60b117 100644
+--- a/panda/src/pgraph/cullTraverser.cxx
++++ b/panda/src/pgraph/cullTraverser.cxx
+@@ -1,5 +1,5 @@
+ // Filename: cullTraverser.cxx
+-// Created by:  drose (23eb02)
++// Created by:  drose (23Feb02)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/pgraph/cullTraverser.h b/panda/src/pgraph/cullTraverser.h
+index 21aa861..daa0f05 100644
+--- a/panda/src/pgraph/cullTraverser.h
++++ b/panda/src/pgraph/cullTraverser.h
+@@ -1,5 +1,5 @@
+ // Filename: cullTraverser.h
+-// Created by:  drose (23eb02)
++// Created by:  drose (23Feb02)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/pgraph/geomNode.cxx b/panda/src/pgraph/geomNode.cxx
+index aa9b70a..1ceea9b 100644
+--- a/panda/src/pgraph/geomNode.cxx
++++ b/panda/src/pgraph/geomNode.cxx
+@@ -1,5 +1,5 @@
+ // Filename: geomNode.cxx
+-// Created by:  drose (23eb02)
++// Created by:  drose (23Feb02)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/pgraph/geomNode.h b/panda/src/pgraph/geomNode.h
+index cfdbd85..62f8d9f 100644
+--- a/panda/src/pgraph/geomNode.h
++++ b/panda/src/pgraph/geomNode.h
+@@ -1,5 +1,5 @@
+ // Filename: geomNode.h
+-// Created by:  drose (22eb02)
++// Created by:  drose (22Feb02)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/pgraphnodes/directionalLight.I b/panda/src/pgraphnodes/directionalLight.I
+index 66c2056..e252f29 100644
+--- a/panda/src/pgraphnodes/directionalLight.I
++++ b/panda/src/pgraphnodes/directionalLight.I
+@@ -1,5 +1,5 @@
+ // Filename: directionalLight.I
+-// Created by:  mike (04eb99)
++// Created by:  mike (04Feb99)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/pgraphnodes/pointLight.I b/panda/src/pgraphnodes/pointLight.I
+index 646bd04..56ffa46 100644
+--- a/panda/src/pgraphnodes/pointLight.I
++++ b/panda/src/pgraphnodes/pointLight.I
+@@ -1,5 +1,5 @@
+ // Filename: pointLight.I
+-// Created by:  mike (04eb99)
++// Created by:  mike (04Feb99)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/pgraphnodes/spotlight.I b/panda/src/pgraphnodes/spotlight.I
+index 7c1fdf7..686f5dc 100644
+--- a/panda/src/pgraphnodes/spotlight.I
++++ b/panda/src/pgraphnodes/spotlight.I
+@@ -1,5 +1,5 @@
+ // Filename: spotlight.I
+-// Created by:  mike (04eb99)
++// Created by:  mike (04Feb99)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/physx/physxD6JointDesc.cxx b/panda/src/physx/physxD6JointDesc.cxx
+index eab55c0..0e3b45a 100644
+--- a/panda/src/physx/physxD6JointDesc.cxx
++++ b/panda/src/physx/physxD6JointDesc.cxx
+@@ -1,5 +1,5 @@
+ // Filename: physxD6JointDesc.cxx
+-// Created by:  enn0x (01Octp09)
++// Created by:  enn0x (01Oct09)
+ //
+ ////////////////////////////////////////////////////////////////////
+ //
+diff --git a/panda/src/vision/webcamVideoDS.cxx b/panda/src/vision/webcamVideoDS.cxx
+index bdbdc8d..61cce77 100644
+--- a/panda/src/vision/webcamVideoDS.cxx
++++ b/panda/src/vision/webcamVideoDS.cxx
+@@ -18,8 +18,6 @@
+ // of OS-specific junk that I feel it is better to hide them
+ // entirely.  - Josh
+ //
+-////////////////////////////////////////////////////////////////////
+-//
+ // This code was created by studying and adapting the VDOGRAB
+ // library by Shu-Kai Yang and the videoInput library by Theodore
+ // Watson.  We owe both of them a great deal of thanks for
+diff --git a/pandatool/src/maxegg/maxEgg.cxx b/pandatool/src/maxegg/maxEgg.cxx
+index 22183b7..1d081e5 100644
+--- a/pandatool/src/maxegg/maxEgg.cxx
++++ b/pandatool/src/maxegg/maxEgg.cxx
+@@ -1,12 +1,10 @@
+-/*
+-  MaxEgg.cpp
+-  Created by Steven "Sauce" Osman, 01/??/03
+-  Modified by Ken Strickland, 02/25/03
+-  Carnegie Mellon University, Entertainment Technology Center
+-
+-  This file implements the classes that are used in the Panda 3D file
+-  exporter for 3D Studio Max.
+-*/
++// Filename: MaxEgg.cpp
++// Created by: Steven "Sauce" Osman (Jan03)
++// Modified by: Ken Strickland (25Feb03)
++//
++// This file implements the classes that are used in the Panda 3D file
++// exporter for 3D Studio Max.
++
+ 
+ #include "maxEgg.h"
+ 
+diff --git a/pandatool/src/maxegg/maxEgg.h b/pandatool/src/maxegg/maxEgg.h
+index 4024f9f..d0d0463 100644
+--- a/pandatool/src/maxegg/maxEgg.h
++++ b/pandatool/src/maxegg/maxEgg.h
+@@ -1,6 +1,6 @@
+ /*
+-  MaxEgg.h 
+-  Created by Steven "Sauce" Osman, 01/??/03
++  MaxEgg.h
++  Created by Steven "Sauce" Osman, Jan03
+   Modified and maintained by Ken Strickland, (02/01/03)-(05/15/03)
+   Modified and maintained by Corey Revilla, (05/22/03)-present
+   Carnegie Mellon University, Entetainment Technology Center
+diff --git a/pandatool/src/maxegg/maxToEggConverter.cxx b/pandatool/src/maxegg/maxToEggConverter.cxx
+index bcc32ae..3914339 100644
+--- a/pandatool/src/maxegg/maxToEggConverter.cxx
++++ b/pandatool/src/maxegg/maxToEggConverter.cxx
+@@ -1,5 +1,5 @@
+ // Filename: maxToEggConverter.cxx
+-// Created by Corey Revilla and Ken Strickland (6/22/03)
++// Created by: Corey Revilla and Ken Strickland (22Jun03)
+ // from mayaToEggConverter.cxx created by drose (10Nov99)
+ //
+ // Updated by Fei Wang, Carnegie Mellon University Entertainment
+diff --git a/pandatool/src/maxegg/maxToEggConverter.h b/pandatool/src/maxegg/maxToEggConverter.h
+index 6ecde0c..3f674d0 100644
+--- a/pandatool/src/maxegg/maxToEggConverter.h
++++ b/pandatool/src/maxegg/maxToEggConverter.h
+@@ -1,5 +1,5 @@
+ // Filename: maxToEggConverter.h
+-// Created by Corey Revilla and Ken Strickland (6/22/03)
++// Created by: Corey Revilla and Ken Strickland (22Jun03)
+ // from mayaToEggConverter.cxx created by drose (10Nov99)
+ //
+ ////////////////////////////////////////////////////////////////////

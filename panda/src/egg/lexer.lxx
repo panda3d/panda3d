@@ -1,9 +1,7 @@
-/*
 // Filename: lexer.lxx
 // Created by:  drose (16Jan99)
 //
 ////////////////////////////////////////////////////////////////////
-*/
 
 %{
 #include "pandabase.h"

@@ -1,22 +1,18 @@
-// Filename: maxEggLoader.cxx
-// Created by:  jyelon (15Jul05)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-//
-// This file contains the code for class MaxEggLoader.  This class
-// does the actual work of copying an EggData tree into the max scene.
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxEggLoader.cxx
+ * @author jyelon
+ * @date 2005-07-15
+ * 
+ * This file contains the code for class MaxEggLoader.  This class
+ * does the actual work of copying an EggData tree into the max scene.
+ */
 
 #include "pandatoolbase.h"
 #include "notifyCategoryProxy.h"

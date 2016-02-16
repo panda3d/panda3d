@@ -1,8 +1,4 @@
-/* Filename: p3d_plugin.h
- * Created by:  drose (28May09)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file p3d_plugin.h
+ * @author drose
+ * @date 2009-05-28
+ */
 
 #ifndef P3D_PLUGIN_H
 #define P3D_PLUGIN_H

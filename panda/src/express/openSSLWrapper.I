@@ -1,17 +1,15 @@
-// Filename: openSSLWrapper.I
-// Created by:  drose (05Sep09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file openSSLWrapper.I
+ * @author drose
+ * @date 2009-09-05
+ */
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenSSLWrapper::load_certificates_from_pem_ram

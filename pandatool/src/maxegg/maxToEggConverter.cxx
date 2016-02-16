@@ -1,28 +1,28 @@
-// Filename: maxToEggConverter.cxx
-// Created by Corey Revilla and Ken Strickland (6/22/03)
-// from mayaToEggConverter.cxx created by drose (10Nov99)
-//
-// Updated by Fei Wang, Carnegie Mellon University Entertainment
-// Technology Center student, 29Jul2009:  Fixed vertex color, 
-// animation hierarchy, texture swapping bugs; added collision choices to 
-// exporter.
-//
-// Updated by Andrew Gartner, Carnegie Mellon University Entertainment
-// Technology Center. 27Apr2010: Collision is now done through User Defined Properties
-// By default a plane without a standard material gets UV's as well 
-// as any object without a texture but with a standard material.
-// Point objects are now supported as "locators" for a point in space
-// within the egg.
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxToEggConverter.cxx
+ * @author Corey Revilla and Ken Strickland
+ * @date 2003-06-22
+ * from mayaToEggConverter.cxx created by drose (10Nov99)
+ * 
+ * Updated by Fei Wang, Carnegie Mellon University Entertainment
+ * Technology Center student, 29Jul2009:  Fixed vertex color,
+ * animation hierarchy, texture swapping bugs; added collision choices to
+ * exporter.
+ * 
+ * Updated by Andrew Gartner, Carnegie Mellon University Entertainment
+ * Technology Center. 27Apr2010: Collision is now done through User Defined Properties
+ * By default a plane without a standard material gets UV's as well
+ * as any object without a texture but with a standard material.
+ * Point objects are now supported as "locators" for a point in space
+ * within the egg.
+ */
 
 #include "maxEgg.h"
 #include "config_util.h"

@@ -1,24 +1,21 @@
-// Filename: microphoneAudioDS.cxx
-// Created by: jyelon (01Nov2007)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-//
-// It goes against Panda3D coding style conventions to hide an
-// entire class in a C++ file and not expose it through header
-// files at all.  However, in this case, these classes are so full
-// of OS-specific junk that I feel it is better to hide them
-// entirely.  - Josh
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file microphoneAudioDS.cxx
+ * @author jyelon
+ * @date 2007-11-01
+ * 
+ * It goes against Panda3D coding style conventions to hide an
+ * entire class in a C++ file and not expose it through header
+ * files at all.  However, in this case, these classes are so full
+ * of OS-specific junk that I feel it is better to hide them
+ * entirely.  - Josh
+ */
 
 #ifdef HAVE_DIRECTCAM
 

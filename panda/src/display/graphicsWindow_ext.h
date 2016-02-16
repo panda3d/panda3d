@@ -1,16 +1,15 @@
-// Filename: graphicsWindow_ext.h
-// Created by:  CFSworks (11Oct14)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsWindow_ext.h
+ * @author CFSworks
+ * @date 2014-10-11
+ */
 
 #ifndef GRAPHICSWINDOW_EXT_H
 #define GRAPHICSWINDOW_EXT_H

@@ -1,17 +1,15 @@
-// Filename: pnmFileTypeTGA.cxx
-// Created by:  drose (27Apr01)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pnmFileTypeTGA.cxx
+ * @author drose
+ * @date 2001-04-27
+ */
 
 // Much code in this file is borrowed from Netpbm, specifically tgatoppm.c
 // and ppmtotga.c.

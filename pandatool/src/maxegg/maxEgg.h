@@ -1,6 +1,6 @@
 /*
-  MaxEgg.h 
-  Created by Steven "Sauce" Osman, 01/??/03
+  MaxEgg.h
+  Created by Steven "Sauce" Osman, Jan03
   Modified and maintained by Ken Strickland, (02/01/03)-(05/15/03)
   Modified and maintained by Corey Revilla, (05/22/03)-present
   Carnegie Mellon University, Entetainment Technology Center

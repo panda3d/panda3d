@@ -1,8 +1,4 @@
-/* Filename: panda_getopt.h
- * Created by:  drose (19Jul11)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file panda_getopt.h
+ * @author drose
+ * @date 2011-07-19
+ */
 
 #ifndef PANDA_GETOPT_LONG_H
 #define PANDA_GETOPT_LONG_H

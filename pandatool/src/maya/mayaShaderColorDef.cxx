@@ -1,18 +1,17 @@
-// Filename: mayaShaderColorDef.cxx
-// Created by:  drose (12Apr03)
-// Modified 19Mar10 by ETC PandaSE team (see
-//   header comment for mayaToEgg.cxx for details)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaShaderColorDef.cxx
+ * @author drose
+ * @date 2003-04-12
+ * Modified 19Mar10 by ETC PandaSE team (see
+ *   header comment for mayaToEgg.cxx for details)
+ */
 
 #include "mayaShaderColorDef.h"
 #include "mayaShader.h"

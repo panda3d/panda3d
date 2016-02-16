@@ -1,16 +1,15 @@
-// Filename: sparkleParticleRenderer.h
-// Created by:  charles (27Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file sparkleParticleRenderer.h
+ * @author charles
+ * @date 2000-06-27
+ */
 
 #ifndef SPARKLEPARTICLERENDERER_H
 #define SPARKLEPARTICLERENDERER_H

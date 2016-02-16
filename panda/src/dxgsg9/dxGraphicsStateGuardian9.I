@@ -1,17 +1,15 @@
-// Filename: dxGraphicsStateGuardian9.I
-// Created by:  mike (02Feb99)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxGraphicsStateGuardian9.I
+ * @author mike
+ * @date 1999-02-02
+ */
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::LColor_to_D3DCOLOR

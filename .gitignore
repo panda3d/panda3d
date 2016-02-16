@@ -2,3 +2,6 @@
 /built
 /thirdparty
 /targetroot
+transform_comments.py
+transform_javadoc.py
+cleanup.diff

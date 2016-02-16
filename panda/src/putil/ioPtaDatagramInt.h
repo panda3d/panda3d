@@ -1,16 +1,15 @@
-// Filename: ioPtaDatagramInt.h
-// Created by:  jason (26Jun00)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ioPtaDatagramInt.h
+ * @author jason
+ * @date 2000-06-26
+ */
 
 #ifndef _IO_PTA_DATAGRAM_INT
 #define _IO_PTA_DATAGRAM_INT

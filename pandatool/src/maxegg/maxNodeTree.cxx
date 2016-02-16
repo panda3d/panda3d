@@ -1,17 +1,15 @@
-// Filename: maxNodeTree.cxx
-// Created by: crevilla
-// from mayaNodeTree.cxx created by:  drose (06Jun03)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxNodeTree.cxx
+ * @author crevilla
+ * from mayaNodeTree.cxx created by:  drose (06Jun03)
+ */
 
 #include "maxEgg.h"
 

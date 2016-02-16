@@ -1,16 +1,15 @@
-// Filename: nodeReferenceCount.h
-// Created by:  drose (01May06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file nodeReferenceCount.h
+ * @author drose
+ * @date 2006-05-01
+ */
 
 #ifndef NODEREFERENCECOUNT_H
 #define NODEREFERENCECOUNT_H

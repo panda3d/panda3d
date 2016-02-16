@@ -1,19 +1,18 @@
-// Filename: mayaToEggConverter.cxx
-// Created by:  drose (10Nov99)
-// Modified 19Mar10 by ETC PandaSE team
-//   Added set_vertex_color_modern to fix Phong shader bug; also see
-//   header comment for mayaToEgg.cxx for more details
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file mayaToEggConverter.cxx
+ * @author drose
+ * @date 1999-11-10
+ * Modified 19Mar10 by ETC PandaSE team
+ *   Added set_vertex_color_modern to fix Phong shader bug; also see
+ *   header comment for mayaToEgg.cxx for more details
+ */
 
 #include "mayaToEggConverter.h"
 #include "mayaShader.h"

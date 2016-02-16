@@ -1,16 +1,15 @@
-// Filename: graphicsOutputBase.h
-// Created by:  drose (27May09)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file graphicsOutputBase.h
+ * @author drose
+ * @date 2009-05-27
+ */
 
 #ifndef GRAPHICSOUTPUTBASE_H
 #define GRAPHICSOUTPUTBASE_H

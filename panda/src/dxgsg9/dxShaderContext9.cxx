@@ -1,16 +1,15 @@
-// Filename: dxShaderContext9.cxx
-// Created by: jyelon (01Sep05), conversion aignacio (Jan-Mar06)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file dxShaderContext9.cxx
+ * @author jyelon
+ * @date 2005-09-01
+ */
 
 #include "dxGraphicsStateGuardian9.h"
 #include "dxShaderContext9.h"

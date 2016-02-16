@@ -1,16 +1,15 @@
-// Filename: pythonGraphicsWindowProc.cxx
-// Created by:  Walt Destler (May 2010)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file pythonGraphicsWindowProc.cxx
+ * @author Walt Destler
+ * @date 2010-05
+ */
 
 #include "pythonGraphicsWindowProc.h"
 #include "graphicsWindowProcCallbackData.h"

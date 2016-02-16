@@ -1,18 +1,17 @@
-// Filename: texture.I
-// Created by:  drose (05Feb99)
-// Updated by: fperazzi, PandaSE(29Apr10) (added setup_2d_texture_array)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file texture.I
+ * @author drose
+ * @date 1999-02-05
+ * @author fperazzi, PandaSE
+ * @date 2010-04-29
+ */
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::make_copy
