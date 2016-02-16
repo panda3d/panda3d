@@ -1,15 +1,23 @@
-/*
-  MaxEgg.h
-  Created by Steven "Sauce" Osman, Jan03
-  Modified and maintained by Ken Strickland, (02/01/03)-(05/15/03)
-  Modified and maintained by Corey Revilla, (05/22/03)-present
-  Carnegie Mellon University, Entetainment Technology Center
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxEgg.h
+ * @author osman
+ * @date 2003-01-01
+ */
 
-  This file contains a 3dsMax exporter derived from discreet's own SceneExport 
+/*
+  This file contains a 3dsMax exporter derived from discreet's own SceneExport
   plug-in class; this exporter is basically a wrapper around the MaxToEgg
   Panda-converter class, and just sets up the interface and environment
   in which the MaxToEgg class can be "run" as if it were a standalone app.
 */
+
 #ifndef __MaxEgg__H
 #define __MaxEgg__H
 

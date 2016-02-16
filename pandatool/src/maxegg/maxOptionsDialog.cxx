@@ -1,14 +1,15 @@
-/*
-  maxEggExpOptions.cxx
-  Created by Phillip Saltzman, 2/15/05
-  Carnegie Mellon University, Entetainment Technology Center
-
-  This file implements the classes that are used to choose
-  what to export from 3D Studio max
-  
-  Updated by Fei Wang, Carnegie Mellon University Entertainment
-  Technology Center student, 14Aug2009:  added enableAddCollisionChoices
-*/
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file maxOptionsDialog.cxx
+ * @author saltzman
+ * @date 2005-02-15
+ */
 
 #include "maxEgg.h"
 

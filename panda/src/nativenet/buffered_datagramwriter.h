@@ -1,3 +1,15 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buffered_datagramwriter.h
+ */
+
+
 #ifndef __BufferedWriter_H__
 #define __BufferedWriter_H__
 
@@ -8,7 +20,6 @@
 //               Coremessages and arbitrary data..
 //
 //               GmCoreMessage
-//
 //
 //               You must commit all rights to a socket with flush and
 //               flush may be called internall if the buffersize is about
@@ -25,7 +36,7 @@ public:
     Buffered_DatagramWriter( size_t in_size , int in_flush_point = -1);
     inline int AddData(const void * data, size_t len, Socket_TCP &sck);
     inline int AddData(const void * data, size_t len);
-// THE FUNCTIONS THAT TAKE A SOCKET NEED TO BE TEMPLATED TO WORK..
+    // THE FUNCTIONS THAT TAKE A SOCKET NEED TO BE TEMPLATED TO WORK..
 
         template < class SOCK_TYPE>
         int  FlushNoBlock(SOCK_TYPE &sck) {  // this is the ugly part

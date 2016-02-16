@@ -1,19 +1,27 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file time_clock.h
+ */
+
+
 #ifndef __Time_H__
 #define __Time_H__
-////////////////////////////////////////////////////////////////////
-//       Class : Time_Clock
-// Description : This class is to provide a consistant interface and
-//               storage to clock time .. Epoch based time to the second
-//
-// jan-2000 .. rhh changing all time to use sub second timing...
-//
-////////////////////////////////////////////////////////////////////
-
 
 #include <stdio.h>
 
 class Time_Span;
 
+////////////////////////////////////////////////////////////////////
+//       Class : Time_Clock
+// Description : This class is to provide a consistant interface and
+//               storage to clock time .. Epoch based time to the second
+////////////////////////////////////////////////////////////////////
 class Time_Clock
 {
     friend class Time_Span;

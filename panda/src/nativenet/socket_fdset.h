@@ -1,16 +1,18 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file socket_fdset.h
+ */
+
+
 #ifndef __SOCKET_FDSET_H__
 #define __SOCKET_FDSET_H__
 
-////////////////////////////////////////////////////////////////////
-//
-//rhh
-// This class needs to be broken into 2 classes: the gathering class and the processing functions.
-// The functions should be set up as template functions
-//
-// Add a helper class socket_select. May want to totally separate the select and collect functionality
-// fits more with the normal Berkeley mind set... ** Not ** Should think about using POLL() on BSD-based systems
-//
-////////////////////////////////////////////////////////////////////
 #include "pandabase.h"
 #include "numeric_types.h"
 #include "time_base.h"

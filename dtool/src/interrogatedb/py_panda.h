@@ -488,8 +488,6 @@ EXPCL_INTERROGATEDB PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject
 ////////////////////////////////////////////////////////////////////
 EXPCL_INTERROGATEDB PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args);
 
-////////////////////////////////////////////////////////////////////
-
 EXPCL_INTERROGATEDB Py_hash_t DTOOL_PyObject_HashPointer(PyObject *obj);
 
 /* Compare v to w.  Return

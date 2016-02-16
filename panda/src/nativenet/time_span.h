@@ -1,3 +1,14 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file time_span.h
+ */
+
 #ifndef __TIME_SPAN_H__
 #define __TIME_SPAN_H__
 ////////////////////////////////////////////////////////////////////
@@ -23,8 +34,6 @@ public:
     Time_Span(const Time_Span& Time_SpanSrc);
     Time_Span(const Time_Clock& Time_SpanSrc);
     Time_Span(PN_stdfloat Seconds);
-
-////////////////////////////////////////////////////////////////////
 
     const Time_Span& operator=(const Time_Span& Time_SpanSrc);
 

@@ -1534,7 +1534,7 @@ HandleButtonDelta(UInt32 new_buttons) {
   _last_buttons = new_buttons;
 }
 
- ////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //     Function: TinyOsxGraphicsWindow::move_pointer
 //       Access: Published, Virtual
 //  Description: Forces the pointer to the indicated position within

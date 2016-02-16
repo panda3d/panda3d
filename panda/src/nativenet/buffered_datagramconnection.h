@@ -1,16 +1,18 @@
-#ifndef __NONECLOCKING_CONNECTTION_H_
-#define __NONECLOCKING_CONNECTTION_H_
-////////////////////////////////////////////////////////////////////
-//
-// Ok here is the base behavior..
-//     A message IO engin that is Smart enough to Do
-//
-//  1. Non Blocking Connect .. and Buffer the writes if needed
-//  2. Handle 1 to N targets for the connection..
-//
-//  3. Handle Framing and Unframing properly ..
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file buffered_datagramconnection.h
+ * @author drose
+ * @date 2007-03-05
+ */
+
+#ifndef __BUFFERED_DATAGRAM_CONNECTION__
+#define __BUFFERED_DATAGRAM_CONNECTION__
 
 #include "pandabase.h"
 #include "socket_base.h"
@@ -300,4 +302,4 @@ inline bool Buffered_DatagramConnection::IsConnected(void) {
   return (Active() == true);
 }
 
-#endif //__NONECLOCKING_CONNECTTION_H_
+#endif //__BUFFERED_DATAGRAM_CONNECTION__

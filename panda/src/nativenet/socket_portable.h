@@ -1,5 +1,17 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file socket_portable.h
+ */
+
 #ifndef __SOCKET_PORTABLE_H__
 #define __SOCKET_PORTABLE_H__
+
 ////////////////////////////////////////////////////////////////////
 // Lots of stuff to make network socket-based io transparent across multiple
 //  platforms
@@ -290,7 +302,6 @@ inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
 {
     return (int)send(a, buff, (size_t)len, 0);
 }
-////////////////////////////////////////////////////////////////////
 inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
 {
     return (int)sendto(a, buffer, (size_t)buf_len, 0, reinterpret_cast<const struct ::sockaddr *>(addr), sizeof(sockaddr));
