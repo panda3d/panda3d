@@ -22,10 +22,9 @@
 #include "queuedConnectionReader.h"
 #include "connectionWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaToEggServer
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class MayaToEggServer : public SomethingToEgg {
 public:
   MayaToEggServer();
@@ -58,7 +57,7 @@ protected:
   bool _legacy_shader;
 
   MayaToEggConverter::TransformType _transform_type;
-  vector_string _subroots; 
+  vector_string _subroots;
   vector_string _subsets;
   vector_string _excludes;
   vector_string _ignore_sliders;

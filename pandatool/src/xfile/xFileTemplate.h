@@ -20,11 +20,10 @@
 
 class XFileDataDef;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileTemplate
-// Description : A template definition in the X file.  This defines
-//               the data structures that may be subsequently read.
-////////////////////////////////////////////////////////////////////
+/**
+ * A template definition in the X file.  This defines the data structures that
+ * may be subsequently read.
+ */
 class XFileTemplate : public XFileNode {
 public:
   XFileTemplate(XFile *x_file, const string &name, const WindowsGuid &guid);
@@ -48,7 +47,7 @@ public:
   INLINE XFileTemplate *get_option(int n) const;
 
   virtual bool matches(const XFileNode *other) const;
-  
+
 private:
   WindowsGuid _guid;
   bool _is_standard;
@@ -56,7 +55,7 @@ private:
 
   typedef pvector< PT(XFileTemplate) > Options;
   Options _options;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -80,6 +79,3 @@ private:
 #include "xFileTemplate.I"
 
 #endif
-  
-
-

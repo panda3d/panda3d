@@ -21,11 +21,9 @@
 #include "wdxGraphicsPipe9.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXGraphicsDevice9
-// Description : A GraphicsDevice necessary for multi-window rendering
-//               in DX.
-////////////////////////////////////////////////////////////////////
+/**
+ * A GraphicsDevice necessary for multi-window rendering in DX.
+ */
 class EXPCL_PANDADX DXGraphicsDevice9 : public GraphicsDevice {
   friend class wdxGraphicsPipe9;
 

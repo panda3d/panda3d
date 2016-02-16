@@ -21,12 +21,10 @@
 
 class PhysxShape;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxRaycastHit
-// Description : This structure captures results for a single
-//               raycast query.  See PhysxScene for raycasting
-//               methods.
-////////////////////////////////////////////////////////////////////
+/**
+ * This structure captures results for a single raycast query.  See PhysxScene
+ * for raycasting methods.
+ */
 class EXPCL_PANDAPHYSX PhysxRaycastHit {
 
 PUBLISHED:

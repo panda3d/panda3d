@@ -23,11 +23,10 @@
 
 class IffInputFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IffChunk
-// Description : The basic kind of record in an EA "IFF" file, which
-//               the LightWave object file is based on.
-////////////////////////////////////////////////////////////////////
+/**
+ * The basic kind of record in an EA "IFF" file, which the LightWave object file
+ * is based on.
+ */
 class IffChunk : public TypedReferenceCount {
 public:
   INLINE IffChunk();
@@ -71,5 +70,3 @@ INLINE ostream &operator << (ostream &out, const IffChunk &chunk) {
 }
 
 #endif
-
-

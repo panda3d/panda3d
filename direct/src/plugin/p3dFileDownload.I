@@ -11,11 +11,9 @@
  * @date 2009-06-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileDownload::get_filename
-//       Access: Public
-//  Description: Returns the filename that we are downloading into.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the filename that we are downloading into.
+ */
 const string &P3DFileDownload::
 get_filename() const {
   return _filename;

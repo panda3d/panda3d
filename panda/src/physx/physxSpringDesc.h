@@ -18,12 +18,10 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSpringDesc
-// Description : Describes a joint spring. The spring is implicitly
-//               integrated, so even high spring and damper
-//               coefficients should be robust.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a joint spring.  The spring is implicitly integrated, so even high
+ * spring and damper coefficients should be robust.
+ */
 class EXPCL_PANDAPHYSX PhysxSpringDesc {
 
 PUBLISHED:

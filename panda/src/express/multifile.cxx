@@ -96,11 +96,9 @@ const size_t Multifile::_encrypt_header_size = 6;
 // of literal data.
 //
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Multifile::
 Multifile() :
   _read_filew(_read_file),
@@ -140,21 +138,17 @@ Multifile() :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Multifile::
 ~Multifile() {
   close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Copy Constructor
-//       Access: Private
-//  Description: Don't try to copy Multifiles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Don't try to copy Multifiles.
+ */
 Multifile::
 Multifile(const Multifile &copy) :
   _read_filew(_read_file),
@@ -163,28 +157,21 @@ Multifile(const Multifile &copy) :
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Copy Assignment Operator
-//       Access: Private
-//  Description: Don't try to copy Multifiles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Don't try to copy Multifiles.
+ */
 void Multifile::
 operator = (const Multifile &copy) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read
-//       Access: Published
-//  Description: Opens the named Multifile on disk for reading.  The
-//               Multifile index is read in, and the list of subfiles
-//               becomes available; individual subfiles may then be
-//               extracted or read, but the list of subfiles may not
-//               be modified.
-//
-//               Also see the version of open_read() which accepts an
-//               istream.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the named Multifile on disk for reading.  The Multifile index is read
+ * in, and the list of subfiles becomes available; individual subfiles may then
+ * be extracted or read, but the list of subfiles may not be modified.  Also see
+ * the version of open_read() which accepts an istream.  Returns true on
+ * success, false on failure.
+ */
 bool Multifile::
 open_read(const Filename &multifile_name, const streampos &offset) {
   close();
@@ -210,18 +197,13 @@ open_read(const Filename &multifile_name, const streampos &offset) {
   return read_index();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read
-//       Access: Public
-//  Description: Opens an anonymous Multifile for reading using an
-//               istream.  There must be seek functionality via
-//               seekg() and tellg() on the istream.
-//
-//               If owns_pointer is true, then the Multifile assumes
-//               ownership of the stream pointer and will delete it
-//               when the multifile is closed, including if this
-//               function returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens an anonymous Multifile for reading using an istream.  There must be
+ * seek functionality via seekg() and tellg() on the istream.  If owns_pointer
+ * is true, then the Multifile assumes ownership of the stream pointer and will
+ * delete it when the multifile is closed, including if this function returns
+ * false.
+ */
 bool Multifile::
 open_read(IStreamWrapper *multifile_stream, bool owns_pointer,
           const streampos &offset) {
@@ -234,19 +216,14 @@ open_read(IStreamWrapper *multifile_stream, bool owns_pointer,
   return read_index();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_write
-//       Access: Published
-//  Description: Opens the named Multifile on disk for writing.  If
-//               there already exists a file by that name, it is
-//               truncated.  The Multifile is then prepared for
-//               accepting a brand new set of subfiles, which will be
-//               written to the indicated filename.  Individual
-//               subfiles may not be extracted or read.
-//
-//               Also see the version of open_write() which accepts an
-//               ostream.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the named Multifile on disk for writing.  If there already exists a
+ * file by that name, it is truncated.  The Multifile is then prepared for
+ * accepting a brand new set of subfiles, which will be written to the indicated
+ * filename.  Individual subfiles may not be extracted or read.  Also see the
+ * version of open_write() which accepts an ostream.  Returns true on success,
+ * false on failure.
+ */
 bool Multifile::
 open_write(const Filename &multifile_name) {
   close();
@@ -262,18 +239,13 @@ open_write(const Filename &multifile_name) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_write
-//       Access: Public
-//  Description: Opens an anonymous Multifile for writing using an
-//               ostream.  There must be seek functionality via
-//               seekp() and tellp() on the pstream.
-//
-//               If owns_pointer is true, then the Multifile assumes
-//               ownership of the stream pointer and will delete it
-//               when the multifile is closed, including if this
-//               function returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens an anonymous Multifile for writing using an ostream.  There must be
+ * seek functionality via seekp() and tellp() on the pstream.  If owns_pointer
+ * is true, then the Multifile assumes ownership of the stream pointer and will
+ * delete it when the multifile is closed, including if this function returns
+ * false.
+ */
 bool Multifile::
 open_write(ostream *multifile_stream, bool owns_pointer) {
   close();
@@ -285,19 +257,13 @@ open_write(ostream *multifile_stream, bool owns_pointer) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read_write
-//       Access: Published
-//  Description: Opens the named Multifile on disk for reading and
-//               writing.  If there already exists a file by that
-//               name, its index is read.  Subfiles may be added or
-//               removed, and the resulting changes will be written to
-//               the named file.
-//
-//               Also see the version of open_read_write() which
-//               accepts an iostream.  Returns true on success, false
-//               on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the named Multifile on disk for reading and writing.  If there already
+ * exists a file by that name, its index is read.  Subfiles may be added or
+ * removed, and the resulting changes will be written to the named file.  Also
+ * see the version of open_read_write() which accepts an iostream.  Returns true
+ * on success, false on failure.
+ */
 bool Multifile::
 open_read_write(const Filename &multifile_name) {
   close();
@@ -324,19 +290,13 @@ open_read_write(const Filename &multifile_name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read_write
-//       Access: Public
-//  Description: Opens an anonymous Multifile for reading and writing
-//               using an iostream.  There must be seek functionality
-//               via seekg()/seekp() and tellg()/tellp() on the
-//               iostream.
-//
-//               If owns_pointer is true, then the Multifile assumes
-//               ownership of the stream pointer and will delete it
-//               when the multifile is closed, including if this
-//               function returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens an anonymous Multifile for reading and writing using an iostream.
+ * There must be seek functionality via seekg()/seekp() and tellg()/tellp() on
+ * the iostream.  If owns_pointer is true, then the Multifile assumes ownership
+ * of the stream pointer and will delete it when the multifile is closed,
+ * including if this function returns false.
+ */
 bool Multifile::
 open_read_write(iostream *multifile_stream, bool owns_pointer) {
   close();
@@ -364,13 +324,10 @@ open_read_write(iostream *multifile_stream, bool owns_pointer) {
   return read_index();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::close
-//       Access: Published
-//  Description: Closes the Multifile if it is open.  All changes are
-//               flushed to disk, and the file becomes invalid for
-//               further operations until the next call to open().
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the Multifile if it is open.  All changes are flushed to disk, and the
+ * file becomes invalid for further operations until the next call to open().
+ */
 void Multifile::
 close() {
   if (_new_scale_factor != _scale_factor) {
@@ -414,29 +371,18 @@ close() {
   clear_subfiles();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::set_scale_factor
-//       Access: Published
-//  Description: Changes the internal scale factor for this Multifile.
-//
-//               This is normally 1, but it may be set to any
-//               arbitrary value (greater than zero) to support
-//               Multifile archives that exceed 4GB, if necessary.
-//               (Individual subfiles may still not exceed 4GB.)
-//
-//               All addresses within the file are rounded up to the
-//               next multiple of _scale_factor, and zeros are written
-//               to the file to fill the resulting gaps.  Then the
-//               address is divided by _scale_factor and written out
-//               as a 32-bit integer.  Thus, setting a scale factor of
-//               2 supports up to 8GB files, 3 supports 12GB files,
-//               etc.
-//
-//               Calling this function on an already-existing
-//               Multifile will have no immediate effect until a
-//               future call to repack() or close() (or until the
-//               Multifile is destructed).
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the internal scale factor for this Multifile.  This is normally 1,
+ * but it may be set to any arbitrary value (greater than zero) to support
+ * Multifile archives that exceed 4GB, if necessary.  (Individual subfiles may
+ * still not exceed 4GB.)  All addresses within the file are rounded up to the
+ * next multiple of _scale_factor, and zeros are written to the file to fill the
+ * resulting gaps.  Then the address is divided by _scale_factor and written out
+ * as a 32-bit integer.  Thus, setting a scale factor of 2 supports up to 8GB
+ * files, 3 supports 12GB files, etc.  Calling this function on an already-
+ * existing Multifile will have no immediate effect until a future call to
+ * repack() or close() (or until the Multifile is destructed).
+ */
 void Multifile::
 set_scale_factor(size_t scale_factor) {
   nassertv(is_write_valid());
@@ -457,24 +403,16 @@ set_scale_factor(size_t scale_factor) {
   _new_scale_factor = scale_factor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add_subfile
-//       Access: Published
-//  Description: Adds a file on disk as a subfile to the Multifile.
-//               The file named by filename will be read and added to
-//               the Multifile at the next call to flush().  If there
-//               already exists a subfile with the indicated name, it
-//               is replaced without examining its contents (but see
-//               also update_subfile).
-//
-//               Either Filename:::set_binary() or set_text() must
-//               have been called previously to specify the nature of
-//               the source file.  If set_text() was called, the text
-//               flag will be set on the subfile.
-//
-//               Returns the subfile name on success (it might have
-//               been modified slightly), or empty string on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a file on disk as a subfile to the Multifile.  The file named by
+ * filename will be read and added to the Multifile at the next call to flush().
+ * If there already exists a subfile with the indicated name, it is replaced
+ * without examining its contents (but see also update_subfile).  Either
+ * Filename:::set_binary() or set_text() must have been called previously to
+ * specify the nature of the source file.  If set_text() was called, the text
+ * flag will be set on the subfile.  Returns the subfile name on success (it
+ * might have been modified slightly), or empty string on failure.
+ */
 string Multifile::
 add_subfile(const string &subfile_name, const Filename &filename,
             int compression_level) {
@@ -508,27 +446,18 @@ add_subfile(const string &subfile_name, const Filename &filename,
   return name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add_subfile
-//       Access: Public
-//  Description: Adds a file from a stream as a subfile to the Multifile.
-//               The indicated istream will be read and its contents
-//               added to the Multifile at the next call to flush().
-//               The file will be added as a binary subfile.
-//
-//               Note that the istream must remain untouched and
-//               unused by any other code until flush() is called.  At
-//               that time, the Multifile will read the entire
-//               contents of the istream from the current file
-//               position to the end of the file.  Subsequently, the
-//               Multifile will *not* close or delete the istream.  It
-//               is the caller's responsibility to ensure that the
-//               istream pointer does not destruct during the lifetime
-//               of the Multifile.
-//
-//               Returns the subfile name on success (it might have
-//               been modified slightly), or empty string on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a file from a stream as a subfile to the Multifile.  The indicated
+ * istream will be read and its contents added to the Multifile at the next call
+ * to flush(). The file will be added as a binary subfile.  Note that the
+ * istream must remain untouched and unused by any other code until flush() is
+ * called.  At that time, the Multifile will read the entire contents of the
+ * istream from the current file position to the end of the file.  Subsequently,
+ * the Multifile will *not* close or delete the istream.  It is the caller's
+ * responsibility to ensure that the istream pointer does not destruct during
+ * the lifetime of the Multifile.  Returns the subfile name on success (it might
+ * have been modified slightly), or empty string on failure.
+ */
 string Multifile::
 add_subfile(const string &subfile_name, istream *subfile_data,
             int compression_level) {
@@ -545,20 +474,14 @@ add_subfile(const string &subfile_name, istream *subfile_data,
   return name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::update_subfile
-//       Access: Published
-//  Description: Adds a file on disk to the subfile.  If a subfile
-//               already exists with the same name, its contents are
-//               compared byte-for-byte to the disk file, and it is
-//               replaced only if it is different; otherwise, the
-//               multifile is left unchanged.
-//
-//               Either Filename:::set_binary() or set_text() must
-//               have been called previously to specify the nature of
-//               the source file.  If set_text() was called, the text
-//               flag will be set on the subfile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a file on disk to the subfile.  If a subfile already exists with the
+ * same name, its contents are compared byte-for-byte to the disk file, and it
+ * is replaced only if it is different; otherwise, the multifile is left
+ * unchanged.  Either Filename:::set_binary() or set_text() must have been
+ * called previously to specify the nature of the source file.  If set_text()
+ * was called, the text flag will be set on the subfile.
+ */
 string Multifile::
 update_subfile(const string &subfile_name, const Filename &filename,
                int compression_level) {
@@ -604,45 +527,36 @@ update_subfile(const string &subfile_name, const Filename &filename,
 }
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::CertRecord::Constructor
-//       Access: Public
-//  Description: Ownership of the X509 object is passed into the
-//               CertRecord; it will be freed when the CertRecord
-//               destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ownership of the X509 object is passed into the CertRecord; it will be freed
+ * when the CertRecord destructs.
+ */
 Multifile::CertRecord::
 CertRecord(X509 *cert) :
   _cert(cert)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::CertRecord::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Multifile::CertRecord::
 CertRecord(const Multifile::CertRecord &copy) :
   _cert(X509_dup(copy._cert))
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::CertRecord::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Multifile::CertRecord::
 ~CertRecord() {
   X509_free(_cert);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::CertRecord::Copy Assignment
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Multifile::CertRecord::
 operator = (const Multifile::CertRecord &other) {
   X509_free(_cert);
@@ -651,39 +565,25 @@ operator = (const Multifile::CertRecord &other) {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add_signature
-//       Access: Published
-//  Description: Adds a new signature to the Multifile.  This
-//               signature associates the indicated certificate with
-//               the current contents of the Multifile.  When the
-//               Multifile is read later, the signature will still be
-//               present only if the Multifile is unchanged; any
-//               subsequent changes to the Multifile will
-//               automatically invalidate and remove the signature.
-//
-//               The chain filename may be empty if the certificate
-//               does not require an authenticating certificate chain
-//               (e.g. because it is self-signed).
-//
-//               The specified private key must match the certificate,
-//               and the Multifile must be open in read-write mode.
-//               The private key is only used for generating the
-//               signature; it is not written to the Multifile and
-//               cannot be retrieved from the Multifile later.
-//               (However, the certificate *can* be retrieved from the
-//               Multifile later, to identify the entity that created
-//               the signature.)
-//
-//               This implicitly causes a repack() operation if one is
-//               needed.  Returns true on success, false on failure.
-//
-//               This flavor of add_signature() reads the certificate
-//               and private key from a PEM-formatted file, for
-//               instance as generated by the openssl command.  If the
-//               private key file is password-encrypted, the third
-//               parameter will be used as the password to decrypt it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new signature to the Multifile.  This signature associates the
+ * indicated certificate with the current contents of the Multifile.  When the
+ * Multifile is read later, the signature will still be present only if the
+ * Multifile is unchanged; any subsequent changes to the Multifile will
+ * automatically invalidate and remove the signature.  The chain filename may be
+ * empty if the certificate does not require an authenticating certificate chain
+ * (e.g.  because it is self-signed).  The specified private key must match the
+ * certificate, and the Multifile must be open in read-write mode.  The private
+ * key is only used for generating the signature; it is not written to the
+ * Multifile and cannot be retrieved from the Multifile later.  (However, the
+ * certificate *can* be retrieved from the Multifile later, to identify the
+ * entity that created the signature.)  This implicitly causes a repack()
+ * operation if one is needed.  Returns true on success, false on failure.  This
+ * flavor of add_signature() reads the certificate and private key from a PEM-
+ * formatted file, for instance as generated by the openssl command.  If the
+ * private key file is password-encrypted, the third parameter will be used as
+ * the password to decrypt it.
+ */
 bool Multifile::
 add_signature(const Filename &certificate, const Filename &chain,
               const Filename &pkey, const string &password) {
@@ -773,25 +673,18 @@ add_signature(const Filename &certificate, const Filename &chain,
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add_signature
-//       Access: Published
-//  Description: Adds a new signature to the Multifile.  This
-//               signature associates the indicated certificate with
-//               the current contents of the Multifile.  When the
-//               Multifile is read later, the signature will still be
-//               present only if the Multifile is unchanged; any
-//               subsequent changes to the Multifile will
-//               automatically invalidate and remove the signature.
-//
-//               This flavor of add_signature() reads the certificate,
-//               private key, and certificate chain from the same
-//               PEM-formatted file.  It takes the first private key
-//               found as the intended key, and then uses the first
-//               certificate found that matches that key as the
-//               signing certificate.  Any other certificates in the
-//               file are taken to be part of the chain.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new signature to the Multifile.  This signature associates the
+ * indicated certificate with the current contents of the Multifile.  When the
+ * Multifile is read later, the signature will still be present only if the
+ * Multifile is unchanged; any subsequent changes to the Multifile will
+ * automatically invalidate and remove the signature.  This flavor of
+ * add_signature() reads the certificate, private key, and certificate chain
+ * from the same PEM-formatted file.  It takes the first private key found as
+ * the intended key, and then uses the first certificate found that matches that
+ * key as the signing certificate.  Any other certificates in the file are taken
+ * to be part of the chain.
+ */
 bool Multifile::
 add_signature(const Filename &composite, const string &password) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -864,32 +757,21 @@ add_signature(const Filename &composite, const string &password) {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add_signature
-//       Access: Published
-//  Description: Adds a new signature to the Multifile.  This
-//               signature associates the indicated certificate with
-//               the current contents of the Multifile.  When the
-//               Multifile is read later, the signature will still be
-//               present only if the Multifile is unchanged; any
-//               subsequent changes to the Multifile will
-//               automatically invalidate and remove the signature.
-//
-//               If chain is non-NULL, it represents the certificate
-//               chain that validates the certificate.
-//
-//               The specified private key must match the certificate,
-//               and the Multifile must be open in read-write mode.
-//               The private key is only used for generating the
-//               signature; it is not written to the Multifile and
-//               cannot be retrieved from the Multifile later.
-//               (However, the certificate *can* be retrieved from the
-//               Multifile later, to identify the entity that created
-//               the signature.)
-//
-//               This implicitly causes a repack() operation if one is
-//               needed.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new signature to the Multifile.  This signature associates the
+ * indicated certificate with the current contents of the Multifile.  When the
+ * Multifile is read later, the signature will still be present only if the
+ * Multifile is unchanged; any subsequent changes to the Multifile will
+ * automatically invalidate and remove the signature.  If chain is non-NULL, it
+ * represents the certificate chain that validates the certificate.  The
+ * specified private key must match the certificate, and the Multifile must be
+ * open in read-write mode.  The private key is only used for generating the
+ * signature; it is not written to the Multifile and cannot be retrieved from
+ * the Multifile later.  (However, the certificate *can* be retrieved from the
+ * Multifile later, to identify the entity that created the signature.)  This
+ * implicitly causes a repack() operation if one is needed.  Returns true on
+ * success, false on failure.
+ */
 bool Multifile::
 add_signature(X509 *certificate, STACK_OF(X509) *chain, EVP_PKEY *pkey) {
   // Convert the certificate and chain into our own CertChain
@@ -908,33 +790,22 @@ add_signature(X509 *certificate, STACK_OF(X509) *chain, EVP_PKEY *pkey) {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add_signature
-//       Access: Published
-//  Description: Adds a new signature to the Multifile.  This
-//               signature associates the indicated certificate with
-//               the current contents of the Multifile.  When the
-//               Multifile is read later, the signature will still be
-//               present only if the Multifile is unchanged; any
-//               subsequent changes to the Multifile will
-//               automatically invalidate and remove the signature.
-//
-//               The signature certificate is the first certificate on
-//               the CertChain object.  Any remaining certificates are
-//               support certificates to authenticate the first one.
-//
-//               The specified private key must match the certificate,
-//               and the Multifile must be open in read-write mode.
-//               The private key is only used for generating the
-//               signature; it is not written to the Multifile and
-//               cannot be retrieved from the Multifile later.
-//               (However, the certificate *can* be retrieved from the
-//               Multifile later, to identify the entity that created
-//               the signature.)
-//
-//               This implicitly causes a repack() operation if one is
-//               needed.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new signature to the Multifile.  This signature associates the
+ * indicated certificate with the current contents of the Multifile.  When the
+ * Multifile is read later, the signature will still be present only if the
+ * Multifile is unchanged; any subsequent changes to the Multifile will
+ * automatically invalidate and remove the signature.  The signature certificate
+ * is the first certificate on the CertChain object.  Any remaining certificates
+ * are support certificates to authenticate the first one.  The specified
+ * private key must match the certificate, and the Multifile must be open in
+ * read-write mode.  The private key is only used for generating the signature;
+ * it is not written to the Multifile and cannot be retrieved from the Multifile
+ * later.  (However, the certificate *can* be retrieved from the Multifile
+ * later, to identify the entity that created the signature.)  This implicitly
+ * causes a repack() operation if one is needed.  Returns true on success, false
+ * on failure.
+ */
 bool Multifile::
 add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
   if (_needs_repack) {
@@ -1003,22 +874,15 @@ add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_num_signatures
-//       Access: Published
-//  Description: Returns the number of matching signatures found on
-//               the Multifile.  These signatures may be iterated via
-//               get_signature() and related methods.
-//
-//               A signature on this list is guaranteed to match the
-//               Multifile contents, proving that the Multifile has
-//               been unmodified since the signature was applied.
-//               However, this does not guarantee that the certificate
-//               itself is actually from who it says it is from; only
-//               that it matches the Multifile contents.  See
-//               validate_signature_certificate() to authenticate a
-//               particular certificate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of matching signatures found on the Multifile.  These
+ * signatures may be iterated via get_signature() and related methods.  A
+ * signature on this list is guaranteed to match the Multifile contents, proving
+ * that the Multifile has been unmodified since the signature was applied.
+ * However, this does not guarantee that the certificate itself is actually from
+ * who it says it is from; only that it matches the Multifile contents.  See
+ * validate_signature_certificate() to authenticate a particular certificate.
+ */
 int Multifile::
 get_num_signatures() const {
   ((Multifile *)this)->check_signatures();
@@ -1027,12 +891,10 @@ get_num_signatures() const {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_signature
-//       Access: Published
-//  Description: Returns the nth signature found on the Multifile.
-//               See the comments in get_num_signatures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth signature found on the Multifile.  See the comments in
+ * get_num_signatures().
+ */
 const Multifile::CertChain &Multifile::
 get_signature(int n) const {
   ((Multifile *)this)->check_signatures();
@@ -1043,17 +905,13 @@ get_signature(int n) const {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_signature_subject_name
-//       Access: Published
-//  Description: Returns the "subject name" for the nth signature found
-//               on the Multifile.  This is a string formatted
-//               according to RFC2253 that should more-or-less
-//               identify a particular certificate; when paired with
-//               the public key (see get_signature_public_key()), it
-//               can uniquely identify a certificate.  See the
-//               comments in get_num_signatures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "subject name" for the nth signature found on the Multifile.
+ * This is a string formatted according to RFC2253 that should more-or-less
+ * identify a particular certificate; when paired with the public key (see
+ * get_signature_public_key()), it can uniquely identify a certificate.  See the
+ * comments in get_num_signatures().
+ */
 string Multifile::
 get_signature_subject_name(int n) const {
   const CertChain &cert_chain = get_signature(n);
@@ -1079,17 +937,12 @@ get_signature_subject_name(int n) const {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_signature_friendly_name
-//       Access: Published
-//  Description: Returns a "friendly name" for the nth signature found
-//               on the Multifile.  This attempts to extract out the
-//               most meaningful part of the subject name.  It returns
-//               the emailAddress, if it is defined; otherwise, it
-//               returns the commonName.
-//
-//               See the comments in get_num_signatures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a "friendly name" for the nth signature found on the Multifile.  This
+ * attempts to extract out the most meaningful part of the subject name.  It
+ * returns the emailAddress, if it is defined; otherwise, it returns the
+ * commonName.  See the comments in get_num_signatures().
+ */
 string Multifile::
 get_signature_friendly_name(int n) const {
   const CertChain &cert_chain = get_signature(n);
@@ -1139,18 +992,13 @@ get_signature_friendly_name(int n) const {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_signature_public_key
-//       Access: Published
-//  Description: Returns the public key used for the nth signature
-//               found on the Multifile.  This is encoded in DER form
-//               and returned as a string of hex digits.
-//
-//               This can be used, in conjunction with the subject
-//               name (see get_signature_subject_name()), to uniquely
-//               identify a particular certificate and its subsequent
-//               reissues.  See the comments in get_num_signatures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the public key used for the nth signature found on the Multifile.
+ * This is encoded in DER form and returned as a string of hex digits.  This can
+ * be used, in conjunction with the subject name (see
+ * get_signature_subject_name()), to uniquely identify a particular certificate
+ * and its subsequent reissues.  See the comments in get_num_signatures().
+ */
 string Multifile::
 get_signature_public_key(int n) const {
   const CertChain &cert_chain = get_signature(n);
@@ -1176,13 +1024,10 @@ get_signature_public_key(int n) const {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::print_signature_certificate
-//       Access: Published
-//  Description: Writes the certificate for the nth signature, in
-//               user-readable verbose form, to the indicated stream.
-//               See the comments in get_num_signatures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the certificate for the nth signature, in user-readable verbose form,
+ * to the indicated stream.  See the comments in get_num_signatures().
+ */
 void Multifile::
 print_signature_certificate(int n, ostream &out) const {
   const CertChain &cert_chain = get_signature(n);
@@ -1199,13 +1044,10 @@ print_signature_certificate(int n, ostream &out) const {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::write_signature_certificate
-//       Access: Published
-//  Description: Writes the certificate for the nth signature, in
-//               PEM form, to the indicated stream.  See the comments
-//               in get_num_signatures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the certificate for the nth signature, in PEM form, to the indicated
+ * stream.  See the comments in get_num_signatures().
+ */
 void Multifile::
 write_signature_certificate(int n, ostream &out) const {
   const CertChain &cert_chain = get_signature(n);
@@ -1228,16 +1070,12 @@ write_signature_certificate(int n, ostream &out) const {
 #endif  // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::validate_signature_certificate
-//       Access: Published
-//  Description: Checks that the certificate used for the nth
-//               signature is a valid, authorized certificate with
-//               some known certificate authority.  Returns 0 if it
-//               is valid, -1 if there is some error, or the
-//               corresponding OpenSSL error code if it is invalid,
-//               out-of-date, or self-signed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks that the certificate used for the nth signature is a valid, authorized
+ * certificate with some known certificate authority.  Returns 0 if it is valid,
+ * -1 if there is some error, or the corresponding OpenSSL error code if it is
+ * invalid, out-of-date, or self-signed.
+ */
 int Multifile::
 validate_signature_certificate(int n) const {
   int verify_result = -1;
@@ -1283,27 +1121,17 @@ validate_signature_certificate(int n) const {
 }
 #endif // HAVE_OPENSSL
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::flush
-//       Access: Published
-//  Description: Writes all contents of the Multifile to disk.  Until
-//               flush() is called, add_subfile() and remove_subfile()
-//               do not actually do anything to disk.  At this point,
-//               all of the recently-added subfiles are read and their
-//               contents are added to the end of the Multifile, and
-//               the recently-removed subfiles are marked gone from
-//               the Multifile.
-//
-//               This may result in a suboptimal index.  To guarantee
-//               that the index is written at the beginning of the
-//               file, call repack() instead of flush().
-//
-//               It is not necessary to call flush() explicitly unless
-//               you are concerned about reading the recently-added
-//               subfiles immediately.
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes all contents of the Multifile to disk.  Until flush() is called,
+ * add_subfile() and remove_subfile() do not actually do anything to disk.  At
+ * this point, all of the recently-added subfiles are read and their contents
+ * are added to the end of the Multifile, and the recently-removed subfiles are
+ * marked gone from the Multifile.  This may result in a suboptimal index.  To
+ * guarantee that the index is written at the beginning of the file, call
+ * repack() instead of flush().  It is not necessary to call flush() explicitly
+ * unless you are concerned about reading the recently-added subfiles
+ * immediately.  Returns true on success, false on failure.
+ */
 bool Multifile::
 flush() {
   if (!is_write_valid()) {
@@ -1447,24 +1275,16 @@ flush() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::repack
-//       Access: Published
-//  Description: Forces a complete rewrite of the Multifile and all of
-//               its contents, so that its index will appear at the
-//               beginning of the file with all of the subfiles listed
-//               in alphabetical order.  This is considered optimal
-//               for reading, and is the standard configuration; but
-//               it is not essential to do this.
-//
-//               It is only valid to call this if the Multifile was
-//               opened using open_read_write() and an explicit
-//               filename, rather than an iostream.  Also, we must
-//               have write permission to the directory containing the
-//               Multifile.
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces a complete rewrite of the Multifile and all of its contents, so that
+ * its index will appear at the beginning of the file with all of the subfiles
+ * listed in alphabetical order.  This is considered optimal for reading, and is
+ * the standard configuration; but it is not essential to do this.  It is only
+ * valid to call this if the Multifile was opened using open_read_write() and an
+ * explicit filename, rather than an iostream.  Also, we must have write
+ * permission to the directory containing the Multifile.  Returns true on
+ * success, false on failure.
+ */
 bool Multifile::
 repack() {
   if (_next_index == (streampos)0) {
@@ -1537,25 +1357,20 @@ repack() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_num_subfiles
-//       Access: Published
-//  Description: Returns the number of subfiles within the Multifile.
-//               The subfiles may be accessed in alphabetical order by
-//               iterating through [0 .. get_num_subfiles()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of subfiles within the Multifile.  The subfiles may be
+ * accessed in alphabetical order by iterating through [0 ..
+ * get_num_subfiles()).
+ */
 int Multifile::
 get_num_subfiles() const {
   return _subfiles.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::find_subfile
-//       Access: Published
-//  Description: Returns the index of the subfile with the indicated
-//               name, or -1 if the named subfile is not within the
-//               Multifile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the subfile with the indicated name, or -1 if the named
+ * subfile is not within the Multifile.
+ */
 int Multifile::
 find_subfile(const string &subfile_name) const {
   Subfile find_subfile;
@@ -1569,14 +1384,11 @@ find_subfile(const string &subfile_name) const {
   return (fi - _subfiles.begin());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::has_directory
-//       Access: Published
-//  Description: Returns true if the indicated subfile name is the
-//               directory prefix to one or more files within the
-//               Multifile.  That is, the Multifile contains at least
-//               one file named "subfile_name/...".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated subfile name is the directory prefix to one or
+ * more files within the Multifile.  That is, the Multifile contains at least
+ * one file named "subfile_name/...".
+ */
 bool Multifile::
 has_directory(const string &subfile_name) const {
   string prefix = subfile_name;
@@ -1599,21 +1411,14 @@ has_directory(const string &subfile_name) const {
           subfile->_name.substr(0, prefix.length()) == prefix);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::scan_directory
-//       Access: Published
-//  Description: Considers subfile_name to be the name of a
-//               subdirectory within the Multifile, but not a file
-//               itself; fills the given vector up with the sorted list
-//               of subdirectories or files within the named
-//               directory.
-//
-//               Note that directories do not exist explicitly within
-//               a Multifile; this just checks for the existence of
-//               files with the given initial prefix.
-//
-//               Returns true if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Considers subfile_name to be the name of a subdirectory within the Multifile,
+ * but not a file itself; fills the given vector up with the sorted list of
+ * subdirectories or files within the named directory.  Note that directories do
+ * not exist explicitly within a Multifile; this just checks for the existence
+ * of files with the given initial prefix.  Returns true if successful, false
+ * otherwise.
+ */
 bool Multifile::
 scan_directory(vector_string &contents, const string &subfile_name) const {
   string prefix = subfile_name;
@@ -1647,20 +1452,14 @@ scan_directory(vector_string &contents, const string &subfile_name) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::remove_subfile
-//       Access: Published
-//  Description: Removes the nth subfile from the Multifile.  This
-//               will cause all subsequent index numbers to decrease
-//               by one.  The file will not actually be removed from
-//               the disk until the next call to flush().
-//
-//               Note that this does not actually remove the data from
-//               the indicated subfile; it simply removes it from the
-//               index.  The Multifile will not be reduced in size
-//               after this operation, until the next call to
-//               repack().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the nth subfile from the Multifile.  This will cause all subsequent
+ * index numbers to decrease by one.  The file will not actually be removed from
+ * the disk until the next call to flush().  Note that this does not actually
+ * remove the data from the indicated subfile; it simply removes it from the
+ * index.  The Multifile will not be reduced in size after this operation, until
+ * the next call to repack().
+ */
 void Multifile::
 remove_subfile(int index) {
   nassertv(is_write_valid());
@@ -1676,11 +1475,9 @@ remove_subfile(int index) {
   _needs_repack = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_subfile_name
-//       Access: Published
-//  Description: Returns the name of the nth subfile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the nth subfile.
+ */
 const string &Multifile::
 get_subfile_name(int index) const {
 #ifndef NDEBUG
@@ -1690,30 +1487,22 @@ get_subfile_name(int index) const {
   return _subfiles[index]->_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_subfile_length
-//       Access: Published
-//  Description: Returns the uncompressed data length of the nth
-//               subfile.  This might return 0 if the subfile has
-//               recently been added and flush() has not yet been
-//               called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the uncompressed data length of the nth subfile.  This might return 0
+ * if the subfile has recently been added and flush() has not yet been called.
+ */
 size_t Multifile::
 get_subfile_length(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
   return _subfiles[index]->_uncompressed_length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_subfile_timestamp
-//       Access: Published
-//  Description: Returns the modification time of the nth
-//               subfile.  If this is called on an older .mf file,
-//               which did not store individual timestamps in the file
-//               (or if get_record_timestamp() is false), this will
-//               return the modification time of the overall
-//               multifile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the modification time of the nth subfile.  If this is called on an
+ * older .mf file, which did not store individual timestamps in the file (or if
+ * get_record_timestamp() is false), this will return the modification time of
+ * the overall multifile.
+ */
 time_t Multifile::
 get_subfile_timestamp(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
@@ -1724,124 +1513,89 @@ get_subfile_timestamp(int index) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::is_subfile_compressed
-//       Access: Published
-//  Description: Returns true if the indicated subfile has been
-//               compressed when stored within the archive, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated subfile has been compressed when stored within
+ * the archive, false otherwise.
+ */
 bool Multifile::
 is_subfile_compressed(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   return (_subfiles[index]->_flags & SF_compressed) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::is_subfile_encrypted
-//       Access: Published
-//  Description: Returns true if the indicated subfile has been
-//               encrypted when stored within the archive, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated subfile has been encrypted when stored within
+ * the archive, false otherwise.
+ */
 bool Multifile::
 is_subfile_encrypted(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   return (_subfiles[index]->_flags & SF_encrypted) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::is_subfile_text
-//       Access: Published
-//  Description: Returns true if the indicated subfile represents text
-//               data, or false if it represents binary data.  If the
-//               file is text data, it may have been processed by
-//               end-of-line conversion when it was added.  (But the
-//               actual bits in the multifile will represent the
-//               standard Unix end-of-line convention, e.g. \n instead
-//               of \r\n.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated subfile represents text data, or false if it
+ * represents binary data.  If the file is text data, it may have been processed
+ * by end-of-line conversion when it was added.  (But the actual bits in the
+ * multifile will represent the standard Unix end-of-line convention, e.g.  \n
+ * instead of \r\n.)
+ */
 bool Multifile::
 is_subfile_text(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   return (_subfiles[index]->_flags & SF_text) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_index_end
-//       Access: Published
-//  Description: Returns the first byte that is guaranteed to follow
-//               any index byte already written to disk in the
-//               Multifile.
-//
-//               This number is largely meaningless in many cases, but
-//               if needs_repack() is false, and the file is flushed,
-//               this will indicate the number of bytes in the header
-//               + index.  Everything at this byte position and later
-//               will be actual data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first byte that is guaranteed to follow any index byte already
+ * written to disk in the Multifile.  This number is largely meaningless in many
+ * cases, but if needs_repack() is false, and the file is flushed, this will
+ * indicate the number of bytes in the header + index.  Everything at this byte
+ * position and later will be actual data.
+ */
 streampos Multifile::
 get_index_end() const {
   return normalize_streampos(_next_index + (streampos)4);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_subfile_internal_start
-//       Access: Published
-//  Description: Returns the starting byte position within the
-//               Multifile at which the indicated subfile begins.
-//               This may be used, with get_subfile_internal_length(),
-//               for low-level access to the subfile, but usually it
-//               is better to use open_read_subfile() instead (which
-//               automatically decrypts and/or uncompresses the
-//               subfile data).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the starting byte position within the Multifile at which the
+ * indicated subfile begins.  This may be used, with
+ * get_subfile_internal_length(), for low-level access to the subfile, but
+ * usually it is better to use open_read_subfile() instead (which automatically
+ * decrypts and/or uncompresses the subfile data).
+ */
 streampos Multifile::
 get_subfile_internal_start(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
   return _subfiles[index]->_data_start;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_subfile_internal_length
-//       Access: Published
-//  Description: Returns the number of bytes the indicated subfile
-//               consumes within the archive.  For compressed
-//               subfiles, this will generally be smaller than
-//               get_subfile_length(); for encrypted (but
-//               noncompressed) subfiles, it may be slightly
-//               different, for noncompressed and nonencrypted
-//               subfiles, it will be equal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bytes the indicated subfile consumes within the
+ * archive.  For compressed subfiles, this will generally be smaller than
+ * get_subfile_length(); for encrypted (but noncompressed) subfiles, it may be
+ * slightly different, for noncompressed and nonencrypted subfiles, it will be
+ * equal.
+ */
 size_t Multifile::
 get_subfile_internal_length(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
   return _subfiles[index]->_data_length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read_subfile
-//       Access: Published
-//  Description: Returns an istream that may be used to read the
-//               indicated subfile.  You may seek() within this
-//               istream to your heart's content; even though it will
-//               be a reference to the already-opened pfstream of the
-//               Multifile itself, byte 0 appears to be the beginning
-//               of the subfile and EOF appears to be the end of the
-//               subfile.
-//
-//               The returned istream will have been allocated via
-//               new; you should pass the pointer to
-//               close_read_subfile() when you are finished with it to
-//               delete it and release its resources.
-//
-//               Any future calls to repack() or close() (or the
-//               Multifile destructor) will invalidate all currently
-//               open subfile pointers.
-//
-//               The return value will be NULL if the stream cannot be
-//               opened for some reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an istream that may be used to read the indicated subfile.  You may
+ * seek() within this istream to your heart's content; even though it will be a
+ * reference to the already-opened pfstream of the Multifile itself, byte 0
+ * appears to be the beginning of the subfile and EOF appears to be the end of
+ * the subfile.  The returned istream will have been allocated via new; you
+ * should pass the pointer to close_read_subfile() when you are finished with it
+ * to delete it and release its resources.  Any future calls to repack() or
+ * close() (or the Multifile destructor) will invalidate all currently open
+ * subfile pointers.  The return value will be NULL if the stream cannot be
+ * opened for some reason.
+ */
 istream *Multifile::
 open_read_subfile(int index) {
   nassertr(is_read_valid(), NULL);
@@ -1862,15 +1616,11 @@ open_read_subfile(int index) {
   return open_read_subfile(subfile);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::close_read_subfile
-//       Access: Published, Static
-//  Description: Closes a file opened by a previous call to
-//               open_read_subfile().  This really just deletes the
-//               istream pointer, but it is recommended to use this
-//               interface instead of deleting it explicitly, to help
-//               work around compiler issues.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes a file opened by a previous call to open_read_subfile().  This really
+ * just deletes the istream pointer, but it is recommended to use this interface
+ * instead of deleting it explicitly, to help work around compiler issues.
+ */
 void Multifile::
 close_read_subfile(istream *stream) {
   if (stream != (istream *)NULL) {
@@ -1887,12 +1637,9 @@ close_read_subfile(istream *stream) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::extract_subfile
-//       Access: Published
-//  Description: Extracts the nth subfile into a file with the given
-//               name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the nth subfile into a file with the given name.
+ */
 bool Multifile::
 extract_subfile(int index, const Filename &filename) {
   nassertr(is_read_valid(), false);
@@ -1923,11 +1670,9 @@ extract_subfile(int index, const Filename &filename) {
   return extract_subfile_to(index, out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::extract_subfile_to
-//       Access: Public
-//  Description: Extracts the nth subfile to the indicated ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the nth subfile to the indicated ostream.
+ */
 bool Multifile::
 extract_subfile_to(int index, ostream &out) {
   nassertr(is_read_valid(), false);
@@ -1956,21 +1701,15 @@ extract_subfile_to(int index, ostream &out) {
   return (!out.fail());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::compare_subfile
-//       Access: Published
-//  Description: Performs a byte-for-byte comparison of the indicated
-//               file on disk with the nth subfile.  Returns true if
-//               the files are equivalent, or false if they are
-//               different (or the file is missing).
-//
-//               If Filename::set_binary() or set_text() has already
-//               been called, it specifies the nature of the source
-//               file.  If this is different from the text flag of the
-//               subfile, the comparison will always return false.
-//               If this has not been specified, it will be set from
-//               the text flag of the subfile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a byte-for-byte comparison of the indicated file on disk with the
+ * nth subfile.  Returns true if the files are equivalent, or false if they are
+ * different (or the file is missing).  If Filename::set_binary() or set_text()
+ * has already been called, it specifies the nature of the source file.  If this
+ * is different from the text flag of the subfile, the comparison will always
+ * return false.  If this has not been specified, it will be set from the text
+ * flag of the subfile.
+ */
 bool Multifile::
 compare_subfile(int index, const Filename &filename) {
   nassertr(is_read_valid(), false);
@@ -2062,22 +1801,18 @@ compare_subfile(int index, const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Multifile::
 output(ostream &out) const {
   out << "Multifile " << _multifile_name << ", " << get_num_subfiles()
       << " subfiles.\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::ls
-//       Access: Published
-//  Description: Shows a list of all subfiles within the Multifile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows a list of all subfiles within the Multifile.
+ */
 void Multifile::
 ls(ostream &out) const {
   int num_subfiles = get_num_subfiles();
@@ -2087,25 +1822,17 @@ ls(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::set_header_prefix
-//       Access: Published
-//  Description: Sets the string which is written to the Multifile
-//               before the Multifile header.  This string must begin
-//               with a hash mark and end with a newline character;
-//               and if it includes embedded newline characters, each
-//               one must be followed by a hash mark.  If these
-//               conditions are not initially true, the string will be
-//               modified as necessary to make it so.
-//
-//               This is primarily useful as a simple hack to allow
-//               p3d applications to be run directly from the command
-//               line on Unix-like systems.
-//
-//               The return value is true if successful, or false on
-//               failure (for instance, because the header prefix
-//               violates the above rules).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the string which is written to the Multifile before the Multifile
+ * header.  This string must begin with a hash mark and end with a newline
+ * character; and if it includes embedded newline characters, each one must be
+ * followed by a hash mark.  If these conditions are not initially true, the
+ * string will be modified as necessary to make it so.  This is primarily useful
+ * as a simple hack to allow p3d applications to be run directly from the
+ * command line on Unix-like systems.  The return value is true if successful,
+ * or false on failure (for instance, because the header prefix violates the
+ * above rules).
+ */
 void Multifile::
 set_header_prefix(const string &header_prefix) {
   string new_header_prefix = header_prefix;
@@ -2138,12 +1865,9 @@ set_header_prefix(const string &header_prefix) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::read_subfile
-//       Access: Public
-//  Description: Fills a string with the entire contents of
-//               the indicated subfile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills a string with the entire contents of the indicated subfile.
+ */
 bool Multifile::
 read_subfile(int index, string &result) {
   result = string();
@@ -2163,12 +1887,9 @@ read_subfile(int index, string &result) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::read_subfile
-//       Access: Public
-//  Description: Fills a pvector with the entire contents of
-//               the indicated subfile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills a pvector with the entire contents of the indicated subfile.
+ */
 bool Multifile::
 read_subfile(int index, pvector<unsigned char> &result) {
   nassertr(is_read_valid(), false);
@@ -2244,15 +1965,11 @@ read_subfile(int index, pvector<unsigned char> &result) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::pad_to_streampos
-//       Access: Private
-//  Description: Assumes the _write pointer is at the indicated fpos,
-//               rounds the fpos up to the next legitimate address
-//               (using normalize_streampos()), and writes enough
-//               zeroes to the stream to fill the gap.  Returns the
-//               new fpos.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assumes the _write pointer is at the indicated fpos, rounds the fpos up to
+ * the next legitimate address (using normalize_streampos()), and writes enough
+ * zeroes to the stream to fill the gap.  Returns the new fpos.
+ */
 streampos Multifile::
 pad_to_streampos(streampos fpos) {
   nassertr(_write != (ostream *)NULL, fpos);
@@ -2266,12 +1983,9 @@ pad_to_streampos(streampos fpos) {
   return fpos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add_new_subfile
-//       Access: Private
-//  Description: Adds a newly-allocated Subfile pointer to the
-//               Multifile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a newly-allocated Subfile pointer to the Multifile.
+ */
 void Multifile::
 add_new_subfile(Subfile *subfile, int compression_level) {
   if (compression_level != 0) {
@@ -2320,14 +2034,11 @@ add_new_subfile(Subfile *subfile, int compression_level) {
   _new_subfiles.push_back(subfile);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read_subfile
-//       Access: Private
-//  Description: This variant of open_read_subfile() is used
-//               internally only, and accepts a pointer to the
-//               internal Subfile object, which is assumed to be valid
-//               and written to the multifile.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant of open_read_subfile() is used internally only, and accepts a
+ * pointer to the internal Subfile object, which is assumed to be valid and
+ * written to the multifile.
+ */
 istream *Multifile::
 open_read_subfile(Subfile *subfile) {
   nassertr(subfile->_source == (istream *)NULL &&
@@ -2390,11 +2101,9 @@ open_read_subfile(Subfile *subfile) {
   return stream;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::standardize_subfile_name
-//       Access: Private
-//  Description: Returns the standard form of the subfile name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the standard form of the subfile name.
+ */
 string Multifile::
 standardize_subfile_name(const string &subfile_name) const {
   Filename name = subfile_name;
@@ -2413,12 +2122,10 @@ standardize_subfile_name(const string &subfile_name) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::clear_subfiles
-//       Access: Private
-//  Description: Removes the set of subfiles from the tables and frees
-//               their associated memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the set of subfiles from the tables and frees their associated
+ * memory.
+ */
 void Multifile::
 clear_subfiles() {
   PendingSubfiles::iterator pi;
@@ -2451,12 +2158,10 @@ clear_subfiles() {
   _subfiles.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::read_index
-//       Access: Private
-//  Description: Reads the Multifile header and index.  Returns true
-//               if successful, false if the Multifile is not valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the Multifile header and index.  Returns true if successful, false if
+ * the Multifile is not valid.
+ */
 bool Multifile::
 read_index() {
   nassertr(_read != (IStreamWrapper *)NULL, false);
@@ -2633,12 +2338,9 @@ read_index() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::write_header
-//       Access: Private
-//  Description: Writes just the header part of the Multifile, not the
-//               index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes just the header part of the Multifile, not the index.
+ */
 bool Multifile::
 write_header() {
   _file_major_ver = _current_major_ver;
@@ -2674,18 +2376,12 @@ write_header() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::check_signatures
-//       Access: Private
-//  Description: Walks through the list of _cert_special entries in
-//               the Multifile, moving any valid signatures found to
-//               _signatures.  After this call, _cert_special will be
-//               empty.
-//
-//               This does not check the validity of the certificates
-//               themselves.  It only checks that they correctly sign
-//               the Multifile contents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the list of _cert_special entries in the Multifile, moving any
+ * valid signatures found to _signatures.  After this call, _cert_special will
+ * be empty.  This does not check the validity of the certificates themselves.
+ * It only checks that they correctly sign the Multifile contents.
+ */
 void Multifile::
 check_signatures() {
 #ifdef HAVE_OPENSSL
@@ -2790,15 +2486,12 @@ check_signatures() {
   _cert_special.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Subfile::read_index
-//       Access: Public
-//  Description: Reads the index record for the Subfile from the
-//               indicated istream.  Assumes the istream has already
-//               been positioned to the indicated stream position,
-//               fpos, the start of the index record.  Returns the
-//               position within the file of the next index record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the index record for the Subfile from the indicated istream.  Assumes
+ * the istream has already been positioned to the indicated stream position,
+ * fpos, the start of the index record.  Returns the position within the file of
+ * the next index record.
+ */
 streampos Multifile::Subfile::
 read_index(istream &read, streampos fpos, Multifile *multifile) {
   nassertr(read.tellg() - multifile->_offset == fpos, fpos);
@@ -2863,18 +2556,13 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   return next_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Subfile::write_index
-//       Access: Public
-//  Description: Writes the index record for the Subfile to the
-//               indicated ostream.  Assumes the istream has already
-//               been positioned to the indicated stream position,
-//               fpos, the start of the index record, and that this is
-//               the effective end of the file.  Returns the position
-//               within the file of the next index record.
-//
-//               The _index_start member is updated by this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the index record for the Subfile to the indicated ostream.  Assumes
+ * the istream has already been positioned to the indicated stream position,
+ * fpos, the start of the index record, and that this is the effective end of
+ * the file.  Returns the position within the file of the next index record.
+ * The _index_start member is updated by this operation.
+ */
 streampos Multifile::Subfile::
 write_index(ostream &write, streampos fpos, Multifile *multifile) {
   nassertr(write.tellp() - multifile->_offset == fpos, fpos);
@@ -2919,26 +2607,17 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
   return next_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Subfile::write_data
-//       Access: Public
-//  Description: Writes the data record for the Subfile to the
-//               indicated ostream: the actual contents of the
-//               Subfile.  Assumes the istream has already been
-//               positioned to the indicated stream position, fpos,
-//               the start of the data record, and that this is the
-//               effective end of the file.  Returns the position
-//               within the file of the next data record.
-//
-//               The _data_start, _data_length, and
-//               _uncompressed_length members are updated by this
-//               operation.
-//
-//               If the "read" pointer is non-NULL, it is the readable
-//               istream of a Multifile in which the Subfile might
-//               already be packed.  This is used for reading the
-//               contents of the Subfile during a repack() operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the data record for the Subfile to the indicated ostream: the actual
+ * contents of the Subfile.  Assumes the istream has already been positioned to
+ * the indicated stream position, fpos, the start of the data record, and that
+ * this is the effective end of the file.  Returns the position within the file
+ * of the next data record.  The _data_start, _data_length, and
+ * _uncompressed_length members are updated by this operation.  If the "read"
+ * pointer is non-NULL, it is the readable istream of a Multifile in which the
+ * Subfile might already be packed.  This is used for reading the contents of
+ * the Subfile during a repack() operation.
+ */
 streampos Multifile::Subfile::
 write_data(ostream &write, istream *read, streampos fpos,
            Multifile *multifile) {
@@ -3136,13 +2815,10 @@ write_data(ostream &write, istream *read, streampos fpos,
   return fpos + (streampos)_data_length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Subfile::rewrite_index_data_start
-//       Access: Public
-//  Description: Seeks within the indicate pfstream back to the index
-//               record and rewrites just the _data_start and
-//               _data_length part of the index record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Seeks within the indicate pfstream back to the index record and rewrites just
+ * the _data_start and _data_length part of the index record.
+ */
 void Multifile::Subfile::
 rewrite_index_data_start(ostream &write, Multifile *multifile) {
   nassertv(_index_start != (streampos)0);
@@ -3166,13 +2842,10 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::Subfile::rewrite_index_flags
-//       Access: Public
-//  Description: Seeks within the indicated ostream back to the index
-//               record and rewrites just the _flags part of the
-//               index record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Seeks within the indicated ostream back to the index record and rewrites just
+ * the _flags part of the index record.
+ */
 void Multifile::Subfile::
 rewrite_index_flags(ostream &write) {
   // If the subfile has never even been recorded to disk, we don't

@@ -18,14 +18,12 @@
 
 class P3DPythonObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DObject
-// Description : The C++ implementation of P3D_value, corresponding
-//               to a single atomic value that is passed around
-//               between scripting languages.  This is an abstract
-//               base class; the actual implementations are provided
-//               by the various specialized classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * The C++ implementation of P3D_value, corresponding to a single atomic value
+ * that is passed around between scripting languages.  This is an abstract base
+ * class; the actual implementations are provided by the various specialized
+ * classes.
+ */
 class P3DObject : public P3D_object {
 protected:
   inline P3DObject();
@@ -91,4 +89,3 @@ inline ostream &operator << (ostream &out, P3DObject &value) {
 }
 
 #endif
-

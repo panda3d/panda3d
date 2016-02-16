@@ -20,11 +20,10 @@
 
 #import <AppKit/NSOpenGL.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : CocoaGraphicsStateGuardian
-// Description : A tiny specialization on GLGraphicsStateGuardian
-//               to add some Cocoa-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLGraphicsStateGuardian to add some Cocoa-specific
+ * information.
+ */
 class CocoaGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   INLINE const FrameBufferProperties &get_fb_properties() const;

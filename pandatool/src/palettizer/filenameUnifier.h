@@ -20,16 +20,13 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FilenameUnifier
-// Description : This static class does the job of converting
-//               filenames from relative to absolute to canonical or
-//               whatever is appropriate.  Its main purpose is to
-//               allow us to write relative pathnames to the bam file
-//               and turn them back into absolute pathnames on read,
-//               so that a given bam file does not get tied to
-//               absolute pathnames.
-////////////////////////////////////////////////////////////////////
+/**
+ * This static class does the job of converting filenames from relative to
+ * absolute to canonical or whatever is appropriate.  Its main purpose is to
+ * allow us to write relative pathnames to the bam file and turn them back into
+ * absolute pathnames on read, so that a given bam file does not get tied to
+ * absolute pathnames.
+ */
 class FilenameUnifier {
 public:
   static void set_txa_filename(const Filename &txa_filename);
@@ -52,4 +49,3 @@ private:
 };
 
 #endif
-

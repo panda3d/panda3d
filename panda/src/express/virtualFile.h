@@ -28,11 +28,9 @@ class VirtualFileList;
 class VirtualFileSystem;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFile
-// Description : The abstract base class for a file or directory
-//               within the VirtualFileSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for a file or directory within the VirtualFileSystem.
+ */
 class EXPCL_PANDAEXPRESS VirtualFile : public TypedReferenceCount {
 public:
   INLINE VirtualFile();
@@ -93,7 +91,7 @@ public:
   static bool simple_read_file(istream *stream, pvector<unsigned char> &result, size_t max_bytes);
 
 protected:
-  virtual bool scan_local_directory(VirtualFileList *file_list, 
+  virtual bool scan_local_directory(VirtualFileList *file_list,
                                     const ov_set<string> &mount_points) const;
 
 private:

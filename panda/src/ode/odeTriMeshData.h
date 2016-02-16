@@ -29,10 +29,9 @@
 
 #include "config_ode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeTriMeshData
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeTriMeshData : public TypedReferenceCount {
 public:
   static void link_data(dGeomID id, PT(OdeTriMeshData) data);

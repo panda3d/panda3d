@@ -21,13 +21,11 @@
 #include "coordinateSystem.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCoordinateSystem
-// Description : The <CoordinateSystem> entry at the top of an egg
-//               file.  Don't confuse this with the enum
-//               EggData::CoordinateSystem, which is the value
-//               contained by this entry.
-////////////////////////////////////////////////////////////////////
+/**
+ * The <CoordinateSystem> entry at the top of an egg file.  Don't confuse this
+ * with the enum EggData::CoordinateSystem, which is the value contained by this
+ * entry.
+ */
 class EXPCL_PANDAEGG EggCoordinateSystem : public EggNode {
 PUBLISHED:
   INLINE EggCoordinateSystem(CoordinateSystem value = CS_default);

@@ -18,18 +18,13 @@
 #include "p3dInstanceManager.h"  // for openssl
 #include "fileSpec.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DPatchfileReader
-// Description : A read-only implementation of Panda's patchfile
-//               format, for applying patches.
-//
-//               This object assumes that the sourcefile has been
-//               already validated against its md5 hash, and does not
-//               validate it again.  It *does* verify that the md5
-//               hash in source and target match those read in the
-//               patchfile header; and it verifies the md5 hash on the
-//               target after completion.
-////////////////////////////////////////////////////////////////////
+/**
+ * A read-only implementation of Panda's patchfile format, for applying patches.
+ * This object assumes that the sourcefile has been already validated against
+ * its md5 hash, and does not validate it again.  It *does* verify that the md5
+ * hash in source and target match those read in the patchfile header; and it
+ * verifies the md5 hash on the target after completion.
+ */
 class P3DPatchfileReader {
 public:
   P3DPatchfileReader(const string &package_dir,
@@ -42,7 +37,7 @@ public:
   inline bool is_open() const;
 
   bool step();
-  inline size_t get_bytes_written() const; 
+  inline size_t get_bytes_written() const;
   inline bool get_success() const;
 
   void close();

@@ -23,19 +23,14 @@
 #include "transformState.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : Trackball
-// Description : Trackball acts like Performer in trackball mode.  It
-//               can either spin around a piece of geometry directly,
-//               or it can spin around a camera with the inverse
-//               transform to make it appear that the whole world is
-//               spinning.
-//
-//               The Trackball object actually just places a transform
-//               in the data graph; parent a Transform2SG node under
-//               it to actually transform objects (or cameras) in the
-//               world.
-////////////////////////////////////////////////////////////////////
+/**
+ * Trackball acts like Performer in trackball mode.  It can either spin around a
+ * piece of geometry directly, or it can spin around a camera with the inverse
+ * transform to make it appear that the whole world is spinning.  The Trackball
+ * object actually just places a transform in the data graph; parent a
+ * Transform2SG node under it to actually transform objects (or cameras) in the
+ * world.
+ */
 class EXPCL_PANDA_TFORM Trackball : public MouseInterfaceNode {
 PUBLISHED:
   Trackball(const string &name);

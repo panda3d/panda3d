@@ -16,12 +16,10 @@
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TangentRingEmitter
-// Description : Describes a planar ring region in which
-//               tangent particles are generated, and particles
-//               fly off tangential to the ring.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a planar ring region in which tangent particles are generated, and
+ * particles fly off tangential to the ring.
+ */
 class EXPCL_PANDAPHYSICS TangentRingEmitter : public BaseParticleEmitter {
 PUBLISHED:
   TangentRingEmitter();

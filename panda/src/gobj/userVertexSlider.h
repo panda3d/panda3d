@@ -23,13 +23,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : UserVertexSlider
-// Description : This is a specialization on VertexSlider that
-//               allows the user to specify any arbitrary slider
-//               valie he likes.  This is rarely used except for
-//               testing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on VertexSlider that allows the user to specify any
+ * arbitrary slider valie he likes.  This is rarely used except for testing.
+ */
 class EXPCL_PANDA_GOBJ UserVertexSlider : public VertexSlider {
 PUBLISHED:
   UserVertexSlider(const string &name);

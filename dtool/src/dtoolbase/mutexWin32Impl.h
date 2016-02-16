@@ -23,10 +23,9 @@
 #endif
 #include <windows.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : MutexWin32Impl
-// Description : Uses Windows native calls to implement a mutex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses Windows native calls to implement a mutex.
+ */
 class EXPCL_DTOOL MutexWin32Impl {
 public:
   MutexWin32Impl();

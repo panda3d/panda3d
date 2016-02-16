@@ -21,10 +21,9 @@
 
 class WebViewListener;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AwWebView
-// Description : Thin bindings, wraps a WebView * returned from WebCore.createWebView
-////////////////////////////////////////////////////////////////////
+/**
+ * Thin bindings, wraps a WebView * returned from WebCore.createWebView
+ */
 class EXPCL_PANDAAWESOMIUM AwWebView : public TypedReferenceCount{
 PUBLISHED:
 

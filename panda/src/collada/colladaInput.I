@@ -11,20 +11,17 @@
  * @date 2011-05-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::is_vertex_source
-//  Description: Returns true if this has a <vertices> element as
-//               source.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this has a <vertices> element as source.
+ */
 bool ColladaInput::
 is_vertex_source() const {
   return (_semantic == "VERTEX");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::get_offset
-//  Description: Returns the offset associated with this input.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the offset associated with this input.
+ */
 unsigned int ColladaInput::
 get_offset() const {
   return _offset;

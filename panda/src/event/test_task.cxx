@@ -25,7 +25,7 @@ public:
   {
   }
   ALLOC_DELETED_CHAIN(MyTask);
-    
+
   virtual DoneStatus do_task() {
     cerr << "Doing " << *this << ", sort = " << get_sort()
          << ", priority = " << get_priority()

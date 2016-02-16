@@ -24,21 +24,16 @@ CPT(RenderAttrib) TexMatrixAttrib::_empty_attrib;
 TypeHandle TexMatrixAttrib::_type_handle;
 int TexMatrixAttrib::_attrib_slot;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TexMatrixAttrib::
 ~TexMatrixAttrib() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a TexMatrixAttrib that applies
-//               no stages at all.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a TexMatrixAttrib that applies no stages at all.
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib
@@ -50,13 +45,10 @@ make() {
   return _empty_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a TexMatrixAttrib that applies the
-//               indicated matrix to the default texture stage.  This
-//               interface is deprecated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a TexMatrixAttrib that applies the indicated matrix to the default
+ * texture stage.  This interface is deprecated.
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 make(const LMatrix4 &mat) {
   pgraph_cat.warning()
@@ -68,36 +60,29 @@ make(const LMatrix4 &mat) {
   return make(TextureStage::get_default(), transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a TexMatrixAttrib that applies the
-//               indicated transform to the named texture stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a TexMatrixAttrib that applies the indicated transform to the
+ * named texture stage.
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 make(TextureStage *stage, const TransformState *transform) {
   return DCAST(TexMatrixAttrib, make())->add_stage(stage, transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::make_default
-//       Access: Published, Static
-//  Description: Returns a RenderAttrib that corresponds to whatever
-//               the standard default properties for render attributes
-//               of this type ought to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib that corresponds to whatever the standard default
+ * properties for render attributes of this type ought to be.
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 make_default() {
   return return_new(new TexMatrixAttrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::add_stage
-//       Access: Published, Static
-//  Description: Returns a new TexMatrixAttrib just like this one,
-//               with the indicated transform for the given stage.  If
-//               this stage already exists, its transform is replaced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TexMatrixAttrib just like this one, with the indicated
+ * transform for the given stage.  If this stage already exists, its transform
+ * is replaced.
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 add_stage(TextureStage *stage, const TransformState *transform,
           int override) const {
@@ -109,12 +94,10 @@ add_stage(TextureStage *stage, const TransformState *transform,
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::remove_stage
-//       Access: Published, Static
-//  Description: Returns a new TexMatrixAttrib just like this one,
-//               with the indicated stage removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TexMatrixAttrib just like this one, with the indicated stage
+ * removed.
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 remove_stage(TextureStage *stage) const {
   TexMatrixAttrib *attrib = new TexMatrixAttrib(*this);
@@ -122,85 +105,65 @@ remove_stage(TextureStage *stage) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::get_mat
-//       Access: Published
-//  Description: Returns the transformation matrix associated with
-//               the default texture stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the transformation matrix associated with the default texture stage.
+ */
 const LMatrix4 &TexMatrixAttrib::
 get_mat() const {
   return get_mat(TextureStage::get_default());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::is_empty
-//       Access: Published
-//  Description: Returns true if no stages are defined in the
-//               TexMatrixAttrib, false if at least one is.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if no stages are defined in the TexMatrixAttrib, false if at
+ * least one is.
+ */
 bool TexMatrixAttrib::
 is_empty() const {
   return _stages.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::has_stage
-//       Access: Published
-//  Description: Returns true if there is a transform associated with
-//               the indicated stage, or false otherwise (in which
-//               case get_transform(stage) will return the identity
-//               transform).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a transform associated with the indicated stage, or
+ * false otherwise (in which case get_transform(stage) will return the identity
+ * transform).
+ */
 bool TexMatrixAttrib::
 has_stage(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(StageNode(stage));
   return (mi != _stages.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::get_num_stages
-//       Access: Published
-//  Description: Returns the number of stages that are represented by
-//               this attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of stages that are represented by this attrib.
+ */
 int TexMatrixAttrib::
 get_num_stages() const {
   return _stages.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::get_stage
-//       Access: Published
-//  Description: Returns the nth stage that is represented by this
-//               attrib.  The TextureStages are in no particular
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth stage that is represented by this attrib.  The TextureStages
+ * are in no particular order.
+ */
 TextureStage *TexMatrixAttrib::
 get_stage(int n) const {
   nassertr(n >= 0 && n < (int)_stages.size(), NULL);
   return _stages[n]._stage;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::get_mat
-//       Access: Published
-//  Description: Returns the transformation matrix associated with
-//               the indicated texture stage, or identity matrix if
-//               nothing is associated with the indicated stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the transformation matrix associated with the indicated texture
+ * stage, or identity matrix if nothing is associated with the indicated stage.
+ */
 const LMatrix4 &TexMatrixAttrib::
 get_mat(TextureStage *stage) const {
   return get_transform(stage)->get_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::get_transform
-//       Access: Published
-//  Description: Returns the transformation associated with
-//               the indicated texture stage, or identity matrix if
-//               nothing is associated with the indicated stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the transformation associated with the indicated texture stage, or
+ * identity matrix if nothing is associated with the indicated stage.
+ */
 CPT(TransformState) TexMatrixAttrib::
 get_transform(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(StageNode(stage));
@@ -210,11 +173,9 @@ get_transform(TextureStage *stage) const {
   return TransformState::make_identity();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TexMatrixAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -229,21 +190,14 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TexMatrixAttrib
-//               types to return a unique number indicating whether
-//               this TexMatrixAttrib is equivalent to the other one.
-//
-//               This should return 0 if the two TexMatrixAttrib objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two TexMatrixAttrib
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived TexMatrixAttrib types to return a unique
+ * number indicating whether this TexMatrixAttrib is equivalent to the other
+ * one.  This should return 0 if the two TexMatrixAttrib objects are equivalent,
+ * a number less than zero if this one should be sorted before the other one,
+ * and a number greater than zero otherwise.  This will only be called with two
+ * TexMatrixAttrib objects whose get_type() functions return the same.
+ */
 int TexMatrixAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const TexMatrixAttrib *ta = (const TexMatrixAttrib *)other;
@@ -280,16 +234,12 @@ compare_to_impl(const RenderAttrib *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::get_hash_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to return a unique hash for these particular
-//               properties.  RenderAttribs that compare the same with
-//               compare_to_impl(), above, should return the same
-//               hash; RenderAttribs that compare differently should
-//               return a different hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to return a unique
+ * hash for these particular properties.  RenderAttribs that compare the same
+ * with compare_to_impl(), above, should return the same hash; RenderAttribs
+ * that compare differently should return a different hash.
+ */
 size_t TexMatrixAttrib::
 get_hash_impl() const {
   size_t hash = 0;
@@ -305,23 +255,16 @@ get_hash_impl() const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               This should return the result of applying the other
-//               RenderAttrib to a node in the scene graph below this
-//               RenderAttrib, which was already applied.  In most
-//               cases, the result is the same as the other
-//               RenderAttrib (that is, a subsequent RenderAttrib
-//               completely replaces the preceding one).  On the other
-//               hand, some kinds of RenderAttrib (for instance,
-//               ColorTransformAttrib) might combine in meaningful
-//               ways.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.  This should
+ * return the result of applying the other RenderAttrib to a node in the scene
+ * graph below this RenderAttrib, which was already applied.  In most cases, the
+ * result is the same as the other RenderAttrib (that is, a subsequent
+ * RenderAttrib completely replaces the preceding one).  On the other hand, some
+ * kinds of RenderAttrib (for instance, ColorTransformAttrib) might combine in
+ * meaningful ways.
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 compose_impl(const RenderAttrib *other) const {
   const TexMatrixAttrib *ta = (const TexMatrixAttrib *)other;
@@ -382,15 +325,11 @@ compose_impl(const RenderAttrib *other) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::invert_compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               See invert_compose() and compose_impl().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.  See
+ * invert_compose() and compose_impl().
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
   const TexMatrixAttrib *ta = (const TexMatrixAttrib *)other;
@@ -406,7 +345,7 @@ invert_compose_impl(const RenderAttrib *other) const {
   while (ai != _stages.end() && bi != ta->_stages.end()) {
     if ((*ai)._stage < (*bi)._stage) {
       // This stage is in a but not in b.
-      CPT(TransformState) inv_a = 
+      CPT(TransformState) inv_a =
         (*ai)._transform->invert_compose(TransformState::make_identity());
       StageNode sn((*ai)._stage);
       sn._transform = inv_a;
@@ -435,7 +374,7 @@ invert_compose_impl(const RenderAttrib *other) const {
 
       } else {
         // Override a wins.
-        CPT(TransformState) inv_a = 
+        CPT(TransformState) inv_a =
           (*ai)._transform->invert_compose(TransformState::make_identity());
         StageNode sn((*ai)._stage);
         sn._transform = inv_a;
@@ -450,7 +389,7 @@ invert_compose_impl(const RenderAttrib *other) const {
 
   while (ai != _stages.end()) {
     // This stage is in a but not in b.
-    CPT(TransformState) inv_a = 
+    CPT(TransformState) inv_a =
       (*ai)._transform->invert_compose(TransformState::make_identity());
     StageNode sn((*ai)._stage);
     sn._transform = inv_a;
@@ -468,11 +407,9 @@ invert_compose_impl(const RenderAttrib *other) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::get_auto_shader_attrib_impl
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPT(RenderAttrib) TexMatrixAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
   // For a TexMatrixAttrib, the particular matrix per TextureStage
@@ -492,23 +429,18 @@ get_auto_shader_attrib_impl(const RenderState *state) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               TexMatrixAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type TexMatrixAttrib.
+ */
 void TexMatrixAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void TexMatrixAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
@@ -525,13 +457,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int TexMatrixAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
@@ -542,7 +471,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     ts = TextureStagePool::get_stage(ts);
 
     const TransformState *transform = DCAST(TransformState, p_list[pi++]);
-    
+
     StageNode &sn = _stages[sni];
     sn._stage = ts;
     sn._transform = transform;
@@ -552,14 +481,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type TexMatrixAttrib is encountered
-//               in the Bam file.  It should create the TexMatrixAttrib
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * TexMatrixAttrib is encountered in the Bam file.  It should create the
+ * TexMatrixAttrib and extract its information from the file.
+ */
 TypedWritable *TexMatrixAttrib::
 make_from_bam(const FactoryParams &params) {
   TexMatrixAttrib *attrib = new TexMatrixAttrib;
@@ -572,13 +498,10 @@ make_from_bam(const FactoryParams &params) {
   return attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new TexMatrixAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new TexMatrixAttrib.
+ */
 void TexMatrixAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);

@@ -18,11 +18,9 @@
 
 TypeHandle PhysxDebugGeomNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDebugGeomNode::update
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxDebugGeomNode::
 update(NxScene *scenePtr) {
 
@@ -105,33 +103,27 @@ update(NxScene *scenePtr) {
   physx_cat.spam() << "Updated PhysxDebugGeomNode geometry\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDebugGeomNode::on
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxDebugGeomNode::
 on() {
 
   NxGetPhysicsSDK()->setParameter(NX_VISUALIZATION_SCALE, _scale);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDebugGeomNode::off
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxDebugGeomNode::
 off() {
 
   NxGetPhysicsSDK()->setParameter(NX_VISUALIZATION_SCALE, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDebugGeomNode::toggle
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxDebugGeomNode::
 toggle() {
 
@@ -142,4 +134,3 @@ toggle() {
     off();
   }
 }
-

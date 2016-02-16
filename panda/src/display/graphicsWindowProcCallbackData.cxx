@@ -16,11 +16,9 @@
 
 TypeHandle GraphicsWindowProcCallbackData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowProcCallbackData::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GraphicsWindowProcCallbackData::
 output(ostream &out) const {
 #ifdef WIN32
@@ -30,34 +28,25 @@ output(ostream &out) const {
   out << get_type() << "()";
 #endif
 }
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowProcCallbackData::is_touch_event
-//       Access: Public, Virtual
-//  Description: Returns whether the event is a touch event.
-//               
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns whether the event is a touch event.
+ */
 bool GraphicsWindowProcCallbackData::
 is_touch_event(){
   return _graphicsWindow->is_touch_event(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowProcCallbackData::get_num_touches
-//       Access: Public, Virtual
-//  Description: Returns the current number of touches on the window.
-//               
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current number of touches on the window.
+ */
 int GraphicsWindowProcCallbackData::
 get_num_touches(){
   return _graphicsWindow->get_num_touches();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowProcCallbackData::get_touch_info
-//       Access: Public, Virtual
-//  Description: Returns the TouchInfo object describing the specified touch.
-//               
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TouchInfo object describing the specified touch.
+ */
 TouchInfo GraphicsWindowProcCallbackData::
 get_touch_info(int index){
   return _graphicsWindow->get_touch_info(index);

@@ -11,46 +11,37 @@
  * @date 2003-10-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubdivSegment::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SubdivSegment::
-SubdivSegment(const double *cint, int f, int t) : 
-  _cint(cint), 
+SubdivSegment(const double *cint, int f, int t) :
+  _cint(cint),
   _f(f),
-  _t(t) 
+  _t(t)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubdivSegment::get_score
-//       Access: Public
-//  Description: Returns the net score of the segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the net score of the segment.
+ */
 INLINE double SubdivSegment::
 get_score() const {
   return _cint[_t] - _cint[_f];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubdivSegment::get_need
-//       Access: Public
-//  Description: Returns a score that indicates how badly the segment
-//               needs to be further subdivided.  The greater the
-//               number, the greater the need.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a score that indicates how badly the segment needs to be further
+ * subdivided.  The greater the number, the greater the need.
+ */
 INLINE double SubdivSegment::
 get_need() const {
   return get_score() / (double)(_num_cuts+1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubdivSegment::operator <
-//       Access: Public
-//  Description: Sorts the segments in descending order of need.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts the segments in descending order of need.
+ */
 INLINE bool SubdivSegment::
 operator < (const SubdivSegment &other) const {
   return get_need() > other.get_need();

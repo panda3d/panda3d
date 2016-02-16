@@ -11,11 +11,9 @@
  * @date 2005-03-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggMesherStrip::
 EggMesherStrip(const EggMesherStrip &copy) :
   _prims(copy._prims),
@@ -32,27 +30,21 @@ EggMesherStrip(const EggMesherStrip &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::is_coplanar_with
-//       Access: Public
-//  Description: Returns true if the strip and the other strip are
-//               coplanar, within the indicated threshold.  See
-//               coplanarity().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the strip and the other strip are coplanar, within the
+ * indicated threshold.  See coplanarity().
+ */
 INLINE bool EggMesherStrip::
 is_coplanar_with(const EggMesherStrip &other, PN_stdfloat threshold) const {
   return (coplanarity(other) <= threshold);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::coplanarity
-//       Access: Public
-//  Description: Returns the degree to which the two strips are
-//               coplanar.  0.0 is exactly coplanar; numbers somewhat
-//               larger than zero indicate less coplanar.  1.0 is
-//               at right angles; 2.0 is exactly backfacing.  If
-//               either strip is not itself planar, 3.0 is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the degree to which the two strips are coplanar.  0.0 is exactly
+ * coplanar; numbers somewhat larger than zero indicate less coplanar.  1.0 is
+ * at right angles; 2.0 is exactly backfacing.  If either strip is not itself
+ * planar, 3.0 is returned.
+ */
 INLINE PN_stdfloat EggMesherStrip::
 coplanarity(const EggMesherStrip &other) const {
   if (_planar && other._planar) {
@@ -61,13 +53,10 @@ coplanarity(const EggMesherStrip &other) const {
   return 3.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::type_category
-//       Access: Public
-//  Description: Returns an integer which gives a heuristic about the
-//               similarity of different strip types.  In general,
-//               closer numbers are more similar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an integer which gives a heuristic about the similarity of different
+ * strip types.  In general, closer numbers are more similar.
+ */
 INLINE int EggMesherStrip::
 type_category() const {
   switch (_type) {
@@ -87,24 +76,18 @@ type_category() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::rotate_forward
-//       Access: Public
-//  Description: Rotates a triangle or quad by bringing its first
-//               vertex to the back.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rotates a triangle or quad by bringing its first vertex to the back.
+ */
 INLINE void EggMesherStrip::
 rotate_forward() {
   _verts.push_back(_verts.front());
   _verts.pop_front();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::rotate_back
-//       Access: Public
-//  Description: Rotates a triangle or quad by bringing its last
-//               vertex to the front.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rotates a triangle or quad by bringing its last vertex to the front.
+ */
 INLINE void EggMesherStrip::
 rotate_back() {
   _verts.push_front(_verts.back());
@@ -112,14 +95,11 @@ rotate_back() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::get_head_edge
-//       Access: Public
-//  Description: Returns an EggMesherEdge which represents the leading
-//               edge in the quadstrip or tristrip.  This
-//               EggMesherEdge will not have pointer equality with any
-//               shared EggMesherEdge.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an EggMesherEdge which represents the leading edge in the quadstrip
+ * or tristrip.  This EggMesherEdge will not have pointer equality with any
+ * shared EggMesherEdge.
+ */
 INLINE EggMesherEdge EggMesherStrip::
 get_head_edge() const {
   Verts::const_iterator vi = _verts.begin();
@@ -128,14 +108,11 @@ get_head_edge() const {
   return EggMesherEdge(_verts.front(), *vi);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::get_tail_edge
-//       Access: Public
-//  Description: Returns an EggMesherEdge which represents the
-//               trailing edge in the quadstrip or tristrip.  This
-//               EggMesherEdge will not have pointer equality with any
-//               shared EggMesherEdge.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an EggMesherEdge which represents the trailing edge in the quadstrip
+ * or tristrip.  This EggMesherEdge will not have pointer equality with any
+ * shared EggMesherEdge.
+ */
 INLINE EggMesherEdge EggMesherStrip::
 get_tail_edge() const {
   Verts::const_reverse_iterator vi = _verts.rbegin();
@@ -144,23 +121,18 @@ get_tail_edge() const {
   return EggMesherEdge(*vi, _verts.back());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::operator ==
-//       Access: Public
-//  Description: Defines equality for strips.  This actually tests
-//               only pointer equality; it's used only when removing a
-//               strip from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines equality for strips.  This actually tests only pointer equality; it's
+ * used only when removing a strip from the list.
+ */
 INLINE bool EggMesherStrip::
 operator == (const EggMesherStrip &other) const {
   return this == &other;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherStrip::operator !=
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMesherStrip::
 operator != (const EggMesherStrip &other) const {
   return !operator == (other);

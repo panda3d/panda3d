@@ -11,11 +11,9 @@
  * @date 2004-01-09
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::MenuDef::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinStatsMonitor::MenuDef::
 MenuDef(int thread_index, int collector_index, bool show_level) :
   _thread_index(thread_index),
@@ -24,11 +22,9 @@ MenuDef(int thread_index, int collector_index, bool show_level) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsMonitor::MenuDef::operator <
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool WinStatsMonitor::MenuDef::
 operator < (const MenuDef &other) const {
   if (_thread_index != other._thread_index) {

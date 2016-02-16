@@ -11,11 +11,9 @@
  * @date 2003-06-03
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaEggGroupUserData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MayaEggGroupUserData::
 MayaEggGroupUserData() {
   _vertex_color = false;
@@ -23,13 +21,11 @@ MayaEggGroupUserData() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaEggGroupUserData::Copy constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MayaEggGroupUserData::
-MayaEggGroupUserData(const MayaEggGroupUserData &copy) : 
+MayaEggGroupUserData(const MayaEggGroupUserData &copy) :
   EggUserData(copy),
   _vertex_color(copy._vertex_color),
   _double_sided(copy._double_sided)
@@ -37,11 +33,9 @@ MayaEggGroupUserData(const MayaEggGroupUserData &copy) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaEggGroupUserData::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void MayaEggGroupUserData::
 operator = (const MayaEggGroupUserData &copy) {
   EggUserData::operator = (copy);

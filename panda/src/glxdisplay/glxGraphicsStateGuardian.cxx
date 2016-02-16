@@ -21,11 +21,9 @@
 
 TypeHandle glxGraphicsStateGuardian::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 glxGraphicsStateGuardian::
 glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                          glxGraphicsStateGuardian *share_with) :
@@ -59,11 +57,9 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _temp_colormap = (Colormap)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 glxGraphicsStateGuardian::
 ~glxGraphicsStateGuardian() {
   destroy_temp_xwindow();
@@ -76,12 +72,9 @@ glxGraphicsStateGuardian::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::get_properties
-//       Access: Public
-//  Description: Gets the FrameBufferProperties to match the
-//               indicated visual.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties to match the indicated visual.
+ */
 void glxGraphicsStateGuardian::
 get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
 
@@ -136,12 +129,9 @@ get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
   properties.set_force_hardware(1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::get_properties_advanced
-//       Access: Public
-//  Description: Gets the FrameBufferProperties to match the
-//               indicated GLXFBConfig
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties to match the indicated GLXFBConfig
+ */
 void glxGraphicsStateGuardian::
 get_properties_advanced(FrameBufferProperties &properties,
                         bool &context_has_pbuffer, bool &context_has_pixmap,
@@ -223,13 +213,10 @@ get_properties_advanced(FrameBufferProperties &properties,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::choose_pixel_format
-//       Access: Public
-//  Description: Selects a visual or fbconfig for all the windows
-//               and buffers that use this gsg.  Also creates the GL
-//               context and obtains the visual.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects a visual or fbconfig for all the windows and buffers that use this
+ * gsg.  Also creates the GL context and obtains the visual.
+ */
 void glxGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
                     X11_Display *display,
@@ -429,12 +416,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _context_has_pbuffer = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::glx_is_at_least_version
-//       Access: Public
-//  Description: Returns true if the runtime GLX version number is at
-//               least the indicated value, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the runtime GLX version number is at least the indicated
+ * value, false otherwise.
+ */
 bool glxGraphicsStateGuardian::
 glx_is_at_least_version(int major_version, int minor_version) const {
   if (_glx_version_major < major_version) {
@@ -449,11 +434,9 @@ glx_is_at_least_version(int major_version, int minor_version) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::gl_flush
-//       Access: Protected, Virtual
-//  Description: Calls glFlush().
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls glFlush().
+ */
 void glxGraphicsStateGuardian::
 gl_flush() const {
   // This call requires synchronization with X.
@@ -461,11 +444,9 @@ gl_flush() const {
   PosixGraphicsStateGuardian::gl_flush();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::gl_get_error
-//       Access: Protected, Virtual
-//  Description: Returns the result of glGetError().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the result of glGetError().
+ */
 GLenum glxGraphicsStateGuardian::
 gl_get_error() const {
   // This call requires synchronization with X.
@@ -473,11 +454,9 @@ gl_get_error() const {
   return PosixGraphicsStateGuardian::gl_get_error();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::query_gl_version
-//       Access: Protected, Virtual
-//  Description: Queries the runtime version of OpenGL in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the runtime version of OpenGL in use.
+ */
 void glxGraphicsStateGuardian::
 query_gl_version() {
   PosixGraphicsStateGuardian::query_gl_version();
@@ -499,29 +478,22 @@ query_gl_version() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::get_extra_extensions
-//       Access: Protected, Virtual
-//  Description: This may be redefined by a derived class (e.g. glx or
-//               wgl) to get whatever further extensions strings may
-//               be appropriate to that interface, in addition to the
-//               GL extension strings return by glGetString().
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be redefined by a derived class (e.g.  glx or wgl) to get whatever
+ * further extensions strings may be appropriate to that interface, in addition
+ * to the GL extension strings return by glGetString().
+ */
 void glxGraphicsStateGuardian::
 get_extra_extensions() {
   save_extensions(glXQueryExtensionsString(_display, _screen));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::do_get_extension_func
-//       Access: Public, Virtual
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name.  It is the responsibility of the
-//               caller to ensure that the required extension is
-//               defined in the OpenGL runtime prior to calling this;
-//               it is an error to call this for a function that is
-//               not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the GL extension function with the indicated name.  It
+ * is the responsibility of the caller to ensure that the required extension is
+ * defined in the OpenGL runtime prior to calling this; it is an error to call
+ * this for a function that is not defined.
+ */
 void *glxGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   nassertr(name != NULL, NULL);
@@ -579,11 +551,9 @@ do_get_extension_func(const char *name) {
   return PosixGraphicsStateGuardian::do_get_extension_func(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::query_glx_extensions
-//       Access: Private
-//  Description: Queries the GLX extension pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the GLX extension pointers.
+ */
 void glxGraphicsStateGuardian::
 query_glx_extensions() {
   _supports_swap_control = has_extension("GLX_SGI_swap_control");
@@ -726,12 +696,9 @@ query_glx_extensions() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::show_glx_client_string
-//       Access: Protected
-//  Description: Outputs the result of glxGetClientString() on the
-//               indicated tag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the result of glxGetClientString() on the indicated tag.
+ */
 void glxGraphicsStateGuardian::
 show_glx_client_string(const string &name, int id) {
   if (glgsg_cat.is_debug()) {
@@ -746,12 +713,9 @@ show_glx_client_string(const string &name, int id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::show_glx_server_string
-//       Access: Protected
-//  Description: Outputs the result of glxQueryServerString() on the
-//               indicated tag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the result of glxQueryServerString() on the indicated tag.
+ */
 void glxGraphicsStateGuardian::
 show_glx_server_string(const string &name, int id) {
   if (glgsg_cat.is_debug()) {
@@ -766,15 +730,12 @@ show_glx_server_string(const string &name, int id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::choose_temp_visual
-//       Access: Private
-//  Description: Selects an XVisual for an initial OpenGL context.
-//               This may be called initially, to create the first
-//               context needed in order to create the fbconfig.  On
-//               successful return, _visual and _temp_context will be
-//               filled in with a non-NULL value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects an XVisual for an initial OpenGL context.  This may be called
+ * initially, to create the first context needed in order to create the
+ * fbconfig.  On successful return, _visual and _temp_context will be filled in
+ * with a non-NULL value.
+ */
 void glxGraphicsStateGuardian::
 choose_temp_visual(const FrameBufferProperties &properties) {
   nassertv(_temp_context == (GLXContext)NULL);
@@ -816,13 +777,10 @@ choose_temp_visual(const FrameBufferProperties &properties) {
     << "Could not find a usable pixel format.\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::init_temp_context
-//       Access: Private
-//  Description: Initializes the context created in
-//               choose_temp_visual() by creating a temporary window
-//               and binding the context to that window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the context created in choose_temp_visual() by creating a
+ * temporary window and binding the context to that window.
+ */
 void glxGraphicsStateGuardian::
 init_temp_context() {
   x11GraphicsPipe *x11_pipe;
@@ -855,12 +813,9 @@ init_temp_context() {
   query_glx_extensions();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::destroy_temp_xwindow
-//       Access: Private
-//  Description: Destroys the temporary unmapped window created by
-//               init_temp_context().
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroys the temporary unmapped window created by init_temp_context().
+ */
 void glxGraphicsStateGuardian::
 destroy_temp_xwindow() {
   glXMakeCurrent(_display, None, NULL);

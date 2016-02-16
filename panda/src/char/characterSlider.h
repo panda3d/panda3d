@@ -20,13 +20,11 @@
 
 class CharacterVertexSlider;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CharacterSlider
-// Description : This is a morph slider within the character.  It's
-//               simply a single floating-point value that animates
-//               generally between 0 and 1, that controls the effects
-//               of one or more morphs within the character.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a morph slider within the character.  It's simply a single floating-
+ * point value that animates generally between 0 and 1, that controls the
+ * effects of one or more morphs within the character.
+ */
 class EXPCL_PANDA_CHAR CharacterSlider : public MovingPartScalar {
 protected:
   CharacterSlider();
@@ -38,8 +36,8 @@ PUBLISHED:
 
   virtual PartGroup *make_copy() const;
 
-  virtual bool update_internals(PartBundle *root, PartGroup *parent, 
-                                bool self_changed, bool parent_changed, 
+  virtual bool update_internals(PartBundle *root, PartGroup *parent,
+                                bool self_changed, bool parent_changed,
                                 Thread *current_thread);
 
 private:
@@ -74,5 +72,3 @@ private:
 };
 
 #endif
-
-

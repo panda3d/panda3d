@@ -18,13 +18,11 @@
 
 #include "parameterRemap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapReferenceToConcrete
-// Description : A ParameterRemap class that handles remapping a
-//               const reference parameter to a concrete.  This only
-//               makes sense when we're talking about a const
-//               reference to a simple type.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ParameterRemap class that handles remapping a const reference parameter to
+ * a concrete.  This only makes sense when we're talking about a const reference
+ * to a simple type.
+ */
 class ParameterRemapReferenceToConcrete : public ParameterRemap {
 public:
   ParameterRemapReferenceToConcrete(CPPType *orig_type);

@@ -18,18 +18,13 @@
 #include "luse.h"
 #include "pointerToArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_LMatrix4f
-// Description : A pta of LMatrix4fs.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-//
-//               We actually wrap UnalignedLMatrix4f, in case we are
-//               building with SSE2 and LMatrix4f requires strict
-//               alignment.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of LMatrix4fs.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a pta of this type (whether they
+ * need to export it or not) should include this header file, rather than
+ * defining the pta again.  We actually wrap UnalignedLMatrix4f, in case we are
+ * building with SSE2 and LMatrix4f requires strict alignment.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<UnalignedLMatrix4f> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<UnalignedLMatrix4f>)
@@ -39,18 +34,13 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerTo
 typedef PointerToArray<UnalignedLMatrix4f> PTA_LMatrix4f;
 typedef ConstPointerToArray<UnalignedLMatrix4f> CPTA_LMatrix4f;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_LMatrix4d
-// Description : A pta of LMatrix4ds.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-//
-//               We actually wrap UnalignedLMatrix4d, in case we are
-//               building with SSE2 and LMatrix4d requires strict
-//               alignment.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of LMatrix4ds.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a pta of this type (whether they
+ * need to export it or not) should include this header file, rather than
+ * defining the pta again.  We actually wrap UnalignedLMatrix4d, in case we are
+ * building with SSE2 and LMatrix4d requires strict alignment.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<UnalignedLMatrix4d> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<UnalignedLMatrix4d>)

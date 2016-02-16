@@ -23,16 +23,13 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimControlCollection
-// Description : This is a named collection of AnimControl pointers.
-//               An AnimControl may be added to the collection by
-//               name.  While an AnimControl is associated, its
-//               reference count is maintained; associating a new
-//               AnimControl with the same name will decrement the
-//               previous control's reference count (and possibly
-//               delete it, unbinding its animation).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a named collection of AnimControl pointers.  An AnimControl may be
+ * added to the collection by name.  While an AnimControl is associated, its
+ * reference count is maintained; associating a new AnimControl with the same
+ * name will decrement the previous control's reference count (and possibly
+ * delete it, unbinding its animation).
+ */
 class EXPCL_PANDA_CHAN AnimControlCollection {
 PUBLISHED:
   AnimControlCollection();

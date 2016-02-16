@@ -22,10 +22,9 @@
 
 class PhysxSphereForceFieldShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSphereForceFieldShape
-// Description : A spherical force field shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * A spherical force field shape.
+ */
 class EXPCL_PANDAPHYSX PhysxSphereForceFieldShape : public PhysxForceFieldShape {
 
 PUBLISHED:
@@ -53,7 +52,7 @@ public:
   }
   static void init_type() {
     PhysxForceFieldShape::init_type();
-    register_type(_type_handle, "PhysxSphereForceFieldShape", 
+    register_type(_type_handle, "PhysxSphereForceFieldShape",
                   PhysxForceFieldShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

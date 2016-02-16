@@ -19,11 +19,9 @@
 
 TypeHandle WebcamVideoCursorOpenCV::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorOpenCV::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoCursorOpenCV::
 WebcamVideoCursorOpenCV(WebcamVideoOpenCV *src) : MovieVideoCursor(src) {
   _size_x = src->_size_x;
@@ -44,11 +42,9 @@ WebcamVideoCursorOpenCV(WebcamVideoOpenCV *src) : MovieVideoCursor(src) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorOpenCV::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoCursorOpenCV::
 ~WebcamVideoCursorOpenCV() {
   if (_capture != NULL) {
@@ -57,11 +53,9 @@ WebcamVideoCursorOpenCV::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorOpenCV::fetch_buffer
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(MovieVideoCursor::Buffer) WebcamVideoCursorOpenCV::
 fetch_buffer() {
   if (!_ready) {
@@ -82,7 +76,7 @@ fetch_buffer() {
       // The easy case--copy the whole thing in, row by row.
       int copy_bytes = _size_x * dest_x_pitch;
       nassertr(copy_bytes <= dest_y_pitch && copy_bytes <= abs(y_pitch), NULL);
-      
+
       for (int y = 0; y < _size_y; ++y) {
         memcpy(dest, r, copy_bytes);
         dest += dest_y_pitch;
@@ -92,7 +86,7 @@ fetch_buffer() {
     } else {
       // The harder case--interleave in the color channels, pixel by
       // pixel.
-      
+
       for (int y = 0; y < _size_y; ++y) {
         int dx = 0;
         int sx = 0;
@@ -114,27 +108,18 @@ fetch_buffer() {
   return buffer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorOpenCV::get_frame_data
-//       Access: Private
-//  Description: Gets the data needed to traverse through the
-//               decompressed buffer.  Returns true on success, false
-//               on failure.
-//
-//               In the case of a success indication (true return
-//               value), the three pointers r, g, b are loaded with
-//               the addresses of the three components of the
-//               bottom-left pixel of the image.  (They will be
-//               adjacent in memory in the case of an interleaved
-//               image, and separated in the case of a
-//               separate-channel image.)  The x_pitch value is filled
-//               with the amount to add to each pointer to advance to
-//               the pixel to the right; and the y_pitch value is
-//               filled with the amount to add to each pointer to
-//               advance to the pixel above.  Note that these values
-//               may be negative (particularly in the case of a
-//               top-down image).
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the data needed to traverse through the decompressed buffer.  Returns
+ * true on success, false on failure.  In the case of a success indication (true
+ * return value), the three pointers r, g, b are loaded with the addresses of
+ * the three components of the bottom-left pixel of the image.  (They will be
+ * adjacent in memory in the case of an interleaved image, and separated in the
+ * case of a separate-channel image.)  The x_pitch value is filled with the
+ * amount to add to each pointer to advance to the pixel to the right; and the
+ * y_pitch value is filled with the amount to add to each pointer to advance to
+ * the pixel above.  Note that these values may be negative (particularly in the
+ * case of a top-down image).
+ */
 bool WebcamVideoCursorOpenCV::
 get_frame_data(const unsigned char *&r,
                const unsigned char *&g,

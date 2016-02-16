@@ -16,11 +16,10 @@
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileVertexPool
-// Description : This is a collection of unique vertices as extracted
-//               out of a Geom or a series of Geoms.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a collection of unique vertices as extracted out of a Geom or a
+ * series of Geoms.
+ */
 class XFileVertexPool {
 public:
   XFileVertexPool();
@@ -34,7 +33,7 @@ public:
   const LTexCoord *get_uvs();
   const LColor *get_colors();
 
-  
+
 
   void set_normal(const LNormal &normal);
   void set_uv(const LTexCoord &uv);
@@ -50,4 +49,3 @@ private:
 };
 
 #endif
-

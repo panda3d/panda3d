@@ -39,21 +39,15 @@ class GraphicsPipe;
 class FrameBufferProperties;
 class Texture;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsEngine
-// Description : This class is the main interface to controlling the
-//               render process.  There is typically only one
-//               GraphicsEngine in an application, and it synchronizes
-//               rendering to all all of the active windows; although
-//               it is possible to have multiple GraphicsEngine
-//               objects if multiple synchronicity groups are
-//               required.
-//
-//               The GraphicsEngine is responsible for managing the
-//               various cull and draw threads.  The application
-//               simply calls engine->render_frame() and considers it
-//               done.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is the main interface to controlling the render process.  There is
+ * typically only one GraphicsEngine in an application, and it synchronizes
+ * rendering to all all of the active windows; although it is possible to have
+ * multiple GraphicsEngine objects if multiple synchronicity groups are
+ * required.  The GraphicsEngine is responsible for managing the various cull
+ * and draw threads.  The application simply calls engine->render_frame() and
+ * considers it done.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
@@ -412,4 +406,3 @@ private:
 #include "graphicsEngine.I"
 
 #endif
-

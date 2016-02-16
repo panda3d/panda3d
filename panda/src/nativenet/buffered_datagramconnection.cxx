@@ -19,10 +19,9 @@
 
 TypeHandle Buffered_DatagramConnection::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::SendMessage
-//  Description: send the message
-////////////////////////////////////////////////////////////////////
+/**
+ * send the message
+ */
 bool Buffered_DatagramConnection::
 SendMessage(const Datagram &msg) {
   if (IsConnected()) {

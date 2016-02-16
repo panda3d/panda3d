@@ -27,11 +27,10 @@
 #include "collideMask.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggGroup
-// Description : The main glue of the egg hierarchy, this corresponds
-//               to the <Group>, <Instance>, and <Joint> type nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main glue of the egg hierarchy, this corresponds to the <Group>,
+ * <Instance>, and <Joint> type nodes.
+ */
 class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
@@ -434,4 +433,3 @@ ostream &operator << (ostream &out, EggGroup::BlendOperand t);
 #include "eggGroup.I"
 
 #endif
-

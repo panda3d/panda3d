@@ -9,13 +9,13 @@
  * @file mayaEggImport.cxx
  * @author jyelon
  * @date 2005-07-20
- * 
+ *
  * This is the wrapper code for the maya importer plugin.
  * It includes:
- * 
+ *
  *   - user interface dialogs and popups
  *   - plugin initialization/registration
- * 
+ *
  * It does not include the actual code to traverse the EggData.
  */
 

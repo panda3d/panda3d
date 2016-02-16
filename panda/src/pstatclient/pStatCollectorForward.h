@@ -18,13 +18,11 @@
 #include "pStatCollectorForwardBase.h"
 #include "pStatCollector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatCollectorForward
-// Description : This class serves as a cheap forward reference to a
-//               PStatCollector, so that classes that are defined
-//               before the pstats module may access the
-//               PStatCollector.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class serves as a cheap forward reference to a PStatCollector, so that
+ * classes that are defined before the pstats module may access the
+ * PStatCollector.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatCollectorForward : public PStatCollectorForwardBase {
 PUBLISHED:
   INLINE PStatCollectorForward(const PStatCollector &col);

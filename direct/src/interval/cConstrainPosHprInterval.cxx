@@ -17,19 +17,13 @@
 
 TypeHandle CConstrainPosHprInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainPosHprInterval::Constructor
-//       Access: Published
-//  Description: Constructs a constraint interval that will constrain
-//               the position and orientation of one node to the
-//               position and orientation of another.
-//
-//               If wrt is true, the node's position and orientation
-//               will be transformed into the target node's parent's
-//               space before being copied.  If wrt is false, the
-//               target node's local position and orientation will be
-//               copied unaltered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a constraint interval that will constrain the position and
+ * orientation of one node to the position and orientation of another.  If wrt
+ * is true, the node's position and orientation will be transformed into the
+ * target node's parent's space before being copied.  If wrt is false, the
+ * target node's local position and orientation will be copied unaltered.
+ */
 CConstrainPosHprInterval::
 CConstrainPosHprInterval(const string &name, double duration,
                          const NodePath &node, const NodePath &target,
@@ -44,13 +38,10 @@ CConstrainPosHprInterval(const string &name, double duration,
   _quatOffset.set_hpr(hprOffset);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainPosHprInterval::step
-//       Access: Published, Virtual
-//  Description: Advances the time on the interval.  The time may
-//               either increase (the normal case) or decrease
-//               (e.g. if the interval is being played by a slider).
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the time on the interval.  The time may either increase (the normal
+ * case) or decrease (e.g.  if the interval is being played by a slider).
+ */
 void CConstrainPosHprInterval::
 priv_step(double t) {
   check_started(get_class_type(), "priv_step");
@@ -74,11 +65,9 @@ priv_step(double t) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainPosHprInterval::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CConstrainPosHprInterval::
 output(ostream &out) const {
   out << get_name() << ":";

@@ -38,13 +38,11 @@
 #undef X509_NAME
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : OpenSSLWrapper
-// Description : Provides an interface wrapper around the OpenSSL
-//               library, to ensure that the library is properly
-//               initialized in the application, and to provide some
-//               hooks into global OpenSSL context data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides an interface wrapper around the OpenSSL library, to ensure that the
+ * library is properly initialized in the application, and to provide some hooks
+ * into global OpenSSL context data.
+ */
 class EXPCL_PANDAEXPRESS OpenSSLWrapper {
 private:
   OpenSSLWrapper();

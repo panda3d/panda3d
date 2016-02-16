@@ -19,15 +19,11 @@
 #include "geometricBoundingVolume.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : UnionBoundingVolume
-// Description : This special bounding volume is the union of all of
-//               its constituent bounding volumes.
-//
-//               A point is defined to be within a UnionBoundingVolume
-//               if it is within any one or more of its component
-//               bounding volumes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special bounding volume is the union of all of its constituent bounding
+ * volumes.  A point is defined to be within a UnionBoundingVolume if it is
+ * within any one or more of its component bounding volumes.
+ */
 class EXPCL_PANDA_MATHUTIL UnionBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL UnionBoundingVolume();

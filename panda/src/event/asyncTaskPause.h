@@ -20,13 +20,11 @@
 
 class AsyncTaskManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTaskPause
-// Description : A special kind of task that simple returns DS_pause,
-//               to pause for a specified number of seconds and then
-//               finish.  It's intended to be used within an
-//               AsyncTaskSequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special kind of task that simple returns DS_pause, to pause for a specified
+ * number of seconds and then finish.  It's intended to be used within an
+ * AsyncTaskSequence.
+ */
 class EXPCL_PANDA_EVENT AsyncTaskPause : public AsyncTask {
 PUBLISHED:
   AsyncTaskPause(double delay);
@@ -56,4 +54,3 @@ private:
 #include "asyncTaskPause.I"
 
 #endif
-

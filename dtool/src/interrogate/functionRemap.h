@@ -32,16 +32,12 @@ class CPPScope;
 class CPPFunctionType;
 class InterfaceMaker;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FunctionRemap
-// Description : This class describes how to remap a C++ function (and
-//               its list of parameters and return type) to a wrapped
-//               function, for a particular scripting language.
-//
-//               The InterfaceMaker class will create one of these for
-//               each function, including one for each instance of an
-//               overloaded function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class describes how to remap a C++ function (and its list of parameters
+ * and return type) to a wrapped function, for a particular scripting language.
+ * The InterfaceMaker class will create one of these for each function,
+ * including one for each instance of an overloaded function.
+ */
 class FunctionRemap {
 public:
   FunctionRemap(const InterrogateType &itype,

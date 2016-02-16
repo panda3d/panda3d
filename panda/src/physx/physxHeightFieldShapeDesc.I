@@ -11,35 +11,28 @@
  * @date 2009-10-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldShapeDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxHeightFieldShapeDesc::
 PhysxHeightFieldShapeDesc() : PhysxShapeDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldShapeDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxHeightFieldShapeDesc::
 ~PhysxHeightFieldShapeDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldShapeDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxHeightFieldShapeDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

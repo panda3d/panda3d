@@ -32,9 +32,9 @@ typedef PN_stdfloat Phase;
 class Ramfile;
 
 /*
-////////////////////////////////////////////////////////////////////
-//  Database Format
-////////////////////////////////////////////////////////////////////
+/*
+ * Database Format
+ */
 magic_number
 number_of_multifiles
 header_length multifile_name phase version size status num_files
@@ -52,17 +52,13 @@ MultifileRecord is a Vector<FileRecord>
 */
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : DownloadDb
-// Description : A listing of files within multifiles for management
-//               of client-side synchronization with a server-provided
-//               set of files.
-//
-//               This class manages one copy of the database for the
-//               client, representing the files on the client system,
-//               and another copy for the server, representing the
-//               files the server has available.
-////////////////////////////////////////////////////////////////////
+/**
+ * A listing of files within multifiles for management of client-side
+ * synchronization with a server-provided set of files.  This class manages one
+ * copy of the database for the client, representing the files on the client
+ * system, and another copy for the server, representing the files the server
+ * has available.
+ */
 class EXPCL_PANDAEXPRESS DownloadDb {
 PUBLISHED:
   // Status of a multifile is stored in this enum

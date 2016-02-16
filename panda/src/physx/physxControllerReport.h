@@ -20,11 +20,9 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxControllerReport
-// Description : Implementation of the NxUserControllerHitReport
-//               interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implementation of the NxUserControllerHitReport interface.
+ */
 class EXPCL_PANDAPHYSX PhysxControllerReport : public NxUserControllerHitReport {
 
 public:

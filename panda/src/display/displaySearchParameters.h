@@ -16,10 +16,9 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplaySearchParameters
-// Description : Parameters used for searching display capabilities.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parameters used for searching display capabilities.
+ */
 class EXPCL_PANDA_DISPLAY DisplaySearchParameters {
 
 PUBLISHED:

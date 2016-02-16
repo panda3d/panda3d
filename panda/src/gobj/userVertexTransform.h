@@ -23,13 +23,11 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : UserVertexTransform
-// Description : This is a specialization on VertexTransform that
-//               allows the user to specify any arbitrary transform
-//               matrix he likes.  This is rarely used except for
-//               testing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on VertexTransform that allows the user to specify
+ * any arbitrary transform matrix he likes.  This is rarely used except for
+ * testing.
+ */
 class EXPCL_PANDA_GOBJ UserVertexTransform : public VertexTransform {
 PUBLISHED:
   UserVertexTransform(const string &name);

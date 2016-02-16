@@ -23,15 +23,11 @@
 
 class Filename;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMultiBase
-// Description : This specialization of ProgramBase is intended for
-//               programs that read and/or write multiple egg files.
-//
-//               See also EggMultiFilter, for a class that also knows
-//               how to read a bunch of egg files in and write them
-//               out again.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization of ProgramBase is intended for programs that read and/or
+ * write multiple egg files.  See also EggMultiFilter, for a class that also
+ * knows how to read a bunch of egg files in and write them out again.
+ */
 class EggMultiBase : public EggBase {
 public:
   EggMultiBase();
@@ -49,5 +45,3 @@ protected:
 };
 
 #endif
-
-

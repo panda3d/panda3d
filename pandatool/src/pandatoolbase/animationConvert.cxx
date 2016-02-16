@@ -16,10 +16,9 @@
 #include "string_utils.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: format_animation_convert
-//  Description: Returns the string corresponding to this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the string corresponding to this method.
+ */
 string
 format_animation_convert(AnimationConvert convert) {
   switch (convert) {
@@ -51,21 +50,18 @@ format_animation_convert(AnimationConvert convert) {
   return "**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimationConvert output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, AnimationConvert convert) {
   return out << format_animation_convert(convert);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: string_animation_convert
-//  Description: Converts from a string, as might be input by the
-//               user, to one of the known AnimationConvert types.
-//               Returns AC_invalid if the string is unknown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts from a string, as might be input by the user, to one of the known
+ * AnimationConvert types.  Returns AC_invalid if the string is unknown.
+ */
 AnimationConvert
 string_animation_convert(const string &str) {
   if (cmp_nocase(str, "none") == 0) {

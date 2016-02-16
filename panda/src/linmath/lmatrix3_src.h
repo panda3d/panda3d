@@ -13,14 +13,11 @@
 
 class FLOATNAME(LMatrix4);
 
-////////////////////////////////////////////////////////////////////
-//       Class : LMatrix3
-// Description : This is a 3-by-3 transform matrix.  It typically will
-//               represent either a rotation-and-scale (no
-//               translation) matrix in 3-d, or a full affine matrix
-//               (rotation, scale, translation) in 2-d, e.g. for a
-//               texture matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a 3-by-3 transform matrix.  It typically will represent either a
+ * rotation-and-scale (no translation) matrix in 3-d, or a full affine matrix
+ * (rotation, scale, translation) in 2-d, e.g.  for a texture matrix.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LMatrix3) {
 public:
   typedef FLOATTYPE numeric_type;

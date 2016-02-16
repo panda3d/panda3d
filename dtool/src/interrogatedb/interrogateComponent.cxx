@@ -18,11 +18,9 @@
 // value for functions that must return a const string reference.
 string InterrogateComponent::_empty_string;
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateComponent::output
-//       Access: Public
-//  Description: Formats the component for output to a data file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the component for output to a data file.
+ */
 void InterrogateComponent::
 output(ostream &out) const {
   idf_output_string(out, _name);
@@ -34,12 +32,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateComponent::input
-//       Access: Public
-//  Description: Reads the data file as previously formatted by
-//               output().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data file as previously formatted by output().
+ */
 void InterrogateComponent::
 input(istream &in) {
   idf_input_string(in, _name);

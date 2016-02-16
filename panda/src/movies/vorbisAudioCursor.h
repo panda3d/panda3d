@@ -24,11 +24,10 @@
 
 class VorbisAudio;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VorbisAudioCursor
-// Description : Interfaces with the libvorbisfile library to
-//               implement decoding of Ogg Vorbis audio files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interfaces with the libvorbisfile library to implement decoding of Ogg Vorbis
+ * audio files.
+ */
 class EXPCL_PANDA_MOVIES VorbisAudioCursor : public MovieAudioCursor {
 PUBLISHED:
   VorbisAudioCursor(VorbisAudio *src, istream *stream);

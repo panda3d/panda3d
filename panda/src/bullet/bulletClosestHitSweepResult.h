@@ -23,10 +23,9 @@
 #include "pandaNode.h"
 #include "collideMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletClosestHitSweepResult
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 struct EXPCL_PANDABULLET BulletClosestHitSweepResult : public btCollisionWorld::ClosestConvexResultCallback {
 
 PUBLISHED:
@@ -43,7 +42,7 @@ PUBLISHED:
   PN_stdfloat get_hit_fraction() const;
 
 public:
-  virtual bool needsCollision(btBroadphaseProxy* proxy0) const;  
+  virtual bool needsCollision(btBroadphaseProxy* proxy0) const;
 
 private:
   BulletClosestHitSweepResult(const btVector3 &from_pos, const btVector3 &to_pos, const CollideMask &mask);

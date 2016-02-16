@@ -18,11 +18,11 @@ typedef ov_multiset<int> myvec;
 void
 search(myvec &v, int element) {
   pair<myvec::const_iterator, myvec::const_iterator> result;
-  
+
   result = v.equal_range(element);
   size_t count = v.count(element);
 
-  cerr << element << " bounded by " << result.first - v.begin() << " and " 
+  cerr << element << " bounded by " << result.first - v.begin() << " and "
        << result.second - v.begin() << "; " << count << " total.\n";
 }
 

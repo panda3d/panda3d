@@ -22,22 +22,15 @@
 
 class VrpnButtonDevice;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnButton
-// Description : This is the actual interface to a particular VRPN
-//               button device, and all of its numbered buttons.  A
-//               pointer to this object is stored in the VrpnClient
-//               class for each differently-named VRPN button device
-//               we connect to.
-//
-//               The VRPN callbacks go here, which in turn get
-//               vectored out to any VrpnButtonDevice objects that
-//               register with this.  When the last VrpnButtonDevice
-//               object unregisters, the VrpnButton will be deleted
-//               by the VrpnClient.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the actual interface to a particular VRPN button device, and all of
+ * its numbered buttons.  A pointer to this object is stored in the VrpnClient
+ * class for each differently-named VRPN button device we connect to.  The VRPN
+ * callbacks go here, which in turn get vectored out to any VrpnButtonDevice
+ * objects that register with this.  When the last VrpnButtonDevice object
+ * unregisters, the VrpnButton will be deleted by the VrpnClient.  This class
+ * does not need to be exported from the DLL.
+ */
 class VrpnButton {
 public:
   VrpnButton(const string &button_name, vrpn_Connection *connection);

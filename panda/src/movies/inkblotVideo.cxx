@@ -16,11 +16,9 @@
 
 TypeHandle InkblotVideo::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: InkblotVideo::Constructor
-//       Access: Public
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 InkblotVideo::
 InkblotVideo(int x, int y, int fps) :
   _specified_x(x),
@@ -29,20 +27,16 @@ InkblotVideo(int x, int y, int fps) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InkblotVideo::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InkblotVideo::
 ~InkblotVideo() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InkblotVideo::open
-//       Access: Published, Virtual
-//  Description: Open this video, returning a MovieVideoCursor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this video, returning a MovieVideoCursor.
+ */
 PT(MovieVideoCursor) InkblotVideo::
 open() {
   return new InkblotVideoCursor(this);

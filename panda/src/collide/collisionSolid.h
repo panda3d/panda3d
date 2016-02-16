@@ -33,19 +33,14 @@ class GeomNode;
 class CollisionNode;
 class CullTraverserData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionSolid
-// Description : The abstract base class for all things that can
-//               collide with other things in the world, and all the
-//               things they can collide with (except geometry).
-//
-//               This class and its derivatives really work very
-//               similarly to the way BoundingVolume and all of its
-//               derivatives work.  There's a different subclass for
-//               each basic shape of solid, and double-dispatch
-//               function calls handle the subset of the N*N
-//               intersection tests that we care about.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for all things that can collide with other things in
+ * the world, and all the things they can collide with (except geometry).  This
+ * class and its derivatives really work very similarly to the way
+ * BoundingVolume and all of its derivatives work.  There's a different subclass
+ * for each basic shape of solid, and double-dispatch function calls handle the
+ * subset of the N*N intersection tests that we care about.
+ */
 class EXPCL_PANDA_COLLIDE CollisionSolid : public CopyOnWriteObject {
 public:
   CollisionSolid();
@@ -193,4 +188,3 @@ INLINE ostream &operator << (ostream &out, const CollisionSolid &cs) {
 #include "collisionSolid.I"
 
 #endif
-

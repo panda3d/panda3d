@@ -40,16 +40,12 @@ class ViewCertDialog;
   #define sk_X509_new(cmp) sk_new(cmp)
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : AuthDialog
-// Description : This is the primary dialog of this application.
-//
-//               This dialog is presented to the user when he/she
-//               clicks on the red authorization button on the splash
-//               window.  It tells the user the status of the
-//               application's signature, and invites the user to
-//               approve the signature or cancel.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary dialog of this application.  This dialog is presented to
+ * the user when he/she clicks on the red authorization button on the splash
+ * window.  It tells the user the status of the application's signature, and
+ * invites the user to approve the signature or cancel.
+ */
 class AuthDialog : public Fl_Window {
 public:
 #ifdef _WIN32
@@ -99,11 +95,9 @@ private:
   int _verify_result;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ViewCertDialog
-// Description : This is the detailed view of the particular
-//               certificate.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the detailed view of the particular certificate.
+ */
 class ViewCertDialog : public Fl_Window {
 public:
   ViewCertDialog(AuthDialog *auth_dialog, X509 *cert);

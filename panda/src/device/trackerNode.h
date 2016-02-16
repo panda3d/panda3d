@@ -24,14 +24,11 @@
 #include "linmath_events.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TrackerNode
-// Description : This is the primary interface to a Tracker object
-//               associated with a ClientBase.  It reads the position
-//               and orientation information from the tracker and
-//               makes it available as a transformation on the data
-//               graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary interface to a Tracker object associated with a
+ * ClientBase.  It reads the position and orientation information from the
+ * tracker and makes it available as a transformation on the data graph.
+ */
 class EXPCL_PANDA_DEVICE TrackerNode : public DataNode {
 PUBLISHED:
   TrackerNode(ClientBase *client, const string &device_name);

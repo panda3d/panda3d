@@ -18,13 +18,11 @@
 #include <ctype.h>
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: enquote_string
-//  Description: Writes the string to the indicated output stream.  If
-//               the string contains any characters special to egg,
-//               writes quotation marks around it.  If always_quote is
-//               true, writes quotation marks regardless.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the string to the indicated output stream.  If the string contains any
+ * characters special to egg, writes quotation marks around it.  If always_quote
+ * is true, writes quotation marks regardless.
+ */
 ostream &
 enquote_string(ostream &out, const string &str, int indent_level,
                bool always_quote) {
@@ -68,11 +66,9 @@ enquote_string(ostream &out, const string &str, int indent_level,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_transform
-//  Description: A helper function to write out a 3x3 transform
-//               matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * A helper function to write out a 3x3 transform matrix.
+ */
 void
 write_transform(ostream &out, const LMatrix3d &mat, int indent_level) {
   indent(out, indent_level) << "<Transform> {\n";
@@ -90,11 +86,9 @@ write_transform(ostream &out, const LMatrix3d &mat, int indent_level) {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_transform
-//  Description: A helper function to write out a 4x4 transform
-//               matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * A helper function to write out a 4x4 transform matrix.
+ */
 void
 write_transform(ostream &out, const LMatrix4d &mat, int indent_level) {
   indent(out, indent_level) << "<Transform> {\n";

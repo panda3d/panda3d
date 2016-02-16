@@ -22,22 +22,14 @@
 
 class PhysxSphereShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSphereShape
-// Description : A sphere shaped collision detection primitive. 
-//               Each shape is owned by an actor that it is attached
-//               to.
-//
-//               An instance can be created by calling the
-//               createShape() method of the PhysxActor object that
-//               should own it, with a PhysxSphereShapeDesc object
-//               as the parameter, or by adding the shape descriptor
-//               into the PhysxActorDesc class before creating the
-//               actor.
-//
-//               The shape is deleted by calling release() on the
-//               shape itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * A sphere shaped collision detection primitive.  Each shape is owned by an
+ * actor that it is attached to.  An instance can be created by calling the
+ * createShape() method of the PhysxActor object that should own it, with a
+ * PhysxSphereShapeDesc object as the parameter, or by adding the shape
+ * descriptor into the PhysxActorDesc class before creating the actor.  The
+ * shape is deleted by calling release() on the shape itself.
+ */
 class EXPCL_PANDAPHYSX PhysxSphereShape : public PhysxShape {
 
 PUBLISHED:
@@ -65,7 +57,7 @@ public:
   }
   static void init_type() {
     PhysxShape::init_type();
-    register_type(_type_handle, "PhysxSphereShape", 
+    register_type(_type_handle, "PhysxSphereShape",
                   PhysxShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

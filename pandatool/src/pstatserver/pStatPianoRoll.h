@@ -27,18 +27,13 @@
 
 class PStatFrameData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatPianoRoll
-// Description : This is an abstract class that presents the interface
-//               for drawing a piano-roll type chart: it shows the
-//               time spent in each of a number of collectors as a
-//               horizontal bar of color, with time as the horizontal
-//               axis.
-//
-//               This class just manages all the piano-roll logic; the
-//               actual nuts and bolts of drawing pixels is left to a
-//               user-derived class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract class that presents the interface for drawing a piano-
+ * roll type chart: it shows the time spent in each of a number of collectors as
+ * a horizontal bar of color, with time as the horizontal axis.  This class just
+ * manages all the piano-roll logic; the actual nuts and bolts of drawing pixels
+ * is left to a user-derived class.
+ */
 class PStatPianoRoll : public PStatGraph {
 public:
   PStatPianoRoll(PStatMonitor *monitor, int thread_index,

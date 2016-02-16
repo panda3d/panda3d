@@ -32,18 +32,13 @@ class MovieAudioCursor;
   #define movies_debug(msg) ((void)0);
 #endif //]
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovieAudio
-// Description : A MovieAudio is actually any source that provides
-//               a sequence of audio samples.  That could include an
-//               AVI file, a microphone, or an internet TV station.
-//
-//               The difference between a MovieAudio and a
-//               MovieAudioCursor is like the difference between a
-//               filename and a file handle.  The MovieAudio just
-//               indicates a particular movie.  The MovieAudioCursor
-//               is what allows access.
-////////////////////////////////////////////////////////////////////
+/**
+ * A MovieAudio is actually any source that provides a sequence of audio
+ * samples.  That could include an AVI file, a microphone, or an internet TV
+ * station.  The difference between a MovieAudio and a MovieAudioCursor is like
+ * the difference between a filename and a file handle.  The MovieAudio just
+ * indicates a particular movie.  The MovieAudioCursor is what allows access.
+ */
 class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
  PUBLISHED:
   MovieAudio(const string &name = "Blank Audio");

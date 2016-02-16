@@ -14,11 +14,9 @@
 #include "gtkStatsChartMenu.h"
 #include "gtkStatsMonitor.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsChartMenu::
 GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index) :
   _monitor(monitor),
@@ -29,31 +27,24 @@ GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index) :
   do_update();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsChartMenu::
 ~GtkStatsChartMenu() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::get_menu_widget
-//       Access: Public
-//  Description: Returns the gtk widget for this particular
-//               menu.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the gtk widget for this particular menu.
+ */
 GtkWidget *GtkStatsChartMenu::
 get_menu_widget() {
   return _menu;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::add_to_menu_bar
-//       Access: Public
-//  Description: Adds the menu to the end of the indicated menu bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the menu to the end of the indicated menu bar.
+ */
 void GtkStatsChartMenu::
 add_to_menu_bar(GtkWidget *menu_bar, int position) {
   const PStatClientData *client_data = _monitor->get_client_data();
@@ -72,13 +63,10 @@ add_to_menu_bar(GtkWidget *menu_bar, int position) {
   gtk_menu_shell_insert(GTK_MENU_SHELL(menu_bar), menu_item, position);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::check_update
-//       Access: Public
-//  Description: Checks to see if the menu needs to be updated
-//               (e.g. because of new data from the client), and
-//               updates it if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks to see if the menu needs to be updated (e.g.  because of new data from
+ * the client), and updates it if necessary.
+ */
 void GtkStatsChartMenu::
 check_update() {
   PStatView &view = _monitor->get_view(_thread_index);
@@ -86,13 +74,10 @@ check_update() {
     do_update();
   }
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::do_update
-//       Access: Public
-//  Description: Unconditionally updates the menu with the latest data
-//               from the client.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Unconditionally updates the menu with the latest data from the client.
+ */
 void GtkStatsChartMenu::
 do_update() {
   PStatView &view = _monitor->get_view(_thread_index);
@@ -113,15 +98,15 @@ do_update() {
   int num_toplevel_collectors = client_data->get_num_toplevel_collectors();
   for (int tc = 0; tc < num_toplevel_collectors; tc++) {
     int collector = client_data->get_toplevel_collector(tc);
-    if (client_data->has_collector(collector) && 
+    if (client_data->has_collector(collector) &&
         client_data->get_collector_has_level(collector, _thread_index)) {
 
       // We put a separator between the above frame collector and the
       // first level collector.
       if (needs_separator) {
-	GtkWidget *sep = gtk_separator_menu_item_new();
-	gtk_widget_show(sep);
-	gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
+  GtkWidget *sep = gtk_separator_menu_item_new();
+  gtk_widget_show(sep);
+  gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
 
         needs_separator = false;
       }
@@ -135,7 +120,7 @@ do_update() {
   GtkWidget *sep = gtk_separator_menu_item_new();
   gtk_widget_show(sep);
   gtk_menu_shell_append(GTK_MENU_SHELL(_menu), sep);
-  
+
   GtkStatsMonitor::MenuDef smd(_thread_index, -1, false);
   const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
 
@@ -143,19 +128,17 @@ do_update() {
   gtk_widget_show(menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(_menu), menu_item);
 
-  g_signal_connect_swapped(G_OBJECT(menu_item), "activate", 
-			   G_CALLBACK(handle_menu), (void *)(const void *)menu_def);
+  g_signal_connect_swapped(G_OBJECT(menu_item), "activate",
+         G_CALLBACK(handle_menu), (void *)(const void *)menu_def);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::add_view
-//       Access: Private
-//  Description: Adds a new entry or entries to the menu for the
-//               indicated view and its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new entry or entries to the menu for the indicated view and its
+ * children.
+ */
 void GtkStatsChartMenu::
-add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level, 
-	 bool show_level) {
+add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
+   bool show_level) {
   int collector = view_level->get_collector();
 
   const PStatClientData *client_data = _monitor->get_client_data();
@@ -168,8 +151,8 @@ add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
   gtk_widget_show(menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(parent_menu), menu_item);
 
-  g_signal_connect_swapped(G_OBJECT(menu_item), "activate", 
-			   G_CALLBACK(handle_menu), (void *)(const void *)menu_def);
+  g_signal_connect_swapped(G_OBJECT(menu_item), "activate",
+         G_CALLBACK(handle_menu), (void *)(const void *)menu_def);
 
   int num_children = view_level->get_num_children();
   if (num_children > 1) {
@@ -194,11 +177,9 @@ add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::handle_menu
-//       Access: Private, Static
-//  Description: Callback when a menu item is selected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Callback when a menu item is selected.
+ */
 void GtkStatsChartMenu::
 handle_menu(gpointer data) {
   const GtkStatsMonitor::MenuDef *menu_def = (GtkStatsMonitor::MenuDef *)data;
@@ -211,17 +192,15 @@ handle_menu(gpointer data) {
   if (menu_def->_collector_index < 0) {
     monitor->open_piano_roll(menu_def->_thread_index);
   } else {
-    monitor->open_strip_chart(menu_def->_thread_index, 
-			      menu_def->_collector_index,
-			      menu_def->_show_level);
+    monitor->open_strip_chart(menu_def->_thread_index,
+            menu_def->_collector_index,
+            menu_def->_show_level);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsChartMenu::remove_menu_child
-//       Access: Private, Static
-//  Description: Removes a previous menu child from the menu.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a previous menu child from the menu.
+ */
 void GtkStatsChartMenu::
 remove_menu_child(GtkWidget *widget, gpointer data) {
   GtkWidget *menu = (GtkWidget *)data;

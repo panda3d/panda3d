@@ -11,29 +11,23 @@
  * @date 2007-06-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MutexSimpleImpl::
 MutexSimpleImpl() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MutexSimpleImpl::
 ~MutexSimpleImpl() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::acquire
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void MutexSimpleImpl::
 acquire() {
   if (!try_acquire()) {
@@ -41,11 +35,9 @@ acquire() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::try_acquire
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool MutexSimpleImpl::
 try_acquire() {
   if ((_flags & F_lock_count) != 0) {
@@ -55,12 +47,10 @@ try_acquire() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::release
-//       Access: Public
-//  Description: Releases the mutex.  An immediate context switch
-//               might occur if there were waiters on the mutex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the mutex.  An immediate context switch might occur if there were
+ * waiters on the mutex.
+ */
 INLINE void MutexSimpleImpl::
 release() {
   nassertv((_flags & F_lock_count) != 0);
@@ -71,12 +61,9 @@ release() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::release_quietly
-//       Access: Public
-//  Description: Releases the mutex, without allowing a context switch
-//               to occur.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the mutex, without allowing a context switch to occur.
+ */
 INLINE void MutexSimpleImpl::
 release_quietly() {
   nassertv((_flags & F_lock_count) != 0);

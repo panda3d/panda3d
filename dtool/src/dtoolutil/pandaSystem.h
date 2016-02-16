@@ -18,13 +18,11 @@
 #include "pmap.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaSystem
-// Description : This class is used as a namespace to group several
-//               global properties of Panda.  Application developers
-//               can use this class to query the runtime version or
-//               capabilities of the current Panda environment.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used as a namespace to group several global properties of
+ * Panda.  Application developers can use this class to query the runtime
+ * version or capabilities of the current Panda environment.
+ */
 class EXPCL_DTOOL PandaSystem {
 protected:
   PandaSystem();
@@ -105,5 +103,3 @@ inline ostream &operator << (ostream &out, const PandaSystem &ps) {
 }
 
 #endif
-
-

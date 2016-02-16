@@ -40,14 +40,12 @@ ConfigureFn(config_xfile) {
   init_libxfile();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libxfile
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libxfile() {
   static bool initialized = false;
@@ -69,4 +67,3 @@ init_libxfile() {
   XFileNode::init_type();
   XFileTemplate::init_type();
 }
-

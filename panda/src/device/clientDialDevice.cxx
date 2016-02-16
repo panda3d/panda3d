@@ -19,13 +19,10 @@ TypeHandle ClientDialDevice::_type_handle;
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientDialDevice::ensure_dial_index
-//       Access: Private
-//  Description: Guarantees that there is a slot in the array for the
-//               indicated index number, by filling the array up to
-//               that index if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Guarantees that there is a slot in the array for the indicated index number,
+ * by filling the array up to that index if necessary.
+ */
 void ClientDialDevice::
 ensure_dial_index(int index) {
   nassertv(index >= 0);

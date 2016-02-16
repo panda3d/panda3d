@@ -22,10 +22,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeIMG
-// Description : For reading and writing headerless R,G,B files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing headerless R,G,B files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeIMG : public PNMFileType {
 public:
   PNMFileTypeIMG();
@@ -87,5 +86,3 @@ private:
 #endif  // HAVE_IMG
 
 #endif
-
-

@@ -21,18 +21,13 @@
 #include "cycleDataLockedReader.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CycleDataWriter
-// Description : This template class calls PipelineCycler::write() in
-//               the constructor and PipelineCycler::release_write() in
-//               the destructor.  In the interim, it provides a
-//               transparent read-write access to the CycleData.
-//
-//               It exists as a syntactic convenience to access the
-//               data in the CycleData.  It also allows the whole
-//               system to compile down to nothing if
-//               DO_PIPELINING is not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class calls PipelineCycler::write() in the constructor and
+ * PipelineCycler::release_write() in the destructor.  In the interim, it
+ * provides a transparent read-write access to the CycleData.  It exists as a
+ * syntactic convenience to access the data in the CycleData.  It also allows
+ * the whole system to compile down to nothing if DO_PIPELINING is not defined.
+ */
 template<class CycleDataType>
 class CycleDataWriter {
 public:
@@ -43,7 +38,7 @@ public:
                          Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0,
                          Thread *current_thread = Thread::get_current_thread());
-  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, 
+  INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                          CycleDataType *locked_cdata,
                          Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataWriter(const CycleDataWriter<CycleDataType> &copy);

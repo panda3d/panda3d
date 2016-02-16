@@ -11,21 +11,17 @@
  * @date 2000-04-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: FirstOfPairCompare::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class ObjectType, class Compare>
 INLINE FirstOfPairCompare<ObjectType, Compare>::
 FirstOfPairCompare(Compare compare) : _compare(compare) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FirstOfPairCompare::operator ()
-//       Access: Public
-//  Description: Returns true if a sorts before b, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a sorts before b, false otherwise.
+ */
 template<class ObjectType, class Compare>
 INLINE bool FirstOfPairCompare<ObjectType, Compare>::
 operator () (const ObjectType &a, const ObjectType &b) const {

@@ -11,13 +11,11 @@
  * @date 2002-02-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBin::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullBin::
-CullBin(const CullBin &copy) : 
+CullBin(const CullBin &copy) :
   _name(copy._name),
   _bin_type(copy._bin_type),
   _gsg(copy._gsg),
@@ -26,11 +24,9 @@ CullBin(const CullBin &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBin::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullBin::
 CullBin(const string &name, CullBin::BinType bin_type,
         GraphicsStateGuardianBase *gsg,
@@ -43,21 +39,17 @@ CullBin(const string &name, CullBin::BinType bin_type,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBin::get_name
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const string &CullBin::
 get_name() const {
   return _name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBin::get_bin_tyep
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullBin::BinType CullBin::
 get_bin_type() const {
   return _bin_type;

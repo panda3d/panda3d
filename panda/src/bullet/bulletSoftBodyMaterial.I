@@ -11,22 +11,18 @@
  * @date 2011-03-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletSoftBodyMaterial::
 ~BulletSoftBodyMaterial() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::empty
-//       Access: Published
-//  Description: Named constructor intended to be used for asserts
-//               with have to return a concrete value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Named constructor intended to be used for asserts with have to return a
+ * concrete value.
+ */
 INLINE BulletSoftBodyMaterial BulletSoftBodyMaterial::
 empty() {
 
@@ -35,80 +31,65 @@ empty() {
   return BulletSoftBodyMaterial(material);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyWorldInfo::get_material
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE btSoftBody::Material &BulletSoftBodyMaterial::
 get_material() const {
 
   return _material;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::getLinearStiffness
-//       Access: Published
-//  Description: Getter for the property m_kLST.
-////////////////////////////////////////////////////////////////////
+/**
+ * Getter for the property m_kLST.
+ */
 INLINE PN_stdfloat BulletSoftBodyMaterial::
 getLinearStiffness() const {
 
   return (PN_stdfloat)_material.m_kLST;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::setLinearStiffness
-//       Access: Published
-//  Description: Setter for the property m_kLST.
-////////////////////////////////////////////////////////////////////
+/**
+ * Setter for the property m_kLST.
+ */
 INLINE void BulletSoftBodyMaterial::
 setLinearStiffness(PN_stdfloat value) {
 
   _material.m_kLST = (btScalar)value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::getAngularStiffness
-//       Access: Published
-//  Description: Getter for the property m_kAST.
-////////////////////////////////////////////////////////////////////
+/**
+ * Getter for the property m_kAST.
+ */
 INLINE PN_stdfloat BulletSoftBodyMaterial::
 getAngularStiffness() const {
 
   return (PN_stdfloat)_material.m_kAST;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::setAngularStiffness
-//       Access: Published
-//  Description: Setter for the property m_kAST.
-////////////////////////////////////////////////////////////////////
+/**
+ * Setter for the property m_kAST.
+ */
 INLINE void BulletSoftBodyMaterial::
 setAngularStiffness(PN_stdfloat value) {
 
   _material.m_kAST = (btScalar)value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::getVolumePreservation
-//       Access: Published
-//  Description: Getter for the property m_kVST.
-////////////////////////////////////////////////////////////////////
+/**
+ * Getter for the property m_kVST.
+ */
 INLINE PN_stdfloat BulletSoftBodyMaterial::
 getVolumePreservation() const {
 
   return (PN_stdfloat)_material.m_kVST;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::setVolumePreservation
-//       Access: Published
-//  Description: Setter for the property m_kVST.
-////////////////////////////////////////////////////////////////////
+/**
+ * Setter for the property m_kVST.
+ */
 INLINE void BulletSoftBodyMaterial::
 setVolumePreservation(PN_stdfloat value) {
 
   _material.m_kVST = (btScalar)value;
 }
-

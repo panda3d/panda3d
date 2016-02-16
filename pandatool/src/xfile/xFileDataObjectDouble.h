@@ -17,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "xFileDataObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectDouble
-// Description : An double-valued data element.  This matches one
-//               double data member of a template, or a single
-//               element of an double array.
-////////////////////////////////////////////////////////////////////
+/**
+ * An double-valued data element.  This matches one double data member of a
+ * template, or a single element of an double array.
+ */
 class XFileDataObjectDouble : public XFileDataObject {
 public:
   XFileDataObjectDouble(const XFileDataDef *data_def, double value);
@@ -41,7 +39,7 @@ protected:
 
 private:
   double _value;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

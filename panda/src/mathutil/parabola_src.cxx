@@ -11,11 +11,9 @@
  * @date 2007-10-10
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: LParabola::xform
-//       Access: Published
-//  Description: Transforms the parabola by the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the parabola by the indicated matrix.
+ */
 void FLOATNAME(LParabola)::
 xform(const FLOATNAME(LMatrix4) &mat) {
   // Note that xform_vec() is the correct operation here, while
@@ -25,37 +23,29 @@ xform(const FLOATNAME(LMatrix4) &mat) {
   _c = mat.xform_point(_c);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LParabola::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LParabola)::
 output(ostream &out) const {
   out << "LParabola(" << _a << ", " << _b << ", " << _c << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LParabola::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LParabola)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LParabola::write_datagram_fixed
-//       Access: Public
-//  Description: Writes the parabola to the Datagram using add_float32()
-//               or add_float64(), depending on the type of floats in
-//               the parabola, regardless of the setting of
-//               Datagram::set_stdfloat_double().  This is appropriate
-//               when you want to write a fixed-width value to the
-//               datagram, especially when you are not writing a bam
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the parabola to the Datagram using add_float32() or add_float64(),
+ * depending on the type of floats in the parabola, regardless of the setting of
+ * Datagram::set_stdfloat_double().  This is appropriate when you want to write
+ * a fixed-width value to the datagram, especially when you are not writing a
+ * bam file.
+ */
 void FLOATNAME(LParabola)::
 write_datagram_fixed(Datagram &destination) const {
   _a.write_datagram_fixed(destination);
@@ -63,12 +53,10 @@ write_datagram_fixed(Datagram &destination) const {
   _c.write_datagram_fixed(destination);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LParabola::read_datagram_fixed
-//       Access: Public
-//  Description: Reads the parabola from the Datagram using get_float32()
-//               or get_float64().  See write_datagram_fixed().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the parabola from the Datagram using get_float32() or get_float64().
+ * See write_datagram_fixed().
+ */
 void FLOATNAME(LParabola)::
 read_datagram_fixed(DatagramIterator &source) {
   _a.read_datagram_fixed(source);
@@ -76,14 +64,11 @@ read_datagram_fixed(DatagramIterator &source) {
   _c.read_datagram_fixed(source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LParabola::write_datagram
-//       Access: Public
-//  Description: Writes the parabola to the Datagram using
-//               add_stdfloat().  This is appropriate when you want to
-//               write the vector using the standard width setting,
-//               especially when you are writing a bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the parabola to the Datagram using add_stdfloat().  This is
+ * appropriate when you want to write the vector using the standard width
+ * setting, especially when you are writing a bam file.
+ */
 void FLOATNAME(LParabola)::
 write_datagram(Datagram &destination) const {
   _a.write_datagram(destination);
@@ -91,11 +76,9 @@ write_datagram(Datagram &destination) const {
   _c.write_datagram(destination);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LParabola::read_datagram
-//       Access: Public
-//  Description: Reads the parabola from the Datagram using get_stdfloat().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the parabola from the Datagram using get_stdfloat().
+ */
 void FLOATNAME(LParabola)::
 read_datagram(DatagramIterator &source) {
   _a.read_datagram(source);

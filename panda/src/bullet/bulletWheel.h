@@ -22,10 +22,9 @@
 #include "luse.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletWheelRaycastInfo
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletWheelRaycastInfo {
 
 PUBLISHED:
@@ -47,12 +46,10 @@ private:
   btWheelInfo::RaycastInfo &_info;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletWheel
-// Description : One wheel of a BulletVehicle. Instances should not
-//               be created directly but using the factory method
-//               BulletVehicle::create_wheel().
-////////////////////////////////////////////////////////////////////
+/**
+ * One wheel of a BulletVehicle.  Instances should not be created directly but
+ * using the factory method BulletVehicle::create_wheel().
+ */
 class EXPCL_PANDABULLET BulletWheel {
 
 PUBLISHED:

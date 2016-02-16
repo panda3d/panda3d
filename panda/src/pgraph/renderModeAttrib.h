@@ -21,10 +21,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderModeAttrib
-// Description : Specifies how polygons are to be drawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies how polygons are to be drawn.
+ */
 class EXPCL_PANDA_PGRAPH RenderModeAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -121,4 +120,3 @@ private:
 #include "renderModeAttrib.I"
 
 #endif
-

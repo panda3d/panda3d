@@ -11,69 +11,54 @@
  * @date 2011-03-17
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::Constructor
-//       Access: Protected
-//  Description: Use OccluderEffect::make() to construct a new
-//               OccluderEffect object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use OccluderEffect::make() to construct a new OccluderEffect object.
+ */
 INLINE OccluderEffect::
 OccluderEffect() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::Copy Constructor
-//       Access: Protected
-//  Description: Use OccluderEffect::make() to construct a new
-//               OccluderEffect object.  The copy constructor is only
-//               defined to facilitate methods like add_on_occluder().
-////////////////////////////////////////////////////////////////////
+/**
+ * Use OccluderEffect::make() to construct a new OccluderEffect object.  The
+ * copy constructor is only defined to facilitate methods like
+ * add_on_occluder().
+ */
 INLINE OccluderEffect::
 OccluderEffect(const OccluderEffect &copy) :
   _on_occluders(copy._on_occluders)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::get_num_on_occluders
-//       Access: Published
-//  Description: Returns the number of occluders that are enabled by
-//               the effectute.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of occluders that are enabled by the effectute.
+ */
 INLINE int OccluderEffect::
 get_num_on_occluders() const {
   return _on_occluders.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::get_on_occluder
-//       Access: Published
-//  Description: Returns the nth occluder enabled by the effectute,
-//               sorted in render order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth occluder enabled by the effectute, sorted in render order.
+ */
 INLINE NodePath OccluderEffect::
 get_on_occluder(int n) const {
   nassertr(n >= 0 && n < (int)_on_occluders.size(), NodePath::fail());
   return _on_occluders[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::has_on_occluder
-//       Access: Published
-//  Description: Returns true if the indicated occluder is enabled by
-//               the effect, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated occluder is enabled by the effect, false
+ * otherwise.
+ */
 INLINE bool OccluderEffect::
 has_on_occluder(const NodePath &occluder) const {
   return _on_occluders.find(occluder) != _on_occluders.end();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OccluderEffect::is_identity
-//       Access: Published
-//  Description: Returns true if this is an identity effect: it does
-//               not change the set of occluders in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this is an identity effect: it does not change the set of
+ * occluders in use.
+ */
 INLINE bool OccluderEffect::
 is_identity() const {
   return _on_occluders.empty();

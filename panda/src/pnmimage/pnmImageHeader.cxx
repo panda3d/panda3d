@@ -20,15 +20,11 @@
 #include "virtualFileSystem.h"
 #include "zStream.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::read_header
-//       Access: Published
-//  Description: Opens up the image file and tries to read its header
-//               information to determine its size, number of
-//               channels, etc.  If successful, updates the header
-//               information and returns true; otherwise, returns
-//               false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens up the image file and tries to read its header information to determine
+ * its size, number of channels, etc.  If successful, updates the header
+ * information and returns true; otherwise, returns false.
+ */
 bool PNMImageHeader::
 read_header(const Filename &filename, PNMFileType *type,
             bool report_unknown_type) {
@@ -42,21 +38,13 @@ read_header(const Filename &filename, PNMFileType *type,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::read_header
-//       Access: Published
-//  Description: Reads the image header information only from the
-//               indicated stream.
-//
-//               The filename is advisory only, and may be used
-//               to suggest a type if it has a known extension.
-//
-//               If type is non-NULL, it is a suggestion for the type
-//               of file it is (and a non-NULL type will override any
-//               magic number test or filename extension lookup).
-//
-//               Returns true if successful, false on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the image header information only from the indicated stream.  The
+ * filename is advisory only, and may be used to suggest a type if it has a
+ * known extension.  If type is non-NULL, it is a suggestion for the type of
+ * file it is (and a non-NULL type will override any magic number test or
+ * filename extension lookup).  Returns true if successful, false on error.
+ */
 bool PNMImageHeader::
 read_header(istream &data, const string &filename, PNMFileType *type,
             bool report_unknown_type) {
@@ -71,19 +59,13 @@ read_header(istream &data, const string &filename, PNMFileType *type,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::make_reader
-//       Access: Published
-//  Description: Returns a newly-allocated PNMReader of the suitable
-//               type for reading from the indicated image filename,
-//               or NULL if the filename cannot be read for some
-//               reason.  The filename "-" always stands for standard
-//               input.  If type is specified, it is a suggestion for
-//               the file type to use.
-//
-//               The PNMReader should be deleted when it is no longer
-//               needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated PNMReader of the suitable type for reading from the
+ * indicated image filename, or NULL if the filename cannot be read for some
+ * reason.  The filename "-" always stands for standard input.  If type is
+ * specified, it is a suggestion for the file type to use.  The PNMReader should
+ * be deleted when it is no longer needed.
+ */
 PNMReader *PNMImageHeader::
 make_reader(const Filename &filename, PNMFileType *type,
             bool report_unknown_type) const {
@@ -116,40 +98,25 @@ make_reader(const Filename &filename, PNMFileType *type,
     return NULL;
   }
 
-  return make_reader(file, owns_file, filename, string(), type, 
+  return make_reader(file, owns_file, filename, string(), type,
                      report_unknown_type);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::make_reader
-//       Access: Published
-//  Description: Returns a newly-allocated PNMReader of the suitable
-//               type for reading from the already-opened image file,
-//               or NULL if the file cannot be read for some reason.
-//
-//               owns_file should be set true if the PNMReader is to
-//               be considered the owner of the stream pointer (in
-//               which case the stream will be deleted on completion,
-//               whether successful or not), or false if it should not
-//               delete it.
-//
-//               The filename parameter is optional here, since the
-//               file has already been opened; it is only used to
-//               examine the extension and attempt to guess the file
-//               type.
-//
-//               If magic_number is nonempty, it is assumed to
-//               represent the first few bytes that have already been
-//               read from the file.  Some file types may have
-//               difficulty if this is more than two bytes.
-//
-//               If type is non-NULL, it is a suggestion for the file
-//               type to use.
-//
-//               The PNMReader should be deleted when it is no longer
-//               needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated PNMReader of the suitable type for reading from the
+ * already-opened image file, or NULL if the file cannot be read for some
+ * reason.  owns_file should be set true if the PNMReader is to be considered
+ * the owner of the stream pointer (in which case the stream will be deleted on
+ * completion, whether successful or not), or false if it should not delete it.
+ * The filename parameter is optional here, since the file has already been
+ * opened; it is only used to examine the extension and attempt to guess the
+ * file type.  If magic_number is nonempty, it is assumed to represent the first
+ * few bytes that have already been read from the file.  Some file types may
+ * have difficulty if this is more than two bytes.  If type is non-NULL, it is a
+ * suggestion for the file type to use.  The PNMReader should be deleted when it
+ * is no longer needed.
+ */
 PNMReader *PNMImageHeader::
 make_reader(istream *file, bool owns_file, const Filename &filename,
             string magic_number, PNMFileType *type,
@@ -252,19 +219,13 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
   return reader;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::make_writer
-//       Access: Published
-//  Description: Returns a newly-allocated PNMWriter of the suitable
-//               type for writing an image to the indicated filename,
-//               or NULL if the filename cannot be written for some
-//               reason.  The filename "-" always stands for standard
-//               output.  If type is specified, it is a suggestion for
-//               the file type to use.
-//
-//               The PNMWriter should be deleted when it is no longer
-//               needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated PNMWriter of the suitable type for writing an image
+ * to the indicated filename, or NULL if the filename cannot be written for some
+ * reason.  The filename "-" always stands for standard output.  If type is
+ * specified, it is a suggestion for the file type to use.  The PNMWriter should
+ * be deleted when it is no longer needed.
+ */
 PNMWriter *PNMImageHeader::
 make_writer(const Filename &filename, PNMFileType *type) const {
   if (pnmimage_cat.is_debug()) {
@@ -303,30 +264,17 @@ make_writer(const Filename &filename, PNMFileType *type) const {
   return make_writer(file, owns_file, filename, type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::make_writer
-//       Access: Published
-//  Description: Returns a newly-allocated PNMWriter of the suitable
-//               type for writing to the already-opened image file, or
-//               NULL if the file cannot be written for some reason.
-//
-//               owns_file should be set true if the PNMWriter is to
-//               be considered the owner of the stream pointer (in
-//               which case the stream will be deleted on completion,
-//               whether successful or not), or false if it should not
-//               delete it.
-//
-//               The filename parameter is optional here, since the
-//               file has already been opened; it is only used to
-//               examine the extension and attempt to guess the
-//               intended file type.
-//
-//               If type is non-NULL, it is a suggestion for the file
-//               type to use.
-//
-//               The PNMWriter should be deleted when it is no longer
-//               needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated PNMWriter of the suitable type for writing to the
+ * already-opened image file, or NULL if the file cannot be written for some
+ * reason.  owns_file should be set true if the PNMWriter is to be considered
+ * the owner of the stream pointer (in which case the stream will be deleted on
+ * completion, whether successful or not), or false if it should not delete it.
+ * The filename parameter is optional here, since the file has already been
+ * opened; it is only used to examine the extension and attempt to guess the
+ * intended file type.  If type is non-NULL, it is a suggestion for the file
+ * type to use.  The PNMWriter should be deleted when it is no longer needed.
+ */
 PNMWriter *PNMImageHeader::
 make_writer(ostream *file, bool owns_file, const Filename &filename,
             PNMFileType *type) const {
@@ -382,16 +330,12 @@ make_writer(ostream *file, bool owns_file, const Filename &filename,
   return writer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::read_magic_number
-//       Access: Published, Static
-//  Description: Ensures that the first n bytes of the file are read
-//               into magic_number.  If magic_number is initially
-//               nonempty, assumes these represent the first few bytes
-//               already extracted.  Returns true if successful, false
-//               if an end of file or error occurred before num_bytes
-//               could be read.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the first n bytes of the file are read into magic_number.  If
+ * magic_number is initially nonempty, assumes these represent the first few
+ * bytes already extracted.  Returns true if successful, false if an end of file
+ * or error occurred before num_bytes could be read.
+ */
 bool PNMImageHeader::
 read_magic_number(istream *file, string &magic_number, int num_bytes) {
   while ((int)magic_number.size() < num_bytes) {
@@ -405,37 +349,27 @@ read_magic_number(istream *file, string &magic_number, int num_bytes) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PNMImageHeader::
 output(ostream &out) const {
   out << "image: " << _x_size << " by " << _y_size << " pixels, "
       << _num_channels << " channels, " << _maxval << " maxval.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::compute_histogram
-//       Access: Protected
-//  Description: Computes a histogram of the colors used in the
-//               indicated rgb/grayscale array and/or alpha array.
-//               This is most likely to be useful in a PNMWriter
-//               class, but it is defined at this level in case it has
-//               general utilty for PNMImages.
-//
-//               Also see PNMImage::make_histogram(), which is a
-//               higher-level function.
-//
-//               The max_colors parameter, if greater than zero,
-//               limits the maximum number of colors we are interested
-//               in.  If we encounter more than this number of colors,
-//               the function aborts before completion and returns
-//               false; otherwise, it returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a histogram of the colors used in the indicated rgb/grayscale array
+ * and/or alpha array.  This is most likely to be useful in a PNMWriter class,
+ * but it is defined at this level in case it has general utilty for PNMImages.
+ * Also see PNMImage::make_histogram(), which is a higher-level function.  The
+ * max_colors parameter, if greater than zero, limits the maximum number of
+ * colors we are interested in.  If we encounter more than this number of
+ * colors, the function aborts before completion and returns false; otherwise,
+ * it returns true.
+ */
 bool PNMImageHeader::
-compute_histogram(PNMImageHeader::HistMap &hist, 
+compute_histogram(PNMImageHeader::HistMap &hist,
                   xel *array, xelval *alpha, int max_colors) {
   int num_pixels = _x_size * _y_size;
   int pi;
@@ -484,14 +418,12 @@ compute_histogram(PNMImageHeader::HistMap &hist,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::compute_palette
-//       Access: Protected
-//  Description: Returns a linear list of all of the colors in the
-//               image, similar to compute_histogram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a linear list of all of the colors in the image, similar to
+ * compute_histogram().
+ */
 bool PNMImageHeader::
-compute_palette(PNMImageHeader::Palette &palette, 
+compute_palette(PNMImageHeader::Palette &palette,
                 xel *array, xelval *alpha, int max_colors) {
   HistMap hist;
 
@@ -520,21 +452,17 @@ compute_palette(PNMImageHeader::Palette &palette,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::PixelSpec::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PNMImageHeader::PixelSpec::
 output(ostream &out) const {
   out << "(" << _red << ", " << _green << ", " << _blue << ", " << _alpha << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMImageHeader::Histogram::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PNMImageHeader::Histogram::
 write(ostream &out) const {
   out << "Histogram: {\n";
@@ -544,4 +472,3 @@ write(ostream &out) const {
   }
   out << "}\n";
 }
-

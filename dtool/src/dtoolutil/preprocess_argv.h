@@ -20,4 +20,3 @@ extern EXPCL_DTOOL void
 preprocess_argv(int &argc, char **&argv);
 
 #endif
-

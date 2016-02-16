@@ -20,11 +20,10 @@
 #include "filename.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovieTypeRegistry
-// Description : This class records the different types of MovieAudio
-//               and MovieVideo that are available for loading.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class records the different types of MovieAudio and MovieVideo that are
+ * available for loading.
+ */
 class EXPCL_PANDA_MOVIES MovieTypeRegistry {
 public:
   typedef PT(MovieAudio) (*MakeAudioFunc)(const Filename&);
@@ -40,7 +39,7 @@ public:
   void load_movie_library(const string &name);
 
   INLINE static MovieTypeRegistry *get_global_ptr();
-  
+
 private:
   static MovieTypeRegistry *_global_ptr;
 

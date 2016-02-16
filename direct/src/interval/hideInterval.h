@@ -18,10 +18,9 @@
 #include "cInterval.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HideInterval
-// Description : An interval that calls NodePath::hide().
-////////////////////////////////////////////////////////////////////
+/**
+ * An interval that calls NodePath::hide().
+ */
 class EXPCL_DIRECT HideInterval : public CInterval {
 PUBLISHED:
   HideInterval(const NodePath &node, const string &name = string());
@@ -32,7 +31,7 @@ PUBLISHED:
 private:
   NodePath _node;
   static int _unique_index;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -54,4 +53,3 @@ private:
 #include "hideInterval.I"
 
 #endif
-

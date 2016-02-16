@@ -20,10 +20,9 @@
 class CPPIdentifier;
 class CPPInstanceIdentifier;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPTypedefType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPTypedefType : public CPPType {
 public:
   CPPTypedefType(CPPType *type, const string &name, CPPScope *current_scope);

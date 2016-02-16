@@ -16,11 +16,9 @@
 
 TypeHandle PhysxDistanceJoint::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJoint::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxDistanceJoint::
 link(NxJoint *jointPtr) {
 
@@ -34,11 +32,9 @@ link(NxJoint *jointPtr) {
   scene->_joints.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJoint::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxDistanceJoint::
 unlink() {
 
@@ -49,12 +45,9 @@ unlink() {
   scene->_joints.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJoint::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the joint object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the joint object to a descriptor.
+ */
 void PhysxDistanceJoint::
 save_to_desc(PhysxDistanceJointDesc &jointDesc) const {
 
@@ -62,16 +55,12 @@ save_to_desc(PhysxDistanceJointDesc &jointDesc) const {
   _ptr->saveToDesc(jointDesc._desc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJoint::load_from_desc
-//       Access: Published
-//  Description: Loads the entire state of the joint from a
-//               descriptor with a single call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the entire state of the joint from a descriptor with a single call.
+ */
 void PhysxDistanceJoint::
 load_from_desc(const PhysxDistanceJointDesc &jointDesc) {
 
   nassertv(_error_type == ET_ok);
   _ptr->loadFromDesc(jointDesc._desc);
 }
-

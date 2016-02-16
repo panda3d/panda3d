@@ -19,11 +19,10 @@
 
 #include "pset.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : RangeIterator
-// Description : Walks through all the Unicode characters described by
-//               a RangeDescription class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through all the Unicode characters described by a RangeDescription
+ * class.
+ */
 class RangeIterator {
 public:
   RangeIterator(const RangeDescription &desc);
@@ -44,4 +43,3 @@ private:
 #include "rangeIterator.I"
 
 #endif
-

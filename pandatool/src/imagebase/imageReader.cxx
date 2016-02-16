@@ -13,22 +13,18 @@
 
 #include "imageReader.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageReader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ImageReader::
 ImageReader() {
   clear_runlines();
   add_runline("[opts] imagename");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageReader::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool ImageReader::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {

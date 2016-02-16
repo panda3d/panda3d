@@ -32,10 +32,9 @@
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderAttrib
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_PGRAPH ShaderAttrib: public RenderAttrib {
 private:
   INLINE ShaderAttrib();
@@ -175,6 +174,3 @@ private:
 #include "shaderAttrib.I"
 
 #endif  // SHADERATTRIB_H
-
-
-

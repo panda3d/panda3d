@@ -28,10 +28,9 @@ class PhysxClothMeshDesc;
 class PhysxSoftBodyMesh;
 class PhysxSoftBodyMeshDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxKitchen
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxKitchen {
 
 PUBLISHED:

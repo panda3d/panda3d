@@ -20,11 +20,10 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannel
-// Description : This template class is the parent class for all kinds
-//               of AnimChannels that return different values.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class is the parent class for all kinds of AnimChannels that
+ * return different values.
+ */
 template<class SwitchType>
 class AnimChannel : public AnimChannelBase {
 protected:
@@ -131,4 +130,3 @@ typedef AnimChannel<ACScalarSwitchType> AnimChannelScalar;
 #endif
 
 #endif
-

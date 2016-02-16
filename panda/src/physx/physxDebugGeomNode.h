@@ -27,12 +27,10 @@
 
 class PhysxScene;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxDebugGeomNode
-// Description : Renderable geometry which represents visualizations
-//               of physics objects. Intended to help with
-//               debugging code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renderable geometry which represents visualizations of physics objects.
+ * Intended to help with debugging code.
+ */
 class EXPCL_PANDAPHYSX PhysxDebugGeomNode : public GeomNode {
 
 PUBLISHED:
@@ -94,7 +92,7 @@ public:
   }
   static void init_type() {
     GeomNode::init_type();
-    register_type(_type_handle, "PhysxDebugGeomNode", 
+    register_type(_type_handle, "PhysxDebugGeomNode",
                   GeomNode::get_class_type());
   }
   virtual TypeHandle get_type() const {

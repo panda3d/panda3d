@@ -76,5 +76,3 @@ extern ConfigVariableBool speedtree_5_2_stf;
 extern EXPCL_PANDASPEEDTREE void init_libspeedtree();
 
 #endif
-
-

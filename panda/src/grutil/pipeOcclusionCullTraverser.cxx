@@ -72,11 +72,9 @@ static ConfigVariableInt occlusion_depth_bits
  PRC_DESC("The minimum number of depth bits requested for the occlusion "
           "buffer."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PipeOcclusionCullTraverser::
 PipeOcclusionCullTraverser(GraphicsOutput *host) {
   _live = false;
@@ -121,11 +119,9 @@ PipeOcclusionCullTraverser(GraphicsOutput *host) {
   _live = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PipeOcclusionCullTraverser::
 PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy) :
   CullTraverser(copy)
@@ -133,11 +129,9 @@ PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy) :
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::set_scene
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PipeOcclusionCullTraverser::
 set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
           bool dr_incomplete_render) {
@@ -216,13 +210,10 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
   _internal_trav->traverse(_scene->get_scene_root());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::end_traverse
-//       Access: Public, Virtual
-//  Description: Should be called when the traverser has finished
-//               traversing its scene, this gives it a chance to do
-//               any necessary finalization.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called when the traverser has finished traversing its scene, this
+ * gives it a chance to do any necessary finalization.
+ */
 void PipeOcclusionCullTraverser::
 end_traverse() {
   if (!_live) {
@@ -277,12 +268,10 @@ end_traverse() {
   _occlusion_tests_pcollector.flush_level();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::get_texture
-//       Access: Published
-//  Description: Returns a Texture that can be used to visualize the
-//               efforts of the occlusion cull.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a Texture that can be used to visualize the efforts of the occlusion
+ * cull.
+ */
 Texture *PipeOcclusionCullTraverser::
 get_texture() {
   if (_texture != (Texture *)NULL) {
@@ -304,11 +293,9 @@ get_texture() {
   return _texture;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::is_in_view
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PipeOcclusionCullTraverser::
 is_in_view(CullTraverserData &data) {
   _next_query = NULL;
@@ -355,13 +342,10 @@ is_in_view(CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::traverse_below
-//       Access: Public, Virtual
-//  Description: Traverses all the children of the indicated node,
-//               with the given data, which has been converted into
-//               the node's space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Traverses all the children of the indicated node, with the given data, which
+ * has been converted into the node's space.
+ */
 void PipeOcclusionCullTraverser::
 traverse_below(CullTraverserData &data) {
   // Save and restore _current_query, and clear _next_query, for
@@ -378,21 +362,15 @@ traverse_below(CullTraverserData &data) {
   _next_query = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::record_object
-//       Access: Protected, Virtual
-//  Description: This callback function is intended to be overridden
-//               by a derived class.  This is called as each Geom is
-//               discovered by the CullTraverser.
-//
-//               We do a sneaky trick in making
-//               PipeOcclusionCullTraverser inherit from both
-//               CullTraverser and CullHandler--the traverser is its
-//               own handler!  This is the normal callback into the
-//               traverser for rendering objects.  We respond to this
-//               by firing off an occlusion test, and queuing up the
-//               object until the end of the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is intended to be overridden by a derived class.  This
+ * is called as each Geom is discovered by the CullTraverser.  We do a sneaky
+ * trick in making PipeOcclusionCullTraverser inherit from both CullTraverser
+ * and CullHandler--the traverser is its own handler!  This is the normal
+ * callback into the traverser for rendering objects.  We respond to this by
+ * firing off an occlusion test, and queuing up the object until the end of the
+ * scene.
+ */
 void PipeOcclusionCullTraverser::
 record_object(CullableObject *object, const CullTraverser *traverser) {
   nassertv(traverser == this);
@@ -428,12 +406,9 @@ record_object(CullableObject *object, const CullTraverser *traverser) {
   _pending_objects.push_back(pobj);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::make_sphere
-//       Access: Private
-//  Description: Constructs a unit sphere for testing visibility of
-//               bounding spheres.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a unit sphere for testing visibility of bounding spheres.
+ */
 void PipeOcclusionCullTraverser::
 make_sphere() {
   ConfigVariableInt num_slices("num-slices", 16);
@@ -466,12 +441,10 @@ make_sphere() {
   _sphere_geom->add_primitive(strip);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::compute_sphere_point
-//       Access: Private, Static
-//  Description: Returns a point on the surface of the unit sphere.
-//               latitude and longitude range from 0.0 to 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a point on the surface of the unit sphere.  latitude and longitude
+ * range from 0.0 to 1.0.
+ */
 LVertex PipeOcclusionCullTraverser::
 compute_sphere_point(PN_stdfloat latitude, PN_stdfloat longitude) {
   PN_stdfloat s1, c1;
@@ -484,12 +457,9 @@ compute_sphere_point(PN_stdfloat latitude, PN_stdfloat longitude) {
   return p;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::make_box
-//       Access: Private
-//  Description: Constructs a unit box for testing visibility of
-//               bounding boxes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a unit box for testing visibility of bounding boxes.
+ */
 void PipeOcclusionCullTraverser::
 make_box() {
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -535,12 +505,10 @@ make_box() {
   _box_geom->add_primitive(tris);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::make_solid_test_state
-//       Access: Private
-//  Description: Creates the RenderState appropriate to rendering the
-//               occlusion test geometry invisibly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the RenderState appropriate to rendering the occlusion test geometry
+ * invisibly.
+ */
 void PipeOcclusionCullTraverser::
 make_solid_test_state() {
   _solid_test_state = RenderState::make
@@ -549,22 +517,16 @@ make_solid_test_state() {
      ColorWriteAttrib::make(ColorWriteAttrib::C_off));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::get_volume_viz
-//       Access: Private
-//  Description: Chooses a suitable Geom to render the indicated
-//               bounding volume, and fills geom and local_transform
-//               with the appropriate values.  Returns true if the
-//               bounding volume can be rendered, false if there is no
-//               suitable visualization for it.
-//
-//               On entry, net_transform should be filled with the net
-//               transform to the bounding volume.  On exit (when
-//               return value is true), it will be composed with a
-//               suitable local transform to render the bounding
-//               volume properly, and internal_transform will also be
-//               filled with the appropriate transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses a suitable Geom to render the indicated bounding volume, and fills
+ * geom and local_transform with the appropriate values.  Returns true if the
+ * bounding volume can be rendered, false if there is no suitable visualization
+ * for it.  On entry, net_transform should be filled with the net transform to
+ * the bounding volume.  On exit (when return value is true), it will be
+ * composed with a suitable local transform to render the bounding volume
+ * properly, and internal_transform will also be filled with the appropriate
+ * transform.
+ */
 bool PipeOcclusionCullTraverser::
 get_volume_viz(const BoundingVolume *vol,
                CPT(Geom) &geom,  // OUT
@@ -650,12 +612,9 @@ get_volume_viz(const BoundingVolume *vol,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::perform_occlusion_test
-//       Access: Private
-//  Description: Renders the indicated geometry in the internal scene
-//               to test its visibility.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renders the indicated geometry in the internal scene to test its visibility.
+ */
 PT(OcclusionQueryContext) PipeOcclusionCullTraverser::
 perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
                        const TransformState *internal_transform) {
@@ -690,12 +649,10 @@ perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
   return query;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipeOcclusionCullTraverser::show_results
-//       Access: Private
-//  Description: Draws a visualization of the results of occlusion
-//               test for a particular bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a visualization of the results of occlusion test for a particular
+ * bounding volume.
+ */
 void PipeOcclusionCullTraverser::
 show_results(int num_fragments, const Geom *geom,
              const TransformState *net_transform,

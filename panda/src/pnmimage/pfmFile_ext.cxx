@@ -21,11 +21,9 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 extern struct Dtool_PyTypedObject Dtool_LPoint4f;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_points
-//       Access: Published
-//  Description: Returns a list of all of the points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a list of all of the points.
+ */
 PyObject *Extension<PfmFile>::
 get_points() const {
   int num_points = _this->get_x_size() * _this->get_y_size();
@@ -73,14 +71,10 @@ get_points() const {
 }
 
 #if PY_VERSION_HEX >= 0x02060000
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::__getbuffer__
-//       Access: Published
-//  Description: This is a very low-level function that returns a
-//               read-only multiview into the internal table of
-//               floating-point numbers.  Use this method at your own
-//               risk.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a very low-level function that returns a read-only multiview into the
+ * internal table of floating-point numbers.  Use this method at your own risk.
+ */
 int Extension<PfmFile>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 

@@ -11,77 +11,63 @@
  * @date 2011-12-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: LSimpleMatrix::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class FloatType, int NumRows, int NumCols>
 INLINE LSimpleMatrix<FloatType, NumRows, NumCols>::
 LSimpleMatrix() {
   // No default initialization.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LSimpleMatrix::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class FloatType, int NumRows, int NumCols>
 INLINE LSimpleMatrix<FloatType, NumRows, NumCols>::
 LSimpleMatrix(const LSimpleMatrix<FloatType, NumRows, NumCols> &copy) {
   memcpy(_array, copy._array, sizeof(_array));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LSimpleMatrix::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class FloatType, int NumRows, int NumCols>
 INLINE void LSimpleMatrix<FloatType, NumRows, NumCols>::
 operator = (const LSimpleMatrix<FloatType, NumRows, NumCols> &copy) {
   memcpy(_array, copy._array, sizeof(_array));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LSimpleMatrix::operator ()
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class FloatType, int NumRows, int NumCols>
 INLINE const FloatType &LSimpleMatrix<FloatType, NumRows, NumCols>::
 operator () (int row, int col) const {
   return _array[row][col];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LSimpleMatrix::operator ()
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class FloatType, int NumRows, int NumCols>
 INLINE FloatType &LSimpleMatrix<FloatType, NumRows, NumCols>::
 operator () (int row, int col) {
   return _array[row][col];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LSimpleMatrix::operator ()
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class FloatType, int NumRows, int NumCols>
 INLINE const FloatType &LSimpleMatrix<FloatType, NumRows, NumCols>::
 operator () (int col) const {
   return _array[0][col];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LSimpleMatrix::operator ()
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class FloatType, int NumRows, int NumCols>
 INLINE FloatType &LSimpleMatrix<FloatType, NumRows, NumCols>::
 operator () (int col) {

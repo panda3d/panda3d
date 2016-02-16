@@ -30,14 +30,12 @@
 // Forward declarations
 class GraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsWindowInputDevice
-// Description : This is a structure representing a single input
-//               device that may be associated with a window.
-//               Typically this will be a keyboard/mouse pair, and
-//               there will be exactly one of these associated with
-//               each window, but other variants are possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a structure representing a single input device that may be associated
+ * with a window.  Typically this will be a keyboard/mouse pair, and there will
+ * be exactly one of these associated with each window, but other variants are
+ * possible.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice {
 private:
   GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags);

@@ -18,24 +18,18 @@
 
 #include "typedWritableReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CachedTypedWritableReferenceCount
-// Description : This is a special extension to ReferenceCount that
-//               includes dual reference counts: the standard
-//               reference count number, which includes all references
-//               to the object, and a separate number (the cache
-//               reference count) that counts the number of references
-//               to the object just within its cache alone.  When
-//               get_ref_count() == get_cache_ref_count(), the object
-//               is not referenced outside the cache.
-//
-//               The cache refs must be explicitly maintained; there
-//               is no PointerTo<> class to maintain the cache
-//               reference counts automatically.  The cache reference
-//               count is automatically included in the overall
-//               reference count: calling cache_ref() and
-//               cache_unref() automatically calls ref() and unref().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special extension to ReferenceCount that includes dual reference
+ * counts: the standard reference count number, which includes all references to
+ * the object, and a separate number (the cache reference count) that counts the
+ * number of references to the object just within its cache alone.  When
+ * get_ref_count() == get_cache_ref_count(), the object is not referenced
+ * outside the cache.  The cache refs must be explicitly maintained; there is no
+ * PointerTo<> class to maintain the cache reference counts automatically.  The
+ * cache reference count is automatically included in the overall reference
+ * count: calling cache_ref() and cache_unref() automatically calls ref() and
+ * unref().
+ */
 class EXPCL_PANDA_PUTIL CachedTypedWritableReferenceCount : public TypedWritableReferenceCount {
 protected:
   INLINE CachedTypedWritableReferenceCount();

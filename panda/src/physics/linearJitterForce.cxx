@@ -15,61 +15,48 @@
 
 TypeHandle LinearJitterForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearJitterForce
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LinearJitterForce::
 LinearJitterForce(PN_stdfloat a, bool mass) :
   LinearRandomForce(a, mass) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearJitterForce
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 LinearJitterForce::
 LinearJitterForce(const LinearJitterForce &copy) :
   LinearRandomForce(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearJitterForce
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LinearJitterForce::
 ~LinearJitterForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 LinearForce *LinearJitterForce::
 make_copy() {
   return new LinearJitterForce(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_child_vector
-//       Access: Public
-//  Description: random value
-////////////////////////////////////////////////////////////////////
+/**
+ * random value
+ */
 LVector3 LinearJitterForce::
 get_child_vector(const PhysicsObject *) {
   return random_unit_vector();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearJitterForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -77,12 +64,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearJitterForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

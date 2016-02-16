@@ -19,28 +19,18 @@
 #include "nodePath.h"
 #include "nodePathComponent.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WorkingNodePath
-// Description : This is a class designed to support low-overhead
-//               traversals of the complete scene graph, with a memory
-//               of the complete path through the graph at any given
-//               point.
-//
-//               You could just use a regular NodePath to do this, but
-//               since the NodePath requires storing
-//               NodePathComponents on each node as it is constructed,
-//               and then removing them when it destructs, there is
-//               considerable overhead in that approach.
-//
-//               The WorkingNodePath eliminates this overhead (but
-//               does not guarantee consistency if the scene graph
-//               changes while the path is held).
-//
-//               At any given point, you may ask the WorkingNodePath
-//               for its actual NodePath, and it will construct and
-//               return a new NodePath representing the complete
-//               generated chain.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a class designed to support low-overhead traversals of the complete
+ * scene graph, with a memory of the complete path through the graph at any
+ * given point.  You could just use a regular NodePath to do this, but since the
+ * NodePath requires storing NodePathComponents on each node as it is
+ * constructed, and then removing them when it destructs, there is considerable
+ * overhead in that approach.  The WorkingNodePath eliminates this overhead (but
+ * does not guarantee consistency if the scene graph changes while the path is
+ * held).  At any given point, you may ask the WorkingNodePath for its actual
+ * NodePath, and it will construct and return a new NodePath representing the
+ * complete generated chain.
+ */
 class EXPCL_PANDA_PGRAPH WorkingNodePath {
 public:
   INLINE WorkingNodePath(const NodePath &start);

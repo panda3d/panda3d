@@ -14,12 +14,9 @@
 #include "pStatThread.h"
 #include "pStatClient.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::get_thread
-//       Access: Published
-//  Description: Returns the Panda Thread object associated with this
-//               particular PStatThread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Panda Thread object associated with this particular PStatThread.
+ */
 Thread *PStatThread::
 get_thread() const {
 #ifdef DO_PSTATS

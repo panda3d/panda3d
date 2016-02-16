@@ -28,21 +28,15 @@
 
 class LoaderFileType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Loader
-// Description : A convenient class for loading models from disk, in
-//               bam or egg format (or any of a number of other
-//               formats implemented by a LoaderFileType, such as
-//               ptloader).
-//
-//               This class supports synchronous as well as
-//               asynchronous loading.  In asynchronous loading, the
-//               model is loaded in the background by a thread, and an
-//               event will be generated when the model is available.
-//               If threading is not available, the asynchronous
-//               loading interface may be used, but it loads
-//               synchronously.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenient class for loading models from disk, in bam or egg format (or any
+ * of a number of other formats implemented by a LoaderFileType, such as
+ * ptloader).  This class supports synchronous as well as asynchronous loading.
+ * In asynchronous loading, the model is loaded in the background by a thread,
+ * and an event will be generated when the model is available.  If threading is
+ * not available, the asynchronous loading interface may be used, but it loads
+ * synchronously.
+ */
 class EXPCL_PANDA_PGRAPH Loader : public TypedReferenceCount, public Namable {
 private:
   class ConsiderFile {

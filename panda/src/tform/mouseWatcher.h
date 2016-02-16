@@ -36,34 +36,23 @@
 class MouseWatcherParameter;
 class DisplayRegion;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseWatcher
-// Description : This TFormer maintains a list of rectangular regions
-//               on the screen that are considered special mouse
-//               regions; typically these will be click buttons.  When
-//               the mouse passes in or out of one of these regions,
-//               or when a button is clicked while the mouse is in one
-//               of these regions, an event is thrown.
-//
-//               Mouse events may also be suppressed from the rest of
-//               the datagraph in these special regions.
-//
-//               This class can also implement a software mouse
-//               pointer by automatically generating a transform to
-//               apply to a piece of geometry placed under the 2-d
-//               scene graph.  It will move the geometry around
-//               according to the mouse's known position.
-//
-//               Finally, this class can keep a record of the mouse
-//               trail.  This is useful if you want to know, not just
-//               where the mouse is, but the exact sequence of movements
-//               it took to get there.  This information is mainly useful
-//               for gesture-recognition code.  To use trail logging,
-//               you need to enable the generation of pointer events
-//               in the GraphicsWindowInputDevice and set the trail
-//               log duration in the MouseWatcher. Otherwise, the
-//               trail log will be empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * This TFormer maintains a list of rectangular regions on the screen that are
+ * considered special mouse regions; typically these will be click buttons.
+ * When the mouse passes in or out of one of these regions, or when a button is
+ * clicked while the mouse is in one of these regions, an event is thrown.
+ * Mouse events may also be suppressed from the rest of the datagraph in these
+ * special regions.  This class can also implement a software mouse pointer by
+ * automatically generating a transform to apply to a piece of geometry placed
+ * under the 2-d scene graph.  It will move the geometry around according to the
+ * mouse's known position.  Finally, this class can keep a record of the mouse
+ * trail.  This is useful if you want to know, not just where the mouse is, but
+ * the exact sequence of movements it took to get there.  This information is
+ * mainly useful for gesture-recognition code.  To use trail logging, you need
+ * to enable the generation of pointer events in the GraphicsWindowInputDevice
+ * and set the trail log duration in the MouseWatcher.  Otherwise, the trail log
+ * will be empty.
+ */
 class EXPCL_PANDA_TFORM MouseWatcher : public DataNode, public MouseWatcherBase {
 PUBLISHED:
   MouseWatcher(const string &name = "");

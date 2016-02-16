@@ -11,15 +11,11 @@
  * @date 2002-03-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleNode::Constructor
-//       Access: Public
-//  Description: The AnimBundle and its node should be constructed
-//               together.  Generally, the derived classes of
-//               AnimBundleNode will automatically create a AnimBundle
-//               of the appropriate type, and pass it up to this
-//               constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * The AnimBundle and its node should be constructed together.  Generally, the
+ * derived classes of AnimBundleNode will automatically create a AnimBundle of
+ * the appropriate type, and pass it up to this constructor.
+ */
 INLINE AnimBundleNode::
 AnimBundleNode(const string &name, AnimBundle *bundle) :
   PandaNode(name),
@@ -27,21 +23,16 @@ AnimBundleNode(const string &name, AnimBundle *bundle) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleNode::Default Constructor
-//       Access: Protected
-//  Description: For internal use only.
-////////////////////////////////////////////////////////////////////
+/**
+ * For internal use only.
+ */
 INLINE AnimBundleNode::
 AnimBundleNode() : PandaNode("") {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleNode::Copy Constructor
-//       Access: Protected
-//  Description: Use make_copy() or copy_subgraph() to copy one of
-//               these.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use make_copy() or copy_subgraph() to copy one of these.
+ */
 INLINE AnimBundleNode::
 AnimBundleNode(const AnimBundleNode &copy) :
   PandaNode(copy),
@@ -49,11 +40,9 @@ AnimBundleNode(const AnimBundleNode &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleNode::get_bundle
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE AnimBundle *AnimBundleNode::
 get_bundle() const {
   return _bundle;

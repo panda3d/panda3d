@@ -48,21 +48,17 @@ const int CollisionBox::plane_def[6][4] = {
   {2, 6, 4, 0},
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionSolid *CollisionBox::
 make_copy() {
   return new CollisionBox(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::setup_box
-//       Access: Public, Virtual
-//  Description: Compute parameters for each of the box's sides
-////////////////////////////////////////////////////////////////////
+/**
+ * Compute parameters for each of the box's sides
+ */
 void CollisionBox::
 setup_box(){
   for(int plane = 0; plane < 6; plane++) {
@@ -75,12 +71,9 @@ setup_box(){
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::setup_points
-//       Access: Private
-//  Description: Computes the plane and 2d projection of points that
-//               make up this side.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the plane and 2d projection of points that make up this side.
+ */
 void CollisionBox::
 setup_points(const LPoint3 *begin, const LPoint3 *end, int plane) {
   int num_points = end - begin;
@@ -126,21 +119,17 @@ setup_points(const LPoint3 *begin, const LPoint3 *end, int plane) {
   compute_vectors(_points[plane]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::test_intersection
-//       Access: Public, Virtual
-//  Description: First Dispatch point for box as a FROM object
-////////////////////////////////////////////////////////////////////
+/**
+ * First Dispatch point for box as a FROM object
+ */
 PT(CollisionEntry) CollisionBox::
 test_intersection(const CollisionEntry &entry) const {
   return entry.get_into()->test_intersection_from_box(entry);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::xform
-//       Access: Public, Virtual
-//  Description: Transforms the solid by the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the solid by the indicated matrix.
+ */
 void CollisionBox::
 xform(const LMatrix4 &mat) {
   _min = _min * mat;
@@ -161,68 +150,52 @@ xform(const LMatrix4 &mat) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::get_collision_origin
-//       Access: Public, Virtual
-//  Description: Returns the point in space deemed to be the "origin"
-//               of the solid for collision purposes.  The closest
-//               intersection point to this origin point is considered
-//               to be the most significant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point in space deemed to be the "origin" of the solid for
+ * collision purposes.  The closest intersection point to this origin point is
+ * considered to be the most significant.
+ */
 LPoint3 CollisionBox::
 get_collision_origin() const {
   return _center;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::get_volume_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of bounding volume tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of bounding volume
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionBox::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::get_test_pcollector
-//       Access: Public, Virtual
-//  Description: Returns a PStatCollector that is used to count the
-//               number of intersection tests made against a solid
-//               of this type in a given frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PStatCollector that is used to count the number of intersection
+ * tests made against a solid of this type in a given frame.
+ */
 PStatCollector &CollisionBox::
 get_test_pcollector() {
   return _test_pcollector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionBox::
 output(ostream &out) const {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Sphere is chosen as the Bounding Volume type for 
-//               speed and efficiency
-////////////////////////////////////////////////////////////////////
+/**
+ * Sphere is chosen as the Bounding Volume type for speed and efficiency
+ */
 PT(BoundingVolume) CollisionBox::
 compute_internal_bounds() const {
   return new BoundingSphere(_center, _radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description: Double dispatch point for sphere as FROM object
-////////////////////////////////////////////////////////////////////
+/**
+ * Double dispatch point for sphere as FROM object
+ */
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
 
@@ -252,7 +225,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   bool intersect;
   LPlane plane;
   LVector3 normal;
-  
+
   for(ip = 0, intersect = false; ip < 6 && !intersect; ip++) {
     plane = get_plane( ip );
     if (_points[ip].size() < 3) {
@@ -288,7 +261,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
         // from start pos to end pos), along axis of plane normal
         PN_stdfloat dist_to_p = plane.dist_to_plane(a);
         t = (dist_to_p / -dot);
-            
+
         // also compute the actual contact point and time of contact
         // for handlers that need it
         actual_t = ((dist_to_p - from_radius) / -dot);
@@ -309,7 +282,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     }
 
     normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : plane.get_normal();
-     
+
 #ifndef NDEBUG
     /*if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001), NULL) {
       std::cout
@@ -322,7 +295,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
     // The nearest point within the plane to our center is the
     // intersection of the line (center, center - normal) with the plane.
-    
+
     if (!plane.intersects_line(dist, from_center, -(plane.get_normal()))) {
       // No intersection with plane?  This means the plane's effective
       // normal was within the plane itself.  A useless polygon.
@@ -353,7 +326,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
         edge_dist = dist_to_polygon(p, new_points);
       }
     } else {
-      // No clip plane is in effect.  Do the default test. 
+      // No clip plane is in effect.  Do the default test.
       edge_dist = dist_to_polygon(p, _points[ip]);
     }
 
@@ -367,7 +340,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       continue;
     }
 
-    if((edge_dist > 0) && 
+    if((edge_dist > 0) &&
        ((edge_dist * edge_dist + dist * dist) > from_radius_2)) {
       // No intersection; the circle is outside the polygon.
       continue;
@@ -398,7 +371,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       << "intersection detected from " << entry.get_from_node_path()
       << " into " << entry.get_into_node_path() << "\n";
   }
-  
+
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   PN_stdfloat into_depth = max_dist - dist;
@@ -427,11 +400,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description: Double dispatch point for ray as a FROM object
-////////////////////////////////////////////////////////////////////
+/**
+ * Double dispatch point for ray as a FROM object
+ */
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
@@ -446,7 +417,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   PN_stdfloat near_t = 0.0;
   bool intersect;
   LPlane plane;
-  LPlane near_plane; 
+  LPlane near_plane;
 
   //Returns the details about the first plane of the box that the ray
   //intersects.
@@ -482,7 +453,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     }
     ++j;
   }
-   
+
 
   if(!intersect) {
     //No intersection with ANY of the box's planes has been detected
@@ -500,7 +471,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   LPoint3 into_intersection_point = from_origin + near_t * from_direction;
 
   LVector3 normal =
-    (has_effective_normal() && ray->get_respect_effective_normal()) 
+    (has_effective_normal() && ray->get_respect_effective_normal())
     ? get_effective_normal() : near_plane.get_normal();
 
   new_entry->set_surface_normal(normal);
@@ -510,11 +481,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::test_intersection_from_segment
-//       Access: Public, Virtual
-//  Description: Double dispatch point for segment as a FROM object
-////////////////////////////////////////////////////////////////////
+/**
+ * Double dispatch point for segment as a FROM object
+ */
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *seg;
@@ -584,7 +553,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   LPoint3 into_intersection_point = from_origin + near_t * from_direction;
 
   LVector3 normal =
-    (has_effective_normal() && seg->get_respect_effective_normal()) 
+    (has_effective_normal() && seg->get_respect_effective_normal())
     ? get_effective_normal() : near_plane.get_normal();
 
   new_entry->set_surface_normal(normal);
@@ -593,11 +562,9 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::test_intersection_from_box
-//       Access: Public, Virtual
-//  Description: Double dispatch point for box as a FROM object
-////////////////////////////////////////////////////////////////////
+/**
+ * Double dispatch point for box as a FROM object
+ */
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
@@ -797,12 +764,9 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   return new_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::fill_viz_geom
-//       Access: Protected, Virtual
-//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
-//               for rendering this solid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the _viz_geom GeomNode up with Geoms suitable for rendering this solid.
+ */
 void CollisionBox::
 fill_viz_geom() {
   if (collide_cat.is_debug()) {
@@ -859,17 +823,12 @@ fill_viz_geom() {
   _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::apply_clip_plane
-//       Access: Private
-//  Description: Clips the polygon by all of the clip planes named in
-//               the clip plane attribute and fills new_points up with
-//               the resulting points.
-//
-//               The return value is true if the set of points is
-//               unmodified (all points are behind all the clip
-//               planes), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clips the polygon by all of the clip planes named in the clip plane attribute
+ * and fills new_points up with the resulting points.  The return value is true
+ * if the set of points is unmodified (all points are behind all the clip
+ * planes), or false otherwise.
+ */
 bool CollisionBox::
 apply_clip_plane(CollisionBox::Points &new_points,
                  const ClipPlaneAttrib *cpa,
@@ -908,20 +867,15 @@ apply_clip_plane(CollisionBox::Points &new_points,
 
   return all_in;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::clip_polygon
-//       Access: Private
-//  Description: Clips the source_points of the polygon by the
-//               indicated clipping plane, and modifies new_points to
-//               reflect the new set of clipped points (but does not
-//               compute the vectors in new_points).
-//
-//               The return value is true if the set of points is
-//               unmodified (all points are behind the clip plane), or
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clips the source_points of the polygon by the indicated clipping plane, and
+ * modifies new_points to reflect the new set of clipped points (but does not
+ * compute the vectors in new_points).  The return value is true if the set of
+ * points is unmodified (all points are behind the clip plane), or false
+ * otherwise.
+ */
 bool CollisionBox::
-clip_polygon(CollisionBox::Points &new_points, 
+clip_polygon(CollisionBox::Points &new_points,
              const CollisionBox::Points &source_points,
              const LPlane &plane, int plane_no) const {
   new_points.clear();
@@ -984,7 +938,7 @@ clip_polygon(CollisionBox::Points &new_points,
         new_points.push_back(PointDef(p[0], p[1]));
         last_is_in = this_is_in;
       }
-    } 
+    }
 
     if (this_is_in) {
       // We are behind the clipping line.  Keep the point.
@@ -1000,25 +954,22 @@ clip_polygon(CollisionBox::Points &new_points,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::
-//       Access: Private
-//  Description: Returns the linear distance from the 2-d point to the
-//               nearest part of the polygon defined by the points
-//               vector.  The result is negative if the point is
-//               within the polygon.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the linear distance from the 2-d point to the nearest part of the
+ * polygon defined by the points vector.  The result is negative if the point is
+ * within the polygon.
+ */
 PN_stdfloat CollisionBox::
 dist_to_polygon(const LPoint2 &p, const CollisionBox::Points &points) const {
 
   // We know that that the polygon is convex and is defined with the
   // points in counterclockwise order.  Therefore, we simply compare
   // the signed distance to each line segment; we ignore any negative
-  // values, and take the minimum of all the positive values.  
+  // values, and take the minimum of all the positive values.
 
   // If all values are negative, the point is within the polygon; we
   // therefore return an arbitrary negative result.
-  
+
   bool got_dist = false;
   PN_stdfloat best_dist = -1.0f;
 
@@ -1046,18 +997,14 @@ dist_to_polygon(const LPoint2 &p, const CollisionBox::Points &points) const {
   return best_dist;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::dist_to_line_segment
-//       Access: Private, Static
-//  Description: Returns the linear distance of p to the line segment
-//               defined by f and t, where v = (t - f).normalize().
-//               The result is negative if p is left of the line,
-//               positive if it is right of the line.  If the result
-//               is positive, it is constrained by endpoints of the
-//               line segment (i.e. the result might be larger than it
-//               would be for a straight distance-to-line test).  If
-//               the result is negative, we don't bother.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the linear distance of p to the line segment defined by f and t,
+ * where v = (t - f).normalize(). The result is negative if p is left of the
+ * line, positive if it is right of the line.  If the result is positive, it is
+ * constrained by endpoints of the line segment (i.e.  the result might be
+ * larger than it would be for a straight distance-to-line test).  If the result
+ * is negative, we don't bother.
+ */
 PN_stdfloat CollisionBox::
 dist_to_line_segment(const LPoint2 &p,
                      const LPoint2 &f, const LPoint2 &t,
@@ -1165,12 +1112,10 @@ dist_to_line_segment(const LPoint2 &p,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::point_is_inside
-//       Access: Private
-//  Description: Returns true if the indicated point is within the
-//               polygon's 2-d space, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated point is within the polygon's 2-d space, false
+ * otherwise.
+ */
 bool CollisionBox::
 point_is_inside(const LPoint2 &p, const CollisionBox::Points &points) const {
   // We insist that the polygon be convex.  This makes things a bit simpler.
@@ -1182,7 +1127,7 @@ point_is_inside(const LPoint2 &p, const CollisionBox::Points &points) const {
       return false;
     }
   }
-  if (is_right(p - points[points.size() - 1]._p, 
+  if (is_right(p - points[points.size() - 1]._p,
                points[0]._p - points[points.size() - 1]._p)) {
     return false;
   }
@@ -1190,13 +1135,10 @@ point_is_inside(const LPoint2 &p, const CollisionBox::Points &points) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::compute_vectors
-//       Access: Private, Static
-//  Description: Now that the _p members of the given points array
-//               have been computed, go back and compute all of the _v
-//               members.
-////////////////////////////////////////////////////////////////////
+/**
+ * Now that the _p members of the given points array have been computed, go back
+ * and compute all of the _v members.
+ */
 void CollisionBox::
 compute_vectors(Points &points) {
   size_t num_points = points.size();
@@ -1206,22 +1148,18 @@ compute_vectors(Points &points) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::register_with_read_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a CollisionBox object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionBox object
+ */
 void CollisionBox::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_CollisionBox);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void CollisionBox::
 write_datagram(BamWriter *manager, Datagram &me) {
   CollisionSolid::write_datagram(manager, me);
@@ -1240,8 +1178,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
   for(int i=0; i < 6; i++) {
     _to_2d_mat[i].write_datagram(me);
-  }  
-  for(int i=0; i < 6; i++) {  
+  }
+  for(int i=0; i < 6; i++) {
     me.add_uint16(_points[i].size());
     for (size_t j = 0; j < _points[i].size(); j++) {
       _points[i][j]._p.write_datagram(me);
@@ -1250,11 +1188,9 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::make_CollisionBox
-//       Access: Protected
-//  Description: Factory method to generate a CollisionBox object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a CollisionBox object
+ */
 TypedWritable *CollisionBox::
 make_CollisionBox(const FactoryParams &params) {
   CollisionBox *me = new CollisionBox;
@@ -1266,14 +1202,11 @@ make_CollisionBox(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void CollisionBox::
 fillin(DatagramIterator& scan, BamReader* manager) {
   CollisionSolid::fillin(scan, manager);

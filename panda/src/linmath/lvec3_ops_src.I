@@ -11,57 +11,51 @@
  * @date 2000-03-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: scalar * LVecBase3
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LVecBase3)
 operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase3) &a) {
   return a * scalar;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: scalar * LPoint3
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LPoint3)
 operator * (FLOATTYPE scalar, const FLOATNAME(LPoint3) &a) {
   return a * scalar;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: scalar * LVector3
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LVector3)
 operator * (FLOATTYPE scalar, const FLOATNAME(LVector3) &a) {
   return a * scalar;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: dot product of LVecBase3
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 
 INLINE_LINMATH FLOATTYPE
 dot(const FLOATNAME(LVecBase3) &a, const FLOATNAME(LVecBase3) &b) {
   return a.dot(b);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: cross product of LVecBase3
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 
 INLINE_LINMATH FLOATNAME(LVecBase3)
 cross(const FLOATNAME(LVecBase3) &a, const FLOATNAME(LVecBase3) &b) {
   return a.cross(b);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: cross product of LVector3
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 
 INLINE_LINMATH FLOATNAME(LVector3)
 cross(const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
@@ -69,20 +63,18 @@ cross(const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
 }
 
 #ifndef FLOATTYPE_IS_INT
-////////////////////////////////////////////////////////////////////
-//     Function: length of a vector
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 
 INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVecBase3) &a) {
   return a.length();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: normalize
-//  Description: Returns a normalized vector from the given vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a normalized vector from the given vector.
+ */
 
 INLINE_LINMATH FLOATNAME(LVector3)
 normalize(const FLOATNAME(LVecBase3) &v) {
@@ -92,19 +84,17 @@ normalize(const FLOATNAME(LVecBase3) &v) {
 }
 #endif  // FLOATTYPE_IS_INT
 
-////////////////////////////////////////////////////////////////////
-//     Function: generic_write_datagram
-//  Description: Writes the value to the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the value to the datagram.
+ */
 INLINE_LINMATH void
 generic_write_datagram(Datagram &dest, const FLOATNAME(LVecBase3) &value) {
   value.write_datagram(dest);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: generic_read_datagram
-//  Description: Reads the value from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the value from the datagram.
+ */
 INLINE_LINMATH void
 generic_read_datagram(FLOATNAME(LVecBase3) &result, DatagramIterator &source) {
   result.read_datagram(source);

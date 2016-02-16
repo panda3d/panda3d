@@ -11,11 +11,9 @@
  * @date 2006-03-16
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinkedListNode::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LinkedListNode::
 LinkedListNode() {
 #ifndef NDEBUG
@@ -24,49 +22,37 @@ LinkedListNode() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinkedListNode::Constructor 2
-//       Access: Protected
-//  Description: This constructor should be invoked for any
-//               LinkedListNodes that will be used to serve as the
-//               root of a list.  It sets up the pointers as an empty
-//               list.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor should be invoked for any LinkedListNodes that will be used
+ * to serve as the root of a list.  It sets up the pointers as an empty list.
+ */
 INLINE LinkedListNode::
 LinkedListNode(bool) {
   _next = this;
   _prev = this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinkedListNode::Destructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LinkedListNode::
 ~LinkedListNode() {
   nassertv((_next == NULL && _prev == NULL) || (_next == this && _prev == this));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinkedListNode::is_on_list
-//       Access: Protected
-//  Description: Returns true if the node is member of any list, false
-//               if it has been removed or never added.  The head of a
-//               list generally appears to to always be a member of
-//               itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node is member of any list, false if it has been removed
+ * or never added.  The head of a list generally appears to to always be a
+ * member of itself.
+ */
 INLINE bool LinkedListNode::
 is_on_list() const {
   return (_next != NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinkedListNode::remove_from_list
-//       Access: Protected
-//  Description: Removes a LinkedListNode record from the
-//               doubly-linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a LinkedListNode record from the doubly-linked list.
+ */
 INLINE void LinkedListNode::
 remove_from_list() {
   nassertv(_prev != NULL && _next != NULL);
@@ -79,12 +65,10 @@ remove_from_list() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinkedListNode::insert_before
-//       Access: Protected
-//  Description: Adds a LinkedListNode record before the indicated
-//               node in the doubly-linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a LinkedListNode record before the indicated node in the doubly-linked
+ * list.
+ */
 INLINE void LinkedListNode::
 insert_before(LinkedListNode *node) {
   nassertv(node->_prev != NULL && node->_prev->_next == node && node->_next->_prev == node);
@@ -96,12 +80,10 @@ insert_before(LinkedListNode *node) {
   node->_prev = this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinkedListNode::insert_after
-//       Access: Protected
-//  Description: Adds a LinkedListNode record after the indicated
-//               node in the doubly-linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a LinkedListNode record after the indicated node in the doubly-linked
+ * list.
+ */
 INLINE void LinkedListNode::
 insert_after(LinkedListNode *node) {
   nassertv(node->_prev != NULL && node->_prev->_next == node && node->_next->_prev == node);
@@ -113,14 +95,11 @@ insert_after(LinkedListNode *node) {
   node->_next = this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinkedListNode::take_list_from
-//       Access: Protected
-//  Description: Given that this LinkedListNode represents the root of
-//               a list, and the other pointer represents the root of
-//               a different list, move all of the nodes (except the
-//               root itself) from other_root onto this list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given that this LinkedListNode represents the root of a list, and the other
+ * pointer represents the root of a different list, move all of the nodes
+ * (except the root itself) from other_root onto this list.
+ */
 INLINE void LinkedListNode::
 take_list_from(LinkedListNode *other_root) {
   other_root->_next->_prev = _prev;

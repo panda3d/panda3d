@@ -21,10 +21,9 @@
 
 class PhysxConvexForceFieldShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxConvexForceFieldShape
-// Description : A convex shaped region used to define force field.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convex shaped region used to define force field.
+ */
 class EXPCL_PANDAPHYSX PhysxConvexForceFieldShape : public PhysxForceFieldShape {
 
 PUBLISHED:
@@ -48,7 +47,7 @@ public:
   }
   static void init_type() {
     PhysxForceFieldShape::init_type();
-    register_type(_type_handle, "PhysxConvexForceFieldShape", 
+    register_type(_type_handle, "PhysxConvexForceFieldShape",
                   PhysxForceFieldShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

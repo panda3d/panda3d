@@ -21,14 +21,12 @@
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsWindow
-// Description : An interface to the glx system for managing GL
-//               windows under X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the glx system for managing GL windows under X.
+ */
 class glxGraphicsWindow : public x11GraphicsWindow {
 public:
-  glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -47,7 +45,7 @@ protected:
 private:
   virtual void setup_colormap(GLXFBConfig fbconfig);
   virtual void setup_colormap(XVisualInfo *visual);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

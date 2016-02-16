@@ -36,23 +36,16 @@ class PStatCollectorDef;
 class PStatThread;
 class GraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatClient
-// Description : Manages the communications to report statistics via a
-//               network connection to a remote PStatServer.
-//
-//               Normally, there is only one PStatClient in the world,
-//               although it is possible to have multiple PStatClients
-//               if extraordinary circumstances require in.  Since
-//               each PStatCollector registers itself with the
-//               PStatClient when it is created, having multiple
-//               PStatClients requires special care when constructing
-//               the various PStatCollectors.
-//
-//               If DO_PSTATS is not defined, we don't want to use
-//               stats at all.  This class is therefore defined as a
-//               stub class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Manages the communications to report statistics via a network connection to a
+ * remote PStatServer.  Normally, there is only one PStatClient in the world,
+ * although it is possible to have multiple PStatClients if extraordinary
+ * circumstances require in.  Since each PStatCollector registers itself with
+ * the PStatClient when it is created, having multiple PStatClients requires
+ * special care when constructing the various PStatCollectors.  If DO_PSTATS is
+ * not defined, we don't want to use stats at all.  This class is therefore
+ * defined as a stub class.
+ */
 #ifdef DO_PSTATS
 class EXPCL_PANDA_PSTATCLIENT PStatClient : public ConnectionManager, public Thread::PStatsCallback {
 public:

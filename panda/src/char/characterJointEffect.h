@@ -22,17 +22,13 @@
 #include "character.h"
 #include "weakPointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CharacterJointEffect
-// Description : This effect will be added automatically to a node by
-//               CharacterJoint::add_net_transform() and
-//               CharacterJoint::add_local_transform().
-//
-//               The effect binds the node back to the character, so
-//               that querying the relative transform of the affected
-//               node will automatically force the indicated character
-//               to be updated first.
-////////////////////////////////////////////////////////////////////
+/**
+ * This effect will be added automatically to a node by
+ * CharacterJoint::add_net_transform() and
+ * CharacterJoint::add_local_transform().  The effect binds the node back to the
+ * character, so that querying the relative transform of the affected node will
+ * automatically force the indicated character to be updated first.
+ */
 class EXPCL_PANDA_CHAR CharacterJointEffect : public RenderEffect {
 private:
   INLINE CharacterJointEffect();
@@ -72,7 +68,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -94,4 +90,3 @@ private:
 #include "characterJointEffect.I"
 
 #endif
-

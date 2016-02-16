@@ -19,13 +19,11 @@
 #include "eglGraphicsPipe.h"
 #include "graphicsBuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsPixmap
-// Description : Another offscreen buffer in the EGL environment.  This
-//               creates a Pixmap object, which is probably less
-//               efficient than an EGLPBuffer, so this class is a
-//               second choice to eglGraphicsBuffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another offscreen buffer in the EGL environment.  This creates a Pixmap
+ * object, which is probably less efficient than an EGLPBuffer, so this class is
+ * a second choice to eglGraphicsBuffer.
+ */
 class eglGraphicsPixmap : public GraphicsBuffer {
 public:
   eglGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,

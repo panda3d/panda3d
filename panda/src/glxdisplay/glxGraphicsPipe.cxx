@@ -22,11 +22,9 @@
 
 TypeHandle glxGraphicsPipe::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 glxGraphicsPipe::
 glxGraphicsPipe(const string &display) : x11GraphicsPipe(display) {
   if (_display == None) {
@@ -45,38 +43,29 @@ glxGraphicsPipe(const string &display) : x11GraphicsPipe(display) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to choose
+ * between several possible GraphicsPipes available on a particular platform, so
+ * the name should be meaningful and unique for a given platform.
+ */
 string glxGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               glxGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the user
+ * to make a default glxGraphicsPipe.
+ */
 PT(GraphicsPipe) glxGraphicsPipe::
 pipe_constructor() {
   return new glxGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) glxGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -218,15 +207,12 @@ make_output(const string &name,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPipe::make_callback_gsg
-//       Access: Protected, Virtual
-//  Description: This is called when make_output() is used to create a
-//               CallbackGraphicsWindow.  If the GraphicsPipe can
-//               construct a GSG that's not associated with any
-//               particular window object, do so now, assuming the
-//               correct graphics context has been set up externally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called when make_output() is used to create a CallbackGraphicsWindow.
+ * If the GraphicsPipe can construct a GSG that's not associated with any
+ * particular window object, do so now, assuming the correct graphics context
+ * has been set up externally.
+ */
 PT(GraphicsStateGuardian) glxGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
   // We create a PosixGraphicsStateGuardian instead of a

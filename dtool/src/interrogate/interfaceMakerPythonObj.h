@@ -28,12 +28,10 @@ class CPPInstance;
 class FunctionWriterPtrFromPython;
 class FunctionWriterPtrToPython;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMakerPythonObj
-// Description : An InterfaceMaker suitable for generating
-//               object-oriented Python code, that can be imported and
-//               used directly by Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * An InterfaceMaker suitable for generating object-oriented Python code, that
+ * can be imported and used directly by Python.
+ */
 class InterfaceMakerPythonObj : public InterfaceMakerPython {
 public:
   InterfaceMakerPythonObj(InterrogateModuleDef *def);

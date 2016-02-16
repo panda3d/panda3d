@@ -42,21 +42,16 @@ class URLSpec;
 class HTTPChannel;
 class SocketStream;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConnectionRepository
-// Description : This class implements the C++ side of the
-//               ConnectionRepository object.  In particular, it
-//               manages the connection to the server once it has been
-//               opened (but does not open it directly).  It manages
-//               reading and writing datagrams on the connection and
-//               monitoring for unexpected disconnects as well as
-//               handling intentional disconnects.
-//
-//               Certain server messages, like field updates, are
-//               handled entirely within the C++ layer, while server
-//               messages that are not understood by the C++ layer are
-//               returned up to the Python layer for processing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements the C++ side of the ConnectionRepository object.  In
+ * particular, it manages the connection to the server once it has been opened
+ * (but does not open it directly).  It manages reading and writing datagrams on
+ * the connection and monitoring for unexpected disconnects as well as handling
+ * intentional disconnects.  Certain server messages, like field updates, are
+ * handled entirely within the C++ layer, while server messages that are not
+ * understood by the C++ layer are returned up to the Python layer for
+ * processing.
+ */
 class EXPCL_DIRECT CConnectionRepository {
 PUBLISHED:
   CConnectionRepository(bool has_owner_view = false,

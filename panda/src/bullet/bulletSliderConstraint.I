@@ -11,36 +11,29 @@
  * @date 2010-03-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSliderConstraint::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletSliderConstraint::
 ~BulletSliderConstraint() {
 
   delete _constraint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSliderConstraint::get_frame_a
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CPT(TransformState) BulletSliderConstraint::
 get_frame_a() const {
 
   return btTrans_to_TransformState(_constraint->getFrameOffsetA());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSliderConstraint::get_frame_b
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CPT(TransformState) BulletSliderConstraint::
 get_frame_b() const {
 
   return btTrans_to_TransformState(_constraint->getFrameOffsetB());
 }
-

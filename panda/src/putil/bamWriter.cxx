@@ -23,11 +23,9 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BamWriter::
 BamWriter(DatagramSink *target) :
   _target(target)
@@ -48,11 +46,9 @@ BamWriter(DatagramSink *target) :
   _file_texture_mode = bam_texture_mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BamWriter::
 ~BamWriter() {
   // Tell all the TypedWritables whose pointer we are still keeping to
@@ -64,13 +60,10 @@ BamWriter::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::set_target
-//       Access: Published
-//  Description: Changes the destination of future datagrams written
-//               by the BamWriter.  This also implicitly calls init()
-//               if it has not already been called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the destination of future datagrams written by the BamWriter.  This
+ * also implicitly calls init() if it has not already been called.
+ */
 void BamWriter::
 set_target(DatagramSink *target) {
   if (_target != NULL) {
@@ -83,16 +76,11 @@ set_target(DatagramSink *target) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::init
-//       Access: Published
-//  Description: Initializes the BamWriter prior to writing any
-//               objects to its output stream.  This includes writing
-//               out the Bam header.
-//
-//               This returns true if the BamWriter successfully
-//               initialized, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the BamWriter prior to writing any objects to its output stream.
+ * This includes writing out the Bam header.  This returns true if the BamWriter
+ * successfully initialized, false otherwise.
+ */
 bool BamWriter::
 init() {
   nassertr(_target != NULL, false);
@@ -125,28 +113,18 @@ init() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_object
-//       Access: Published
-//  Description: Writes a single object to the Bam file, so that the
-//               BamReader::read_object() can later correctly restore
-//               the object and all its pointers.
-//
-//               This implicitly also writes any additional objects
-//               this object references (if they haven't already been
-//               written), so that pointers may be fully resolved.
-//
-//               This may be called repeatedly to write a sequence of
-//               objects to the Bam file, but typically (especially
-//               for scene graph files, indicated with the .bam
-//               extension), only one object is written directly from
-//               the Bam file: the root of the scene graph.  The
-//               remaining objects will all be written recursively by
-//               the first object.
-//
-//               Returns true if the object is successfully written,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a single object to the Bam file, so that the BamReader::read_object()
+ * can later correctly restore the object and all its pointers.  This implicitly
+ * also writes any additional objects this object references (if they haven't
+ * already been written), so that pointers may be fully resolved.  This may be
+ * called repeatedly to write a sequence of objects to the Bam file, but
+ * typically (especially for scene graph files, indicated with the .bam
+ * extension), only one object is written directly from the Bam file: the root
+ * of the scene graph.  The remaining objects will all be written recursively by
+ * the first object.  Returns true if the object is successfully written, false
+ * otherwise.
+ */
 bool BamWriter::
 write_object(const TypedWritable *object) {
   nassertr(_target != NULL, false);
@@ -196,42 +174,31 @@ write_object(const TypedWritable *object) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::has_object
-//       Access: Published
-//  Description: Returns true if the object has previously been
-//               written (or at least requested to be written) to the
-//               bam file, or false if we've never heard of it before.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the object has previously been written (or at least requested
+ * to be written) to the bam file, or false if we've never heard of it before.
+ */
 bool BamWriter::
 has_object(const TypedWritable *object) const {
   StateMap::const_iterator si = _state_map.find(object);
   return (si != _state_map.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::flush
-//       Access: Published
-//  Description: Ensures that all data written thus far is manifested
-//               on the output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that all data written thus far is manifested on the output stream.
+ */
 void BamWriter::
 flush() {
   nassertv(_target != NULL);
   _target->flush();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::consider_update
-//       Access: Public
-//  Description: Should be called from
-//               TypedWritable::update_bam_nested() to recursively
-//               check the entire hiererachy of writable objects for
-//               needed updates.  This tests the indicated
-//               TypedWritable object and writes it to the bam stream
-//               if it has recently been modified, then recurses
-//               through update_bam_nested.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called from TypedWritable::update_bam_nested() to recursively check
+ * the entire hiererachy of writable objects for needed updates.  This tests the
+ * indicated TypedWritable object and writes it to the bam stream if it has
+ * recently been modified, then recurses through update_bam_nested.
+ */
 void BamWriter::
 consider_update(const TypedWritable *object) {
   StateMap::iterator si = _state_map.find(object);
@@ -254,26 +221,20 @@ consider_update(const TypedWritable *object) {
   } else {
     // Mark that we have now visited this object and pronounced it clean.
     (*si).second._written_seq = _writing_seq;
-    
+
     // Recurse to child objects.
     ((TypedWritable *)object)->update_bam_nested(this);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_pointer
-//       Access: Public
-//  Description: The interface for writing a pointer to another object
-//               to a Bam file.  This is intended to be called by the
-//               various objects that write themselves to the Bam
-//               file, within the write_datagram() method.
-//
-//               This writes the pointer out in such a way that the
-//               BamReader will be able to restore the pointer later.
-//               If the pointer is to an object that has not yet
-//               itself been written to the Bam file, that object will
-//               automatically be written.
-////////////////////////////////////////////////////////////////////
+/**
+ * The interface for writing a pointer to another object to a Bam file.  This is
+ * intended to be called by the various objects that write themselves to the Bam
+ * file, within the write_datagram() method.  This writes the pointer out in
+ * such a way that the BamReader will be able to restore the pointer later.  If
+ * the pointer is to an object that has not yet itself been written to the Bam
+ * file, that object will automatically be written.
+ */
 void BamWriter::
 write_pointer(Datagram &packet, const TypedWritable *object) {
   // If the pointer is NULL, we always simply write a zero for an
@@ -315,15 +276,12 @@ write_pointer(Datagram &packet, const TypedWritable *object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_file_data
-//       Access: Public
-//  Description: Writes a block of auxiliary file data from the
-//               indicated file (within the vfs).  This can be a block
-//               of arbitrary size, and it is assumed it may be quite
-//               large.  This must be balanced by a matching call to
-//               read_file_data() on restore.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a block of auxiliary file data from the indicated file (within the
+ * vfs).  This can be a block of arbitrary size, and it is assumed it may be
+ * quite large.  This must be balanced by a matching call to read_file_data() on
+ * restore.
+ */
 void BamWriter::
 write_file_data(SubfileInfo &result, const Filename &filename) {
   // We write file data by preceding with a singleton datagram that
@@ -349,15 +307,12 @@ write_file_data(SubfileInfo &result, const Filename &filename) {
   // out in the same order and queued up in the BamReader.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_file_data
-//       Access: Public
-//  Description: Writes a block of auxiliary file data from the
-//               indicated file (outside of the vfs).  This can be a
-//               block of arbitrary size, and it is assumed it may be
-//               quite large.  This must be balanced by a matching
-//               call to read_file_data() on restore.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a block of auxiliary file data from the indicated file (outside of the
+ * vfs).  This can be a block of arbitrary size, and it is assumed it may be
+ * quite large.  This must be balanced by a matching call to read_file_data() on
+ * restore.
+ */
 void BamWriter::
 write_file_data(SubfileInfo &result, const SubfileInfo &source) {
   // We write file data by preceding with a singleton datagram that
@@ -383,16 +338,12 @@ write_file_data(SubfileInfo &result, const SubfileInfo &source) {
   // out in the same order and queued up in the BamReader.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_cdata
-//       Access: Public
-//  Description: Writes out the indicated CycleData object.  This
-//               should be used by classes that store some or all of
-//               their data within a CycleData subclass, in support of
-//               pipelining.  This will call the virtual
-//               CycleData::write_datagram() method to do the actual
-//               writing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the indicated CycleData object.  This should be used by classes
+ * that store some or all of their data within a CycleData subclass, in support
+ * of pipelining.  This will call the virtual CycleData::write_datagram() method
+ * to do the actual writing.
+ */
 void BamWriter::
 write_cdata(Datagram &packet, const PipelineCyclerBase &cycler) {
   const CycleData *cdata = cycler.read(Thread::get_current_thread());
@@ -400,12 +351,10 @@ write_cdata(Datagram &packet, const PipelineCyclerBase &cycler) {
   cycler.release_read(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_cdata
-//       Access: Public
-//  Description: This version of write_cdata allows passing an
-//               additional parameter to cdata->write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * This version of write_cdata allows passing an additional parameter to
+ * cdata->write_datagram().
+ */
 void BamWriter::
 write_cdata(Datagram &packet, const PipelineCyclerBase &cycler,
             void *extra_data) {
@@ -414,24 +363,16 @@ write_cdata(Datagram &packet, const PipelineCyclerBase &cycler,
   cycler.release_read(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::register_pta
-//       Access: Public
-//  Description: Prepares to write a PointerToArray to the Bam file,
-//               unifying references to the same pointer across the
-//               Bam file.
-//
-//               The writing object should call this prior to writing
-//               out a PointerToArray.  It will return true if the
-//               same pointer has been written previously, in which
-//               case the writing object need do nothing further; or
-//               it will return false if this particular pointer has
-//               not yet been written, in which case the writing
-//               object must then write out the contents of the array.
-//
-//               Also see the WRITE_PTA() macro, which consolidates
-//               the work that must be done to write a PTA.
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepares to write a PointerToArray to the Bam file, unifying references to
+ * the same pointer across the Bam file.  The writing object should call this
+ * prior to writing out a PointerToArray.  It will return true if the same
+ * pointer has been written previously, in which case the writing object need do
+ * nothing further; or it will return false if this particular pointer has not
+ * yet been written, in which case the writing object must then write out the
+ * contents of the array.  Also see the WRITE_PTA() macro, which consolidates
+ * the work that must be done to write a PTA.
+ */
 bool BamWriter::
 register_pta(Datagram &packet, const void *ptr) {
   if (ptr == (const void *)NULL) {
@@ -475,13 +416,10 @@ register_pta(Datagram &packet, const void *ptr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_handle
-//       Access: Public
-//  Description: Writes a TypeHandle to the file in such a way that
-//               the BamReader can read the same TypeHandle later via
-//               read_handle().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a TypeHandle to the file in such a way that the BamReader can read the
+ * same TypeHandle later via read_handle().
+ */
 void BamWriter::
 write_handle(Datagram &packet, TypeHandle type) {
   // We encode TypeHandles within the Bam file by writing a unique
@@ -522,15 +460,12 @@ write_handle(Datagram &packet, TypeHandle type) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::object_destructs
-//       Access: Private
-//  Description: This is called by the TypedWritable destructor.  It
-//               should remove the pointer from any structures that
-//               keep a reference to it, and also write a flag to the
-//               bam file (if it is open) so that a reader will know
-//               the object id will no longer be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the TypedWritable destructor.  It should remove the pointer
+ * from any structures that keep a reference to it, and also write a flag to the
+ * bam file (if it is open) so that a reader will know the object id will no
+ * longer be used.
+ */
 void BamWriter::
 object_destructs(TypedWritable *object) {
   StateMap::iterator si = _state_map.find(object);
@@ -546,16 +481,14 @@ object_destructs(TypedWritable *object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_object_id
-//       Access: Private
-//  Description: Writes the indicated object id to the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated object id to the datagram.
+ */
 void BamWriter::
 write_object_id(Datagram &dg, int object_id) {
   if (_long_object_id) {
     dg.add_uint32(object_id);
-    
+
   } else {
     dg.add_uint16(object_id);
     // Once we fill up our uint16, we write all object id's
@@ -566,16 +499,14 @@ write_object_id(Datagram &dg, int object_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::write_pta_id
-//       Access: Private
-//  Description: Writes the indicated pta id to the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated pta id to the datagram.
+ */
 void BamWriter::
 write_pta_id(Datagram &dg, int pta_id) {
   if (_long_pta_id) {
     dg.add_uint32(pta_id);
-    
+
   } else {
     dg.add_uint16(pta_id);
     // Once we fill up our uint16, we write all pta id's
@@ -586,15 +517,10 @@ write_pta_id(Datagram &dg, int pta_id) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::enqueue_object
-//       Access: Private
-//  Description: Assigns an object ID to the object and queues it up
-//               for later writing to the Bam file.
-//
-//               The return value is the object ID, or 0 if there is
-//               an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns an object ID to the object and queues it up for later writing to the
+ * Bam file.  The return value is the object ID, or 0 if there is an error.
+ */
 int BamWriter::
 enqueue_object(const TypedWritable *object) {
   Datagram dg;
@@ -607,7 +533,7 @@ enqueue_object(const TypedWritable *object) {
 #ifndef NDEBUG
   if (!object->is_of_type(TypedWritable::get_class_type())) {
     util_cat.error()
-      << "Type " << object->get_type() 
+      << "Type " << object->get_type()
       << " does not indicate inheritance from TypedWritable.\n"
       << "(this is almost certainly an oversight in " << object->get_type()
       << "::init_type().)\n";
@@ -642,14 +568,10 @@ enqueue_object(const TypedWritable *object) {
   return object_id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamWriter::flush_queue
-//       Access: Private
-//  Description: Writes all of the objects on the _object_queue to the
-//               bam stream, until the queue is empty.
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes all of the objects on the _object_queue to the bam stream, until the
+ * queue is empty.  Returns true on success, false on failure.
+ */
 bool BamWriter::
 flush_queue() {
   nassertr(_target != NULL, false);
@@ -692,7 +614,7 @@ flush_queue() {
 
       // Determine what the nearest kind of type is that the reader
       // will be able to handle, and write that instead.
-      TypeHandle registered_type = 
+      TypeHandle registered_type =
         BamReader::get_factory()->find_registered_type(type);
       if (registered_type == TypeHandle::none()) {
         // We won't be able to read this type again.

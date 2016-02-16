@@ -26,14 +26,11 @@
 #include "referenceCount.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsSurfaceEvaluator
-// Description : This class is an abstraction for evaluating NURBS
-//               surfaces.  It accepts an array of vertices, each of
-//               which may be in a different coordinate space (as
-//               defined by a NodePath), as well as an optional knot
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is an abstraction for evaluating NURBS surfaces.  It accepts an
+ * array of vertices, each of which may be in a different coordinate space (as
+ * defined by a NodePath), as well as an optional knot vector.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsSurfaceEvaluator : public ReferenceCount {
 PUBLISHED:
   NurbsSurfaceEvaluator();
@@ -60,7 +57,7 @@ PUBLISHED:
 
   INLINE void set_extended_vertex(int ui, int vi, int d, PN_stdfloat value);
   INLINE PN_stdfloat get_extended_vertex(int ui, int vi, int d) const;
-  void set_extended_vertices(int ui, int vi, int d, 
+  void set_extended_vertices(int ui, int vi, int d,
                              const PN_stdfloat values[], int num_values);
 
   INLINE int get_num_u_knots() const;
@@ -122,4 +119,3 @@ INLINE ostream &operator << (ostream &out, const NurbsSurfaceEvaluator &n);
 #include "nurbsSurfaceEvaluator.I"
 
 #endif
-

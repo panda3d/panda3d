@@ -26,11 +26,9 @@
 #endif
 #include <windows.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustWin32Impl
-// Description : Uses Windows native calls to implement atomic
-//               adjustments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses Windows native calls to implement atomic adjustments.
+ */
 class EXPCL_DTOOL AtomicAdjustWin32Impl {
 public:
 #ifdef _WIN64

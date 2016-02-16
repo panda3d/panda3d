@@ -31,4 +31,3 @@
 #endif
 
 #endif  // SPEEDTREE_API_H
-

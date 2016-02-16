@@ -16,11 +16,9 @@
 
 TypeHandle PhysxCapsuleShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleShape::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxCapsuleShape::
 link(NxShape *shapePtr) {
 
@@ -34,11 +32,9 @@ link(NxShape *shapePtr) {
   actor->_shapes.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleShape::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxCapsuleShape::
 unlink() {
 
@@ -49,12 +45,9 @@ unlink() {
   actor->_shapes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleShape::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the shape object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the shape object to a descriptor.
+ */
 void PhysxCapsuleShape::
 save_to_desc(PhysxCapsuleShapeDesc &shapeDesc) const {
 
@@ -62,11 +55,9 @@ save_to_desc(PhysxCapsuleShapeDesc &shapeDesc) const {
   _ptr->saveToDesc(shapeDesc._desc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleShape::set_radius
-//       Access: Published
-//  Description: Alters the radius of the capsule.
-////////////////////////////////////////////////////////////////////
+/**
+ * Alters the radius of the capsule.
+ */
 void PhysxCapsuleShape::
 set_radius(float radius) {
 
@@ -74,11 +65,9 @@ set_radius(float radius) {
   _ptr->setRadius(radius);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleShape::set_height
-//       Access: Published
-//  Description: Alters the height of the capsule.
-////////////////////////////////////////////////////////////////////
+/**
+ * Alters the height of the capsule.
+ */
 void PhysxCapsuleShape::
 set_height(float height) {
 
@@ -86,11 +75,9 @@ set_height(float height) {
   _ptr->setHeight(height);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleShape::get_radius
-//       Access: Published
-//  Description: Retrieves the radius of the capsule.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the radius of the capsule.
+ */
 float PhysxCapsuleShape::
 get_radius() const {
 
@@ -98,15 +85,12 @@ get_radius() const {
   return _ptr->getRadius();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleShape::get_height
-//       Access: Published
-//  Description: Retrieves the height of the capsule.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the height of the capsule.
+ */
 float PhysxCapsuleShape::
 get_height() const {
 
   nassertr(_error_type == ET_ok, 0.0f);
   return _ptr->getHeight();
 }
-

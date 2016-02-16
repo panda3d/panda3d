@@ -21,12 +21,11 @@
 #include "pandaNode.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimBundleNode
-// Description : This is a node that contains a pointer to an
-//               AnimBundle.  Like PartBundleNode, it exists solely to
-//               make it easy to store AnimBundles in the scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a node that contains a pointer to an AnimBundle.  Like
+ * PartBundleNode, it exists solely to make it easy to store AnimBundles in the
+ * scene graph.
+ */
 class EXPCL_PANDA_CHAN AnimBundleNode : public PandaNode {
 PUBLISHED:
   INLINE AnimBundleNode(const string &name, AnimBundle *bundle);
@@ -41,7 +40,7 @@ public:
 
 PUBLISHED:
   INLINE AnimBundle *get_bundle() const;
-  
+
   static AnimBundle *find_anim_bundle(PandaNode *root);
 
 private:

@@ -21,17 +21,16 @@
 
 class CLP(GeomMunger);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLGeomContext
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_GL CLP(GeomContext) : public GeomContext {
 public:
   INLINE CLP(GeomContext)(Geom *geom);
   virtual ~CLP(GeomContext)();
   ALLOC_DELETED_CHAIN(CLP(GeomContext));
 
-  bool get_display_list(GLuint &index, const CLP(GeomMunger) *munger, 
+  bool get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
                         UpdateSeq modified);
   void release_display_lists();
 
@@ -74,4 +73,3 @@ private:
 };
 
 #include "glGeomContext_src.I"
-

@@ -24,14 +24,12 @@
 
 TypeHandle FadeLODNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FadeLODNode::
 FadeLODNode(const string &name) :
-  LODNode(name) 
+  LODNode(name)
 {
   set_cull_callback();
 
@@ -41,11 +39,9 @@ FadeLODNode(const string &name) :
   _fade_state_override = lod_fade_state_override;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FadeLODNode::
 FadeLODNode(const FadeLODNode &copy) :
   LODNode(copy)
@@ -56,44 +52,30 @@ FadeLODNode(const FadeLODNode &copy) :
   _fade_state_override = copy._fade_state_override;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *FadeLODNode::
 make_copy() const {
   return new FadeLODNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool FadeLODNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (!support_fade_lod) {
@@ -108,7 +90,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   Camera *camera = trav->get_scene()->get_camera_node();
   NodePath this_np = data._node_path.get_node_path();
-  FadeLODNodeData *ldata = 
+  FadeLODNodeData *ldata =
     DCAST(FadeLODNodeData, camera->get_aux_scene_data(this_np));
 
   double now = ClockObject::get_global_clock()->get_frame_time();
@@ -142,13 +124,13 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           // more-detailed model.
           ldata->_fade_mode = FadeLODNodeData::FM_more_detail;
         }
-        
+
         // We start the fade as of the last frame we actually rendered;
         // that way, if the object happened to be offscreen for a large
         // part of the fade, we'll just view the tail end of it--a
         // little nicer.
         ldata->_fade_start = ldata->get_last_render_time();
-        ldata->_fade_out = ldata->_fade_in; 
+        ldata->_fade_out = ldata->_fade_in;
         ldata->_fade_in = index;
       }
     }
@@ -157,7 +139,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // Play the transition.
 
       PN_stdfloat elapsed = now - ldata->_fade_start;
-        
+
       if (elapsed >= _fade_time) {
         // Transition complete.
         ldata->_fade_mode = FadeLODNodeData::FM_solid;
@@ -167,7 +149,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
         int in_child = ldata->_fade_in;
         int out_child = ldata->_fade_out;
-        
+
         if (ldata->_fade_mode == FadeLODNodeData::FM_less_detail) {
           // If we're fading from a more-detailed model to a
           // less-detailed model, reverse the fade effect for best
@@ -179,7 +161,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         }
 
         nassertr(elapsed >= 0.0f && elapsed <= _fade_time, false);
-        
+
         if (elapsed < half_fade_time) {
           // FIRST HALF OF FADE
           // Fade the new LOD in with z writing off
@@ -188,45 +170,45 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             PandaNode *child = get_child(out_child);
             if (child != (PandaNode *)NULL) {
               CullTraverserData next_data_out(data, child);
-              next_data_out._state = 
+              next_data_out._state =
                 next_data_out._state->compose(get_fade_1_old_state());
               trav->traverse(next_data_out);
             }
           }
-          
+
           if (in_child >= 0 && in_child < get_num_children()) {
             PandaNode *child = get_child(in_child);
             if (child != (PandaNode *)NULL) {
               CullTraverserData next_data_in(data, child);
-              
+
               PN_stdfloat in_alpha = elapsed / half_fade_time;
-              next_data_in._state = 
+              next_data_in._state =
                 next_data_in._state->compose(get_fade_1_new_state(in_alpha));
               trav->traverse(next_data_in);
             }
           }
-          
+
         } else {
           // SECOND HALF OF FADE:
-          // Fade out the old LOD with z write off and 
+          // Fade out the old LOD with z write off and
           // draw the opaque new LOD with z write on
           if (in_child >= 0 && in_child < get_num_children()) {
             PandaNode *child = get_child(in_child);
             if (child != (PandaNode *)NULL) {
               CullTraverserData next_data_in(data, child);
-              next_data_in._state = 
+              next_data_in._state =
                 next_data_in._state->compose(get_fade_2_new_state());
               trav->traverse(next_data_in);
             }
           }
-          
+
           if (out_child >= 0 && out_child < get_num_children()) {
             PandaNode *child = get_child(out_child);
             if (child != (PandaNode *)NULL) {
               CullTraverserData next_data_out(data, child);
-              
-              PN_stdfloat out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
-              next_data_out._state = 
+
+              PN_stdfloat out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;
+              next_data_out._state =
                 next_data_out._state->compose(get_fade_2_old_state(out_alpha));
               trav->traverse(next_data_out);
             }
@@ -251,28 +233,23 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   ldata->set_last_render_time(now);
   ldata->set_duration(_fade_time);
-    
+
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FadeLODNode::
 output(ostream &out) const {
   LODNode::output(out);
   out << " fade time: " << _fade_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::set_fade_bin
-//       Access: Published
-//  Description: Specifies the cull bin and draw order that is
-//               assigned to the fading part of the geometry during a
-//               transition.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the cull bin and draw order that is assigned to the fading part of
+ * the geometry during a transition.
+ */
 void FadeLODNode::
 set_fade_bin(const string &name, int draw_order) {
   _fade_bin_name = name;
@@ -281,14 +258,11 @@ set_fade_bin(const string &name, int draw_order) {
   _fade_2_old_state.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::set_fade_state_override
-//       Access: Published
-//  Description: Specifies the override value that is applied to the
-//               state changes necessary to apply the fade effect.
-//               This should be larger than any attrib overrides on
-//               the fading geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the override value that is applied to the state changes necessary
+ * to apply the fade effect.  This should be larger than any attrib overrides on
+ * the fading geometry.
+ */
 void FadeLODNode::
 set_fade_state_override(int override) {
   _fade_state_override = override;
@@ -298,12 +272,10 @@ set_fade_state_override(int override) {
   _fade_2_new_state.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::get_fade_1_old_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering the old element
-//               during first half of fade.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering the old element during first half of
+ * fade.
+ */
 CPT(RenderState) FadeLODNode::
 get_fade_1_old_state() {
   if (_fade_1_old_state == (const RenderState *)NULL) {
@@ -313,12 +285,10 @@ get_fade_1_old_state() {
   return _fade_1_old_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::get_fade_1_new_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering the new element
-//               during first half of fade.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering the new element during first half of
+ * fade.
+ */
 CPT(RenderState) FadeLODNode::
 get_fade_1_new_state(PN_stdfloat in_alpha) {
   if (_fade_1_new_state == (const RenderState *)NULL) {
@@ -334,12 +304,10 @@ get_fade_1_new_state(PN_stdfloat in_alpha) {
     (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::get_fade_2_old_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering the old element
-//               during second half of fade.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering the old element during second half of
+ * fade.
+ */
 CPT(RenderState) FadeLODNode::
 get_fade_2_old_state(PN_stdfloat out_alpha) {
   if (_fade_2_old_state == (const RenderState *)NULL) {
@@ -355,12 +323,10 @@ get_fade_2_old_state(PN_stdfloat out_alpha) {
     (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::get_fade_2_new_state
-//       Access: Protected
-//  Description: Returns a RenderState for rendering the new element
-//               during second half of fade.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering the new element during second half of
+ * fade.
+ */
 CPT(RenderState) FadeLODNode::
 get_fade_2_new_state() {
   if (_fade_2_new_state == (const RenderState *)NULL) {
@@ -372,36 +338,28 @@ get_fade_2_new_state() {
   return _fade_2_new_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               LODNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type LODNode.
+ */
 void FadeLODNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void FadeLODNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   LODNode::write_datagram(manager, dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type LODNode is encountered
-//               in the Bam file.  It should create the LODNode
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * LODNode is encountered in the Bam file.  It should create the LODNode and
+ * extract its information from the file.
+ */
 TypedWritable *FadeLODNode::
 make_from_bam(const FactoryParams &params) {
   FadeLODNode *node = new FadeLODNode("");
@@ -414,13 +372,10 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new FadeLODNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new FadeLODNode.
+ */
 void FadeLODNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   LODNode::fillin(scan, manager);

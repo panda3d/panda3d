@@ -15,46 +15,36 @@
 #include "physxMotorDesc.h"
 #include "physxManager.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::set_distance
-//       Access: Published
-//  Description: Sets the rest length of the rope connecting the
-//               two objects. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the rest length of the rope connecting the two objects.
+ */
 void PhysxPulleyJointDesc::
 set_distance(float distance) {
 
   _desc.distance = distance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::set_stiffness
-//       Access: Published
-//  Description: Sets how stiff the constraint is, between 0 and 1
-//               (stiffest)
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets how stiff the constraint is, between 0 and 1 (stiffest)
+ */
 void PhysxPulleyJointDesc::
 set_stiffness(float stiffness) {
 
   _desc.stiffness = stiffness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::set_ratio
-//       Access: Published
-//  Description: Sets the transmission ratio.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the transmission ratio.
+ */
 void PhysxPulleyJointDesc::
 set_ratio(float ratio) {
 
   _desc.ratio = ratio;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::set_flag
-//       Access: Published
-//  Description: Sets or clears a single PulleyJointFlag flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets or clears a single PulleyJointFlag flag.
+ */
 void PhysxPulleyJointDesc::
 set_flag(PhysxPulleyJointFlag flag, bool value) {
 
@@ -66,12 +56,9 @@ set_flag(PhysxPulleyJointFlag flag, bool value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::set_pulley
-//       Access: Published
-//  Description: Sets the suspension points of two bodies in world
-//               space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the suspension points of two bodies in world space.
+ */
 void PhysxPulleyJointDesc::
 set_pulley(unsigned int idx, const LPoint3f pos) {
 
@@ -79,66 +66,54 @@ set_pulley(unsigned int idx, const LPoint3f pos) {
   _desc.pulley[idx] = PhysxManager::point3_to_nxVec3(pos);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::set_motor
-//       Access: Published
-//  Description: Sets an optional joint motor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets an optional joint motor.
+ */
 void PhysxPulleyJointDesc::
 set_motor(const PhysxMotorDesc &motor) {
 
   _desc.motor = motor._desc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::get_distance
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxPulleyJointDesc::
 get_distance() const {
 
   return _desc.distance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::get_stiffness
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxPulleyJointDesc::
 get_stiffness() const {
 
   return _desc.stiffness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::get_ratio
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxPulleyJointDesc::
 get_ratio() const {
 
   return _desc.ratio;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::get_flag
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxPulleyJointDesc::
 get_flag(PhysxPulleyJointFlag flag) const {
 
   return (_desc.flags & flag) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::get_pulley
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3f PhysxPulleyJointDesc::
 get_pulley(unsigned int idx) const {
 
@@ -146,11 +121,9 @@ get_pulley(unsigned int idx) const {
   return PhysxManager::nxVec3_to_point3(_desc.pulley[idx]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::get_motor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxMotorDesc PhysxPulleyJointDesc::
 get_motor() const {
 
@@ -158,4 +131,3 @@ get_motor() const {
   value._desc = _desc.motor;
   return value;
 }
-

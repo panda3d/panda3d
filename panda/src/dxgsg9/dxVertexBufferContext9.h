@@ -21,11 +21,9 @@
 
 class CLP(GraphicsStateGuardian);
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXVertexBufferContext9
-// Description : Caches a GeomVertexArrayData in the DirectX device as
-//               a vertex buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Caches a GeomVertexArrayData in the DirectX device as a vertex buffer.
+ */
 class EXPCL_PANDADX CLP(VertexBufferContext) : public VertexBufferContext {
 public:
   CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *dxgsg,

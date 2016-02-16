@@ -11,11 +11,9 @@
  * @date 2014-08-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(TimerQueryContext)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(TimerQueryContext)::
 CLP(TimerQueryContext)(CLP(GraphicsStateGuardian) *glgsg,
                        int pstats_index) :

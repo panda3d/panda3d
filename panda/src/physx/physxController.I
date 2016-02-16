@@ -11,11 +11,9 @@
  * @date 2009-09-24
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxController::
 PhysxController() : PhysxObject() {
 
@@ -48,22 +46,18 @@ PhysxController() : PhysxObject() {
   _up_quat_inv.invert();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxController::
 ls() const {
 
   ls(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxController::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxController::
 ls(ostream &out, int indent_level) const {
 
@@ -73,4 +67,3 @@ ls(ostream &out, int indent_level) const {
   out << " A:0x" << get_actor();
   out << "\n";
 }
-

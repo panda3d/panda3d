@@ -19,11 +19,9 @@
 #include "somethingToEgg.h"
 #include "dxfToEggConverter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFToEgg
-// Description : A program to read a DXF file and generate an egg
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a DXF file and generate an egg file.
+ */
 class DXFToEgg : public SomethingToEgg {
 public:
   DXFToEgg();
@@ -32,5 +30,3 @@ public:
 };
 
 #endif
-
-

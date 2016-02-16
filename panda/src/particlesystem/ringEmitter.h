@@ -16,11 +16,9 @@
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : RingEmitter
-// Description : Describes a planar ring region in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a planar ring region in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS RingEmitter : public BaseParticleEmitter {
 PUBLISHED:
   RingEmitter();

@@ -11,14 +11,11 @@
  * @date 2012-09-29
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer9::get_supports_render_texture
-//       Access: Published, Virtual
-//  Description: Returns true if this particular GraphicsOutput can
-//               render directly into a texture, or false if it must
-//               always copy-to-texture at the end of each frame to
-//               achieve this effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular GraphicsOutput can render directly into a
+ * texture, or false if it must always copy-to-texture at the end of each frame
+ * to achieve this effect.
+ */
 INLINE bool wdxGraphicsBuffer9::
 get_supports_render_texture() const {
   // DX9 buffers can always bind-to-texture.

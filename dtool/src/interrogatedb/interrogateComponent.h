@@ -23,12 +23,10 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateComponent
-// Description : The base class for things that are part of the
-//               interrogate database.  This includes types,
-//               functions, and function wrappers.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for things that are part of the interrogate database.  This
+ * includes types, functions, and function wrappers.
+ */
 class EXPCL_INTERROGATEDB InterrogateComponent {
 public:
   INLINE InterrogateComponent(InterrogateModuleDef *def = NULL);
@@ -67,5 +65,3 @@ private:
 #include "interrogateComponent.I"
 
 #endif
-
-

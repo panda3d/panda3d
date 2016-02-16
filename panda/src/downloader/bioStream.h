@@ -22,15 +22,11 @@
 #include "socketStream.h"
 #include "bioStreamBuf.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IBioStream
-// Description : An input stream object that reads data from an
-//               OpenSSL BIO object.  This is used by the HTTPClient
-//               and HTTPChannel classes to provide a C++ interface
-//               to OpenSSL.
-//
-//               Seeking is not supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * An input stream object that reads data from an OpenSSL BIO object.  This is
+ * used by the HTTPClient and HTTPChannel classes to provide a C++ interface to
+ * OpenSSL.  Seeking is not supported.
+ */
 class EXPCL_PANDAEXPRESS IBioStream : public ISocketStream {
 public:
   INLINE IBioStream();
@@ -46,15 +42,11 @@ private:
   BioStreamBuf _buf;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : OBioStream
-// Description : An output stream object that writes data to an
-//               OpenSSL BIO object.  This is used by the HTTPClient
-//               and HTTPChannel classes to provide a C++ interface
-//               to OpenSSL.
-//
-//               Seeking is not supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * An output stream object that writes data to an OpenSSL BIO object.  This is
+ * used by the HTTPClient and HTTPChannel classes to provide a C++ interface to
+ * OpenSSL.  Seeking is not supported.
+ */
 class EXPCL_PANDAEXPRESS OBioStream : public OSocketStream {
 public:
   INLINE OBioStream();
@@ -69,11 +61,10 @@ private:
   BioStreamBuf _buf;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : BioStream
-// Description : A bi-directional stream object that reads and writes
-//               data to an OpenSSL BIO object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A bi-directional stream object that reads and writes data to an OpenSSL BIO
+ * object.
+ */
 class EXPCL_PANDAEXPRESS BioStream : public SocketStream {
 public:
   INLINE BioStream();
@@ -94,5 +85,3 @@ private:
 
 
 #endif
-
-

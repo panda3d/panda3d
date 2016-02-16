@@ -24,11 +24,10 @@ class BamWriter;
 class BamReader;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RecorderHeader
-// Description : This object contains the header information written
-//               out at the beginning of a recorded session file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object contains the header information written out at the beginning of a
+ * recorded session file.
+ */
 class EXPCL_PANDA_RECORDER RecorderHeader : public TypedWritable {
 public:
   INLINE RecorderHeader();
@@ -42,11 +41,11 @@ public:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
-  
+
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -68,4 +67,3 @@ private:
 #include "recorderHeader.I"
 
 #endif
-

@@ -11,12 +11,9 @@
  * @date 2000-08-30
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::has_color
-//       Access: Public
-//  Description: Returns true if the vertex has a primary color
-//               indicated, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex has a primary color indicated, false otherwise.
+ */
 INLINE bool FltVertex::
 has_color() const {
   // Even if the no_color bit is not set, if the color_index is -1,
@@ -25,12 +22,10 @@ has_color() const {
           (_color_index != -1 || ((_flags & F_packed_color) != 0)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::set_color
-//       Access: Public
-//  Description: Sets the color of the vertex, using the packed
-//               color convention.  The alpha component is ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the color of the vertex, using the packed color convention.  The alpha
+ * component is ignored.
+ */
 INLINE void FltVertex::
 set_color(const LColor &color) {
   set_rgb(LRGBColor(color[0], color[1], color[2]));

@@ -11,11 +11,9 @@
  * @date 2006-03-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: OcclusionQueryContext::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE OcclusionQueryContext::
 OcclusionQueryContext() {
 }

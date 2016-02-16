@@ -11,24 +11,19 @@
  * @date 2006-12-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeJoint::is_empty
-//       Access: Published
-//  Description: Returns true if the ID is 0, meaning the OdeJoint
-//               does not point to a valid joint. It is an error to
-//               call a method on an empty joint.
-//               Note that an empty OdeJoint also evaluates to False.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the ID is 0, meaning the OdeJoint does not point to a valid
+ * joint.  It is an error to call a method on an empty joint.  Note that an
+ * empty OdeJoint also evaluates to False.
+ */
 INLINE bool OdeJoint::
 is_empty() const {
   return (_id == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeJoint::get_id
-//       Access: Published
-//  Description: Returns the underlying dJointID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the underlying dJointID.
+ */
 INLINE dJointID OdeJoint::
 get_id() const {
   return _id;

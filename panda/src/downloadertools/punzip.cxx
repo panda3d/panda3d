@@ -23,7 +23,7 @@ usage() {
     << "   punzip file.pz [file2.pz file3.pz ...]\n"
     << "   punzip -c <file >dest_file\n"
     << "   punzip -o dest_file file.pz\n\n"
-    
+
     << "This program reverses the operation of a previous pzip command.  It\n"
     << "uncompresses the contents of the named source file(s) and removes the .pz\n"
     << "extension.\n\n";
@@ -96,7 +96,7 @@ main(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     Filename source_file = Filename::from_os_specific(argv[i]);
     if (!got_dest_filename && source_file.get_extension() != "pz") {
-      cerr << source_file 
+      cerr << source_file
            << " doesn't end in .pz; can't derive filename of output file.\n";
       all_ok = false;
 
@@ -124,15 +124,15 @@ main(int argc, char **argv) {
         } else {
           cerr << dest_file << "\n";
           bool success = decompress_stream(read_stream, write_stream);
-          
+
           read_stream.close();
           write_stream.close();
-          
+
           if (!success) {
             cerr << "Failure decompressing " << source_file << "\n";
             all_ok = false;
             dest_file.unlink();
-            
+
           } else {
             if (!got_dest_filename) {
               source_file.unlink();

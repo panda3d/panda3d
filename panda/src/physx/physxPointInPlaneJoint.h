@@ -21,16 +21,12 @@
 
 class PhysxPointInPlaneJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPointInPlaneJoint
-// Description : A point in plane joint constrains a point on one
-//               body to only move inside a plane attached to another
-//               body. 
-//               The starting point of the point is defined as the
-//               anchor point. The plane through this point is
-//               specified by its normal which is the joint axis
-//               vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * A point in plane joint constrains a point on one body to only move inside a
+ * plane attached to another body.  The starting point of the point is defined
+ * as the anchor point.  The plane through this point is specified by its normal
+ * which is the joint axis vector.
+ */
 class EXPCL_PANDAPHYSX PhysxPointInPlaneJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -55,7 +51,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxPointInPlaneJoint", 
+    register_type(_type_handle, "PhysxPointInPlaneJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

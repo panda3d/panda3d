@@ -23,13 +23,11 @@
 
 TypeHandle glxGraphicsPixmap::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPixmap::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 glxGraphicsPixmap::
-glxGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe, 
+glxGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
@@ -50,25 +48,20 @@ glxGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
   _screenshot_buffer_type = _draw_buffer_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPixmap::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 glxGraphicsPixmap::
 ~glxGraphicsPixmap() {
   nassertv(_x_pixmap == None && _glx_pixmap == None);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPixmap::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool glxGraphicsPixmap::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -102,18 +95,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPixmap::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void glxGraphicsPixmap::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -131,12 +121,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPixmap::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the pixmap right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the pixmap right now.  Called from the window thread.
+ */
 void glxGraphicsPixmap::
 close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -157,13 +144,10 @@ close_buffer() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsPixmap::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the pixmap right now.  Called from the window
-//               thread.  Returns true if the pixmap is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the pixmap right now.  Called from the window thread.  Returns true if
+ * the pixmap is successfully opened, or false if there was a problem.
+ */
 bool glxGraphicsPixmap::
 open_buffer() {
   glxGraphicsPipe *glx_pipe;
@@ -180,7 +164,7 @@ open_buffer() {
     // If the old gsg has the wrong pixel format, create a
     // new one that shares with the old gsg.
     DCAST_INTO_R(glxgsg, _gsg, false);
-    if (!glxgsg->_context_has_pixmap || 
+    if (!glxgsg->_context_has_pixmap ||
         !glxgsg->get_fb_properties().subsumes(_fb_properties)) {
       glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);
       glxgsg->choose_pixel_format(_fb_properties, _display, glx_pipe->get_screen(), false, true);
@@ -256,7 +240,7 @@ open_buffer() {
     return false;
   }
   _fb_properties = glxgsg->get_fb_properties();
-  
+
   _is_valid = true;
   return true;
 }

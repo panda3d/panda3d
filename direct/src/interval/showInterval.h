@@ -18,10 +18,9 @@
 #include "cInterval.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShowInterval
-// Description : An interval that calls NodePath::show().
-////////////////////////////////////////////////////////////////////
+/**
+ * An interval that calls NodePath::show().
+ */
 class EXPCL_DIRECT ShowInterval : public CInterval {
 PUBLISHED:
   ShowInterval(const NodePath &node, const string &name = string());
@@ -32,7 +31,7 @@ PUBLISHED:
 private:
   NodePath _node;
   static int _unique_index;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -54,4 +53,3 @@ private:
 #include "showInterval.I"
 
 #endif
-

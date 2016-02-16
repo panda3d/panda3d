@@ -21,4 +21,3 @@
 #undef GLCAT
 #undef EXPCL
 #undef EXPTP
-

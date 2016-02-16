@@ -23,16 +23,12 @@
 
 TypeHandle LwoSurface::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoSurface::read_iff
-//       Access: Public, Virtual
-//  Description: Reads the data of the chunk in from the given input
-//               file, if possible.  The ID and length of the chunk
-//               have already been read.  stop_at is the byte position
-//               of the file to stop at (based on the current position
-//               at in->get_bytes_read()).  Returns true on success,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data of the chunk in from the given input file, if possible.  The
+ * ID and length of the chunk have already been read.  stop_at is the byte
+ * position of the file to stop at (based on the current position at
+ * in->get_bytes_read()).  Returns true on success, false otherwise.
+ */
 bool LwoSurface::
 read_iff(IffInputFile *in, size_t stop_at) {
   _name = in->get_string();
@@ -41,11 +37,9 @@ read_iff(IffInputFile *in, size_t stop_at) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoSurface::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void LwoSurface::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -57,13 +51,10 @@ write(ostream &out, int indent_level) const {
     << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoSurface::make_new_chunk
-//       Access: Protected, Virtual
-//  Description: Allocates and returns a new chunk of the appropriate
-//               type based on the given ID, according to the context
-//               given by this chunk itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new chunk of the appropriate type based on the given
+ * ID, according to the context given by this chunk itself.
+ */
 IffChunk *LwoSurface::
 make_new_chunk(IffInputFile *in, IffId id) {
   if (id == IffId("COLR")) {
@@ -95,4 +86,3 @@ make_new_chunk(IffInputFile *in, IffId id) {
     return IffChunk::make_new_chunk(in, id);
   }
 }
-

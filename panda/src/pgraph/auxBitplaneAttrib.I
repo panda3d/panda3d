@@ -11,25 +11,19 @@
  * @date 2002-03-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuxBitplaneAttrib::Constructor
-//       Access: Private
-//  Description: Use AuxBitplaneAttrib::make() to construct a new
-//               AuxBitplaneAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use AuxBitplaneAttrib::make() to construct a new AuxBitplaneAttrib object.
+ */
 INLINE AuxBitplaneAttrib::
 AuxBitplaneAttrib(int outputs) :
   _outputs(outputs)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuxBitplaneAttrib::get_outputs
-//       Access: Published
-//  Description: Returns the AuxBitplaneAttrib output bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the AuxBitplaneAttrib output bits.
+ */
 INLINE int AuxBitplaneAttrib::
 get_outputs() const {
   return _outputs;
 }
-

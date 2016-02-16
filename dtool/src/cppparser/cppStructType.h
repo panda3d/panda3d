@@ -27,10 +27,9 @@
 class CPPScope;
 class CPPTypeProxy;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPStructType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPStructType : public CPPExtensionType {
 public:
   CPPStructType(Type type, CPPIdentifier *ident,

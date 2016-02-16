@@ -23,10 +23,9 @@
 
 #include <pthread.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustPosixImpl
-// Description : Uses POSIX to implement atomic adjustments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses POSIX to implement atomic adjustments.
+ */
 class EXPCL_DTOOL AtomicAdjustPosixImpl {
 public:
   // In Posix, "long" is generally the native word size (32- or
@@ -43,11 +42,11 @@ public:
   INLINE static Pointer set_ptr(TVOLATILE Pointer &var, Pointer new_value);
   INLINE static Pointer get_ptr(const TVOLATILE Pointer &var);
 
-  INLINE static Integer compare_and_exchange(TVOLATILE Integer &mem, 
+  INLINE static Integer compare_and_exchange(TVOLATILE Integer &mem,
                                              Integer old_value,
                                              Integer new_value);
-  
-  INLINE static Pointer compare_and_exchange_ptr(TVOLATILE Pointer &mem, 
+
+  INLINE static Pointer compare_and_exchange_ptr(TVOLATILE Pointer &mem,
                                                  Pointer old_value,
                                                  Pointer new_value);
 

@@ -22,12 +22,10 @@
 #include "geomVertexArrayData.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<GeomVertexArrayData>
-// Description : This class defines the extension methods for
-//               GeomVertexArrayData, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for GeomVertexArrayData, which are
+ * called instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<GeomVertexArrayData> : public ExtensionBase<GeomVertexArrayData> {
 public:
@@ -38,12 +36,10 @@ public:
 #endif
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<GeomVertexArrayDataHandle>
-// Description : This class defines the extension methods for
-//               GeomVertexArrayDataHandle, which are called instead
-//               of any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for GeomVertexArrayDataHandle, which
+ * are called instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<GeomVertexArrayDataHandle> : public ExtensionBase<GeomVertexArrayDataHandle> {
 public:

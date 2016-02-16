@@ -19,14 +19,11 @@
 #include "finiteBoundingVolume.h"
 #include "plane.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingBox
-// Description : An axis-aligned bounding box; that is, a minimum and
-//               maximum coordinate triple.
-//
-//               This box is always axis-aligned.  If you need a more
-//               general bounding box, try BoundingHexahedron.
-////////////////////////////////////////////////////////////////////
+/**
+ * An axis-aligned bounding box; that is, a minimum and maximum coordinate
+ * triple.  This box is always axis-aligned.  If you need a more general
+ * bounding box, try BoundingHexahedron.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingBox : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingBox();

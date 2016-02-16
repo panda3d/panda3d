@@ -11,44 +11,36 @@
  * @date 2009-09-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxScene::
 PhysxScene() : PhysxObject() {
 
   _debugNode = new PhysxDebugGeomNode();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxScene::
 ~PhysxScene() {
 
   _debugNode = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxScene::
 ls() const {
 
   ls(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxScene::
 ls(ostream &out, int indent_level) const {
 
@@ -66,25 +58,20 @@ ls(ostream &out, int indent_level) const {
   _softbodies.ls(out, indent_level);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_controller_shape_hit_callback
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxScene::
 set_controller_shape_hit_callback(PT(CallbackObject) cbobj) {
 
   _controller_report.set_shape_hit_callback(cbobj);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_controller_controller_hit_callback
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxScene::
 set_controller_controller_hit_callback(PT(CallbackObject) cbobj) {
 
   _controller_report.set_controller_hit_callback(cbobj);
 }
-

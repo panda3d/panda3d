@@ -11,23 +11,18 @@
  * @date 2009-11-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxConvexForceFieldShape::
 PhysxConvexForceFieldShape() : PhysxForceFieldShape() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxConvexForceFieldShape::
 ~PhysxConvexForceFieldShape() {
 
 }
-

@@ -17,12 +17,10 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomPatches
-// Description : Defines a series of "patches", fixed-size groupings
-//               of vertices that must be processed by a tessellation
-//               shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of "patches", fixed-size groupings of vertices that must be
+ * processed by a tessellation shader.
+ */
 class EXPCL_PANDA_GOBJ GeomPatches : public GeomPrimitive {
 PUBLISHED:
   GeomPatches(int num_vertices_per_patch, UsageHint usage_hint);

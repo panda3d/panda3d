@@ -21,7 +21,7 @@
 // search for interrogate (*.in) files.  In the past, this list has
 // been defined the environment variable ETC_PATH, but now it is
 // passed in by the code generator.
-void 
+void
 interrogate_add_search_directory(const char *dirname) {
   //cerr << "interrogate_add_search_directory(" << dirname << ")\n";
   interrogatedb_path.append_directory(Filename::from_os_specific(dirname));
@@ -30,7 +30,7 @@ interrogate_add_search_directory(const char *dirname) {
 // This function works similar to the above, but adds a complete path
 // string--a list of multiple directories, separated by the standard
 // delimiter--to the search path.
-void 
+void
 interrogate_add_search_path(const char *pathstring) {
   //cerr << "interrogate_add_search_path(" << pathstring << ")\n";
   interrogatedb_path.append_path(pathstring);

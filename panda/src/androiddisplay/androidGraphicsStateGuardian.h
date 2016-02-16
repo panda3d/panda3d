@@ -17,11 +17,10 @@
 #include "pandabase.h"
 #include "androidGraphicsPipe.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AndroidGraphicsStateGuardian
-// Description : A tiny specialization on GLESGraphicsStateGuardian
-//               to add some egl-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLESGraphicsStateGuardian to add some egl-specific
+ * information.
+ */
 #ifdef OPENGLES_2
 class AndroidGraphicsStateGuardian : public GLES2GraphicsStateGuardian {
 #else

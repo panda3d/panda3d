@@ -23,15 +23,12 @@
 
 #include <vector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : NotifyCategory
-// Description : A particular category of error messages.  Typically
-//               there will be one of these per package, so that we
-//               can turn on or off error messages at least at a
-//               package level; further nested categories can be
-//               created within a package if a finer grain of control
-//               is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * A particular category of error messages.  Typically there will be one of
+ * these per package, so that we can turn on or off error messages at least at a
+ * package level; further nested categories can be created within a package if a
+ * finer grain of control is required.
+ */
 class EXPCL_DTOOLCONFIG NotifyCategory : public MemoryBase, public ConfigFlags {
 private:
   NotifyCategory(const string &fullname, const string &basename,

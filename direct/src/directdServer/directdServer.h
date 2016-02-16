@@ -14,16 +14,12 @@
 #include "queuedConnectionReader.h"
 #include "directd.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DirectDServer
-// Description : Start a directdServer on each of the machines you
-//               which to start panda on.
-//
-//               Start a directdClient on the controlling machine
-//               or import ShowBaseGlobal with the xxxxx flag in
-//               your Configrc.  The client will connact each of
-//               the servers in the xxxxx list in your Configrc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Start a directdServer on each of the machines you which to start panda on.
+ * Start a directdClient on the controlling machine or import ShowBaseGlobal
+ * with the xxxxx flag in your Configrc.  The client will connact each of the
+ * servers in the xxxxx list in your Configrc.
+ */
 class DirectDServer: public DirectD {
 public:
   DirectDServer();
@@ -35,4 +31,3 @@ protected:
   void read_command(string& cmd);
   virtual void handle_command(const string& cmd);
 };
-

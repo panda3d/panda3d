@@ -17,13 +17,10 @@
 
 TypeHandle CLerpAnimEffectInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpAnimEffectInterval::step
-//       Access: Published, Virtual
-//  Description: Advances the time on the interval.  The time may
-//               either increase (the normal case) or decrease
-//               (e.g. if the interval is being played by a slider).
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the time on the interval.  The time may either increase (the normal
+ * case) or decrease (e.g.  if the interval is being played by a slider).
+ */
 void CLerpAnimEffectInterval::
 priv_step(double t) {
   check_started(get_class_type(), "priv_step");
@@ -41,11 +38,9 @@ priv_step(double t) {
   _curr_t = t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpAnimEffectInterval::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLerpAnimEffectInterval::
 output(ostream &out) const {
   out << get_name() << ": ";

@@ -25,14 +25,11 @@ class PaletteGroup;
 class PaletteImage;
 class TexturePlacement;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PalettePage
-// Description : This is a particular collection of textures, within a
-//               PaletteGroup, that all share the same
-//               TextureProperties.  The textures on the same page may
-//               therefore all be placed on the same set of
-//               PaletteImages together.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular collection of textures, within a PaletteGroup, that all
+ * share the same TextureProperties.  The textures on the same page may
+ * therefore all be placed on the same set of PaletteImages together.
+ */
 class PalettePage : public TypedWritable, public Namable {
 private:
   PalettePage();
@@ -100,4 +97,3 @@ private:
 };
 
 #endif
-

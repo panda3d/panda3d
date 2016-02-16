@@ -18,13 +18,11 @@
 
 #include "eggNameUniquifier.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggGroupUniquifier
-// Description : This is a specialization of EggNameUniquifier to
-//               generate unique names for EggGroup nodes.  It's not
-//               called automatically; you must invoke it yourself if
-//               you want it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization of EggNameUniquifier to generate unique names for
+ * EggGroup nodes.  It's not called automatically; you must invoke it yourself
+ * if you want it.
+ */
 class EXPCL_PANDAEGG EggGroupUniquifier : public EggNameUniquifier {
 PUBLISHED:
   EggGroupUniquifier(bool filter_names = true);
@@ -57,5 +55,3 @@ private:
 };
 
 #endif
-
-

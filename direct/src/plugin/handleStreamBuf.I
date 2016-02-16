@@ -11,26 +11,20 @@
  * @date 2009-06-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::get_handle
-//       Access: Public
-//  Description: Returns the handle that was passed to open_read() or
-//               open_write().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the handle that was passed to open_read() or open_write().
+ */
 inline FHandle HandleStreamBuf::
 get_handle() const {
   return _handle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::has_gdata
-//       Access: Public
-//  Description: Returns true if there is data in the stream's "get"
-//               buffer, meaning that at least one character can be
-//               extracted from the stream without making an OS read()
-//               call.  Returns false if the get buffer is empty,
-//               meaning the next read call will hit the OS.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is data in the stream's "get" buffer, meaning that at
+ * least one character can be extracted from the stream without making an OS
+ * read() call.  Returns false if the get buffer is empty, meaning the next read
+ * call will hit the OS.
+ */
 inline bool HandleStreamBuf::
 has_gdata() const {
   return (egptr() != gptr());

@@ -17,11 +17,9 @@
 #include "cppParser.h"
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::Conextensionor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExtensionType::
 CPPExtensionType(CPPExtensionType::Type type,
                  CPPIdentifier *ident, CPPScope *current_scope,
@@ -35,11 +33,9 @@ CPPExtensionType(CPPExtensionType::Type type,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::get_simple_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPExtensionType::
 get_simple_name() const {
   if (_ident == NULL) {
@@ -48,11 +44,9 @@ get_simple_name() const {
   return _ident->get_simple_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::get_local_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPExtensionType::
 get_local_name(CPPScope *scope) const {
   if (_ident == NULL) {
@@ -61,11 +55,9 @@ get_local_name(CPPScope *scope) const {
   return _ident->get_local_name(scope);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::get_fully_scoped_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPExtensionType::
 get_fully_scoped_name() const {
   if (_ident == NULL) {
@@ -74,25 +66,19 @@ get_fully_scoped_name() const {
   return _ident->get_fully_scoped_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::is_incomplete
-//       Access: Public, Virtual
-//  Description: Returns true if the type has not yet been fully
-//               specified, false if it has.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type has not yet been fully specified, false if it has.
+ */
 bool CPPExtensionType::
 is_incomplete() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::is_tbd
-//       Access: Public, Virtual
-//  Description: Returns true if the type, or any nested type within
-//               the type, is a CPPTBDType and thus isn't fully
-//               determined right now.  In this case, calling
-//               resolve_type() may or may not resolve the type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type, or any nested type within the type, is a CPPTBDType
+ * and thus isn't fully determined right now.  In this case, calling
+ * resolve_type() may or may not resolve the type.
+ */
 bool CPPExtensionType::
 is_tbd() const {
   if (_ident != (CPPIdentifier *)NULL) {
@@ -101,42 +87,33 @@ is_tbd() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::is_trivial
-//       Access: Public, Virtual
-//  Description: Returns true if the type is considered a Plain Old
-//               Data (POD) type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is considered a Plain Old Data (POD) type.
+ */
 bool CPPExtensionType::
 is_trivial() const {
   return (_type == T_enum);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::is_default_constructible
-//       Access: Public, Virtual
-//  Description: Returns true if the type is default-constructible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is default-constructible.
+ */
 bool CPPExtensionType::
 is_default_constructible() const {
   return (_type == T_enum);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::is_copy_constructible
-//       Access: Public, Virtual
-//  Description: Returns true if the type is copy-constructible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is copy-constructible.
+ */
 bool CPPExtensionType::
 is_copy_constructible() const {
   return (_type == T_enum);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::substitute_decl
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration *CPPExtensionType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
@@ -160,14 +137,11 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   return rep;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::resolve_type
-//       Access: Public, Virtual
-//  Description: If this CPPType object is a forward reference or
-//               other nonspecified reference to a type that might now
-//               be known a real type, returns the real type.
-//               Otherwise returns the type itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * If this CPPType object is a forward reference or other nonspecified reference
+ * to a type that might now be known a real type, returns the real type.
+ * Otherwise returns the type itself.
+ */
 CPPType *CPPExtensionType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   if (_ident == NULL) {
@@ -184,15 +158,12 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::is_equivalent_type
-//       Access: Public, Virtual
-//  Description: This is a little more forgiving than is_equal(): it
-//               returns true if the types appear to be referring to
-//               the same thing, even if they may have different
-//               pointers or somewhat different definitions.  It's
-//               useful for parameter matching, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a little more forgiving than is_equal(): it returns true if the types
+ * appear to be referring to the same thing, even if they may have different
+ * pointers or somewhat different definitions.  It's useful for parameter
+ * matching, etc.
+ */
 bool CPPExtensionType::
 is_equivalent(const CPPType &other) const {
   const CPPExtensionType *ot = ((CPPType *)&other)->as_extension_type();
@@ -206,11 +177,9 @@ is_equivalent(const CPPType &other) const {
   return *_ident == *ot->_ident;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPExtensionType::
 output(ostream &out, int, CPPScope *scope, bool complete) const {
   if (_ident != NULL) {
@@ -229,21 +198,17 @@ output(ostream &out, int, CPPScope *scope, bool complete) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::get_subtype
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration::SubType CPPExtensionType::
 get_subtype() const {
   return ST_extension;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPExtensionType::as_extension_type
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPExtensionType *CPPExtensionType::
 as_extension_type() {
   return this;

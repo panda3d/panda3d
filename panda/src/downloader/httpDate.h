@@ -18,14 +18,11 @@
 
 #include <time.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPDate
-// Description : A container for an HTTP-legal time/date indication.
-//               This can accept a string from an HTTP header and will
-//               decode it into a C time_t value; conversely, it can
-//               accept a time_t value and encode it for output as a
-//               string.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for an HTTP-legal time/date indication.  This can accept a string
+ * from an HTTP header and will decode it into a C time_t value; conversely, it
+ * can accept a time_t value and encode it for output as a string.
+ */
 class EXPCL_PANDAEXPRESS HTTPDate {
 PUBLISHED:
   INLINE HTTPDate();

@@ -19,24 +19,19 @@
 
 TypeHandle FltMeshPrimitive::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltMeshPrimitive::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltMeshPrimitive::
 FltMeshPrimitive(FltHeader *header) : FltBead(header) {
   _primitive_type = PT_tristrip;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltMeshPrimitive::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltMeshPrimitive::
 extract_record(FltRecordReader &reader) {
   if (!FltBead::extract_record(reader)) {
@@ -76,14 +71,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltMeshPrimitive::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltMeshPrimitive::
 build_record(FltRecordWriter &writer) const {
   if (!FltBead::build_record(writer)) {

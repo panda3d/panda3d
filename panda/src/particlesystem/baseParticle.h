@@ -17,11 +17,9 @@
 #include "pandabase.h"
 #include "physicsObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BaseParticle
-// Description : An individual, physically-modelable particle
-//               abstract base class.
-////////////////////////////////////////////////////////////////////
+/**
+ * An individual, physically-modelable particle abstract base class.
+ */
 class EXPCL_PANDAPHYSICS BaseParticle : public PhysicsObject {
 public:
   // local methods
@@ -34,7 +32,7 @@ public:
   INLINE PN_stdfloat get_age() const;
   INLINE PN_stdfloat get_lifespan() const;
   INLINE bool get_alive() const;
-  INLINE int get_index() const; 
+  INLINE int get_index() const;
 
   INLINE PN_stdfloat get_parameterized_age() const;
   INLINE PN_stdfloat get_parameterized_vel() const;

@@ -15,13 +15,10 @@
 
 TypeHandle OdeCollisionEntry::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeCollisionEntry::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OdeCollisionEntry::
 ~OdeCollisionEntry() {
   delete[] _contact_geoms;
 }
-

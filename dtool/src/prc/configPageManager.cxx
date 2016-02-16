@@ -39,14 +39,11 @@
 
 ConfigPageManager *ConfigPageManager::_global_ptr = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::Constructor
-//       Access: Protected
-//  Description: The constructor is private (actually, just protected,
-//               but only to avoid a gcc compiler warning) because it
-//               should not be explicitly constructed.  There is only
-//               one ConfigPageManager, and it constructs itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor is private (actually, just protected, but only to avoid a gcc
+ * compiler warning) because it should not be explicitly constructed.  There is
+ * only one ConfigPageManager, and it constructs itself.
+ */
 ConfigPageManager::
 ConfigPageManager() {
   _next_page_seq = 1;
@@ -60,28 +57,21 @@ ConfigPageManager() {
 #endif  // PRC_PUBLIC_KEYS_INCLUDE
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::Destructor
-//       Access: Protected
-//  Description: The ConfigPageManager destructor should never be
-//               called, because this is a global object that is never
-//               freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ConfigPageManager destructor should never be called, because this is a
+ * global object that is never freed.
+ */
 ConfigPageManager::
 ~ConfigPageManager() {
   prc_cat->error()
     << "Internal error--ConfigPageManager destructor called!\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::reload_implicit_pages
-//       Access: Published
-//  Description: Searches the PRC_DIR and/or PRC_PATH directories for
-//               *.prc files and loads them in as pages.
-//
-//               This may be called after startup, to force the system
-//               to re-read all of the implicit prc files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches the PRC_DIR and/or PRC_PATH directories for *.prc files and loads
+ * them in as pages.  This may be called after startup, to force the system to
+ * re-read all of the implicit prc files.
+ */
 void ConfigPageManager::
 reload_implicit_pages() {
   if (_currently_loading) {
@@ -174,7 +164,7 @@ reload_implicit_pages() {
       }
     }
   }
-  
+
   // PRC_PATH_ENVVARS lists one or more environment variables separated
   // by spaces.  Pull them out, and then each one of those contains a
   // list of directories to search.  Add each of those to the search
@@ -200,7 +190,7 @@ reload_implicit_pages() {
       }
     }
   }
-  
+
   // PRC_PATH2_ENVVARS is a special variable that is rarely used; it
   // exists primarily to support the Cygwin-based "ctattach" tools
   // used by the Walt Disney VR Studio.  This defines a set of
@@ -229,7 +219,7 @@ reload_implicit_pages() {
       }
     }
   }
-  
+
   if (_search_path.is_empty()) {
     // If nothing's on the search path (PRC_DIR and PRC_PATH were not
     // defined), then use the DEFAULT_PRC_DIR.
@@ -336,13 +326,13 @@ reload_implicit_pages() {
       ++i;
       _implicit_pages.push_back(page);
       _pages_sorted = false;
-      
+
       page->read_prc(ifs);
 
     } else if ((file._file_flags & FF_decrypt) != 0) {
       // Read and decrypt the file.
       filename.set_binary();
-      
+
       pifstream in;
       if (!filename.open_read(in)) {
         prc_cat.error()
@@ -352,14 +342,14 @@ reload_implicit_pages() {
         ++i;
         _implicit_pages.push_back(page);
         _pages_sorted = false;
-        
+
         page->read_encrypted_prc(in, PRC_ENCRYPTION_KEY);
       }
 
     } else if ((file._file_flags & FF_read) != 0) {
       // Just read the file.
       filename.set_text();
-      
+
       pifstream in;
       if (!filename.open_read(in)) {
         prc_cat.error()
@@ -369,7 +359,7 @@ reload_implicit_pages() {
         ++i;
         _implicit_pages.push_back(page);
         _pages_sorted = false;
-        
+
         page->read_prc(in);
       }
     }
@@ -411,19 +401,16 @@ reload_implicit_pages() {
     SetErrorMode(0);
   } else {
     SetErrorMode(SEM_FAILCRITICALERRORS);
-  } 
+  }
 #endif
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::make_explicit_page
-//       Access: Published
-//  Description: Creates and returns a new, empty ConfigPage.  This
-//               page will be stacked on top of any pages that were
-//               created before; it may shadow variable declarations
-//               that are defined in previous pages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates and returns a new, empty ConfigPage.  This page will be stacked on
+ * top of any pages that were created before; it may shadow variable
+ * declarations that are defined in previous pages.
+ */
 ConfigPage *ConfigPageManager::
 make_explicit_page(const string &name) {
   ConfigPage *page = new ConfigPage(name, false, _next_page_seq);
@@ -434,16 +421,12 @@ make_explicit_page(const string &name) {
   return page;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::delete_explicit_page
-//       Access: Published
-//  Description: Removes a previously-constructed ConfigPage from the
-//               set of active pages, and deletes it.  The ConfigPage
-//               object is no longer valid after this call.  Returns
-//               true if the page is successfully deleted, or false if
-//               it was unknown (which should never happen if the page
-//               was legitimately constructed).
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a previously-constructed ConfigPage from the set of active pages, and
+ * deletes it.  The ConfigPage object is no longer valid after this call.
+ * Returns true if the page is successfully deleted, or false if it was unknown
+ * (which should never happen if the page was legitimately constructed).
+ */
 bool ConfigPageManager::
 delete_explicit_page(ConfigPage *page) {
   Pages::iterator pi;
@@ -458,23 +441,19 @@ delete_explicit_page(ConfigPage *page) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigPageManager::
 output(ostream &out) const {
-  out << "ConfigPageManager, " 
-      << _explicit_pages.size() + _implicit_pages.size() 
+  out << "ConfigPageManager, "
+      << _explicit_pages.size() + _implicit_pages.size()
       << " pages.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigPageManager::
 write(ostream &out) const {
   check_sort_pages();
@@ -515,11 +494,9 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::get_global_ptr
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ConfigPageManager *ConfigPageManager::
 get_global_ptr() {
   if (_global_ptr == (ConfigPageManager *)NULL) {
@@ -536,13 +513,10 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::sort_pages
-//       Access: Private
-//  Description: Sorts the list of pages into priority order,
-//               so that the page at the front of the list is
-//               the one that shadows all following pages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts the list of pages into priority order, so that the page at the front of
+ * the list is the one that shadows all following pages.
+ */
 void ConfigPageManager::
 sort_pages() {
   sort(_implicit_pages.begin(), _implicit_pages.end(), CompareConfigPages());
@@ -551,27 +525,20 @@ sort_pages() {
   _pages_sorted = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::scan_auto_prc_dir
-//       Access: Private
-//  Description: Checks for the prefix "<auto>" in the value of the
-//               $PRC_DIR environment variable (or in the compiled-in
-//               DEFAULT_PRC_DIR value).  If it is found, then the
-//               actual directory is determined by searching upward
-//               from the executable's starting directory, or from the
-//               current working directory, until at least one .prc
-//               file is found.
-//
-//               Returns true if the prc_dir has been filled with a
-//               valid directory name, false if no good directory name
-//               was found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks for the prefix "<auto>" in the value of the $PRC_DIR environment
+ * variable (or in the compiled-in DEFAULT_PRC_DIR value).  If it is found, then
+ * the actual directory is determined by searching upward from the executable's
+ * starting directory, or from the current working directory, until at least one
+ * .prc file is found.  Returns true if the prc_dir has been filled with a valid
+ * directory name, false if no good directory name was found.
+ */
 bool ConfigPageManager::
 scan_auto_prc_dir(Filename &prc_dir) const {
   string prc_dir_string = prc_dir;
   if (prc_dir_string.substr(0, 6) == "<auto>") {
     Filename suffix = prc_dir_string.substr(6);
-    
+
     // Start at the dtool directory.
     Filename dtool = ExecutionEnvironment::get_dtool_name();
     Filename dir = dtool.get_dirname();
@@ -579,7 +546,7 @@ scan_auto_prc_dir(Filename &prc_dir) const {
     if (scan_up_from(prc_dir, dir, suffix)) {
       return true;
     }
-    
+
     // Try the program's directory.
     dir = ExecutionEnvironment::get_environment_variable("MAIN_DIR");
     if (scan_up_from(prc_dir, dir, suffix)) {
@@ -596,22 +563,17 @@ scan_auto_prc_dir(Filename &prc_dir) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::scan_up_from
-//       Access: Private
-//  Description: Used to implement scan_auto_prc_dir(), above, this
-//               scans upward from the indicated directory name until
-//               a directory is found that includes at least one .prc
-//               file, or the root directory is reached.  
-//
-//               If a match is found, puts it result and returns true;
-//               otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to implement scan_auto_prc_dir(), above, this scans upward from the
+ * indicated directory name until a directory is found that includes at least
+ * one .prc file, or the root directory is reached.  If a match is found, puts
+ * it result and returns true; otherwise, returns false.
+ */
 bool ConfigPageManager::
-scan_up_from(Filename &result, const Filename &dir, 
+scan_up_from(Filename &result, const Filename &dir,
              const Filename &suffix) const {
   Filename consider(dir, suffix);
-  
+
   vector_string files;
   if (consider.is_directory()) {
     if (consider.scan_directory(files)) {
@@ -650,15 +612,12 @@ scan_up_from(Filename &result, const Filename &dir,
   return scan_up_from(result, parent, suffix);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPageManager::config_initialized
-//       Access: Private
-//  Description: This is called once, at startup, the first time that
-//               the config system has been initialized and is ready
-//               to read config variables.  It's intended to be a
-//               place to initialize values that are defined at a
-//               lower level than the config system itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called once, at startup, the first time that the config system has
+ * been initialized and is ready to read config variables.  It's intended to be
+ * a place to initialize values that are defined at a lower level than the
+ * config system itself.
+ */
 void ConfigPageManager::
 config_initialized() {
   Notify::ptr()->config_initialized();

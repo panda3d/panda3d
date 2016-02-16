@@ -51,6 +51,3 @@ typedef ConditionVarPosixImpl ConditionVarFullImpl;
 #endif
 
 #endif
-
-
-

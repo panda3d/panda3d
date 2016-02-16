@@ -18,13 +18,11 @@
 #include "nodePath.h"
 #include "pointerToArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodePathCollection
-// Description : This is a set of zero or more NodePaths.  It's handy
-//               for returning from functions that need to return
-//               multiple NodePaths (for instance,
-//               NodePaths::get_children).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a set of zero or more NodePaths.  It's handy for returning from
+ * functions that need to return multiple NodePaths (for instance,
+ * NodePaths::get_children).
+ */
 class EXPCL_PANDA_PGRAPH NodePathCollection {
 PUBLISHED:
   NodePathCollection();
@@ -119,5 +117,3 @@ INLINE ostream &operator << (ostream &out, const NodePathCollection &col) {
 #include "nodePathCollection.I"
 
 #endif
-
-

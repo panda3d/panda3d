@@ -30,17 +30,13 @@ class DatagramIterator;
 
 #ifdef HAVE_OPENSSL
 
-////////////////////////////////////////////////////////////////////
-//       Class : SocketStreamRecorder
-// Description : Records any data received from the indicated socket
-//               stream.  On playback, it will act as if the incoming
-//               data is coming over the wire again even if an actual
-//               connection is not available.
-//
-//               Outbound data will not be recorded, but will be sent
-//               straight through to the socket if it is connected, or
-//               silently ignored if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records any data received from the indicated socket stream.  On playback, it
+ * will act as if the incoming data is coming over the wire again even if an
+ * actual connection is not available.  Outbound data will not be recorded, but
+ * will be sent straight through to the socket if it is connected, or silently
+ * ignored if it is not.
+ */
 class EXPCL_PANDA_RECORDER SocketStreamRecorder : public RecorderBase,
                                                   public ReferenceCount {
 PUBLISHED:

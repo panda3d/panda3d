@@ -18,10 +18,9 @@
 #include "somethingToEgg.h"
 #include "mayaToEggConverter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaToEgg
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class MayaToEgg : public SomethingToEgg {
 public:
   MayaToEgg();
@@ -45,7 +44,7 @@ protected:
   Filename _legacy_copytex_dir;
 
   MayaToEggConverter::TransformType _transform_type;
-  vector_string _subroots; 
+  vector_string _subroots;
   vector_string _subsets;
   vector_string _excludes;
   vector_string _ignore_sliders;

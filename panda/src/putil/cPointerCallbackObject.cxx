@@ -15,16 +15,12 @@
 
 TypeHandle CPointerCallbackObject::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPointerCallbackObject::do_callback
-//       Access: Public, Virtual
-//  Description: This method called when the callback is triggered; it
-//               *replaces* the original function.  To continue
-//               performing the original function, you must call
-//               cbdata->upcall() during the callback.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method called when the callback is triggered; it *replaces* the original
+ * function.  To continue performing the original function, you must call
+ * cbdata->upcall() during the callback.
+ */
 void CPointerCallbackObject::
 do_callback(CallbackData *cbdata) {
   (*_func)(cbdata, _data);
 }
-

@@ -11,12 +11,9 @@
  * @date 2008-04-24
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::clear_light_state
-//       Access: Private
-//  Description: Removes the current list of active lights from the
-//               current state context.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the current list of active lights from the current state context.
+ */
 INLINE void TinyGraphicsStateGuardian::
 clear_light_state() {
   _c->lighting_enabled = false;

@@ -18,10 +18,9 @@
 
 #include "eggToSomething.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToMaya
-// Description : A program to read an egg file and write a maya file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an egg file and write a maya file.
+ */
 class EggToMaya : public EggToSomething {
 public:
   EggToMaya();
@@ -35,4 +34,3 @@ private:
 };
 
 #endif
-

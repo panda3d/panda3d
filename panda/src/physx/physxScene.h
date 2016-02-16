@@ -55,20 +55,14 @@ class PhysxClothDesc;
 class PhysxSoftBody;
 class PhysxSoftBodyDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxScene
-// Description : A scene is a collection of bodies, constraints,
-//               and effectors which can interact.
-//
-//               The scene simulates the behavior of these objects
-//               over time. Several scenes may exist at the same
-//               time, but each body, constraint, or effector object
-//               is specific to a scene -- they may not be shared.
-//
-//               For example, attempting to create a joint in one
-//               scene and then using it to attach bodies from a
-//               different scene results in undefined behavior.
-////////////////////////////////////////////////////////////////////
+/**
+ * A scene is a collection of bodies, constraints, and effectors which can
+ * interact.  The scene simulates the behavior of these objects over time.
+ * Several scenes may exist at the same time, but each body, constraint, or
+ * effector object is specific to a scene -- they may not be shared.  For
+ * example, attempting to create a joint in one scene and then using it to
+ * attach bodies from a different scene results in undefined behavior.
+ */
 class EXPCL_PANDAPHYSX PhysxScene : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -96,7 +90,7 @@ PUBLISHED:
 
   LVector3f get_gravity() const;
   PhysxSceneStats2 get_stats2() const;
-  bool get_flag(PhysxSceneFlag flag) const; 
+  bool get_flag(PhysxSceneFlag flag) const;
   bool is_hardware_scene() const;
 
   // Actors
@@ -267,7 +261,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxScene", 
+    register_type(_type_handle, "PhysxScene",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

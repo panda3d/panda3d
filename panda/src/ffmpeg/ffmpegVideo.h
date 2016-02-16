@@ -23,10 +23,9 @@ class FactoryParams;
 class BamWriter;
 class BamReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FfmpegVideo
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_FFMPEG FfmpegVideo : public MovieVideo {
 PUBLISHED:
   FfmpegVideo(const Filename &name);
@@ -44,7 +43,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

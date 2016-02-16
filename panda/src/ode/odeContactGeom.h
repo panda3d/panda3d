@@ -24,10 +24,9 @@
 class OdeSpace;
 class OdeUtil;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeContactGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeContactGeom : public TypedReferenceCount {
   friend class OdeContact;
   friend class OdeSpace;
@@ -38,20 +37,20 @@ PUBLISHED:
   OdeContactGeom(const OdeContactGeom &copy);
   virtual ~OdeContactGeom();
 
-  INLINE LVecBase3f get_pos() const; 
+  INLINE LVecBase3f get_pos() const;
   INLINE LVecBase3f get_normal() const;
-  INLINE dReal get_depth() const;          
+  INLINE dReal get_depth() const;
   INLINE OdeGeom get_g1() const;
   INLINE OdeGeom get_g2() const;
   INLINE int get_side1() const;
   INLINE int get_side2() const;
 
-  INLINE void set_pos(const LVecBase3f &pos); 
+  INLINE void set_pos(const LVecBase3f &pos);
   INLINE void set_normal(const LVecBase3f &normal);
-  INLINE void set_depth(const dReal depth);          
+  INLINE void set_depth(const dReal depth);
   INLINE void set_g1(const OdeGeom &geom);
   INLINE void set_g2(const OdeGeom &geom);
-  
+
 public:
   OdeContactGeom(const dContactGeom &copy);
   const dContactGeom* get_contact_geom_ptr() const;

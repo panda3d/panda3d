@@ -40,25 +40,17 @@ class GeomVertexArrayDataHandle;
 class VertexDataBook;
 class SimpleAllocatorBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexArrayData
-// Description : This is the data for one array of a GeomVertexData
-//               structure.  Many GeomVertexData structures will only
-//               define one array, with all data elements interleaved
-//               (DirectX 8.0 and before insisted on this format);
-//               some will define multiple arrays.
-//
-//               DirectX calls this concept of one array a "stream".
-//               It also closely correlates with the concept of a
-//               vertex buffer.
-//
-//               This object is just a block of data.  In general, you
-//               should not be directly messing with this object from
-//               application code.  See GeomVertexData for the
-//               organizing structure, and see
-//               GeomVertexReader/Writer/Rewriter for high-level tools
-//               to manipulate the actual vertex data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the data for one array of a GeomVertexData structure.  Many
+ * GeomVertexData structures will only define one array, with all data elements
+ * interleaved (DirectX 8.0 and before insisted on this format); some will
+ * define multiple arrays.  DirectX calls this concept of one array a "stream".
+ * It also closely correlates with the concept of a vertex buffer.  This object
+ * is just a block of data.  In general, you should not be directly messing with
+ * this object from application code.  See GeomVertexData for the organizing
+ * structure, and see GeomVertexReader/Writer/Rewriter for high-level tools to
+ * manipulate the actual vertex data.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexArrayData : public CopyOnWriteObject, public SimpleLruPage, public GeomEnums {
 private:
   GeomVertexArrayData();
@@ -238,22 +230,15 @@ private:
   friend class GeomVertexArrayDataHandle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexArrayDataHandle
-// Description : This data object is returned by
-//               GeomVertexArrayData::get_handle() or modify_handle().
-//               As long as it exists, the data is locked; when the
-//               last of these destructs, the data is unlocked.
-//
-//               Only one thread at a time may lock the data; other
-//               threads attempting to lock the data will block.  A
-//               given thread may simultaneously lock the data
-//               multiple times.
-//
-//               This class serves in lieu of a pair of
-//               GeomVertexArrayDataPipelineReader and
-//               GeomVertexArrayDataPipelineWriter classes
-////////////////////////////////////////////////////////////////////
+/**
+ * This data object is returned by GeomVertexArrayData::get_handle() or
+ * modify_handle(). As long as it exists, the data is locked; when the last of
+ * these destructs, the data is unlocked.  Only one thread at a time may lock
+ * the data; other threads attempting to lock the data will block.  A given
+ * thread may simultaneously lock the data multiple times.  This class serves in
+ * lieu of a pair of GeomVertexArrayDataPipelineReader and
+ * GeomVertexArrayDataPipelineWriter classes
+ */
 class EXPCL_PANDA_GOBJ GeomVertexArrayDataHandle : public ReferenceCount, public GeomEnums {
 private:
   INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object,

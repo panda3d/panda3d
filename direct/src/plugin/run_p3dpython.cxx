@@ -14,13 +14,11 @@
 #include "p3dPythonRun.h"
 #include "run_p3dpython.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: run_p3dpython
-//  Description: This externally-visible function is the main entry
-//               point to this DLL, and it starts the whole thing
-//               running.  Returns the exit status, which will be
-//               0 on success, 1 or otherwise on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * This externally-visible function is the main entry point to this DLL, and it
+ * starts the whole thing running.  Returns the exit status, which will be 0 on
+ * success, 1 or otherwise on failure.
+ */
 int
 run_p3dpython(const char *program_name, const char *archive_file,
               FHandle input_handle, FHandle output_handle,

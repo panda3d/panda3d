@@ -23,12 +23,11 @@
 
 class VirtualFileSystem;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMount
-// Description : The abstract base class for a mount definition used
-//               within a VirtualFileSystem.  Normally users don't
-//               need to monkey with this class directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for a mount definition used within a
+ * VirtualFileSystem.  Normally users don't need to monkey with this class
+ * directly.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMount : public TypedReferenceCount {
 PUBLISHED:
   INLINE VirtualFileMount();
@@ -77,7 +76,7 @@ public:
   virtual time_t get_timestamp(const Filename &file) const=0;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const=0;
 
   virtual bool atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents, const string &old_contents, const string &new_contents);

@@ -20,11 +20,9 @@
 #include "namable.h"
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggNamedObject
-// Description : This is a fairly low-level base class--any egg
-//               object that has a name.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a fairly low-level base class--any egg object that has a name.
+ */
 class EXPCL_PANDAEGG EggNamedObject : public EggObject, public Namable {
 PUBLISHED:
   INLINE EggNamedObject(const string &name = "");

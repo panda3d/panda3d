@@ -16,11 +16,9 @@
 
 TypeHandle VrpnAnalogDevice::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnAnalogDevice::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnAnalogDevice::
 VrpnAnalogDevice(VrpnClient *client, const string &device_name,
                  VrpnAnalog *vrpn_analog) :
@@ -29,11 +27,9 @@ VrpnAnalogDevice(VrpnClient *client, const string &device_name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnAnalogDevice::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnAnalogDevice::
 ~VrpnAnalogDevice() {
   disconnect();

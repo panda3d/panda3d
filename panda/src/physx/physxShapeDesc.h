@@ -22,12 +22,10 @@
 
 class PhysxMaterial;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxShapeDesc
-// Description : Abstract base class for shape descriptors.
-//               Descriptors for all the different shape types are
-//               derived from this class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for shape descriptors.  Descriptors for all the different
+ * shape types are derived from this class.
+ */
 class EXPCL_PANDAPHYSX PhysxShapeDesc : public PhysxEnums, public ReferenceCount {
 
 PUBLISHED:

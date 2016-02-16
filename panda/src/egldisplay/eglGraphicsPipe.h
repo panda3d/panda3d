@@ -42,12 +42,10 @@ class eglGraphicsBuffer;
 class eglGraphicsPixmap;
 class eglGraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL ES graphics windows on an X-based
-//               (e.g. Unix) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL ES graphics
+ * windows on an X-based (e.g.  Unix) client.
+ */
 class eglGraphicsPipe : public GraphicsPipe {
 public:
   eglGraphicsPipe(const string &display = string());

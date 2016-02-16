@@ -18,11 +18,9 @@
 
 #include "cvsCopy.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TestCopy
-// Description : A program to copy ordinary files into the cvs tree.
-//               Mainly to test CVSCopy.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to copy ordinary files into the cvs tree.  Mainly to test CVSCopy.
+ */
 class TestCopy : public CVSCopy {
 public:
   TestCopy();

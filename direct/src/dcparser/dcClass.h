@@ -38,14 +38,12 @@ static const bool dc_sort_inheritance_by_file = false;
 class HashGenerator;
 class DCParameter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCClass
-// Description : Defines a particular DistributedClass as read from an
-//               input .dc file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a particular DistributedClass as read from an input .dc file.
+ */
 class EXPCL_DIRECT DCClass : public DCDeclaration {
 public:
-  DCClass(DCFile *dc_file, const string &name, 
+  DCClass(DCFile *dc_file, const string &name,
           bool is_struct, bool bogus_class);
   ~DCClass();
 
@@ -60,7 +58,7 @@ PUBLISHED:
 
   int get_num_parents() const;
   DCClass *get_parent(int n) const;
-  
+
   bool has_constructor() const;
   DCField *get_constructor() const;
 
@@ -81,7 +79,7 @@ PUBLISHED:
   INLINE void stop_generate();
 
   virtual void output(ostream &out) const;
-  
+
 #ifdef HAVE_PYTHON
   bool has_class_def() const;
   void set_class_def(PyObject *class_def);
@@ -96,40 +94,40 @@ PUBLISHED:
   void receive_update_all_required(PyObject *distobj, DatagramIterator &di) const;
   void receive_update_other(PyObject *distobj, DatagramIterator &di) const;
 
-  void direct_update(PyObject *distobj, const string &field_name, 
+  void direct_update(PyObject *distobj, const string &field_name,
                      const string &value_blob);
-  void direct_update(PyObject *distobj, const string &field_name, 
+  void direct_update(PyObject *distobj, const string &field_name,
                      const Datagram &datagram);
-  bool pack_required_field(Datagram &datagram, PyObject *distobj, 
+  bool pack_required_field(Datagram &datagram, PyObject *distobj,
                            const DCField *field) const;
-  bool pack_required_field(DCPacker &packer, PyObject *distobj, 
+  bool pack_required_field(DCPacker &packer, PyObject *distobj,
                            const DCField *field) const;
 
 
 
   Datagram client_format_update(const string &field_name,
                                 DOID_TYPE do_id, PyObject *args) const;
-  Datagram ai_format_update(const string &field_name, DOID_TYPE do_id, 
+  Datagram ai_format_update(const string &field_name, DOID_TYPE do_id,
                             CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const;
-  Datagram ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id, 
+  Datagram ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id,
                             CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const;
   Datagram ai_format_generate(PyObject *distobj, DOID_TYPE do_id, ZONEID_TYPE parent_id, ZONEID_TYPE zone_id,
                               CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
                               PyObject *optional_fields) const;
-  Datagram client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id, 
+  Datagram client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
                                       ZONEID_TYPE zone_id,                                                           PyObject *optional_fields) const;
 
   Datagram ai_database_generate_context(unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id, CHANNEL_TYPE owner_channel,
                                 CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const;
   Datagram ai_database_generate_context_old(unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
                                 CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const;
-  
-#endif 
+
+#endif
 
 public:
   virtual void output(ostream &out, bool brief) const;
   virtual void write(ostream &out, bool brief, int indent_level) const;
-  void output_instance(ostream &out, bool brief, const string &prename, 
+  void output_instance(ostream &out, bool brief, const string &prename,
                        const string &name, const string &postname) const;
   void generate_hash(HashGenerator &hashgen) const;
   void clear_inherited_fields();

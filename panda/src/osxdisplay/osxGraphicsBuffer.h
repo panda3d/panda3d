@@ -21,11 +21,9 @@
 #include "graphicsBuffer.h"
 #include "glgsg.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : osxGraphicsBuffer
-// Description : An offscreen buffer in the OSX environment.  This
-//               creates an AGLPbuffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen buffer in the OSX environment.  This creates an AGLPbuffer.
+ */
 class osxGraphicsBuffer : public GraphicsBuffer {
 public:
   osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,

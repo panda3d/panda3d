@@ -24,32 +24,25 @@ TypeHandle wglGraphicsPipe::_type_handle;
 bool    wglGraphicsPipe::_current_valid;
 HDC     wglGraphicsPipe::_current_hdc;
 HGLRC   wglGraphicsPipe::_current_hglrc;
-  
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+
+/**
+
+ */
 wglGraphicsPipe::
 wglGraphicsPipe() {
   _current_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 wglGraphicsPipe::
 ~wglGraphicsPipe() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::wgl_make_current
-//       Access: Private, Static
-//  Description: a thin wrapper around wglMakeCurrent to avoid
-//               unnecessary OS-call overhead.
-////////////////////////////////////////////////////////////////////
+/**
+ * a thin wrapper around wglMakeCurrent to avoid unnecessary OS-call overhead.
+ */
 void wglGraphicsPipe::
 wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector) {
   if ((_current_valid) &&
@@ -69,39 +62,30 @@ wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to choose
+ * between several possible GraphicsPipes available on a particular platform, so
+ * the name should be meaningful and unique for a given platform.
+ */
 string wglGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               wglGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the user
+ * to make a default wglGraphicsPipe.
+ */
 PT(GraphicsPipe) wglGraphicsPipe::
 pipe_constructor() {
   return new wglGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window or buffer on the pipe, if possible.
-//               This routine is only called from GraphicsEngine::make_output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window or buffer on the pipe, if possible.  This routine is
+ * only called from GraphicsEngine::make_output.
+ */
 PT(GraphicsOutput) wglGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -112,7 +96,7 @@ make_output(const string &name,
             GraphicsOutput *host,
             int retry,
             bool &precertify) {
-  
+
   if (!_is_valid) {
     return NULL;
   }
@@ -125,8 +109,8 @@ make_output(const string &name,
   bool support_rtt;
   support_rtt = false;
   if (wglgsg) {
-     support_rtt = 
-      wglgsg -> get_supports_wgl_render_texture() && 
+     support_rtt =
+      wglgsg -> get_supports_wgl_render_texture() &&
       support_render_texture;
   }
 
@@ -183,9 +167,9 @@ make_output(const string &name,
     return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                 flags, gsg, host);
   }
-  
+
   // Third thing to try: a wglGraphicsBuffer
-  
+
   if (retry == 2) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
@@ -195,7 +179,7 @@ make_output(const string &name,
     if ((wglgsg != 0) &&
         (wglgsg->is_valid()) &&
         (!wglgsg->needs_reset()) &&
-	!wglgsg->_supports_pbuffer) {
+  !wglgsg->_supports_pbuffer) {
       return NULL;
     }
 
@@ -230,32 +214,26 @@ make_output(const string &name,
     return new wglGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
-  
+
   // Nothing else left to try.
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::make_callback_gsg
-//       Access: Protected, Virtual
-//  Description: This is called when make_output() is used to create a
-//               CallbackGraphicsWindow.  If the GraphicsPipe can
-//               construct a GSG that's not associated with any
-//               particular window object, do so now, assuming the
-//               correct graphics context has been set up externally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called when make_output() is used to create a CallbackGraphicsWindow.
+ * If the GraphicsPipe can construct a GSG that's not associated with any
+ * particular window object, do so now, assuming the correct graphics context
+ * has been set up externally.
+ */
 PT(GraphicsStateGuardian) wglGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
   return new wglGraphicsStateGuardian(engine, this, NULL);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::format_pfd_flags
-//       Access: Private, Static
-//  Description: Returns pfd_flags formatted as a string in a
-//               user-friendly way.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns pfd_flags formatted as a string in a user-friendly way.
+ */
 string wglGraphicsPipe::
 format_pfd_flags(DWORD pfd_flags) {
   struct FlagDef {

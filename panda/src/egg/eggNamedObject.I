@@ -11,31 +11,25 @@
  * @date 1999-02-10
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNamedObject::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggNamedObject::
 EggNamedObject(const string &name) : Namable(name) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNamedObject::Copy constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggNamedObject::
 EggNamedObject(const EggNamedObject &copy) : EggObject(copy), Namable(copy) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNamedObject::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggNamedObject &EggNamedObject::
 operator = (const EggNamedObject &copy) {
   EggObject::operator = (copy);

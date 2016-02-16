@@ -13,11 +13,9 @@
 
 #include "rectangleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: RectangleEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 RectangleEmitter::
 RectangleEmitter() :
   BaseParticleEmitter() {
@@ -25,11 +23,9 @@ RectangleEmitter() :
   _vmax.set( 0.5f,  0.5f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RectangleEmitter
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 RectangleEmitter::
 RectangleEmitter(const RectangleEmitter &copy) :
   BaseParticleEmitter(copy) {
@@ -37,30 +33,24 @@ RectangleEmitter(const RectangleEmitter &copy) :
   _vmax = copy._vmax;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RectangleEmitter
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 RectangleEmitter::
 ~RectangleEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 BaseParticleEmitter *RectangleEmitter::
 make_copy() {
   return new RectangleEmitter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RectangleEmitter::assign_initial_position
-//       Access: Public
-//  Description: Generates a location for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a location for a new particle
+ */
 void RectangleEmitter::
 assign_initial_position(LPoint3& pos) {
   PN_stdfloat t_x = NORMALIZED_RAND();
@@ -74,22 +64,17 @@ assign_initial_position(LPoint3& pos) {
   pos.set(lerp_x, lerp_y, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RectangleEmitter::assign_initial_velocity
-//       Access: Public
-//  Description: Generates a velocity for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a velocity for a new particle
+ */
 void RectangleEmitter::
 assign_initial_velocity(LVector3& vel) {
   vel.set(0.0f,0.0f,0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void RectangleEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -97,12 +82,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void RectangleEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

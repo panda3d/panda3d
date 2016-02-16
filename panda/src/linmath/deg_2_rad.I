@@ -11,18 +11,18 @@
  * @date 2011-12-14
  */
 
-INLINE_LINMATH double deg_2_rad(double f) { 
-  return f * MathNumbers::deg_2_rad_d; 
+INLINE_LINMATH double deg_2_rad(double f) {
+  return f * MathNumbers::deg_2_rad_d;
 }
 
-INLINE_LINMATH double rad_2_deg(double f) { 
-  return f * MathNumbers::rad_2_deg_d; 
+INLINE_LINMATH double rad_2_deg(double f) {
+  return f * MathNumbers::rad_2_deg_d;
 }
 
-INLINE_LINMATH float deg_2_rad(float f) { 
-  return f * MathNumbers::deg_2_rad_f; 
+INLINE_LINMATH float deg_2_rad(float f) {
+  return f * MathNumbers::deg_2_rad_f;
 }
 
-INLINE_LINMATH float rad_2_deg(float f) { 
-  return f * MathNumbers::rad_2_deg_f; 
+INLINE_LINMATH float rad_2_deg(float f) {
+  return f * MathNumbers::rad_2_deg_f;
 }

@@ -27,19 +27,13 @@ class Socket_TCP_Listen;
 class Socket_UDP_Incoming;
 class Socket_UDP_Outgoing;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_IP
-// Description : Base functionality for a INET domain Socket
-//               This call should be the starting point for all other
-//               unix domain sockets.
-//
-//                                       SocketIP
-//                                          |
-//       -------------------------------------------------------------------
-//       |             |                       |                           |
-//     SocketTCP     SocketTCP_Listen    SocketUDP_Incoming   SocketUDP_OutBound
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Base functionality for a INET domain Socket This call should be the starting
+ * point for all other unix domain sockets.  SocketIP |
+ * ------------------------------------------------------------------- |
+ * |                       |                           | SocketTCP
+ * SocketTCP_Listen    SocketUDP_Incoming   SocketUDP_OutBound
+ */
 class EXPCL_PANDA_NATIVENET Socket_IP : public TypedObject {
 public:
 PUBLISHED:
@@ -92,10 +86,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::ErrorClose
-//  Description: Used by internal to force a close.  Returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used by internal to force a close.  Returns false.
+ */
 inline bool Socket_IP::
 ErrorClose() {
   if (Active()) {
@@ -106,46 +99,41 @@ ErrorClose() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::Active
-//  Description: Ask if the socket is open (allocated)
-////////////////////////////////////////////////////////////////////
+/**
+ * Ask if the socket is open (allocated)
+ */
 inline bool Socket_IP::
 Active() {
   return (_socket != BAD_SOCKET);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::Socket_IP
-//  Description: Def Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Def Constructor
+ */
 inline Socket_IP::
 Socket_IP() {
   _socket = BAD_SOCKET;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::SetSocket
-//  Description: Assigns an existing socket to this class
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns an existing socket to this class
+ */
 inline Socket_IP::
 Socket_IP(SOCKET ins) {
   _socket = ins;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::~Socket_IP
-//  Description: Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 inline Socket_IP::
 ~Socket_IP() {
   Close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::Close
-//  Description: Closes a socket if it is open (allocated).
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes a socket if it is open (allocated).
+ */
 inline void Socket_IP::
 Close() {
   if (Active()) {
@@ -155,29 +143,26 @@ Close() {
   _socket = BAD_SOCKET;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::GetLastError
-//  Description: Gets the last errcode from a socket operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the last errcode from a socket operation.
+ */
 inline int Socket_IP::
 GetLastError() {
   return GETERROR();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::SetSocket
-//  Description: Assigns an existing socket to this class
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns an existing socket to this class
+ */
 inline void Socket_IP::
 SetSocket(SOCKET ins) {
   Close();
   _socket = ins;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::SetRecvBufferSize
-//  Description: Ok it sets the recv buffer size for both tcp and UDP
-////////////////////////////////////////////////////////////////////
+/**
+ * Ok it sets the recv buffer size for both tcp and UDP
+ */
 int Socket_IP::
 SetRecvBufferSize(int insize) {
   if (setsockopt(_socket, (int) SOL_SOCKET, (int) SO_RCVBUF, (char *) &insize, sizeof(int))) {
@@ -187,10 +172,9 @@ SetRecvBufferSize(int insize) {
   return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SetNonBlocking
-//  Description: this function will throw a socket into non-blocking mode
-////////////////////////////////////////////////////////////////////
+/**
+ * this function will throw a socket into non-blocking mode
+ */
 inline int Socket_IP::
 SetNonBlocking() {
 #ifdef BSDBLOCK
@@ -209,11 +193,10 @@ SetNonBlocking() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::SetBlocking
-//  Description: Set the socket to block on subsequent calls to
-//      socket functions that address this socket
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the socket to block on subsequent calls to socket functions that address
+ * this socket
+ */
 inline int Socket_IP::
 SetBlocking() {
 #ifdef BSDBLOCK
@@ -232,10 +215,9 @@ SetBlocking() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SetReuseAddress
-//  Description: Informs a socket to reuse IP address as needed
-////////////////////////////////////////////////////////////////////
+/**
+ * Informs a socket to reuse IP address as needed
+ */
 inline bool Socket_IP::
 SetReuseAddress(bool flag) {
   int bOption = flag;
@@ -245,28 +227,25 @@ SetReuseAddress(bool flag) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::GetSocket
-//  Description: Gets the base socket type
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the base socket type
+ */
 inline SOCKET Socket_IP::
 GetSocket() {
   return _socket;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::GetSocket
-//  Description: Get The RAW file id of the socket
-////////////////////////////////////////////////////////////////////
+/**
+ * Get The RAW file id of the socket
+ */
 inline SOCKET Socket_IP::
 GetSocket() const {
   return _socket;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_IP::GetPeerName
-//  Description: Wrapper on berkly getpeername...
-////////////////////////////////////////////////////////////////////
+/**
+ * Wrapper on berkly getpeername...
+ */
 inline Socket_Address Socket_IP::
 GetPeerName(void) const {
   sockaddr_in name;

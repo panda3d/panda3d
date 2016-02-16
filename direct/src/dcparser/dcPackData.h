@@ -16,11 +16,9 @@
 
 #include "dcbase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCPackData
-// Description : This is a block of data that receives the results of
-//               DCPacker.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a block of data that receives the results of DCPacker.
+ */
 class EXPCL_DIRECT DCPackData {
 PUBLISHED:
   INLINE DCPackData();

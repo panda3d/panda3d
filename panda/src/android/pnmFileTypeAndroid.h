@@ -24,12 +24,10 @@
 
 #include <jni.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeAndroid
-// Description : Wrapper class around the Android Bitmap mechanism
-//               to allow loading images on Android without needing
-//               libpng or libjpeg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Wrapper class around the Android Bitmap mechanism to allow loading images on
+ * Android without needing libpng or libjpeg.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeAndroid : public PNMFileType {
 public:
   PNMFileTypeAndroid();

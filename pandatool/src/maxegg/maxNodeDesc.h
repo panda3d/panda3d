@@ -14,13 +14,11 @@
 #ifndef MAXNODEDESC_H
 #define MAXNODEDESC_H
 
-////////////////////////////////////////////////////////////////////
-//       Class : MaxNodeDesc
-// Description : Describes a single instance of a node in the Max
-//               scene graph, relating it to the corresponding egg
-//               structures (e.g. node, group, or table entry) that
-//               will be created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a single instance of a node in the Max scene graph, relating it to
+ * the corresponding egg structures (e.g.  node, group, or table entry) that
+ * will be created.
+ */
 class MaxNodeDesc : public ReferenceCount, public Namable {
  public:
   MaxNodeDesc(MaxNodeDesc *parent = NULL, INode *max_node = NULL);
@@ -53,7 +51,7 @@ class MaxNodeDesc : public ReferenceCount, public Namable {
 
   enum JointType {
     JT_none,         // Not a joint.
-    JT_node_joint,    // Node that represents a joint in the geometry 
+    JT_node_joint,    // Node that represents a joint in the geometry
                                          // but not the actual joint itself
     JT_joint,        // An actual joint in Max.
     JT_pseudo_joint, // Not a joint in Max, but treated just like a

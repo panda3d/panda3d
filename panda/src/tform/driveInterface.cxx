@@ -92,14 +92,12 @@ operator < (const DriveInterface::KeyHeld &other) const {
   return _changed_time > other._changed_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DriveInterface::
-DriveInterface(const string &name) : 
-  MouseInterfaceNode(name) 
+DriveInterface(const string &name) :
+  MouseInterfaceNode(name)
 {
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
@@ -138,21 +136,17 @@ DriveInterface(const string &name) :
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DriveInterface::
 ~DriveInterface() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::reset
-//       Access: Published
-//  Description: Reinitializes the driver to the origin and resets any
-//               knowledge about buttons being held down.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reinitializes the driver to the origin and resets any knowledge about buttons
+ * being held down.
+ */
 void DriveInterface::
 reset() {
   _xyz.set(0.0f, 0.0f, 0.0f);
@@ -164,50 +158,40 @@ reset() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_force_roll
-//       Access: Published
-//  Description: This function is no longer used and does nothing.  It
-//               will be removed soon.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is no longer used and does nothing.  It will be removed soon.
+ */
 void DriveInterface::
 set_force_roll(PN_stdfloat) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::set_mat
-//       Access: Published
-//  Description: Stores the indicated transform in the DriveInterface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated transform in the DriveInterface.
+ */
 void DriveInterface::
 set_mat(const LMatrix4 &mat) {
   LVecBase3 scale, shear;
   decompose_matrix(mat, scale, shear, _hpr, _xyz);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::get_mat
-//       Access: Published
-//  Description: Returns the current transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current transform.
+ */
 const LMatrix4 &DriveInterface::
 get_mat() {
-  compose_matrix(_mat, 
-                 LVecBase3(1.0f, 1.0f, 1.0f), 
+  compose_matrix(_mat,
+                 LVecBase3(1.0f, 1.0f, 1.0f),
                  LVecBase3(0.0f, 0.0f, 0.0f),
                  _hpr, _xyz);
   return _mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::force_dgraph
-//       Access: Public
-//  Description: This is a special kludge for DriveInterface to allow
-//               us to avoid the one-frame latency after a collision.
-//               It forces an immediate partial data flow for all data
-//               graph nodes below this node, causing all data nodes
-//               that depend on this matrix to be updated immediately.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special kludge for DriveInterface to allow us to avoid the one-
+ * frame latency after a collision.  It forces an immediate partial data flow
+ * for all data graph nodes below this node, causing all data nodes that depend
+ * on this matrix to be updated immediately.
+ */
 void DriveInterface::
 force_dgraph() {
   _transform = TransformState::make_pos_hpr(_xyz, _hpr);
@@ -224,13 +208,10 @@ force_dgraph() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::apply
-//       Access: Private
-//  Description: Applies the operation indicated by the user's mouse
-//               motion to the current state.  Returns the matrix
-//               indicating the new state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the operation indicated by the user's mouse motion to the current
+ * state.  Returns the matrix indicating the new state.
+ */
 void DriveInterface::
 apply(double x, double y, bool any_button) {
   // First reset the speeds
@@ -374,19 +355,14 @@ apply(double x, double y, bool any_button) {
   _hpr[0] -= rotation;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DriveInterface::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output parameters.
+ * The input parameters may be accessed with the index numbers returned by the
+ * define_input() calls that were made earlier (presumably in the constructor);
+ * likewise, the output parameters should be set with the index numbers returned
+ * by the define_output() calls.
+ */
 void DriveInterface::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
@@ -418,7 +394,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       const ButtonEvent &be = button_events->get_event(i);
       if (be._type != ButtonEvent::T_keystroke) {
         bool down = (be._type != ButtonEvent::T_up);
-        
+
         if (be._button == KeyboardButton::up()) {
           _up_arrow.set_key(down);
         } else if (be._button == KeyboardButton::down()) {

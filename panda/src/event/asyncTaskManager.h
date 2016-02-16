@@ -31,25 +31,17 @@
 #include "ordered_vector.h"
 #include "indirectCompareNames.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTaskManager
-// Description : A class to manage a loose queue of isolated tasks,
-//               which can be performed either synchronously (in the
-//               foreground thread) or asynchronously (by a background
-//               thread).
-//
-//               The AsyncTaskManager is actually a collection of
-//               AsyncTaskChains, each of which maintains a list of
-//               tasks.  Each chain can be either foreground or
-//               background (it may run only in the main thread, or it
-//               may be serviced by one or more background threads).
-//               See AsyncTaskChain for more information.
-//
-//               If you do not require background processing, it is
-//               perfectly acceptable to create only one
-//               AsyncTaskChain, which runs in the main thread.  This
-//               is a common configuration.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class to manage a loose queue of isolated tasks, which can be performed
+ * either synchronously (in the foreground thread) or asynchronously (by a
+ * background thread).  The AsyncTaskManager is actually a collection of
+ * AsyncTaskChains, each of which maintains a list of tasks.  Each chain can be
+ * either foreground or background (it may run only in the main thread, or it
+ * may be serviced by one or more background threads). See AsyncTaskChain for
+ * more information.  If you do not require background processing, it is
+ * perfectly acceptable to create only one AsyncTaskChain, which runs in the
+ * main thread.  This is a common configuration.
+ */
 class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
   AsyncTaskManager(const string &name);
@@ -122,7 +114,7 @@ protected:
 
   // Protects all the following members.  This same lock is also used
   // to protect all of our AsyncTaskChain members.
-  Mutex _lock; 
+  Mutex _lock;
 
   typedef ov_set<PT(AsyncTaskChain), IndirectCompareNames<AsyncTaskChain> > TaskChains;
   TaskChains _task_chains;
@@ -130,7 +122,7 @@ protected:
   int _num_tasks;
   TasksByName _tasks_by_name;
   PT(ClockObject) _clock;
-  
+
   ConditionVarFull _frame_cvar;  // Signalled when the clock ticks.
 
   static AsyncTaskManager* _global_ptr;

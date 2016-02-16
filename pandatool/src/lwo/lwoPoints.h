@@ -20,11 +20,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoPoints
-// Description : An array of points that will be referenced by later
-//               chunks.
-////////////////////////////////////////////////////////////////////
+/**
+ * An array of points that will be referenced by later chunks.
+ */
 class LwoPoints : public LwoChunk {
 public:
   int get_num_points() const;
@@ -57,5 +55,3 @@ private:
 };
 
 #endif
-
-

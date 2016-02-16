@@ -21,12 +21,10 @@
 #include "conditionVarFull.h"
 #include "pdeque.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramQueue
-// Description : A thread-safe, FIFO queue of NetDatagrams.  This is used
-//               by ConnectionWriter for queuing up datagrams for
-//               its various threads to write to sockets.
-////////////////////////////////////////////////////////////////////
+/**
+ * A thread-safe, FIFO queue of NetDatagrams.  This is used by ConnectionWriter
+ * for queuing up datagrams for its various threads to write to sockets.
+ */
 class EXPCL_PANDA_NET DatagramQueue {
 public:
   DatagramQueue();
@@ -51,4 +49,3 @@ private:
 };
 
 #endif
-

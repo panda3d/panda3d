@@ -11,45 +11,36 @@
  * @date 2009-09-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBodyDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxBodyDesc::
 PhysxBodyDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBodyDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxBodyDesc::
 ~PhysxBodyDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBodyDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxBodyDesc::
 set_to_default() {
 
   _desc.setToDefault();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBodyDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxBodyDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

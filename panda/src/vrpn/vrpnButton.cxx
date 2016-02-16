@@ -20,11 +20,9 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButton::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnButton::
 VrpnButton(const string &button_name, vrpn_Connection *connection) :
   _button_name(button_name)
@@ -34,22 +32,18 @@ VrpnButton(const string &button_name, vrpn_Connection *connection) :
   _button->register_change_handler((void*)this, &vrpn_button_callback);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButton::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnButton::
 ~VrpnButton() {
   delete _button;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButton::mark
-//       Access: Public
-//  Description: Adds the indicated VrpnButtonDevice to the list of
-//               devices that are sharing this VrpnButton.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated VrpnButtonDevice to the list of devices that are sharing
+ * this VrpnButton.
+ */
 void VrpnButton::
 mark(VrpnButtonDevice *device) {
   if (vrpn_cat.is_debug()) {
@@ -58,12 +52,10 @@ mark(VrpnButtonDevice *device) {
   _devices.push_back(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButton::unmark
-//       Access: Public
-//  Description: Removes the indicated VrpnButtonDevice from the list
-//               of devices that are sharing this VrpnButton.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated VrpnButtonDevice from the list of devices that are
+ * sharing this VrpnButton.
+ */
 void VrpnButton::
 unmark(VrpnButtonDevice *device) {
   if (vrpn_cat.is_debug()) {
@@ -78,21 +70,17 @@ unmark(VrpnButtonDevice *device) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButton::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VrpnButton::
 output(ostream &out) const {
   out << _button_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButton::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VrpnButton::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -100,13 +88,10 @@ write(ostream &out, int indent_level) const {
     << _devices.size() << " devices)\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButton::vrpn_button_callback
-//       Access: Private, Static
-//  Description: Receives the button event data from the VRPN
-//               code and sends it to any interested
-//               VrpnButtonDevices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives the button event data from the VRPN code and sends it to any
+ * interested VrpnButtonDevices.
+ */
 void VRPN_CALLBACK VrpnButton::
 vrpn_button_callback(void *userdata, const vrpn_BUTTONCB info) {
   VrpnButton *self = (VrpnButton *)userdata;

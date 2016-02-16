@@ -26,11 +26,9 @@
 #include "cycleDataWriter.h"
 #include "cycleDataReader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovieTexture
-// Description : A texture that fetches video frames from an
-//               underlying object of class Movie.
-////////////////////////////////////////////////////////////////////
+/**
+ * A texture that fetches video frames from an underlying object of class Movie.
+ */
 class EXPCL_PANDA_GRUTIL MovieTexture : public Texture {
 PUBLISHED:
   MovieTexture(const string &name);
@@ -46,7 +44,7 @@ PUBLISHED:
 
   INLINE MovieVideoCursor *get_color_cursor(int page);
   INLINE MovieVideoCursor *get_alpha_cursor(int page);
-  
+
   void   restart();
   void   stop();
   void   play();
@@ -79,12 +77,12 @@ public:
   static PT(Texture) make_texture();
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
- 
+
 protected:
   class CData;
 
   virtual PT(Texture) make_copy_impl();
-  void do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy, 
+  void do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
                  const CData *cdata_copy, const Texture::CData *cdata_copy_tex);
 
   virtual void do_reload_ram_image(Texture::CData *cdata, bool allow_compression);
@@ -93,8 +91,8 @@ protected:
   virtual void do_get_bam_rawdata(Texture::CData *cdata);
   virtual bool do_can_reload(const Texture::CData *cdata) const;
 
-  virtual bool do_adjust_this_size(const Texture::CData *cdata, 
-                                   int &x_size, int &y_size, const string &name, 
+  virtual bool do_adjust_this_size(const Texture::CData *cdata,
+                                   int &x_size, int &y_size, const string &name,
                                    bool for_padding) const;
 
   virtual bool do_read_one(Texture::CData *cdata,
@@ -106,7 +104,7 @@ protected:
                            const PNMImage &pnmimage, const string &name,
                            int z, int n, const LoaderOptions &options);
   bool do_load_one(Texture::CData *cdata,
-                   PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, 
+                   PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha,
                    int z, const LoaderOptions &options);
   virtual void do_allocate_pages(Texture::CData *cdata);
 
@@ -119,7 +117,7 @@ protected:
     PT(MovieVideoCursor::Buffer) _cbuffer;
     PT(MovieVideoCursor::Buffer) _abuffer;
   };
-  
+
   typedef pvector<VideoPage> Pages;
 
   class EXPCL_PANDA_GRUTIL CData : public CycleData {
@@ -130,7 +128,7 @@ protected:
     virtual TypeHandle get_parent_type() const {
       return MovieTexture::get_class_type();
     }
-    
+
     Pages _pages;
     int _video_width;
     int _video_height;
@@ -152,8 +150,8 @@ protected:
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
-  
-  void do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, 
+
+  void do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex,
                                        const LoaderOptions &options);
 
 private:

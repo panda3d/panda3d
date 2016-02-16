@@ -21,18 +21,13 @@
 
 class StringDecoder;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextEncoder
-// Description : This class can be used to convert text between
-//               multiple representations, e.g. utf-8 to Unicode.  You
-//               may use it as a static class object, passing the
-//               encoding each time, or you may create an instance and
-//               use that object, which will record the current
-//               encoding and retain the current string.
-//
-//               This class is also a base class of TextNode, which
-//               inherits this functionality.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class can be used to convert text between multiple representations, e.g.
+ * utf-8 to Unicode.  You may use it as a static class object, passing the
+ * encoding each time, or you may create an instance and use that object, which
+ * will record the current encoding and retain the current string.  This class
+ * is also a base class of TextNode, which inherits this functionality.
+ */
 class EXPCL_DTOOL TextEncoder {
 PUBLISHED:
   enum Encoding {

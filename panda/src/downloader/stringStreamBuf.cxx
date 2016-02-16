@@ -15,11 +15,9 @@
 #include "pnotify.h"
 #include "config_express.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 StringStreamBuf::
 StringStreamBuf() {
 #ifdef PHAVE_IOSTREAM
@@ -44,11 +42,9 @@ StringStreamBuf() {
   _ppos = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 StringStreamBuf::
 ~StringStreamBuf() {
 #ifdef PHAVE_IOSTREAM
@@ -56,11 +52,9 @@ StringStreamBuf::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::clear
-//       Access: Public
-//  Description: Empties the buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the buffer.
+ */
 void StringStreamBuf::
 clear() {
   _data.clear();
@@ -71,13 +65,10 @@ clear() {
   gbump(egptr() - gptr());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::read_chars
-//       Access: Public
-//  Description: Attempts to extract the indicated number of
-//               characters from the current file position.  Returns
-//               the number of characters extracted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to extract the indicated number of characters from the current file
+ * position.  Returns the number of characters extracted.
+ */
 size_t StringStreamBuf::
 read_chars(char *start, size_t length) {
   if (length == 0) {
@@ -97,12 +88,9 @@ read_chars(char *start, size_t length) {
   return length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::write_chars
-//       Access: Public
-//  Description: Appends the indicated stream of characters to the
-//               current file position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends the indicated stream of characters to the current file position.
+ */
 void StringStreamBuf::
 write_chars(const char *start, size_t length) {
   if (length != 0) {
@@ -125,7 +113,7 @@ write_chars(const char *start, size_t length) {
       // We need to append some zeroes.
       _data.insert(_data.end(), _ppos - _data.size(), (unsigned char)0);
     }
-     
+
     if (length != 0) {
       // We are appending some data.
       _data.insert(_data.begin() + _ppos, (const unsigned char *)start, (const unsigned char *)start + length);
@@ -134,11 +122,9 @@ write_chars(const char *start, size_t length) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::seekoff
-//       Access: Public, Virtual
-//  Description: Implements seeking within the stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements seeking within the stream.
+ */
 streampos StringStreamBuf::
 seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   streampos result = -1;
@@ -153,17 +139,17 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     _gpos -= n;
     size_t cur_pos = _gpos;
     size_t new_pos = cur_pos;
-    
+
     // Now adjust the data pointer appropriately.
     switch (dir) {
     case ios::beg:
       new_pos = (size_t)off;
       break;
-      
+
     case ios::cur:
       new_pos = (size_t)((int)cur_pos + off);
       break;
-      
+
     case ios::end:
       new_pos = (size_t)((int)_data.size() + off);
       break;
@@ -182,17 +168,17 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     size_t n = pptr() - pbase();
     size_t cur_pos = _ppos + n;
     size_t new_pos = cur_pos;
-    
+
     // Now adjust the data pointer appropriately.
     switch (dir) {
     case ios::beg:
       new_pos = (size_t)off;
       break;
-      
+
     case ios::cur:
       new_pos = (size_t)((int)cur_pos + off);
       break;
-      
+
     case ios::end:
       new_pos = (size_t)((int)_data.size() + off);
       break;
@@ -209,31 +195,23 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::seekpos
-//       Access: Public, Virtual
-//  Description: A variant on seekoff() to implement seeking within a
-//               stream.
-//
-//               The MSDN Library claims that it is only necessary to
-//               redefine seekoff(), and not seekpos() as well, as the
-//               default implementation of seekpos() is supposed to
-//               map to seekoff() exactly as I am doing here; but in
-//               fact it must do something else, because seeking
-//               didn't work on Windows until I redefined this
-//               function as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * A variant on seekoff() to implement seeking within a stream.  The MSDN
+ * Library claims that it is only necessary to redefine seekoff(), and not
+ * seekpos() as well, as the default implementation of seekpos() is supposed to
+ * map to seekoff() exactly as I am doing here; but in fact it must do something
+ * else, because seeking didn't work on Windows until I redefined this function
+ * as well.
+ */
 streampos StringStreamBuf::
 seekpos(streampos pos, ios_openmode which) {
   return seekoff(pos, ios::beg, which);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::overflow
-//       Access: Protected, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int StringStreamBuf::
 overflow(int ch) {
   size_t n = pptr() - pbase();
@@ -251,12 +229,9 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::sync
-//       Access: Protected, Virtual
-//  Description: Called by the system iostream implementation to
-//               implement a flush operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system iostream implementation to implement a flush operation.
+ */
 int StringStreamBuf::
 sync() {
   size_t n = pptr() - pbase();
@@ -267,12 +242,10 @@ sync() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int StringStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
@@ -301,4 +274,3 @@ underflow() {
 
   return (unsigned char)*gptr();
 }
-

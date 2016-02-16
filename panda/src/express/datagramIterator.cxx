@@ -16,11 +16,9 @@
 
 TypeHandle DatagramIterator::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramIterator::get_string
-//       Access: Public
-//  Description: Extracts a variable-length string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a variable-length string.
+ */
 string DatagramIterator::
 get_string() {
   // First, get the length of the string
@@ -37,12 +35,9 @@ get_string() {
   return string(ptr + last_index, s_len);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramIterator::get_string32
-//       Access: Public
-//  Description: Extracts a variable-length string with a 32-bit
-//               length field.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a variable-length string with a 32-bit length field.
+ */
 string DatagramIterator::
 get_string32() {
   // First, get the length of the string
@@ -59,12 +54,9 @@ get_string32() {
   return string(ptr + last_index, s_len);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramIterator::get_z_string
-//       Access: Public
-//  Description: Extracts a variable-length string, as a
-//               NULL-terminated string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a variable-length string, as a NULL-terminated string.
+ */
 string DatagramIterator::
 get_z_string() {
   nassertr(_datagram != (const Datagram *)NULL, "");
@@ -84,13 +76,10 @@ get_z_string() {
   return string(ptr + last_index, p - last_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramIterator::get_fixed_string
-//       Access: Public
-//  Description: Extracts a fixed-length string.  However, if a zero
-//               byte occurs within the string, it marks the end of
-//               the string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a fixed-length string.  However, if a zero byte occurs within the
+ * string, it marks the end of the string.
+ */
 string DatagramIterator::
 get_fixed_string(size_t size) {
   nassertr(_datagram != (const Datagram *)NULL, "");
@@ -105,12 +94,9 @@ get_fixed_string(size_t size) {
   return s.substr(0, zero_byte);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramIterator::get_wstring
-//       Access: Public
-//  Description: Extracts a variable-length wstring (with a 32-bit
-//               length field).
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a variable-length wstring (with a 32-bit length field).
+ */
 wstring DatagramIterator::
 get_wstring() {
   // First, get the length of the string
@@ -129,12 +115,10 @@ get_wstring() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramIterator::extract_bytes
-//       Access: Public
-//  Description: Extracts the indicated number of bytes in the
-//               datagram and returns them as a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the indicated number of bytes in the datagram and returns them as a
+ * string.
+ */
 string DatagramIterator::
 extract_bytes(size_t size) {
   nassertr((int)size >= 0, "");
@@ -149,15 +133,12 @@ extract_bytes(size_t size) {
   return string(ptr + last_index, size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramIterator::extract_bytes
-//       Access: Published
-//  Description: Extracts the indicated number of bytes in the
-//               datagram into the given character buffer.  Assumes
-//               that the buffer is big enough to hold the requested
-//               number of bytes.  Returns the number of bytes
-//               that were successfully written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the indicated number of bytes in the datagram into the given
+ * character buffer.  Assumes that the buffer is big enough to hold the
+ * requested number of bytes.  Returns the number of bytes that were
+ * successfully written.
+ */
 size_t DatagramIterator::
 extract_bytes(unsigned char *into, size_t size) {
   nassertr((int)size >= 0, 0);
@@ -171,12 +152,9 @@ extract_bytes(unsigned char *into, size_t size) {
   return size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void DatagramIterator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -184,12 +162,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void DatagramIterator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -205,4 +180,3 @@ write(ostream &out, unsigned int indent) const {
   }
   #endif //] NDEBUG
 }
-

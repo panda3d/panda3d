@@ -16,27 +16,21 @@
 
 #ifndef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::output
-//       Access: Published
-//  Description: This method is declared virtual in MutexDebug, but
-//               non-virtual in ReMutexDirect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is declared virtual in MutexDebug, but non-virtual in
+ * ReMutexDirect.
+ */
 void ReMutexDirect::
 output(ostream &out) const {
   out << "ReMutex " << (void *)this;
 }
 
 #ifndef HAVE_REMUTEXTRUEIMPL
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::do_acquire
-//       Access: Private
-//  Description: The private implementation of acquire(), for the case in
-//               which the underlying lock system does not provide a
-//               reentrant mutex (and therefore we have to build this
-//               functionality on top of the existing non-reentrant
-//               mutex).
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of acquire(), for the case in which the underlying
+ * lock system does not provide a reentrant mutex (and therefore we have to
+ * build this functionality on top of the existing non-reentrant mutex).
+ */
 void ReMutexDirect::
 do_acquire(Thread *current_thread) {
   _lock_impl.acquire();
@@ -54,14 +48,14 @@ do_acquire(Thread *current_thread) {
     ++_lock_count;
     nassertd(_lock_count > 0) {
     }
-    
+
   } else {
     // The mutex is locked by some other thread.  Go to sleep on the
     // condition variable until it's unlocked.
     while (_locking_thread != (Thread *)NULL) {
       _cvar_impl.wait();
     }
-    
+
     _locking_thread = current_thread;
     ++_lock_count;
     nassertd(_lock_count == 1) {
@@ -72,15 +66,11 @@ do_acquire(Thread *current_thread) {
 #endif  // !HAVE_REMUTEXTRUEIMPL
 
 #ifndef HAVE_REMUTEXTRUEIMPL
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::do_try_acquire
-//       Access: Private
-//  Description: The private implementation of acquire(false), for the
-//               case in which the underlying lock system does not
-//               provide a reentrant mutex (and therefore we have to
-//               build this functionality on top of the existing
-//               non-reentrant mutex).
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of acquire(false), for the case in which the
+ * underlying lock system does not provide a reentrant mutex (and therefore we
+ * have to build this functionality on top of the existing non-reentrant mutex).
+ */
 bool ReMutexDirect::
 do_try_acquire(Thread *current_thread) {
   bool acquired = true;
@@ -99,7 +89,7 @@ do_try_acquire(Thread *current_thread) {
     ++_lock_count;
     nassertd(_lock_count > 0) {
     }
-    
+
   } else {
     // The mutex is locked by some other thread.  Return false.
     acquired = false;
@@ -111,15 +101,11 @@ do_try_acquire(Thread *current_thread) {
 #endif  // !HAVE_REMUTEXTRUEIMPL
 
 #ifndef HAVE_REMUTEXTRUEIMPL
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::do_elevate_lock
-//       Access: Private
-//  Description: The private implementation of acquire(), for the case in
-//               which the underlying lock system does not provide a
-//               reentrant mutex (and therefore we have to build this
-//               functionality on top of the existing non-reentrant
-//               mutex).
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of acquire(), for the case in which the underlying
+ * lock system does not provide a reentrant mutex (and therefore we have to
+ * build this functionality on top of the existing non-reentrant mutex).
+ */
 void ReMutexDirect::
 do_elevate_lock() {
   _lock_impl.acquire();
@@ -147,15 +133,11 @@ do_elevate_lock() {
 #endif  // !HAVE_REMUTEXTRUEIMPL
 
 #ifndef HAVE_REMUTEXTRUEIMPL
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::do_release
-//       Access: Private
-//  Description: The private implementation of release(), for the case
-//               in which the underlying lock system does not provide
-//               a reentrant mutex (and therefore we have to build
-//               this functionality on top of the existing
-//               non-reentrant mutex).
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of release(), for the case in which the underlying
+ * lock system does not provide a reentrant mutex (and therefore we have to
+ * build this functionality on top of the existing non-reentrant mutex).
+ */
 void ReMutexDirect::
 do_release() {
   _lock_impl.acquire();

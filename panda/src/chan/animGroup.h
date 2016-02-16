@@ -25,13 +25,10 @@ class AnimBundle;
 class BamReader;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimGroup
-// Description : This is the base class for AnimChannel and
-//               AnimBundle.  It implements a hierarchy of
-//               AnimChannels.  The root of the hierarchy must be an
-//               AnimBundle.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for AnimChannel and AnimBundle.  It implements a
+ * hierarchy of AnimChannels.  The root of the hierarchy must be an AnimBundle.
+ */
 class EXPCL_PANDA_CHAN AnimGroup : public TypedWritableReferenceCount, public Namable {
 protected:
   AnimGroup(const string &name = "");
@@ -62,7 +59,7 @@ protected:
 
   virtual AnimGroup *make_copy(AnimGroup *parent) const;
   PT(AnimGroup) copy_subtree(AnimGroup *parent) const;
-  
+
 protected:
   typedef pvector< PT(AnimGroup) > Children;
   Children _children;
@@ -110,5 +107,3 @@ inline ostream &operator << (ostream &out, const AnimGroup &anim) {
 #include "animGroup.I"
 
 #endif
-
-

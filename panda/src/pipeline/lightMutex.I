@@ -11,11 +11,9 @@
  * @date 2008-10-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LightMutex::
 #ifdef DEBUG_THREADS
 LightMutex() : MutexDebug(string(), false, true)
@@ -25,11 +23,9 @@ LightMutex()
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LightMutex::
 #ifdef DEBUG_THREADS
 LightMutex(const char *name) : MutexDebug(string(name), false, true)
@@ -39,11 +35,9 @@ LightMutex(const char *)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LightMutex::
 #ifdef DEBUG_THREADS
 LightMutex(const string &name) : MutexDebug(name, false, true)
@@ -53,20 +47,16 @@ LightMutex(const string &)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LightMutex::
 ~LightMutex() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Copy Constructor
-//       Access: Private
-//  Description: Do not attempt to copy lightMutexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy lightMutexes.
+ */
 INLINE LightMutex::
 #ifdef DEBUG_THREADS
 LightMutex(const LightMutex &copy) : MutexDebug(string(), false, true)
@@ -77,11 +67,9 @@ LightMutex(const LightMutex &copy) : MutexDebug(string(), false, true)
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutex::Copy Assignment Operator
-//       Access: Private
-//  Description: Do not attempt to copy lightMutexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy lightMutexes.
+ */
 INLINE void LightMutex::
 operator = (const LightMutex &copy) {
   nassertv(false);

@@ -23,10 +23,9 @@
 
 class PfmFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PfmBba
-// Description : Generates a bounding-box description of a pfm file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a bounding-box description of a pfm file.
+ */
 class PfmBba : public ProgramBase {
 public:
   PfmBba();

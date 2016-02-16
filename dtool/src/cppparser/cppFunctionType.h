@@ -21,10 +21,9 @@
 class CPPParameterList;
 class CPPIdentifier;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPFunctionType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPFunctionType : public CPPType {
 public:
   enum Flags {
@@ -92,4 +91,3 @@ protected:
 };
 
 #endif
-

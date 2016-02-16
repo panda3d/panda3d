@@ -17,14 +17,12 @@
 
 TypeHandle ModelLoadRequest::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::Constructor
-//       Access: Published
-//  Description: Create a new ModelLoadRequest, and add it to the loader
-//               via load_async(), to begin an asynchronous load.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a new ModelLoadRequest, and add it to the loader via load_async(), to
+ * begin an asynchronous load.
+ */
 ModelLoadRequest::
-ModelLoadRequest(const string &name, 
+ModelLoadRequest(const string &name,
                  const Filename &filename, const LoaderOptions &options,
                  Loader *loader) :
   AsyncTask(name),
@@ -35,11 +33,9 @@ ModelLoadRequest(const string &name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::do_task
-//       Access: Protected, Virtual
-//  Description: Performs the task: that is, loads the one model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the task: that is, loads the one model.
+ */
 AsyncTask::DoneStatus ModelLoadRequest::
 do_task() {
   double delay = async_load_delay;

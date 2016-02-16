@@ -23,15 +23,12 @@
 class PalettePage;
 class TexturePlacement;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PaletteImage
-// Description : This is a single palette image, one of several within
-//               a PalettePage, which is in turn one of several pages
-//               within a PaletteGroup.  Each palette image is a
-//               collage of several different textures that were all
-//               assigned to the same PaletteGroup, and all share the
-//               same properties of the PalettePage.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a single palette image, one of several within a PalettePage, which is
+ * in turn one of several pages within a PaletteGroup.  Each palette image is a
+ * collage of several different textures that were all assigned to the same
+ * PaletteGroup, and all share the same properties of the PalettePage.
+ */
 class PaletteImage : public ImageFile {
 private:
   PaletteImage();
@@ -104,7 +101,7 @@ private:
   bool _new_image;
   bool _got_image;
   PNMImage _image;
-  
+
   unsigned _swapped_image; // 0 for non swapped image
 
   ImageFile _shadow_image;
@@ -146,4 +143,3 @@ private:
 };
 
 #endif
-

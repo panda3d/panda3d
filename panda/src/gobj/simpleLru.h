@@ -22,11 +22,9 @@
 
 class SimpleLruPage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleLru
-// Description : An implementation of a very simple LRU algorithm.
-//               Also see AdaptiveLru.
-////////////////////////////////////////////////////////////////////
+/**
+ * An implementation of a very simple LRU algorithm.  Also see AdaptiveLru.
+ */
 class EXPCL_PANDA_GOBJ SimpleLru : public LinkedListNode, public Namable {
 PUBLISHED:
   SimpleLru(const string &name, size_t max_size);
@@ -60,12 +58,10 @@ private:
   friend class SimpleLruPage;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleLruPage
-// Description : One atomic piece that may be managed by a SimpleLru
-//               chain.  To use this class, inherit from it and
-//               override evict_lru().
-////////////////////////////////////////////////////////////////////
+/**
+ * One atomic piece that may be managed by a SimpleLru chain.  To use this
+ * class, inherit from it and override evict_lru().
+ */
 class EXPCL_PANDA_GOBJ SimpleLruPage : public LinkedListNode {
 PUBLISHED:
   INLINE SimpleLruPage(size_t lru_size);

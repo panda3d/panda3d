@@ -22,14 +22,11 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTextureCollection
-// Description : This is a collection of textures by TRef name.  It
-//               can extract the textures from an egg file and sort
-//               them all together; it can also manage the creation of
-//               unique textures and the assignment of unique TRef
-//               names.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a collection of textures by TRef name.  It can extract the textures
+ * from an egg file and sort them all together; it can also manage the creation
+ * of unique textures and the assignment of unique TRef names.
+ */
 class EXPCL_PANDAEGG EggTextureCollection {
 
   // This is a bit of private interface stuff that must be here as a

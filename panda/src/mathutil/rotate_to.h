@@ -14,16 +14,11 @@
 #ifndef ROTATE_TO_H
 #define ROTATE_TO_H
 
-////////////////////////////////////////////////////////////////////
-//
-// rotate_to()
-//
-// This function computes a suitable rotation matrix to rotate vector
-// a onto vector b.  That is, it computes mat so that a * mat = b.
-// The rotation axis is chosen to give the smallest possible rotation
-// angle.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * rotate_to() This function computes a suitable rotation matrix to rotate
+ * vector a onto vector b.  That is, it computes mat so that a * mat = b.  The
+ * rotation axis is chosen to give the smallest possible rotation angle.
+ */
 
 #include <math.h>
 #include "pandabase.h"

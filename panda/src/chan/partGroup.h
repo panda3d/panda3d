@@ -36,11 +36,10 @@ class TransformState;
 class PandaNode;
 class AnimChannelBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PartGroup
-// Description : This is the base class for PartRoot and
-//               MovingPart.  It defines a hierarchy of MovingParts.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for PartRoot and MovingPart.  It defines a hierarchy
+ * of MovingParts.
+ */
 class EXPCL_PANDA_CHAN PartGroup : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   // This enum defines bits which may be passed into check_hierarchy()
@@ -96,7 +95,7 @@ public:
                        int hierarchy_match_flags = 0) const;
 
   virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
-                         PartGroup *parent, bool parent_changed, 
+                         PartGroup *parent, bool parent_changed,
                          bool anim_changed, Thread *current_thread);
   virtual void do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat);
   virtual void determine_effective_channels(const CycleData *root_cdata);
@@ -107,10 +106,10 @@ protected:
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index,
-                              int &joint_index, bool is_included, 
+                              int &joint_index, bool is_included,
                               BitArray &bound_joints,
                               const PartSubset &subset);
-  virtual void find_bound_joints(int &joint_index, bool is_included, 
+  virtual void find_bound_joints(int &joint_index, bool is_included,
                                  BitArray &bound_joints,
                                  const PartSubset &subset);
 
@@ -155,5 +154,3 @@ private:
 #include "partGroup.I"
 
 #endif
-
-

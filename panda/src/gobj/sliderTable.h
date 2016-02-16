@@ -25,19 +25,13 @@
 #include "pipelineCycler.h"
 #include "sparseArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SliderTable
-// Description : Stores the total set of VertexSliders that the
-//               vertices in a particular GeomVertexData object might
-//               depend on.
-//
-//               This is similar to a TransformTable, but it stores
-//               VertexSliders instead of VertexTransforms, and it
-//               stores them by name instead of by index number.
-//               Also, it is only used when animating vertices on the
-//               CPU, since GPU's don't support morphs at this point
-//               in time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the total set of VertexSliders that the vertices in a particular
+ * GeomVertexData object might depend on.  This is similar to a TransformTable,
+ * but it stores VertexSliders instead of VertexTransforms, and it stores them
+ * by name instead of by index number.  Also, it is only used when animating
+ * vertices on the CPU, since GPU's don't support morphs at this point in time.
+ */
 class EXPCL_PANDA_GOBJ SliderTable : public TypedWritableReferenceCount {
 PUBLISHED:
   SliderTable();

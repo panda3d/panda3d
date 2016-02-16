@@ -11,20 +11,16 @@
  * @date 2011-06-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: FileReference::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE FileReference::
 FileReference(const Filename &filename) : _filename(filename) {
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: FileReference::get_filename
-//       Access: Published
-//  Description: Returns the filename of the reference.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Returns the filename of the reference.
+ */
 INLINE const Filename &FileReference::
 get_filename() const {
   return _filename;

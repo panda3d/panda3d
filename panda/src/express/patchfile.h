@@ -33,10 +33,9 @@
 #include <algorithm>
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : Patchfile
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAEXPRESS Patchfile {
 PUBLISHED:
   Patchfile();
@@ -52,7 +51,7 @@ PUBLISHED:
   int run();
 
   bool apply(Filename &patch_file, Filename &file);
-  bool apply(Filename &patch_file, Filename &orig_file, 
+  bool apply(Filename &patch_file, Filename &orig_file,
              const Filename &target_file);
 
   INLINE PN_stdfloat get_progress() const;
@@ -91,22 +90,22 @@ private:
 
   void emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer);
   void emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 COPY_pos);
-  void emit_add_and_copy(ostream &write_stream, 
+  void emit_add_and_copy(ostream &write_stream,
                          PN_uint32 add_length, const char *add_buffer,
                          PN_uint32 copy_length, PN_uint32 copy_pos);
-  void cache_add_and_copy(ostream &write_stream, 
+  void cache_add_and_copy(ostream &write_stream,
                           PN_uint32 add_length, const char *add_buffer,
                           PN_uint32 copy_length, PN_uint32 copy_pos);
   void cache_flush(ostream &write_stream);
 
-  void write_header(ostream &write_stream, 
+  void write_header(ostream &write_stream,
                     istream &stream_orig, istream &stream_new);
   void write_terminator(ostream &write_stream);
 
-  bool compute_file_patches(ostream &write_stream, 
+  bool compute_file_patches(ostream &write_stream,
                             PN_uint32 offset_orig, PN_uint32 offset_new,
                              istream &stream_orig, istream &stream_new);
-  bool compute_mf_patches(ostream &write_stream, 
+  bool compute_mf_patches(ostream &write_stream,
                           PN_uint32 offset_orig, PN_uint32 offset_new,
                           istream &stream_orig, istream &stream_new);
 #ifdef HAVE_TAR
@@ -124,7 +123,7 @@ private:
   typedef ov_set<TarSubfile> TarDef;
 
   bool read_tar(TarDef &tar, istream &stream);
-  bool compute_tar_patches(ostream &write_stream, 
+  bool compute_tar_patches(ostream &write_stream,
                            PN_uint32 offset_orig, PN_uint32 offset_new,
                            istream &stream_orig, istream &stream_new,
                            TarDef &tar_orig, TarDef &tar_new);
@@ -132,7 +131,7 @@ private:
   // Because this is static, we can only call read_tar() one at a
   // time--no threads, please.
   static istream *_tar_istream;
-  
+
   static int tar_openfunc(const char *filename, int oflags, ...);
   static int tar_closefunc(int fd);
   static ssize_t tar_readfunc(int fd, void *buffer, size_t nbytes);
@@ -140,11 +139,11 @@ private:
 #endif  // HAVE_TAR
 
   bool do_compute_patches(const Filename &file_orig, const Filename &file_new,
-                          ostream &write_stream, 
+                          ostream &write_stream,
                           PN_uint32 offset_orig, PN_uint32 offset_new,
                           istream &stream_orig, istream &stream_new);
-  
-  bool patch_subfile(ostream &write_stream, 
+
+  bool patch_subfile(ostream &write_stream,
                      PN_uint32 offset_orig, PN_uint32 offset_new,
                      const Filename &filename,
                      IStreamWrapper &stream_orig, streampos orig_start, streampos orig_end,
@@ -177,9 +176,9 @@ private:
 
   PN_uint16 _version_number;
 
-  HashVal _MD5_ofSource;  
+  HashVal _MD5_ofSource;
 
-  HashVal _MD5_ofResult;  
+  HashVal _MD5_ofResult;
 
   PN_uint32 _total_bytes_to_process;
   PN_uint32 _total_bytes_processed;

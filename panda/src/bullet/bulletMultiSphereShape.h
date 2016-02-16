@@ -22,10 +22,9 @@
 #include "pta_LVecBase3.h"
 #include "pta_stdfloat.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletMultiSphereShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletMultiSphereShape : public BulletShape {
 
 PUBLISHED:
@@ -50,7 +49,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletMultiSphereShape", 
+    register_type(_type_handle, "BulletMultiSphereShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

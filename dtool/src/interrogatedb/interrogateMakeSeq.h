@@ -20,11 +20,9 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateMakeSeq
-// Description : Represents a synthetic method created via the
-//               MAKE_SEQ() macro.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a synthetic method created via the MAKE_SEQ() macro.
+ */
 class EXPCL_INTERROGATEDB InterrogateMakeSeq : public InterrogateComponent {
 public:
   INLINE InterrogateMakeSeq(InterrogateModuleDef *def = NULL);

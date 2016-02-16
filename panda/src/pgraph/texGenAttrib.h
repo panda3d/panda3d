@@ -23,15 +23,12 @@
 #include "pointerTo.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TexGenAttrib
-// Description : Computes texture coordinates for geometry
-//               automatically based on vertex position and/or normal.
-//               This can be used to implement reflection and/or
-//               refraction maps, for instance to make shiny surfaces,
-//               as well as other special effects such as projective
-//               texturing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes texture coordinates for geometry automatically based on vertex
+ * position and/or normal.  This can be used to implement reflection and/or
+ * refraction maps, for instance to make shiny surfaces, as well as other
+ * special effects such as projective texturing.
+ */
 class EXPCL_PANDA_PGRAPH TexGenAttrib : public RenderAttrib {
 PUBLISHED:
   // We inherit the definition of our Mode enumerated type from
@@ -153,4 +150,3 @@ private:
 #include "texGenAttrib.I"
 
 #endif
-

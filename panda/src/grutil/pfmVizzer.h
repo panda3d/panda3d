@@ -24,11 +24,9 @@ class GeomNode;
 class Lens;
 class GeomVertexWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PfmVizzer
-// Description : This class aids in the visualization and manipulation
-//               of PfmFile objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class aids in the visualization and manipulation of PfmFile objects.
+ */
 class EXPCL_PANDA_GRUTIL PfmVizzer {
 PUBLISHED:
   PfmVizzer(PfmFile &pfm);
@@ -70,7 +68,7 @@ PUBLISHED:
   };
   void clear_vis_columns();
   void add_vis_column(ColumnType source, ColumnType target,
-                      InternalName *name, 
+                      InternalName *name,
                       const TransformState *transform = NULL, const Lens *lens = NULL,
                       const PfmFile *undist_lut = NULL);
 
@@ -90,10 +88,10 @@ PUBLISHED:
 
 private:
   bool uses_aux_pfm() const;
-  void r_fill_displacement(PNMImage &result, int xi, int yi, 
+  void r_fill_displacement(PNMImage &result, int xi, int yi,
                            double nxi, double nyi, double u_scale, double v_scale,
                            int distance) const;
-  void r_fill_displacement(PfmFile &result, int xi, int yi, 
+  void r_fill_displacement(PfmFile &result, int xi, int yi,
                            double nxi, double nyi, double u_scale, double v_scale,
                            int distance) const;
 
@@ -118,9 +116,9 @@ private:
   };
   typedef pvector<VisColumn> VisColumns;
 
-  static void add_vis_column(VisColumns &vis_columns, 
+  static void add_vis_column(VisColumns &vis_columns,
                              ColumnType source, ColumnType target,
-                             InternalName *name, 
+                             InternalName *name,
                              const TransformState *transform = NULL,
                              const Lens *lens = NULL, const PfmFile *undist_lut = NULL);
   void build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const;
@@ -144,4 +142,3 @@ private:
 #include "pfmVizzer.I"
 
 #endif
-

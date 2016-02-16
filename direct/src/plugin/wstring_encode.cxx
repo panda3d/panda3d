@@ -23,10 +23,9 @@
 
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: wstring_to_string
-//  Description: Encodes std::wstring to std::string using UTF-8.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes std::wstring to std::string using UTF-8.
+ */
 bool
 wstring_to_string(string &result, const wstring &source) {
   bool success = false;
@@ -48,10 +47,9 @@ wstring_to_string(string &result, const wstring &source) {
 #endif  // _WIN32
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: string_to_wstring
-//  Description: Decodes std::string to std::wstring using UTF-8.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes std::string to std::wstring using UTF-8.
+ */
 bool
 string_to_wstring(wstring &result, const string &source) {
   bool success = false;

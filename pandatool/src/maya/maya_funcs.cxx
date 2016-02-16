@@ -31,10 +31,9 @@
 #include <maya/MMatrix.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_maya_plug
-//  Description: Gets the named MPlug associated, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the named MPlug associated, if any.
+ */
 bool
 get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
   MStatus status;
@@ -62,11 +61,10 @@ get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_connected
-//  Description: Returns true if the named connection exists on the
-//               node and is connected to anything, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named connection exists on the node and is connected to
+ * anything, false otherwise.
+ */
 bool
 is_connected(MObject &node, const string &attribute_name) {
   MPlug plug;
@@ -77,13 +75,11 @@ is_connected(MObject &node, const string &attribute_name) {
   return plug.isConnected();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: has_attribute
-//  Description: Returns true if the node has the indicated attribute,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node has the indicated attribute, false otherwise.
+ */
 bool
-has_attribute(MObject &node, const string &attribute_name) { 
+has_attribute(MObject &node, const string &attribute_name) {
   MStatus status;
   MFnDependencyNode node_fn(node, &status);
   if (!status) {
@@ -100,11 +96,10 @@ has_attribute(MObject &node, const string &attribute_name) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_attribute
-//  Description: Removes the named attribute from the indicated Maya
-//               node.  Returns true if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the named attribute from the indicated Maya node.  Returns true if
+ * successful, false otherwise.
+ */
 bool
 remove_attribute(MObject &node, const string &attribute_name) {
   MStatus status;
@@ -152,11 +147,9 @@ remove_attribute(MObject &node, const string &attribute_name) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_bool_attribute
-//  Description: Extracts the named boolean attribute from the
-//               MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the named boolean attribute from the MObject.
+ */
 bool
 get_bool_attribute(MObject &node, const string &attribute_name,
                    bool &value) {
@@ -176,11 +169,9 @@ get_bool_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_bool_attribute
-//  Description: Extracts the named angle in degrees from the
-//               MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the named angle in degrees from the MObject.
+ */
 bool
 get_angle_attribute(MObject &node, const string &attribute_name,
                     double &value) {
@@ -196,11 +187,9 @@ get_angle_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_vec2_attribute
-//  Description: Extracts the named two-component vector from the
-//               MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the named two-component vector from the MObject.
+ */
 bool
 get_vec2_attribute(MObject &node, const string &attribute_name,
                     LVecBase2 &value) {
@@ -233,11 +222,9 @@ get_vec2_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_vec3_attribute
-//  Description: Extracts the named three-component vector from the
-//               MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the named three-component vector from the MObject.
+ */
 bool
 get_vec3_attribute(MObject &node, const string &attribute_name,
                     LVecBase3 &value) {
@@ -270,11 +257,9 @@ get_vec3_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_vec2d_attribute
-//  Description: Extracts the named two-component vector from the
-//               MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the named two-component vector from the MObject.
+ */
 bool
 get_vec2d_attribute(MObject &node, const string &attribute_name,
                     LVecBase2d &value) {
@@ -307,11 +292,9 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_vec3d_attribute
-//  Description: Extracts the named three-component vector from the
-//               MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the named three-component vector from the MObject.
+ */
 bool
 get_vec3d_attribute(MObject &node, const string &attribute_name,
                     LVecBase3d &value) {
@@ -344,10 +327,9 @@ get_vec3d_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_mat4d_attribute
-//  Description: Extracts the named 4x4 matrix from the MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the named 4x4 matrix from the MObject.
+ */
 bool
 get_mat4d_attribute(MObject &node, const string &attribute_name,
                     LMatrix4d &value) {
@@ -364,7 +346,7 @@ get_mat4d_attribute(MObject &node, const string &attribute_name,
       << node.apiTypeStr() << ", not a Matrix.\n";
     return false;
   }
-    
+
   const MMatrix &mat = matrix_data.matrix();
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -374,12 +356,10 @@ get_mat4d_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_tag_attribute_names
-//  Description: artists should be able to set arbitrary tags.
-//               Query all the attributes on this object and return
-//               the lists of attribute names that has "tag" prefix
-////////////////////////////////////////////////////////////////////
+/**
+ * artists should be able to set arbitrary tags.  Query all the attributes on
+ * this object and return the lists of attribute names that has "tag" prefix
+ */
 void
 get_tag_attribute_names(MObject &node, pvector<string> &tag_names) {
   MStatus status;
@@ -400,7 +380,7 @@ get_tag_attribute_names(MObject &node, pvector<string> &tag_names) {
       if (status) {
         string attribute_name = attrib.name().asChar();
         if (attribute_name.find("tag", 0) != string::npos) {
-          maya_cat.info() << ":" << name << ":" << " is tagged with <" 
+          maya_cat.info() << ":" << name << ":" << " is tagged with <"
                           << attribute_name << ">" << endl;
           tag_names.push_back(attribute_name);
         }
@@ -408,11 +388,9 @@ get_tag_attribute_names(MObject &node, pvector<string> &tag_names) {
     }
   }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: get_enum_attribute
-//  Description: Extracts the enum attribute from the MObject as a
-//               string value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the enum attribute from the MObject as a string value.
+ */
 bool
 get_enum_attribute(MObject &node, const string &attribute_name,
                    string &value) {
@@ -452,11 +430,9 @@ get_enum_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_string_attribute
-//  Description: Extracts the named string attribute from the
-//               MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the named string attribute from the MObject.
+ */
 bool
 get_string_attribute(MObject &node, const string &attribute_name,
                      string &value) {
@@ -483,11 +459,9 @@ get_string_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_string_attribute
-//  Description: Sets the named string attribute on the
-//               MObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the named string attribute on the MObject.
+ */
 bool
 set_string_attribute(MObject &node, const string &attribute_name,
                      const string &value) {
@@ -529,15 +503,13 @@ set_string_attribute(MObject &node, const string &attribute_name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: describe_compound_attribute
-//  Description: Extracts the children of this attribute from the
-//               MObject. test for now
-////////////////////////////////////////////////////////////////////
-bool 
+/**
+ * Extracts the children of this attribute from the MObject.  test for now
+ */
+bool
 describe_compound_attribute(MObject &node) {
   MStatus status;
-  
+
   MFnCompoundAttribute comp_attr(node, &status);
 
   maya_cat.info() << "comp_attr has:" << comp_attr.numChildren() << " children" << endl;
@@ -583,11 +555,9 @@ describe_compound_attribute(MObject &node) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: describe_maya_attribute
-//  Description: Writes some warning output about the indicated Maya
-//               attribute.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes some warning output about the indicated Maya attribute.
+ */
 void
 describe_maya_attribute(MObject &node, const string &attribute_name) {
   MStatus status;
@@ -682,13 +652,11 @@ string_mfndata_type(MFnData::Type type) {
   return "**invalid**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: list_maya_attributes
-//  Description: Writes some info output showing all the attributes on
-//               the given dependency node.  Primarily useful during
-//               development, to figure out where the heck Maya hides
-//               some of the connected properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes some info output showing all the attributes on the given dependency
+ * node.  Primarily useful during development, to figure out where the heck Maya
+ * hides some of the connected properties.
+ */
 void
 list_maya_attributes(MObject &node) {
   MStatus status;
@@ -715,7 +683,7 @@ list_maya_attributes(MObject &node) {
 
       maya_cat.info(false)
         << "  " << i << ". " << plug.name().asChar() << ", "
-        << plug.attribute().apiTypeStr() << ", " 
+        << plug.attribute().apiTypeStr() << ", "
         << plug.node().apiTypeStr();
       if (plug.attribute().apiType() == MFn::kCompoundAttribute) {
         //maya_cat.info() << plug.info();
@@ -738,7 +706,7 @@ list_maya_attributes(MObject &node) {
       MFnTypedAttribute typed_attrib(attr, &status);
       if (status) {
         // It's a typed attrib.
-          maya_cat.info(false) 
+          maya_cat.info(false)
             << "  " << i << ". " << typed_attrib.name().asChar()
             << " [" << attr.apiTypeStr() << ", "
             << string_mfndata_type(typed_attrib.attrType()) << "]\n";
@@ -746,7 +714,7 @@ list_maya_attributes(MObject &node) {
         MFnAttribute attrib(attr, &status);
         if (status) {
           // It's a generic attrib.
-          maya_cat.info(false) 
+          maya_cat.info(false)
             << "  " << i << ". " << attrib.name().asChar()
             << " [" << attr.apiTypeStr() << "]\n";
         } else {
@@ -758,4 +726,3 @@ list_maya_attributes(MObject &node) {
     }
   }
 }
-

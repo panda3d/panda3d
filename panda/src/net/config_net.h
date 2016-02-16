@@ -41,4 +41,3 @@ extern ConfigVariableEnum<ThreadPriority> net_thread_priority;
 extern EXPCL_PANDA_NET void init_libnet();
 
 #endif
-

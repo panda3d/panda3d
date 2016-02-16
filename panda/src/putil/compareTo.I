@@ -11,11 +11,9 @@
  * @date 2002-02-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CompareTo::operator ()
-//       Access: Public
-//  Description: Returns true if a sorts before b, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a sorts before b, false otherwise.
+ */
 template<class ObjectType>
 INLINE bool CompareTo<ObjectType>::
 operator () (const ObjectType &a, const ObjectType &b) const {

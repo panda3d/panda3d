@@ -31,4 +31,3 @@ extern ConfigVariableInt thread_stack_size;
 extern EXPCL_PANDA_PIPELINE void init_libpipeline();
 
 #endif  // CONFIG_PIPELINE_H
-

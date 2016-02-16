@@ -11,18 +11,16 @@
  * @date 2002-04-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: MString output operator
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ostream &operator << (ostream &out, const MString &str) {
   return out << str.asChar();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MVector output operator
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ostream &operator << (ostream &out, const MVector &vec) {
   return out << vec.x << " " << vec.y << " " << vec.z;
 }

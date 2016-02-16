@@ -26,13 +26,11 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-////////////////////////////////////////////////////////////////////
-//       Class : FreetypeFont
-// Description : This is a reference-counted wrapper for the
-//               freetype font face object (FT_Face).
-//               It's used by the FreetypeFont class to store a face
-//               that can be shared between copied instances.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a reference-counted wrapper for the freetype font face object
+ * (FT_Face). It's used by the FreetypeFont class to store a face that can be
+ * shared between copied instances.
+ */
 class EXPCL_PANDA_PNMTEXT FreetypeFace : public TypedReferenceCount, public Namable {
 public:
   FreetypeFace();

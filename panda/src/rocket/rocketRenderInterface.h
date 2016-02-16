@@ -23,11 +23,9 @@
 
 #include <Rocket/Core/RenderInterface.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : RocketRenderInterface
-// Description : Class that provides the main render interface for
-//               libRocket integration.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class that provides the main render interface for libRocket integration.
+ */
 class RocketRenderInterface : public Rocket::Core::RenderInterface {
 public:
   void render(Rocket::Core::Context* context, CullTraverser *trav);

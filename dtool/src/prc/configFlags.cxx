@@ -15,10 +15,9 @@
 
 TVOLATILE AtomicAdjust::Integer ConfigFlags::_global_modified;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigFlags::Type output operator
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, ConfigFlags::ValueType type) {
   switch (type) {

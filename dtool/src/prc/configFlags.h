@@ -18,13 +18,11 @@
 #include "numeric_types.h"
 #include "atomicAdjust.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigFlags
-// Description : This class is the base class of both ConfigVariable
-//               and ConfigVariableCore.  It exists only to provide a
-//               convenient name scoping for some enumerated values
-//               common to both classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is the base class of both ConfigVariable and ConfigVariableCore.
+ * It exists only to provide a convenient name scoping for some enumerated
+ * values common to both classes.
+ */
 class EXPCL_DTOOLCONFIG ConfigFlags {
 PUBLISHED:
   enum ValueType {

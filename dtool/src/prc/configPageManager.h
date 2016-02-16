@@ -24,12 +24,10 @@
 
 class ConfigPage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigPageManager
-// Description : A global object that maintains the set of ConfigPages
-//               everywhere in the world, and keeps them in sorted
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * A global object that maintains the set of ConfigPages everywhere in the
+ * world, and keeps them in sorted order.
+ */
 class EXPCL_DTOOLCONFIG ConfigPageManager : public ConfigFlags {
 protected:
   ConfigPageManager();
@@ -73,7 +71,7 @@ private:
   void sort_pages();
 
   bool scan_auto_prc_dir(Filename &prc_dir) const;
-  bool scan_up_from(Filename &result, const Filename &dir, 
+  bool scan_up_from(Filename &result, const Filename &dir,
                     const Filename &suffix) const;
 
   void config_initialized();

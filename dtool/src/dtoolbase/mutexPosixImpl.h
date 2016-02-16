@@ -23,10 +23,9 @@
 #include <errno.h>
 #include <assert.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : MutexPosixImpl
-// Description : Uses Posix threads to implement a mutex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses Posix threads to implement a mutex.
+ */
 class EXPCL_DTOOL MutexPosixImpl {
 public:
   INLINE MutexPosixImpl();
@@ -43,10 +42,9 @@ private:
   friend class ConditionVarPosixImpl;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ReMutexPosixImpl
-// Description : Uses Posix threads to implement a reentrant mutex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses Posix threads to implement a reentrant mutex.
+ */
 class EXPCL_DTOOL ReMutexPosixImpl {
 public:
   INLINE ReMutexPosixImpl();

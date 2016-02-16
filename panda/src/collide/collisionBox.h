@@ -21,10 +21,9 @@
 #include "look_at.h"
 #include "clipPlaneAttrib.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionBox
-// Description : A cuboid collision volume or object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A cuboid collision volume or object.
+ */
 class EXPCL_PANDA_COLLIDE CollisionBox : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionBox(const LPoint3 &center,

@@ -24,13 +24,11 @@ class BamWriter;
 class BamReader;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RecorderFrame
-// Description : This object represents one frame of data in the
-//               recorded session file.  One of these is repeatedly
-//               created and destructed in recording and playback,
-//               respectively.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object represents one frame of data in the recorded session file.  One
+ * of these is repeatedly created and destructed in recording and playback,
+ * respectively.
+ */
 class EXPCL_PANDA_RECORDER RecorderFrame : public TypedWritable {
 public:
   INLINE RecorderFrame();
@@ -55,11 +53,11 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
-  
+
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -81,4 +79,3 @@ private:
 #include "recorderFrame.I"
 
 #endif
-

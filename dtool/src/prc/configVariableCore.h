@@ -23,17 +23,13 @@
 
 class ConfigDeclaration;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableCore
-// Description : The internal definition of a ConfigVariable.  This
-//               object is shared between all instances of a
-//               ConfigVariable that use the same variable name.
-//
-//               You cannot create a ConfigVariableCore instance
-//               directly; instead, use the make() method, which may
-//               return a shared instance.  Once created, these
-//               objects are never destructed.
-////////////////////////////////////////////////////////////////////
+/**
+ * The internal definition of a ConfigVariable.  This object is shared between
+ * all instances of a ConfigVariable that use the same variable name.  You
+ * cannot create a ConfigVariableCore instance directly; instead, use the make()
+ * method, which may return a shared instance.  Once created, these objects are
+ * never destructed.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableCore : public ConfigFlags {
 private:
   ConfigVariableCore(const string &name);

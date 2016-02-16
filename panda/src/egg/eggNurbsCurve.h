@@ -20,10 +20,9 @@
 
 #include "vector_double.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggNurbsCurve
-// Description : A parametric NURBS curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * A parametric NURBS curve.
+ */
 class EXPCL_PANDAEGG EggNurbsCurve : public EggCurve {
 PUBLISHED:
   INLINE EggNurbsCurve(const string &name = "");

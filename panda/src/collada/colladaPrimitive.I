@@ -11,10 +11,9 @@
  * @date 2011-05-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::add_input
-//  Description: Adds a new ColladaInput to this primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new ColladaInput to this primitive.
+ */
 INLINE void ColladaPrimitive::
 add_input(ColladaInput *input) {
   if (input->get_offset() >= _stride) {
@@ -23,20 +22,18 @@ add_input(ColladaInput *input) {
   _inputs.push_back(input);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::get_geom
-//  Description: Returns the Geom associated with this primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Geom associated with this primitive.
+ */
 INLINE PT(Geom) ColladaPrimitive::
 get_geom() const {
   return _geom;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::get_material
-//  Description: Returns the name of this primitive's material, or
-//               the empty string if none was assigned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of this primitive's material, or the empty string if none
+ * was assigned.
+ */
 INLINE const string &ColladaPrimitive::
 get_material() const {
   return _material;

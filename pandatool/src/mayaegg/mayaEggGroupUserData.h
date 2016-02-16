@@ -17,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "eggUserData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaEggGroupUserData
-// Description : This class contains extra user data which is
-//               piggybacked onto EggGroup objects for the purpose of
-//               the maya converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class contains extra user data which is piggybacked onto EggGroup
+ * objects for the purpose of the maya converter.
+ */
 class MayaEggGroupUserData : public EggUserData {
 public:
   INLINE MayaEggGroupUserData();

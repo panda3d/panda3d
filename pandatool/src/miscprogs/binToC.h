@@ -19,13 +19,11 @@
 #include "programBase.h"
 #include "withOutputFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BinToC
-// Description : A utility program to read a (binary) file and output
-//               a table that can be compiled via a C compiler to
-//               generate the same data.  Handy for portably importing
-//               binary data into a library or executable.
-////////////////////////////////////////////////////////////////////
+/**
+ * A utility program to read a (binary) file and output a table that can be
+ * compiled via a C compiler to generate the same data.  Handy for portably
+ * importing binary data into a library or executable.
+ */
 class BinToC : public ProgramBase, public WithOutputFile {
 public:
   BinToC();

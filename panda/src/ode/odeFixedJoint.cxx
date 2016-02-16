@@ -17,17 +17,17 @@
 TypeHandle OdeFixedJoint::_type_handle;
 
 OdeFixedJoint::
-OdeFixedJoint(dJointID id) : 
+OdeFixedJoint(dJointID id) :
   OdeJoint(id) {
 }
 
 OdeFixedJoint::
-OdeFixedJoint(OdeWorld &world) : 
+OdeFixedJoint(OdeWorld &world) :
   OdeJoint(dJointCreateFixed(world.get_id(), 0)) {
 }
 
 OdeFixedJoint::
-OdeFixedJoint(OdeWorld &world, OdeJointGroup &joint_group) : 
+OdeFixedJoint(OdeWorld &world, OdeJointGroup &joint_group) :
   OdeJoint(dJointCreateFixed(world.get_id(), joint_group.get_id())) {
 }
 

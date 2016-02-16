@@ -13,81 +13,63 @@
 
 #include "orientedParticle.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrientedParticle
-//       Access: Public
-//  Description: simple constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * simple constructor
+ */
 OrientedParticle::
 OrientedParticle(int lifespan, bool alive) :
   BaseParticle(lifespan, alive) {
   set_oriented(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrientedParticle
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 OrientedParticle::
 OrientedParticle(const OrientedParticle &copy) :
   BaseParticle(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~OrientedParticle
-//       Access: Public
-//  Description: simple destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * simple destructor
+ */
 OrientedParticle::
 ~OrientedParticle() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public, Virtual
-//  Description: simple destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * simple destructor
+ */
 PhysicsObject *OrientedParticle::
 make_copy() const {
   return new OrientedParticle(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init
-//       Access: Public
-//  Description: particle init routine
-////////////////////////////////////////////////////////////////////
+/**
+ * particle init routine
+ */
 void OrientedParticle::
 init() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: die
-//       Access: Public
-//  Description: particle death routine
-////////////////////////////////////////////////////////////////////
+/**
+ * particle death routine
+ */
 void OrientedParticle::
 die() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: update
-//       Access: Public
-//  Description: particle update routine.
-//               This NEEDS to be filled in with quaternion slerp
-//               stuff, or oriented particles will not rotate.
-////////////////////////////////////////////////////////////////////
+/**
+ * particle update routine.  This NEEDS to be filled in with quaternion slerp
+ * stuff, or oriented particles will not rotate.
+ */
 void OrientedParticle::
 update() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void OrientedParticle::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -95,12 +77,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void OrientedParticle::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

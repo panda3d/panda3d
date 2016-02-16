@@ -15,23 +15,19 @@
 
 TypeHandle MainThread::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MainThread::Constructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MainThread::
 MainThread() : Thread("Main", "Main") {
   init_type();  // in case static init comes in the wrong order
   _impl.setup_main_thread();
   _started = true;
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: MainThread::thread_main
-//       Access: Private, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+
+/**
+
+ */
 void MainThread::
 thread_main() {
 }

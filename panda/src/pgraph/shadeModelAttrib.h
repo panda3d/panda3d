@@ -20,11 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShadeModelAttrib
-// Description : Specifies whether flat shading (per-polygon) or
-//               smooth shading (per-vertex) is in effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether flat shading (per-polygon) or smooth shading (per-vertex)
+ * is in effect.
+ */
 class EXPCL_PANDA_PGRAPH ShadeModelAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -67,7 +66,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -91,4 +90,3 @@ private:
 #include "shadeModelAttrib.I"
 
 #endif
-

@@ -16,24 +16,18 @@
 TypeHandle CallbackData::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CallbackData::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CallbackData::
 output(ostream &out) const {
   out << get_type();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CallbackData::upcall
-//       Access: Published, Virtual
-//  Description: You should make this call during the callback if you
-//               want to continue the normal function that would have
-//               been done in the absence of a callback.
-////////////////////////////////////////////////////////////////////
+/**
+ * You should make this call during the callback if you want to continue the
+ * normal function that would have been done in the absence of a callback.
+ */
 void CallbackData::
 upcall() {
 }
-

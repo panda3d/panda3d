@@ -15,20 +15,16 @@
 
 TypeHandle PGMouseWatcherParameter::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherParameter::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGMouseWatcherParameter::
 ~PGMouseWatcherParameter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherParameter::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PGMouseWatcherParameter::
 output(ostream &out) const {
   MouseWatcherParameter::output(out);

@@ -11,11 +11,9 @@
  * @date 2002-05-29
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFixed::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullBinFixed::
 CullBinFixed(const string &name, GraphicsStateGuardianBase *gsg,
              const PStatCollector &draw_region_pcollector) :
@@ -23,11 +21,9 @@ CullBinFixed(const string &name, GraphicsStateGuardianBase *gsg,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFixed::ObjectData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullBinFixed::ObjectData::
 ObjectData(CullableObject *object, int draw_order) :
   _object(object),
@@ -35,14 +31,10 @@ ObjectData(CullableObject *object, int draw_order) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFixed::ObjectData::operator <
-//       Access: Public
-//  Description: Specifies the correct sort ordering for these
-//               objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the correct sort ordering for these objects.
+ */
 INLINE bool CullBinFixed::ObjectData::
 operator < (const ObjectData &other) const {
   return _draw_order < other._draw_order;
 }
-

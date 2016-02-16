@@ -11,11 +11,9 @@
  * @date 2006-02-10
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarPosixImpl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConditionVarPosixImpl::
 ConditionVarPosixImpl(MutexPosixImpl &mutex) :
   _mutex(mutex)
@@ -25,11 +23,9 @@ ConditionVarPosixImpl(MutexPosixImpl &mutex) :
   nassertv(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarPosixImpl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConditionVarPosixImpl::
 ~ConditionVarPosixImpl() {
   TAU_PROFILE("ConditionVarPosixImpl::~ConditionVarPosixImpl()", " ", TAU_USER);
@@ -37,11 +33,9 @@ INLINE ConditionVarPosixImpl::
   nassertv(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarPosixImpl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarPosixImpl::
 wait() {
   TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
@@ -54,11 +48,9 @@ wait() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarPosixImpl::notify
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarPosixImpl::
 notify() {
   TAU_PROFILE("ConditionVarPosixImpl::notify()", " ", TAU_USER);
@@ -66,11 +58,9 @@ notify() {
   nassertv(result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarPosixImpl::notify_all
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarPosixImpl::
 notify_all() {
   TAU_PROFILE("ConditionVarPosixImpl::notify()", " ", TAU_USER);

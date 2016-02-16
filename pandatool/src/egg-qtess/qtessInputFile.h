@@ -21,11 +21,10 @@
 
 class QtessSurface;
 
-////////////////////////////////////////////////////////////////////
-//       Class : QtessInputFile
-// Description : Stores all the information read from a tesselation
-//               input file: a list of QtessInputEntry's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores all the information read from a tesselation input file: a list of
+ * QtessInputEntry's.
+ */
 class QtessInputFile {
 public:
   QtessInputFile();

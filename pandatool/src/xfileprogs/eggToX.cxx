@@ -15,11 +15,9 @@
 #include "config_xfile.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToX::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToX::
 EggToX() : EggToSomething("DirectX", ".x", true, false) {
   add_texture_options();
@@ -50,11 +48,9 @@ EggToX() : EggToSomething("DirectX", ".x", true, false) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToX::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToX::
 run() {
   if (!do_reader_options()) {

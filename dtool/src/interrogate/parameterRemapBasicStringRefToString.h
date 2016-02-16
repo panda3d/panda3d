@@ -18,11 +18,9 @@
 
 #include "parameterRemapToString.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapBasicStringRefToString
-// Description : Maps a const reference to a basic_string<char> to an
-//               atomic string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps a const reference to a basic_string<char> to an atomic string.
+ */
 class ParameterRemapBasicStringRefToString : public ParameterRemapToString {
 public:
   ParameterRemapBasicStringRefToString(CPPType *orig_type);
@@ -31,11 +29,9 @@ public:
   virtual string get_return_expr(const string &expression);
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapBasicWStringRefToWString
-// Description : Maps a const reference to a basic_string<wchar_t> to an
-//               atomic string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps a const reference to a basic_string<wchar_t> to an atomic string.
+ */
 class ParameterRemapBasicWStringRefToWString : public ParameterRemapToWString {
 public:
   ParameterRemapBasicWStringRefToWString(CPPType *orig_type);

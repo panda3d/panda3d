@@ -20,12 +20,10 @@
 class CullHandler;
 class SceneSetup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionCullCallbackData
-// Description : This specialization on CallbackData is passed when
-//               the callback is initiated from the cull traversal,
-//               for a DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on CallbackData is passed when the callback is initiated
+ * from the cull traversal, for a DisplayRegion.
+ */
 class EXPCL_PANDA_PGRAPH DisplayRegionCullCallbackData : public CallbackData {
 public:
   DisplayRegionCullCallbackData(CullHandler *cull_handler, SceneSetup *scene_setup);

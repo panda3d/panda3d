@@ -21,17 +21,13 @@
 
 class EventReceiver;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Event
-// Description : A named event, possibly with parameters.  Anyone in
-//               any thread may throw an event at any time; there will
-//               be one process responsible for reading and dispacting
-//               on the events (but not necessarily immediately).
-//
-//               This function use to inherit from Namable, but that
-//               makes it too expensive to get its name the Python
-//               code.  Now it just copies the Namable interface in.
-////////////////////////////////////////////////////////////////////
+/**
+ * A named event, possibly with parameters.  Anyone in any thread may throw an
+ * event at any time; there will be one process responsible for reading and
+ * dispacting on the events (but not necessarily immediately).  This function
+ * use to inherit from Namable, but that makes it too expensive to get its name
+ * the Python code.  Now it just copies the Namable interface in.
+ */
 class EXPCL_PANDA_EVENT Event : public TypedReferenceCount {
 PUBLISHED:
   Event(const string &event_name, EventReceiver *receiver = NULL);

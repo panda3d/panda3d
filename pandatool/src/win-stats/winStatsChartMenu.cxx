@@ -14,11 +14,9 @@
 #include "winStatsChartMenu.h"
 #include "winStatsMonitor.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsChartMenu::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinStatsChartMenu::
 WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index) :
   _monitor(monitor),
@@ -28,31 +26,24 @@ WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index) :
   do_update();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsChartMenu::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WinStatsChartMenu::
 ~WinStatsChartMenu() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsChartMenu::get_menu_handle
-//       Access: Public
-//  Description: Returns the Windows menu handle for this particular
-//               menu.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Windows menu handle for this particular menu.
+ */
 HMENU WinStatsChartMenu::
 get_menu_handle() {
   return _menu;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsChartMenu::add_to_menu_bar
-//       Access: Public
-//  Description: Adds the menu to the end of the indicated menu bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the menu to the end of the indicated menu bar.
+ */
 void WinStatsChartMenu::
 add_to_menu_bar(HMENU menu_bar, int before_menu_id) {
   const PStatClientData *client_data = _monitor->get_client_data();
@@ -68,20 +59,17 @@ add_to_menu_bar(HMENU menu_bar, int before_menu_id) {
   memset(&mii, 0, sizeof(mii));
   mii.cbSize = sizeof(mii);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU; 
-  mii.fType = MFT_STRING; 
-  mii.hSubMenu = _menu; 
-  mii.dwTypeData = (char *)thread_name.c_str(); 
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
+  mii.fType = MFT_STRING;
+  mii.hSubMenu = _menu;
+  mii.dwTypeData = (char *)thread_name.c_str();
   InsertMenuItem(menu_bar, before_menu_id, FALSE, &mii);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsChartMenu::check_update
-//       Access: Public
-//  Description: Checks to see if the menu needs to be updated
-//               (e.g. because of new data from the client), and
-//               updates it if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks to see if the menu needs to be updated (e.g.  because of new data from
+ * the client), and updates it if necessary.
+ */
 void WinStatsChartMenu::
 check_update() {
   PStatView &view = _monitor->get_view(_thread_index);
@@ -89,13 +77,10 @@ check_update() {
     do_update();
   }
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsChartMenu::do_update
-//       Access: Public
-//  Description: Unconditionally updates the menu with the latest data
-//               from the client.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Unconditionally updates the menu with the latest data from the client.
+ */
 void WinStatsChartMenu::
 do_update() {
   PStatView &view = _monitor->get_view(_thread_index);
@@ -122,14 +107,14 @@ do_update() {
   int num_toplevel_collectors = client_data->get_num_toplevel_collectors();
   for (int tc = 0; tc < num_toplevel_collectors; tc++) {
     int collector = client_data->get_toplevel_collector(tc);
-    if (client_data->has_collector(collector) && 
+    if (client_data->has_collector(collector) &&
         client_data->get_collector_has_level(collector, _thread_index)) {
 
       // We put a separator between the above frame collector and the
       // first level collector.
       if (needs_separator) {
-        mii.fMask = MIIM_FTYPE; 
-        mii.fType = MFT_SEPARATOR; 
+        mii.fMask = MIIM_FTYPE;
+        mii.fType = MFT_SEPARATOR;
         InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 
         needs_separator = false;
@@ -141,26 +126,24 @@ do_update() {
   }
 
   // Also a menu item for a piano roll (following a separator).
-  mii.fMask = MIIM_FTYPE; 
-  mii.fType = MFT_SEPARATOR; 
+  mii.fMask = MIIM_FTYPE;
+  mii.fType = MFT_SEPARATOR;
   InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 
   WinStatsMonitor::MenuDef menu_def(_thread_index, -1, false);
   int menu_id = _monitor->get_menu_id(menu_def);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID; 
-  mii.fType = MFT_STRING; 
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+  mii.fType = MFT_STRING;
   mii.wID = menu_id;
   mii.dwTypeData = "Piano Roll";
   InsertMenuItem(_menu, GetMenuItemCount(_menu), TRUE, &mii);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsChartMenu::add_view
-//       Access: Private
-//  Description: Adds a new entry or entries to the menu for the
-//               indicated view and its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new entry or entries to the menu for the indicated view and its
+ * children.
+ */
 void WinStatsChartMenu::
 add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
   int collector = view_level->get_collector();
@@ -175,10 +158,10 @@ add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
   memset(&mii, 0, sizeof(mii));
   mii.cbSize = sizeof(mii);
 
-  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID; 
-  mii.fType = MFT_STRING; 
+  mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
+  mii.fType = MFT_STRING;
   mii.wID = menu_id;
-  mii.dwTypeData = (char *)collector_name.c_str(); 
+  mii.dwTypeData = (char *)collector_name.c_str();
   InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
 
   int num_children = view_level->get_num_children();
@@ -189,9 +172,9 @@ add_view(HMENU parent_menu, const PStatViewLevel *view_level, bool show_level) {
     string submenu_name = collector_name + " components";
 
     mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_SUBMENU;
-    mii.fType = MFT_STRING; 
+    mii.fType = MFT_STRING;
     mii.hSubMenu = submenu;
-    mii.dwTypeData = (char *)submenu_name.c_str(); 
+    mii.dwTypeData = (char *)submenu_name.c_str();
     InsertMenuItem(parent_menu, GetMenuItemCount(parent_menu), TRUE, &mii);
 
     // Reverse the order since the menus are listed from the top down;

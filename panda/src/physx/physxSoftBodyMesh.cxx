@@ -16,11 +16,9 @@
 
 TypeHandle PhysxSoftBodyMesh::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyMesh::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxSoftBodyMesh::
 link(NxSoftBodyMesh *meshPtr) {
 
@@ -30,11 +28,9 @@ link(NxSoftBodyMesh *meshPtr) {
   _error_type = ET_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyMesh::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxSoftBodyMesh::
 unlink() {
 
@@ -43,11 +39,9 @@ unlink() {
   PhysxManager::get_global_ptr()->_softbody_meshes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyMesh::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxSoftBodyMesh::
 release() {
 
@@ -60,11 +54,9 @@ release() {
   PhysxMeshPool::release_soft_body_mesh(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyMesh::get_reference_count
-//       Access: Published
-//  Description: Returns the reference count for shared meshes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reference count for shared meshes.
+ */
 unsigned int PhysxSoftBodyMesh::
 get_reference_count() const {
 
@@ -72,4 +64,3 @@ get_reference_count() const {
 
   return _ptr->getReferenceCount();
 }
-

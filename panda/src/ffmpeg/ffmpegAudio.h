@@ -19,10 +19,9 @@
 
 class FfmpegAudioCursor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FfmpegAudio
-// Description : A stream that generates a sequence of audio samples.
-////////////////////////////////////////////////////////////////////
+/**
+ * A stream that generates a sequence of audio samples.
+ */
 class EXPCL_FFMPEG FfmpegAudio : public MovieAudio {
 PUBLISHED:
   FfmpegAudio(const Filename &name);
@@ -33,7 +32,7 @@ PUBLISHED:
 
  private:
   friend class FfmpegAudioCursor;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

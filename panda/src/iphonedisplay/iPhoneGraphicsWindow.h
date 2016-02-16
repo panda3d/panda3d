@@ -22,14 +22,12 @@
 
 #import <UIKit/UIKit.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : IPhoneGraphicsWindow
-// Description : An interface to the osx/ system for managing GL
-//               windows under X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the osx/ system for managing GL windows under X.
+ */
 class IPhoneGraphicsWindow : public GraphicsWindow {
 public:
-  IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                        const string &name,
                        const FrameBufferProperties &fb_prop,
                        const WindowProperties &win_prop,
@@ -66,7 +64,7 @@ private:
   void handle_button_delta(int num_touches);
 
 private:
-  EAGLView *_gl_view; 
+  EAGLView *_gl_view;
   int _last_buttons;
 
 public:

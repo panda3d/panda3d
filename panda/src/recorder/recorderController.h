@@ -25,12 +25,10 @@
 class RecorderBase;
 class RecorderFrame;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RecorderController
-// Description : This object manages the process of recording the
-//               user's runtime inputs to a bam file so that the
-//               session can be recreated later.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object manages the process of recording the user's runtime inputs to a
+ * bam file so that the session can be recreated later.
+ */
 class EXPCL_PANDA_RECORDER RecorderController : public TypedReferenceCount {
 PUBLISHED:
   RecorderController();
@@ -104,7 +102,7 @@ private:
   bool _eof;
 
   static RecorderFactory *_factory;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -128,4 +126,3 @@ private:
 #include "recorderController.I"
 
 #endif
-

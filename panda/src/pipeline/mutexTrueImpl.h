@@ -51,6 +51,3 @@ typedef ReMutexImpl ReMutexTrueImpl;
 #endif  // THREAD_SIMPLE_IMPL
 
 #endif
-
-
-

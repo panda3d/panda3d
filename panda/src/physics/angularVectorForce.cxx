@@ -15,73 +15,58 @@
 
 TypeHandle AngularVectorForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularVectorForce
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 AngularVectorForce::
 AngularVectorForce(const LRotation &vec) :
   AngularForce(), _fvec(vec) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularVectorForce
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 AngularVectorForce::
 AngularVectorForce(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) :
   AngularForce() {
   _fvec.set_hpr(LVecBase3(h, p, r));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularVectorForce
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 AngularVectorForce::
 AngularVectorForce(const AngularVectorForce &copy) :
   AngularForce(copy) {
   _fvec = copy._fvec;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~AngularVectorForce
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 AngularVectorForce::
 ~AngularVectorForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Private, Virtual
-//  Description: dynamic copier
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic copier
+ */
 AngularForce *AngularVectorForce::
 make_copy() const {
   return new AngularVectorForce(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_child_quat
-//       Access: Private, Virtual
-//  Description: query
-////////////////////////////////////////////////////////////////////
+/**
+ * query
+ */
 LRotation AngularVectorForce::
 get_child_quat(const PhysicsObject *) {
   return _fvec;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularVectorForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -89,12 +74,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularVectorForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

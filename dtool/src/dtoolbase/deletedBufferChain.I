@@ -11,16 +11,11 @@
  * @date 2007-07-20
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedBufferChain::validate
-//       Access: Public
-//  Description: Returns true if the pointer is valid, false if it has
-//               been deleted or if it was never a valid pointer.
-//
-//               This is only meaningful in debug mode, where
-//               USE_DELETEDCHAINFLAG is defined.  If not, this
-//               trivially returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the pointer is valid, false if it has been deleted or if it
+ * was never a valid pointer.  This is only meaningful in debug mode, where
+ * USE_DELETEDCHAINFLAG is defined.  If not, this trivially returns true.
+ */
 INLINE bool DeletedBufferChain::
 validate(void *ptr) {
   TAU_PROFILE("bool DeletedBufferChain::validate(void *)", " ", TAU_USER);
@@ -36,22 +31,17 @@ validate(void *ptr) {
 #endif  // USE_DELETEDCHAINFLAG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedBufferChain::get_buffer_size
-//       Access: Public
-//  Description: Returns the size of the buffer that is actually
-//               returned at each request.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size of the buffer that is actually returned at each request.
+ */
 INLINE size_t DeletedBufferChain::
 get_buffer_size() const {
   return _buffer_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedBufferChain::node_to_buffer
-//       Access: Private, Static
-//  Description: Casts an ObjectNode* to a void* buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Casts an ObjectNode* to a void* buffer.
+ */
 INLINE void *DeletedBufferChain::
 node_to_buffer(DeletedBufferChain::ObjectNode *node) {
 #if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
@@ -63,11 +53,9 @@ node_to_buffer(DeletedBufferChain::ObjectNode *node) {
 #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedBufferChain::buffer_to_node
-//       Access: Private, Static
-//  Description: Casts a void* buffer to an ObjectNode* .
-////////////////////////////////////////////////////////////////////
+/**
+ * Casts a void* buffer to an ObjectNode* .
+ */
 INLINE DeletedBufferChain::ObjectNode *DeletedBufferChain::
 buffer_to_node(void *ptr) {
 #if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)

@@ -23,13 +23,11 @@
 #include "pointerTo.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandlerPhysical
-// Description : The abstract base class for a number of
-//               CollisionHandlers that have some physical effect on
-//               their moving bodies: they need to update the nodes'
-//               positions based on the effects of the collision.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for a number of CollisionHandlers that have some
+ * physical effect on their moving bodies: they need to update the nodes'
+ * positions based on the effects of the collision.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandlerPhysical : public CollisionHandlerEvent {
 public:
   CollisionHandlerPhysical();
@@ -66,7 +64,7 @@ protected:
     INLINE void set_target(const NodePath &target,
                            DriveInterface *drive_interface = NULL);
     INLINE void updated_transform();
-    
+
     NodePath _target;
     PT(DriveInterface) _drive_interface;
   };
@@ -106,6 +104,3 @@ private:
 #include "collisionHandlerPhysical.I"
 
 #endif
-
-
-

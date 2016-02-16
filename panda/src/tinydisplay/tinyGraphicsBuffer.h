@@ -18,13 +18,12 @@
 #include "graphicsBuffer.h"
 #include "tinyGraphicsStateGuardian.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyGraphicsBuffer
-// Description : An offscreen graphics buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen graphics buffer.
+ */
 class EXPCL_TINYDISPLAY TinyGraphicsBuffer : public GraphicsBuffer {
 public:
-  TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                      const string &name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,
@@ -69,4 +68,3 @@ private:
 #include "tinyGraphicsBuffer.I"
 
 #endif
-

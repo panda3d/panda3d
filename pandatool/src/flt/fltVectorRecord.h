@@ -20,13 +20,11 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltVectorRecord
-// Description : This is an ancillary record of the old (pre-15.4)
-//               face node.  Its only use is to provide the direction
-//               vector for unidirectional and bidirectional light
-//               point faces.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an ancillary record of the old (pre-15.4) face node.  Its only use is
+ * to provide the direction vector for unidirectional and bidirectional light
+ * point faces.
+ */
 class FltVectorRecord : public FltRecord {
 public:
   FltVectorRecord(FltHeader *header);
@@ -61,5 +59,3 @@ private:
 };
 
 #endif
-
-

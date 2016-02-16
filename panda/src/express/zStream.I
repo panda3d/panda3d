@@ -11,30 +11,24 @@
  * @date 2002-08-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: IDecompressStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IDecompressStream::
 IDecompressStream() : istream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IDecompressStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IDecompressStream::
 IDecompressStream(istream *source, bool owns_source) : istream(&_buf) {
   open(source, owns_source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IDecompressStream::open
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IDecompressStream &IDecompressStream::
 open(istream *source, bool owns_source) {
   clear((ios_iostate)0);
@@ -42,12 +36,10 @@ open(istream *source, bool owns_source) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IDecompressStream::close
-//       Access: Public
-//  Description: Resets the ZStream to empty, but does not actually
-//               close the source istream unless owns_source was true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the ZStream to empty, but does not actually close the source istream
+ * unless owns_source was true.
+ */
 INLINE IDecompressStream &IDecompressStream::
 close() {
   _buf.close_read();
@@ -55,32 +47,26 @@ close() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: OCompressStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE OCompressStream::
 OCompressStream() : ostream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OCompressStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE OCompressStream::
 OCompressStream(ostream *dest, bool owns_dest, int compression_level) :
-  ostream(&_buf) 
+  ostream(&_buf)
 {
   open(dest, owns_dest, compression_level);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OCompressStream::open
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE OCompressStream &OCompressStream::
 open(ostream *dest, bool owns_dest, int compression_level) {
   clear((ios_iostate)0);
@@ -88,15 +74,12 @@ open(ostream *dest, bool owns_dest, int compression_level) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OCompressStream::close
-//       Access: Public
-//  Description: Resets the ZStream to empty, but does not actually
-//               close the dest ostream unless owns_dest was true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the ZStream to empty, but does not actually close the dest ostream
+ * unless owns_dest was true.
+ */
 INLINE OCompressStream &OCompressStream::
 close() {
   _buf.close_write();
   return *this;
 }
-

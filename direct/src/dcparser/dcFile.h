@@ -25,11 +25,10 @@ class DCTypedef;
 class DCKeyword;
 class DCDeclaration;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCFile
-// Description : Represents the complete list of Distributed Class
-//               descriptions as read from a .dc file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents the complete list of Distributed Class descriptions as read from a
+ * .dc file.
+ */
 class EXPCL_DIRECT DCFile {
 PUBLISHED:
   DCFile();
@@ -128,5 +127,3 @@ private:
 #include "dcFile.I"
 
 #endif
-
-

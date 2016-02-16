@@ -27,13 +27,11 @@
 class P3DInstance;
 class P3DProgressWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DSession
-// Description : Corresponds to a single session: a subprocess with a
-//               unique instance of Python running within it, which
-//               might include one or more P3DInstance objects running
-//               in the same memory space with each other.
-////////////////////////////////////////////////////////////////////
+/**
+ * Corresponds to a single session: a subprocess with a unique instance of
+ * Python running within it, which might include one or more P3DInstance objects
+ * running in the same memory space with each other.
+ */
 class P3DSession : public P3DReferenceCount {
 public:
   P3DSession(P3DInstance *inst);
@@ -54,7 +52,7 @@ public:
   TiXmlDocument *command_and_response(TiXmlDocument *command);
   P3D_object *xml_to_p3dobj(const TiXmlElement *xvalue);
   TiXmlElement *p3dobj_to_xml(P3D_object *obj);
-  void send_windows_message(P3DInstance *inst, unsigned int msg, 
+  void send_windows_message(P3DInstance *inst, unsigned int msg,
                             int wparam, int lparam);
 
   void signal_request_ready(P3DInstance *inst);

@@ -23,34 +23,22 @@ class Datagram;
 class DatagramIterator;
 class TypedWritable;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RecorderBase
-// Description : This is the base class to a number of objects that
-//               record particular kinds of user input (like a
-//               MouseRecorder) to use in conjunction with a
-//               RecorderController to record the user's inputs
-//               for a session.
-//
-//               Note that RecorderBase does not actually inherit from
-//               TypedObject, even though it defines get_type().  The
-//               assumption is that the classes that derive from
-//               RecorderBase might also inherit independently from
-//               TypedObject.
-//
-//               It also does not inherit from TypedWritable, but it
-//               defines a method called write_recorder() which is
-//               very similar to a TypedWritable's write_datagram().
-//               Classes that derive from RecorderBase and also
-//               inherit from TypedWritable may choose to remap
-//               write_recorder() to do exactly the same thing as
-//               write_datagram(), or they may choose to write
-//               something slightly different.
-//
-//               Most types of recorders should derive from Recorder,
-//               as it derives from ReferenceCount, except for
-//               MouseRecorder, which would otherwise doubly inherit
-//               from ReferenceCount.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class to a number of objects that record particular kinds of
+ * user input (like a MouseRecorder) to use in conjunction with a
+ * RecorderController to record the user's inputs for a session.  Note that
+ * RecorderBase does not actually inherit from TypedObject, even though it
+ * defines get_type().  The assumption is that the classes that derive from
+ * RecorderBase might also inherit independently from TypedObject.  It also does
+ * not inherit from TypedWritable, but it defines a method called
+ * write_recorder() which is very similar to a TypedWritable's write_datagram().
+ * Classes that derive from RecorderBase and also inherit from TypedWritable may
+ * choose to remap write_recorder() to do exactly the same thing as
+ * write_datagram(), or they may choose to write something slightly different.
+ * Most types of recorders should derive from Recorder, as it derives from
+ * ReferenceCount, except for MouseRecorder, which would otherwise doubly
+ * inherit from ReferenceCount.
+ */
 class EXPCL_PANDA_RECORDER RecorderBase {
 protected:
   RecorderBase();

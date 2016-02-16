@@ -20,10 +20,9 @@
 #include <time.h>
 #include <math.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : Randomizer
-// Description : A handy class to return random numbers.
-////////////////////////////////////////////////////////////////////
+/**
+ * A handy class to return random numbers.
+ */
 class EXPCL_PANDA_MATHUTIL Randomizer {
 PUBLISHED:
   INLINE Randomizer(unsigned long seed = 0);

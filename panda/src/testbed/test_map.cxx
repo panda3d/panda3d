@@ -73,7 +73,7 @@ static const char * const sample_strings[] = {
 };
 static const size_t num_sample_strings = sizeof(sample_strings) / sizeof(const char *);
 
-void 
+void
 insert_fruit() {
   //  typedef pmap<Alpha, string> MapType;
   //  typedef pmap<Beta, string> MapType;
@@ -132,7 +132,7 @@ test_performance() {
   for (int p = 0; p < initial_population; p++) {
     m->insert(MapType::value_type(samples[rand() & sample_mask], 0));
   }
-  cerr << "map with " << m->size() 
+  cerr << "map with " << m->size()
        << " elements uses " << MemoryUsage::get_current_cpp_size()
        << " bytes.\n";
 
@@ -153,7 +153,7 @@ test_performance() {
   }
 }
 
-int 
+int
 main(int argc, char *argv[]) {
   //  insert_fruit();
   test_performance();

@@ -27,14 +27,11 @@
 
 class TextureImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggFile
-// Description : This represents a single egg file known to the
-//               palettizer.  It may reference a number of textures,
-//               and may also be assigned to a number of groups.  All
-//               of its textures will try to assign themselves to one
-//               of its groups.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single egg file known to the palettizer.  It may reference
+ * a number of textures, and may also be assigned to a number of groups.  All of
+ * its textures will try to assign themselves to one of its groups.
+ */
 class EggFile : public TypedWritable, public Namable {
 public:
   EggFile();
@@ -138,4 +135,3 @@ private:
 };
 
 #endif
-

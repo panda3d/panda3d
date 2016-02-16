@@ -22,11 +22,10 @@
 
 #include "mathNumbers.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BaseParticleEmitter
-// Description : Describes a physical region in space in which
-//               particles are randomly generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a physical region in space in which particles are randomly
+ * generated.
+ */
 class EXPCL_PANDAPHYSICS BaseParticleEmitter : public ReferenceCount {
 PUBLISHED:
   enum emissionType {

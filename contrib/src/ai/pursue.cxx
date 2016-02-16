@@ -27,13 +27,12 @@ Pursue::
 ~Pursue() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: do_pursue
-//  Description: This function performs the pursue and returns a pursue force which is used
-//               in the calculate_prioritized function.
-//               In case the target has been reached it resets the forces to 0 so that the character stops.
-//               This function is not to be used by the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function performs the pursue and returns a pursue force which is used in
+ * the calculate_prioritized function.  In case the target has been reached it
+ * resets the forces to 0 so that the character stops.  This function is not to
+ * be used by the user.
+ */
 LVecBase3 Pursue::
 do_pursue() {
   assert(_pursue_target && "pursue target not assigned");

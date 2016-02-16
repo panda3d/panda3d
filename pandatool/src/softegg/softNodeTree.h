@@ -26,11 +26,9 @@ class EggData;
 class EggGroupNode;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftNodeTree
-// Description : Describes a complete tree of soft nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a complete tree of soft nodes for conversion.
+ */
 class SoftNodeTree {
 public:
   SoftNodeTree();
@@ -59,7 +57,7 @@ public:
   PN_stdfloat _fps;
   int _use_prefix;
   char *_search_prefix;
-  
+
 
 private:
 

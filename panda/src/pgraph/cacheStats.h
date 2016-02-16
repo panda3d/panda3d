@@ -18,12 +18,10 @@
 #include "clockObject.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CacheStats
-// Description : This is used to track the utilization of the
-//               TransformState and RenderState caches, for low-level
-//               performance tuning information.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to track the utilization of the TransformState and RenderState
+ * caches, for low-level performance tuning information.
+ */
 class EXPCL_PANDA_PGRAPH CacheStats {
 public:
   void init();

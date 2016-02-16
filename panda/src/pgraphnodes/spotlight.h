@@ -19,20 +19,13 @@
 #include "lightLensNode.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Spotlight
-// Description : A light originating from a single point in space, and
-//               shining in a particular direction, with a cone-shaped
-//               falloff.
-//
-//               The Spotlight frustum is defined using a Lens, so it
-//               can have any of the properties that a camera lens can
-//               have.
-//
-//               Note that the class is named Spotlight instead of
-//               SpotLight, because "spotlight" is a single English
-//               word, instead of two words.
-////////////////////////////////////////////////////////////////////
+/**
+ * A light originating from a single point in space, and shining in a particular
+ * direction, with a cone-shaped falloff.  The Spotlight frustum is defined
+ * using a Lens, so it can have any of the properties that a camera lens can
+ * have.  Note that the class is named Spotlight instead of SpotLight, because
+ * "spotlight" is a single English word, instead of two words.
+ */
 class EXPCL_PANDA_PGRAPHNODES Spotlight : public LightLensNode {
 PUBLISHED:
   Spotlight(const string &name);

@@ -37,7 +37,7 @@ set_parameters(dReal themass,
                const LVecBase3f &center,
                const LMatrix3f &i) {
   set_parameters(themass,
-                 center[0], center[1], center[2], 
+                 center[0], center[1], center[2],
                  i(0, 0), i(1, 1), i(2, 2),
                  i(0, 1), i(0, 2), i(1, 2));
 }
@@ -62,7 +62,7 @@ set_capsule(dReal density, int direction,
 INLINE void OdeMass::
 set_capsule_total(dReal total_mass, int direction,
                   dReal radius, dReal length) {
-  dMassSetCapsuleTotal(&_mass, 
+  dMassSetCapsuleTotal(&_mass,
                        total_mass, direction,
                        radius, length);
 }
@@ -70,7 +70,7 @@ set_capsule_total(dReal total_mass, int direction,
 INLINE void OdeMass::
 set_cylinder(dReal density, int direction,
              dReal radius, dReal length) {
-  dMassSetCylinder(&_mass, 
+  dMassSetCylinder(&_mass,
                    density,direction,
                    radius,length);
 }

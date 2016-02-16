@@ -27,14 +27,11 @@
 static const int DXF_max_line = 256;
 static const int DXF_num_colors = 256;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFFile
-// Description : A generic DXF-reading class.  This class can read a
-//               DXF file but doesn't actually do anything with the
-//               data; it's intended to be inherited from and the
-//               appropriate functions overridden (particularly
-//               DoneEntity()).
-////////////////////////////////////////////////////////////////////
+/**
+ * A generic DXF-reading class.  This class can read a DXF file but doesn't
+ * actually do anything with the data; it's intended to be inherited from and
+ * the appropriate functions overridden (particularly DoneEntity()).
+ */
 class DXFFile : public MemoryBase {
 public:
   DXFFile();

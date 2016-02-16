@@ -11,11 +11,9 @@
  * @date 2002-05-29
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullBinFrontToBack::
 CullBinFrontToBack(const string &name, GraphicsStateGuardianBase *gsg,
                    const PStatCollector &draw_region_pcollector) :
@@ -23,11 +21,9 @@ CullBinFrontToBack(const string &name, GraphicsStateGuardianBase *gsg,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::ObjectData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullBinFrontToBack::ObjectData::
 ObjectData(CullableObject *object, PN_stdfloat dist) :
   _object(object),
@@ -35,14 +31,10 @@ ObjectData(CullableObject *object, PN_stdfloat dist) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::ObjectData::operator <
-//       Access: Public
-//  Description: Specifies the correct sort ordering for these
-//               objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the correct sort ordering for these objects.
+ */
 INLINE bool CullBinFrontToBack::ObjectData::
 operator < (const ObjectData &other) const {
   return _dist < other._dist;
 }
-

@@ -27,11 +27,9 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLwoSurface::
 CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   _converter(converter),
@@ -143,11 +141,9 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   _diffuse_color = _color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLwoSurface::
 ~CLwoSurface() {
   if (_block != (CLwoSurfaceBlock *)NULL) {
@@ -155,16 +151,11 @@ CLwoSurface::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::apply_properties
-//       Access: Public
-//  Description: Applies the color, texture, etc. described by the
-//               surface to the indicated egg primitive.
-//
-//               If the surface defines a smoothing angle,
-//               smooth_angle may be updated to reflect it if the
-//               angle is greater than that specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the color, texture, etc.  described by the surface to the indicated
+ * egg primitive.  If the surface defines a smoothing angle, smooth_angle may be
+ * updated to reflect it if the angle is greater than that specified.
+ */
 void CLwoSurface::
 apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
                  PN_stdfloat &smooth_angle) {
@@ -202,16 +193,11 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::check_texture
-//       Access: Public
-//  Description: Checks whether the surface demands a texture or not.
-//               Returns true if so, false otherwise.
-//
-//               If the surface demands a texture, this also sets up
-//               _egg_texture and _compute_uvs as appropriate for the
-//               texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the surface demands a texture or not.  Returns true if so,
+ * false otherwise.  If the surface demands a texture, this also sets up
+ * _egg_texture and _compute_uvs as appropriate for the texture.
+ */
 bool CLwoSurface::
 check_texture() {
   if (_checked_texture) {
@@ -286,12 +272,10 @@ check_texture() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::check_material
-//       Access: Public
-//  Description: Checks whether the surface demands a material or not.
-//               Returns true if so, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the surface demands a material or not.  Returns true if so,
+ * false otherwise.
+ */
 bool CLwoSurface::
 check_material() {
   if (_checked_material) {
@@ -345,13 +329,10 @@ check_material() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::generate_uvs
-//       Access: Private
-//  Description: Computes all the UV's for the polygon's vertices,
-//               according to the _projection_mode defined in the
-//               block.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes all the UV's for the polygon's vertices, according to the
+ * _projection_mode defined in the block.
+ */
 void CLwoSurface::
 generate_uvs(vector_PT_EggVertex &egg_vertices) {
   if (_map_uvs == NULL) {
@@ -381,12 +362,9 @@ generate_uvs(vector_PT_EggVertex &egg_vertices) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::map_planar
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a planar projection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a UV based on the given point in space, using a planar projection.
+ */
 LPoint2d CLwoSurface::
 map_planar(const LPoint3d &pos, const LPoint3d &) const {
   // A planar projection is about as easy as can be.  We ignore the Y
@@ -397,12 +375,10 @@ map_planar(const LPoint3d &pos, const LPoint3d &) const {
   return LPoint2d(u, v);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::map_spherical
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a spherical projection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a UV based on the given point in space, using a spherical
+ * projection.
+ */
 LPoint2d CLwoSurface::
 map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const {
   // To compute the x position on the frame, we only need to consider
@@ -448,12 +424,10 @@ map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const {
   return LPoint2d(u, v);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::map_cylindrical
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a cylindrical projection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a UV based on the given point in space, using a cylindrical
+ * projection.
+ */
 LPoint2d CLwoSurface::
 map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const {
   // This is almost identical to the spherical projection, except for
@@ -484,12 +458,9 @@ map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const {
   return LPoint2d(u, v);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurface::map_cubic
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a cubic projection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a UV based on the given point in space, using a cubic projection.
+ */
 LPoint2d CLwoSurface::
 map_cubic(const LPoint3d &pos, const LPoint3d &centroid) const {
   // A cubic projection is a planar projection, but we eliminate the

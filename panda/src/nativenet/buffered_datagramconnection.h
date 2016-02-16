@@ -22,14 +22,11 @@
 #include "buffered_datagramwriter.h"
 #include "config_nativenet.h"
 
-////////////////////////////////////////////////////////////////////
-// there are 3 states
-//
-//      1. Socket not even assigned,,,,
-//      2. Socket Assigned and trying to get a active connect open
-//      3. Socket is open and  writable.. ( Fully powered up )...
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * there are 3 states 1. Socket not even assigned,,,, 2. Socket Assigned and
+ * trying to get a active connect open 3. Socket is open and  writable.. ( Fully
+ * powered up )...
+ */
 class EXPCL_PANDA_NATIVENET Buffered_DatagramConnection : public Socket_TCP
 {
 private:
@@ -129,10 +126,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::ClearAll
-//  Description: used to do a full reset of buffers
-////////////////////////////////////////////////////////////////////
+/**
+ * used to do a full reset of buffers
+ */
 inline void Buffered_DatagramConnection::ClearAll(void) {
   nativenet_cat.error() << "Buffered_DatagramConnection::ClearAll Starting Auto Reset\n";
   Close();
@@ -156,10 +152,9 @@ inline bool Buffered_DatagramConnection::DoConnect(void) {
 }
 
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::DoConnect
-//  Description: This is the function thah does the conection for us
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the function thah does the conection for us
+ */
 inline bool Buffered_DatagramConnection::DoConnect(void) {
   if(Active() != true) {
     if(_LastConnectTry.Expired() != true)
@@ -201,18 +196,16 @@ inline bool Buffered_DatagramConnection::DoConnect(void) {
 
 */
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::~Buffered_DatagramConnection
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Buffered_DatagramConnection::~Buffered_DatagramConnection(void)
 {
     Close();
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::Buffered_DatagramConnection
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Buffered_DatagramConnection::Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point)
     :  _Writer(wbufsize,write_flush_point) , _Reader(rbufsize)
 {
@@ -231,10 +224,9 @@ inline bool  Buffered_DatagramConnection::SendMessageBufferOnly(Datagram &msg)
     return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::Init
-//  Description: must be called to set value to the server
-////////////////////////////////////////////////////////////////////
+/**
+ * must be called to set value to the server
+ */
 inline void Buffered_DatagramConnection::AddAddress(Socket_Address &inadr)
 {
     _Addresslist.push_back(inadr);
@@ -244,10 +236,9 @@ inline void Buffered_DatagramConnection::ClearAddresses(void)
 {
     _Addresslist.clear();
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::GetMessage
-//  Description: Reads a message.  Returns false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a message.  Returns false on failure.
+ */
 inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
 {
   if(IsConnected())
@@ -267,10 +258,9 @@ inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::Flush
-//  Description: Flush all writes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flush all writes.
+ */
 bool Buffered_DatagramConnection::Flush(void)
 {
     if (IsConnected())
@@ -289,10 +279,9 @@ bool Buffered_DatagramConnection::Flush(void)
     return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramConnection::Reset
-//  Description: Reset
-////////////////////////////////////////////////////////////////////
+/**
+ * Reset
+ */
 inline void Buffered_DatagramConnection::Reset() {
   nativenet_cat.error() << "Buffered_DatagramConnection::Reset()\n";
   ClearAll();

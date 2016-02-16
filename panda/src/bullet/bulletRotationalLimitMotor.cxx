@@ -13,35 +13,28 @@
 
 #include "bulletRotationalLimitMotor.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRotationalLimitMotor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletRotationalLimitMotor::
-BulletRotationalLimitMotor(btRotationalLimitMotor &motor) 
+BulletRotationalLimitMotor(btRotationalLimitMotor &motor)
  : _motor(motor) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRotationalLimitMotor::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletRotationalLimitMotor::
 BulletRotationalLimitMotor(const BulletRotationalLimitMotor &copy)
   : _motor(copy._motor) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRotationalLimitMotor::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletRotationalLimitMotor::
 ~BulletRotationalLimitMotor() {
 
 }
-

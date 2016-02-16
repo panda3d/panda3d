@@ -21,13 +21,11 @@
 #include "lightMutex.h"
 #include "pdeque.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EventQueue
-// Description : A queue of pending events.  As events are thrown,
-//               they are added to this queue; eventually, they will
-//               be extracted out again by an EventHandler and
-//               processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * A queue of pending events.  As events are thrown, they are added to this
+ * queue; eventually, they will be extracted out again by an EventHandler and
+ * processed.
+ */
 class EXPCL_PANDA_EVENT EventQueue {
 PUBLISHED:
   EventQueue();

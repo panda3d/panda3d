@@ -26,10 +26,9 @@ class PhysxScene;
 class PhysxGroupsMask;
 class PhysxSoftBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSoftBody
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxSoftBody : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -115,57 +114,57 @@ PUBLISHED:
 
 
 /*
-virtual void  getWorldBounds (NxBounds3 &bounds) const =0 
-virtual void  attachToShape (const NxShape *shape, NxU32 attachmentFlags)=0 
-virtual void  attachToCollidingShapes (NxU32 attachmentFlags)=0 
-virtual void  detachFromShape (const NxShape *shape)=0 
-virtual void  attachVertexToShape (NxU32 vertexId, const NxShape *shape, const NxVec3 &localPos, NxU32 attachmentFlags)=0 
-virtual void  attachVertexToGlobalPosition (const NxU32 vertexId, const NxVec3 &pos)=0 
-virtual void  freeVertex (const NxU32 vertexId)=0 
-virtual bool  tearVertex (const NxU32 vertexId, const NxVec3 &normal)=0 
-virtual bool  raycast (const NxRay &worldRay, NxVec3 &hit, NxU32 &vertexId)=0 
-virtual void  setMeshData (NxMeshData &meshData)=0 
-virtual NxMeshData  getMeshData ()=0 
-virtual void  setSplitPairData (NxSoftBodySplitPairData &splitPairData)=0 
-virtual NxSoftBodySplitPairData  getSplitPairData ()=0 
-virtual void  setValidBounds (const NxBounds3 &validBounds)=0 
-virtual void  getValidBounds (NxBounds3 &validBounds) const =0 
-virtual void  setPosition (const NxVec3 &position, NxU32 vertexId)=0 
-virtual void  setPositions (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0 
-virtual NxVec3  getPosition (NxU32 vertexId) const =0 
-virtual void  getPositions (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0 
-virtual void  setVelocity (const NxVec3 &velocity, NxU32 vertexId)=0 
-virtual void  setVelocities (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0 
-virtual NxVec3  getVelocity (NxU32 vertexId) const =0 
-virtual void  getVelocities (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0 
-virtual void  setConstrainPositions (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0 
-virtual void  setConstrainNormals (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0 
-virtual void  setConstrainCoefficients (const NxSoftBodyConstrainCoefficients *coefficients, NxU32 byteStride=sizeof(NxSoftBodyConstrainCoefficients))=0 
-virtual NxU32  queryShapePointers ()=0 
-virtual NxU32  getStateByteSize ()=0 
-virtual void  getShapePointers (NxShape **shapePointers, NxU32 *flags)=0 
-virtual void  setShapePointers (NxShape **shapePointers, unsigned int numShapes)=0 
-virtual void  saveStateToStream (NxStream &stream, bool permute=false)=0 
-virtual void  loadStateFromStream (NxStream &stream)=0 
-virtual void  setCollisionResponseCoefficient (NxReal coefficient)=0 
-virtual NxReal  getCollisionResponseCoefficient () const =0 
-virtual void  setAttachmentResponseCoefficient (NxReal coefficient)=0 
-virtual NxReal  getAttachmentResponseCoefficient () const =0 
-virtual void  setFromFluidResponseCoefficient (NxReal coefficient)=0 
-virtual NxReal  getFromFluidResponseCoefficient () const =0 
-virtual void  setToFluidResponseCoefficient (NxReal coefficient)=0 
-virtual NxReal  getToFluidResponseCoefficient () const =0 
-virtual void  setExternalAcceleration (NxVec3 acceleration)=0 
-virtual NxVec3  getExternalAcceleration () const =0 
-virtual void  setMinAdhereVelocity (NxReal velocity)=0 
-virtual NxReal  getMinAdhereVelocity () const =0 
-virtual void  addForceAtVertex (const NxVec3 &force, NxU32 vertexId, NxForceMode mode=NX_FORCE)=0 
-virtual void  addForceAtPos (const NxVec3 &position, NxReal magnitude, NxReal radius, NxForceMode mode=NX_FORCE)=0 
-virtual void  addDirectedForceAtPos (const NxVec3 &position, const NxVec3 &force, NxReal radius, NxForceMode mode=NX_FORCE)=0 
-virtual bool  overlapAABBTetrahedra (const NxBounds3 &bounds, NxU32 &nb, const NxU32 *&indices) const =0 
-virtual NxCompartment *  getCompartment () const =0 
-virtual NxForceFieldMaterial  getForceFieldMaterial () const =0 
-virtual void  setForceFieldMaterial (NxForceFieldMaterial)=0 
+virtual void  getWorldBounds (NxBounds3 &bounds) const =0
+virtual void  attachToShape (const NxShape *shape, NxU32 attachmentFlags)=0
+virtual void  attachToCollidingShapes (NxU32 attachmentFlags)=0
+virtual void  detachFromShape (const NxShape *shape)=0
+virtual void  attachVertexToShape (NxU32 vertexId, const NxShape *shape, const NxVec3 &localPos, NxU32 attachmentFlags)=0
+virtual void  attachVertexToGlobalPosition (const NxU32 vertexId, const NxVec3 &pos)=0
+virtual void  freeVertex (const NxU32 vertexId)=0
+virtual bool  tearVertex (const NxU32 vertexId, const NxVec3 &normal)=0
+virtual bool  raycast (const NxRay &worldRay, NxVec3 &hit, NxU32 &vertexId)=0
+virtual void  setMeshData (NxMeshData &meshData)=0
+virtual NxMeshData  getMeshData ()=0
+virtual void  setSplitPairData (NxSoftBodySplitPairData &splitPairData)=0
+virtual NxSoftBodySplitPairData  getSplitPairData ()=0
+virtual void  setValidBounds (const NxBounds3 &validBounds)=0
+virtual void  getValidBounds (NxBounds3 &validBounds) const =0
+virtual void  setPosition (const NxVec3 &position, NxU32 vertexId)=0
+virtual void  setPositions (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0
+virtual NxVec3  getPosition (NxU32 vertexId) const =0
+virtual void  getPositions (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0
+virtual void  setVelocity (const NxVec3 &velocity, NxU32 vertexId)=0
+virtual void  setVelocities (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0
+virtual NxVec3  getVelocity (NxU32 vertexId) const =0
+virtual void  getVelocities (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0
+virtual void  setConstrainPositions (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0
+virtual void  setConstrainNormals (void *buffer, NxU32 byteStride=sizeof(NxVec3))=0
+virtual void  setConstrainCoefficients (const NxSoftBodyConstrainCoefficients *coefficients, NxU32 byteStride=sizeof(NxSoftBodyConstrainCoefficients))=0
+virtual NxU32  queryShapePointers ()=0
+virtual NxU32  getStateByteSize ()=0
+virtual void  getShapePointers (NxShape **shapePointers, NxU32 *flags)=0
+virtual void  setShapePointers (NxShape **shapePointers, unsigned int numShapes)=0
+virtual void  saveStateToStream (NxStream &stream, bool permute=false)=0
+virtual void  loadStateFromStream (NxStream &stream)=0
+virtual void  setCollisionResponseCoefficient (NxReal coefficient)=0
+virtual NxReal  getCollisionResponseCoefficient () const =0
+virtual void  setAttachmentResponseCoefficient (NxReal coefficient)=0
+virtual NxReal  getAttachmentResponseCoefficient () const =0
+virtual void  setFromFluidResponseCoefficient (NxReal coefficient)=0
+virtual NxReal  getFromFluidResponseCoefficient () const =0
+virtual void  setToFluidResponseCoefficient (NxReal coefficient)=0
+virtual NxReal  getToFluidResponseCoefficient () const =0
+virtual void  setExternalAcceleration (NxVec3 acceleration)=0
+virtual NxVec3  getExternalAcceleration () const =0
+virtual void  setMinAdhereVelocity (NxReal velocity)=0
+virtual NxReal  getMinAdhereVelocity () const =0
+virtual void  addForceAtVertex (const NxVec3 &force, NxU32 vertexId, NxForceMode mode=NX_FORCE)=0
+virtual void  addForceAtPos (const NxVec3 &position, NxReal magnitude, NxReal radius, NxForceMode mode=NX_FORCE)=0
+virtual void  addDirectedForceAtPos (const NxVec3 &position, const NxVec3 &force, NxReal radius, NxForceMode mode=NX_FORCE)=0
+virtual bool  overlapAABBTetrahedra (const NxBounds3 &bounds, NxU32 &nb, const NxU32 *&indices) const =0
+virtual NxCompartment *  getCompartment () const =0
+virtual NxForceFieldMaterial  getForceFieldMaterial () const =0
+virtual void  setForceFieldMaterial (NxForceFieldMaterial)=0
 */
 
   INLINE void ls() const;
@@ -195,7 +194,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxSoftBody", 
+    register_type(_type_handle, "PhysxSoftBody",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

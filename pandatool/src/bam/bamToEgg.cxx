@@ -18,11 +18,9 @@
 #include "bamFile.h"
 #include "bamCacheRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BamToEgg::
 BamToEgg() :
   SomethingToEgg("bam", ".bam")
@@ -42,11 +40,9 @@ BamToEgg() :
   _coordinate_system = get_default_coordinate_system();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BamToEgg::
 run() {
   BamFile bam_file;
@@ -57,14 +53,14 @@ run() {
   }
 
   nout << _input_filename << " : Bam version "
-       << bam_file.get_file_major_ver() << "." 
+       << bam_file.get_file_major_ver() << "."
        << bam_file.get_file_minor_ver() << "\n";
 
   typedef pvector<TypedWritable *> Objects;
   Objects objects;
   TypedWritable *object = bam_file.read_object();
 
-  if (object != (TypedWritable *)NULL && 
+  if (object != (TypedWritable *)NULL &&
       object->is_exact_type(BamCacheRecord::get_class_type())) {
     // Here's a special case: if the first object in the file is a
     // BamCacheRecord, it's really a cache data file and not a true
@@ -88,7 +84,7 @@ run() {
 
   _data->set_coordinate_system(_coordinate_system);
 
-  if (objects.size() == 1 && 
+  if (objects.size() == 1 &&
       objects[0]->is_of_type(PandaNode::get_class_type())) {
     PandaNode *node = DCAST(PandaNode, objects[0]);
     save_egg_data(_data, node);

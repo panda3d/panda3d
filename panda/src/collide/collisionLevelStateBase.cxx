@@ -21,11 +21,9 @@ PStatCollector CollisionLevelStateBase::_node_volume_pcollector("Collision Volum
 
 TypeHandle CollisionLevelStateBase::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelStateBase::clear
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionLevelStateBase::
 clear() {
   _colliders.clear();
@@ -33,24 +31,20 @@ clear() {
   _parent_bounds.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelStateBase::reserve
-//       Access: Public
-//  Description: Indicates an intention to add the indicated number of
-//               colliders to the level state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates an intention to add the indicated number of colliders to the level
+ * state.
+ */
 void CollisionLevelStateBase::
 reserve(int num_colliders) {
   _colliders.reserve(num_colliders);
   _local_bounds.reserve(num_colliders);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelStateBase::prepare_collider
-//       Access: Public
-//  Description: Adds the indicated Collider to the set of Colliders
-//               in the current level state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated Collider to the set of Colliders in the current level
+ * state.
+ */
 void CollisionLevelStateBase::
 prepare_collider(const ColliderDef &def, const NodePath &root) {
   _colliders.push_back(def);
@@ -71,7 +65,7 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     // with.  That makes things complicated!
     if (bv->as_bounding_sphere()) {
       LPoint3 pos_delta = def._node_path.get_pos_delta(root);
-      
+
       //LVector3 cap(pos_delta);
       //if(cap.length()>fluid_cap_amount) {
       //  pos_delta=LPoint3(cap/cap.length())*fluid_cap_amount;
@@ -85,7 +79,7 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
         LMatrix4 inv_trans = LMatrix4::translate_mat(-pos_delta);
         PT(GeometricBoundingVolume) gbv_prev;
         gbv_prev = DCAST(GeometricBoundingVolume, bv->make_copy());
-         
+
         gbv_prev->xform(inv_trans);
         gbv->extend_by(gbv_prev);
       }
@@ -95,6 +89,6 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     gbv->xform(rel_transform->get_mat());
     _local_bounds.push_back(gbv);
   }
-  
+
   _parent_bounds = _local_bounds;
 }

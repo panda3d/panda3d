@@ -16,11 +16,10 @@
 
 #include "baseParticle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OrientedParticle
-// Description : Describes a particle that has angular
-//                characteristics (velocity, orientation).
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a particle that has angular characteristics (velocity,
+ * orientation).
+ */
 class EXPCL_PANDAPHYSICS OrientedParticle : public BaseParticle {
 public:
   OrientedParticle(int lifespan = 0, bool alive = false);

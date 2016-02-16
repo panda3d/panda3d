@@ -21,11 +21,9 @@
 
 PStatCollector GeomParticleRenderer::_render_collector("App:Particles:Geom:Render");
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomParticleRenderer
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 
 GeomParticleRenderer::
 GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
@@ -47,11 +45,9 @@ GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
     _geom_node = new PandaNode("empty");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomParticleRenderer
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 
 GeomParticleRenderer::
 GeomParticleRenderer(const GeomParticleRenderer& copy) :
@@ -70,43 +66,35 @@ GeomParticleRenderer(const GeomParticleRenderer& copy) :
   _geom_node = copy._geom_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~GeomParticleRenderer
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 
 GeomParticleRenderer::
 ~GeomParticleRenderer() {
   kill_nodes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: dynamic copying
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic copying
+ */
 
 BaseParticleRenderer *GeomParticleRenderer::
 make_copy() {
   return new GeomParticleRenderer(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_geoms
-//       Access: Private
-//  Description: links the child nodes to the parent stuff
-////////////////////////////////////////////////////////////////////
+/**
+ * links the child nodes to the parent stuff
+ */
 void GeomParticleRenderer::
 init_geoms() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: resize_pool
-//       Access: Private
-//  Description: handles renderer-size resizing.
-////////////////////////////////////////////////////////////////////
+/**
+ * handles renderer-size resizing.
+ */
 
 void GeomParticleRenderer::
 resize_pool(int new_size) {
@@ -123,10 +111,9 @@ resize_pool(int new_size) {
   _pool_size = new_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: kill_nodes
-//       Access: Private
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 
 void GeomParticleRenderer::
 kill_nodes() {
@@ -143,11 +130,9 @@ kill_nodes() {
   _node_vector.erase(_node_vector.begin(), _node_vector.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: birth_particle
-//       Access: Private, Virtual
-//  Description: child birth
-////////////////////////////////////////////////////////////////////
+/**
+ * child birth
+ */
 
 void GeomParticleRenderer::
 birth_particle(int index) {
@@ -159,11 +144,9 @@ birth_particle(int index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: kill_particle
-//       Access: Private, Virtual
-//  Description: child kill
-////////////////////////////////////////////////////////////////////
+/**
+ * child kill
+ */
 
 void GeomParticleRenderer::
 kill_particle(int index) {
@@ -173,11 +156,9 @@ kill_particle(int index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: render
-//       Access: Private
-//  Description: sets the transitions on each arc
-////////////////////////////////////////////////////////////////////
+/**
+ * sets the transitions on each arc
+ */
 
 void GeomParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
@@ -267,12 +248,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void GeomParticleRenderer::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -280,12 +258,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_linear_forces
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void GeomParticleRenderer::
 write_linear_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
@@ -299,12 +274,9 @@ write_linear_forces(ostream &out, int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void GeomParticleRenderer::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

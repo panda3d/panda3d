@@ -19,10 +19,9 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ReMutexHolder
-// Description : Similar to MutexHolder, but for a reentrant mutex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to MutexHolder, but for a reentrant mutex.
+ */
 class EXPCL_PANDA_PIPELINE ReMutexHolder {
 public:
   INLINE ReMutexHolder(const ReMutex &mutex);

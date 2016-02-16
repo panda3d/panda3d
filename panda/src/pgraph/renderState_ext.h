@@ -22,12 +22,10 @@
 #include "renderState.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<RenderState>
-// Description : This class defines the extension methods for
-//               RenderState, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for RenderState, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<RenderState> : public ExtensionBase<RenderState> {
 public:

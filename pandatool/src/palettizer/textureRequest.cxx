@@ -14,11 +14,9 @@
 #include "textureRequest.h"
 #include "palettizer.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureRequest::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureRequest::
 TextureRequest() {
   _got_size = false;
@@ -41,12 +39,9 @@ TextureRequest() {
   _coverage_threshold = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureRequest::pre_txa_file
-//       Access: Public
-//  Description: Sets some state up that must be set prior to reading
-//               the .txa file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets some state up that must be set prior to reading the .txa file.
+ */
 void TextureRequest::
 pre_txa_file() {
   _margin = pal->_margin;

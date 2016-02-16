@@ -11,12 +11,9 @@
  * @date 2015-02-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamNodePath::Constructor
-//       Access: Published
-//  Description: Creates a new ParamNodePath storing the given
-//               node path object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new ParamNodePath storing the given node path object.
+ */
 INLINE ParamNodePath::
 ParamNodePath(const NodePath &node_path) :
   _node_path(node_path)
@@ -24,12 +21,9 @@ ParamNodePath(const NodePath &node_path) :
 }
 
 #ifdef USE_MOVE_SEMANTICS
-////////////////////////////////////////////////////////////////////
-//     Function: ParamNodePath::Move Constructor
-//       Access: Published
-//  Description: Creates a new ParamNodePath storing the given
-//               node path object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new ParamNodePath storing the given node path object.
+ */
 INLINE ParamNodePath::
 ParamNodePath(NodePath &&node_path) NOEXCEPT :
   _node_path(move(node_path))
@@ -37,21 +31,17 @@ ParamNodePath(NodePath &&node_path) NOEXCEPT :
 }
 #endif  // USE_MOVE_SEMANTICS
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamNodePath::get_value_type
-//       Access: Published, Virtual
-//  Description: Returns NodePath::get_class_type().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns NodePath::get_class_type().
+ */
 INLINE TypeHandle ParamNodePath::
 get_value_type() const {
   return NodePath::get_class_type();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamNodePath::get_value
-//       Access: Published
-//  Description: Retrieves the NodePath stored in the parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the NodePath stored in the parameter.
+ */
 INLINE const NodePath &ParamNodePath::
 get_value() const {
   return _node_path;

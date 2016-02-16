@@ -14,5 +14,3 @@
 #include "physxControllerShapeHit.h"
 
 TypeHandle PhysxControllerShapeHit::_type_handle;
-
-

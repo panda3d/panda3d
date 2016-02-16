@@ -11,11 +11,9 @@
  * @date 2006-01-16
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::MenuDef::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsMonitor::MenuDef::
 MenuDef(int thread_index, int collector_index, bool show_level) :
   _thread_index(thread_index),
@@ -25,11 +23,9 @@ MenuDef(int thread_index, int collector_index, bool show_level) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsMonitor::MenuDef::operator <
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool GtkStatsMonitor::MenuDef::
 operator < (const MenuDef &other) const {
   if (_thread_index != other._thread_index) {

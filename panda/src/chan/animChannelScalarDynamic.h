@@ -21,18 +21,13 @@
 class PandaNode;
 class TransformState;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannelScalarDynamic
-// Description : An animation channel that accepts a scalar each frame
-//               from some dynamic input provided by code.
-//
-//               This object operates in two modes: in explicit mode,
-//               the programmer should call set_value() each frame to
-//               indicate the new value; in implicit mode, the
-//               programmer should call set_value_node() to indicate
-//               the node whose X component will be copied to the
-//               scalar each frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * An animation channel that accepts a scalar each frame from some dynamic input
+ * provided by code.  This object operates in two modes: in explicit mode, the
+ * programmer should call set_value() each frame to indicate the new value; in
+ * implicit mode, the programmer should call set_value_node() to indicate the
+ * node whose X component will be copied to the scalar each frame.
+ */
 class EXPCL_PANDA_CHAN AnimChannelScalarDynamic : public AnimChannelScalar {
 protected:
   AnimChannelScalarDynamic();
@@ -41,7 +36,7 @@ protected:
 public:
   AnimChannelScalarDynamic(const string &name);
 
-  virtual bool has_changed(int last_frame, double last_frac, 
+  virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, PN_stdfloat &value);
 

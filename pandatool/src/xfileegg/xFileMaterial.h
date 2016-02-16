@@ -24,11 +24,10 @@ class XFileToEggConverter;
 class XFileNode;
 class XFileDataNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileMaterial
-// Description : This represents an X file "material", which consists
-//               of a color, lighting, and/or texture specification.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents an X file "material", which consists of a color, lighting,
+ * and/or texture specification.
+ */
 class XFileMaterial {
 public:
   XFileMaterial();
@@ -57,4 +56,3 @@ private:
 };
 
 #endif
-

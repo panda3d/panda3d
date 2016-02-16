@@ -18,11 +18,9 @@
 
 #include <ctype.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPToken::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPToken::
 CPPToken(int token, int line_number, int col_number,
          const CPPFile &file, const string &str,
@@ -37,11 +35,9 @@ CPPToken(int token, int line_number, int col_number,
   _lloc.file = file;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPToken::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPToken::
 CPPToken(int token, const YYLTYPE &loc, const string &str, const YYSTYPE &val) :
   _token(token), _lloc(loc), _lval(val)
@@ -49,11 +45,9 @@ CPPToken(int token, const YYLTYPE &loc, const string &str, const YYSTYPE &val) :
   _lval.str = str;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPToken::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPToken::
 CPPToken(const CPPToken &copy) :
   _token(copy._token),
@@ -63,11 +57,9 @@ CPPToken(const CPPToken &copy) :
   _lval.u = copy._lval.u;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPToken::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPToken::
 operator = (const CPPToken &copy) {
   _token = copy._token;
@@ -76,33 +68,27 @@ operator = (const CPPToken &copy) {
   _lloc = copy._lloc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPToken::eof
-//       Access: Public, Static
-//  Description: A named constructor for the token returned when the
-//               end of file has been reached.
-////////////////////////////////////////////////////////////////////
+/**
+ * A named constructor for the token returned when the end of file has been
+ * reached.
+ */
 CPPToken CPPToken::
 eof() {
   return CPPToken(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPToken::is_eof
-//       Access: Public
-//  Description: Returns true if this is the EOF token.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this is the EOF token.
+ */
 bool CPPToken::
 is_eof() const {
   return _token == 0;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPToken::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPToken::
 output(ostream &out) const {
   switch (_token) {

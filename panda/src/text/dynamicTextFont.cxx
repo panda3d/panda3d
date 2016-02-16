@@ -16,7 +16,7 @@
 #ifdef HAVE_FREETYPE
 
 #undef interface  // I don't know where this symbol is defined, but it interferes with FreeType.
-#include FT_OUTLINE_H 
+#include FT_OUTLINE_H
 #ifdef FT_BBOX_H
 #include FT_BBOX_H
 #endif
@@ -47,14 +47,11 @@
 TypeHandle DynamicTextFont::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::Constructor
-//       Access: Published
-//  Description: The constructor expects the name of some font file
-//               that FreeType can read, along with face_index,
-//               indicating which font within the file to load
-//               (usually 0).
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor expects the name of some font file that FreeType can read,
+ * along with face_index, indicating which font within the file to load (usually
+ * 0).
+ */
 DynamicTextFont::
 DynamicTextFont(const Filename &font_filename, int face_index) {
   initialize();
@@ -73,13 +70,10 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
   _needs_image_processing = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::Constructor
-//       Access: Published
-//  Description: This constructor accepts a table of data representing
-//               the font file, loaded from some source other than a
-//               filename on disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor accepts a table of data representing the font file, loaded
+ * from some source other than a filename on disk.
+ */
 DynamicTextFont::
 DynamicTextFont(const char *font_data, int data_length, int face_index) {
   initialize();
@@ -98,11 +92,9 @@ DynamicTextFont(const char *font_data, int data_length, int face_index) {
   _needs_image_processing = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::Copy Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DynamicTextFont::
 DynamicTextFont(const DynamicTextFont &copy) :
   TextFont(copy),
@@ -126,63 +118,48 @@ DynamicTextFont(const DynamicTextFont &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DynamicTextFont::
 ~DynamicTextFont() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::make_copy
-//       Access: Published
-//  Description: Returns a new copy of the same font.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new copy of the same font.
+ */
 PT(TextFont) DynamicTextFont::
 make_copy() const {
   return new DynamicTextFont(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::get_num_pages
-//       Access: Published
-//  Description: Returns the number of pages associated with the font.
-//               Initially, the font has zero pages; when the first
-//               piece of text is rendered with the font, it will add
-//               additional pages as needed.  Each page is a Texture
-//               object that contains the images for each of the
-//               glyphs currently in use somewhere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of pages associated with the font.  Initially, the font
+ * has zero pages; when the first piece of text is rendered with the font, it
+ * will add additional pages as needed.  Each page is a Texture object that
+ * contains the images for each of the glyphs currently in use somewhere.
+ */
 int DynamicTextFont::
 get_num_pages() const {
   return _pages.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::get_page
-//       Access: Published
-//  Description: Returns the nth page associated with the font.
-//               Initially, the font has zero pages; when the first
-//               piece of text is rendered with the font, it will add
-//               additional pages as needed.  Each page is a Texture
-//               object that contains the images for each of the
-//               glyphs currently in use somewhere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth page associated with the font.  Initially, the font has zero
+ * pages; when the first piece of text is rendered with the font, it will add
+ * additional pages as needed.  Each page is a Texture object that contains the
+ * images for each of the glyphs currently in use somewhere.
+ */
 DynamicTextPage *DynamicTextFont::
 get_page(int n) const {
   nassertr(n >= 0 && n < (int)_pages.size(), (DynamicTextPage *)NULL);
   return _pages[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::garbage_collect
-//       Access: Published
-//  Description: Removes all of the glyphs from the font that are no
-//               longer being used by any Geoms.  Returns the number
-//               of glyphs removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the glyphs from the font that are no longer being used by any
+ * Geoms.  Returns the number of glyphs removed.
+ */
 int DynamicTextFont::
 garbage_collect() {
   int removed_count = 0;
@@ -212,19 +189,13 @@ garbage_collect() {
   return removed_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::clear
-//       Access: Published
-//  Description: Drops all the glyphs out of the cache and frees any
-//               association with any previously-generated pages.
-//
-//               Calling this frequently can result in wasted texture
-//               memory, as any previously rendered text will still
-//               keep a pointer to the old, previously-generated
-//               pages.  As long as the previously rendered text
-//               remains around, the old pages will also remain
-//               around.
-////////////////////////////////////////////////////////////////////
+/**
+ * Drops all the glyphs out of the cache and frees any association with any
+ * previously-generated pages.  Calling this frequently can result in wasted
+ * texture memory, as any previously rendered text will still keep a pointer to
+ * the old, previously-generated pages.  As long as the previously rendered text
+ * remains around, the old pages will also remain around.
+ */
 void DynamicTextFont::
 clear() {
   _cache.clear();
@@ -232,30 +203,28 @@ clear() {
   _empty_glyphs.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DynamicTextFont::
 write(ostream &out, int indent_level) const {
   static const int max_glyph_name = 1024;
   char glyph_name[max_glyph_name];
 
   indent(out, indent_level)
-    << "DynamicTextFont " << get_name() << ", " 
+    << "DynamicTextFont " << get_name() << ", "
     << get_num_pages() << " pages, "
     << _cache.size() << " glyphs:\n";
   Cache::const_iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
     int glyph_index = (*ci).first;
     const TextGlyph *glyph = (*ci).second;
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << glyph_index;
 
     FT_Face face = acquire_face();
     if (FT_HAS_GLYPH_NAMES(face)) {
-      int error = FT_Get_Glyph_Name(face, glyph_index, 
+      int error = FT_Get_Glyph_Name(face, glyph_index,
                                     glyph_name, max_glyph_name);
 
       // Some fonts, notably MS Mincho, claim to have glyph names but
@@ -270,17 +239,13 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::get_glyph
-//       Access: Public, Virtual
-//  Description: Gets the glyph associated with the given character
-//               code, as well as an optional scaling parameter that
-//               should be applied to the glyph's geometry and advance
-//               parameters.  Returns true if the glyph exists, false
-//               if it does not.  Even if the return value is false,
-//               the value for glyph might be filled in with a
-//               printable glyph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the glyph associated with the given character code, as well as an
+ * optional scaling parameter that should be applied to the glyph's geometry and
+ * advance parameters.  Returns true if the glyph exists, false if it does not.
+ * Even if the return value is false, the value for glyph might be filled in
+ * with a printable glyph.
+ */
 bool DynamicTextFont::
 get_glyph(int character, CPT(TextGlyph) &glyph) {
   if (!_is_valid) {
@@ -313,12 +278,9 @@ get_glyph(int character, CPT(TextGlyph) &glyph) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::initialize
-//       Access: Private
-//  Description: Called from both constructors to set up some initial
-//               values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called from both constructors to set up some initial values.
+ */
 void DynamicTextFont::
 initialize() {
   _texture_margin = text_texture_margin;
@@ -342,13 +304,10 @@ initialize() {
   _preferred_page = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::update_filters
-//       Access: Private
-//  Description: Reapplies all current filter settings to all of the
-//               pages.  This is normally called whenever the filter
-//               settings change.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reapplies all current filter settings to all of the pages.  This is normally
+ * called whenever the filter settings change.
+ */
 void DynamicTextFont::
 update_filters() {
   Pages::iterator pi;
@@ -360,13 +319,10 @@ update_filters() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::determine_tex_format
-//       Access: Private
-//  Description: Examines the _fg, _bg, and _outline colors to
-//               determine the appropriate format for the font pages,
-//               including the outline properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Examines the _fg, _bg, and _outline colors to determine the appropriate
+ * format for the font pages, including the outline properties.
+ */
 void DynamicTextFont::
 determine_tex_format() {
   nassertv(get_num_pages() == 0);
@@ -392,7 +348,7 @@ determine_tex_format() {
     needs_grayscale = true;
   }
 
-  if (_fg[3] != 1.0f || _bg[3] != 1.0f || 
+  if (_fg[3] != 1.0f || _bg[3] != 1.0f ||
       (_has_outline && (_outline_color[3] != 1.0f))) {
     // fg, bg, and outline contain non-opaque alpha values.
     needs_alpha = true;
@@ -414,7 +370,7 @@ determine_tex_format() {
     if (needs_alpha) {
       _tex_format = Texture::F_alpha;
 
-      if (!_has_outline && 
+      if (!_has_outline &&
           _fg == LColor(1.0f, 1.0f, 1.0f, 1.0f) &&
           _bg == LColor(1.0f, 1.0f, 1.0f, 0.0f)) {
         // This is the standard font color.  It can be copied directly
@@ -429,14 +385,11 @@ determine_tex_format() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::make_glyph
-//       Access: Private
-//  Description: Slots a space in the texture map for the new
-//               character and renders the glyph, returning the
-//               newly-created TextGlyph object, or NULL if the
-//               glyph cannot be created for some reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * Slots a space in the texture map for the new character and renders the glyph,
+ * returning the newly-created TextGlyph object, or NULL if the glyph cannot be
+ * created for some reason.
+ */
 CPT(TextGlyph) DynamicTextFont::
 make_glyph(int character, FT_Face face, int glyph_index) {
   if (!load_glyph(face, glyph_index, false)) {
@@ -458,7 +411,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
   PN_stdfloat advance = slot->advance.x / 64.0;
   advance /= _font_pixels_per_unit;
 
-  if (_render_mode != RM_texture && 
+  if (_render_mode != RM_texture &&
       slot->format == ft_glyph_format_outline) {
     // Re-stroke the glyph to make it an outline glyph.
     /*
@@ -668,13 +621,10 @@ make_glyph(int character, FT_Face face, int glyph_index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::copy_bitmap_to_texture
-//       Access: Private
-//  Description: Copies a bitmap as rendered by FreeType directly into
-//               the texture memory image for the indicated glyph,
-//               without any scaling of pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a bitmap as rendered by FreeType directly into the texture memory
+ * image for the indicated glyph, without any scaling of pixels.
+ */
 void DynamicTextFont::
 copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
   if (bitmap.pixel_mode == ft_pixel_mode_grays && bitmap.num_grays == 256) {
@@ -682,13 +632,13 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
     // directly into our texture image, one row at a time.
     unsigned char *buffer_row = bitmap.buffer;
     for (int yi = 0; yi < bitmap.rows; yi++) {
-      
+
       unsigned char *texture_row = glyph->get_row(yi);
       nassertv(texture_row != (unsigned char *)NULL);
       memcpy(texture_row, buffer_row, bitmap.width);
       buffer_row += bitmap.pitch;
     }
-    
+
   } else if (bitmap.pixel_mode == ft_pixel_mode_mono) {
     // This is a little bit more work: we have to expand the
     // one-bit-per-pixel bitmap into a one-byte-per-pixel texture.
@@ -696,7 +646,7 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
     for (int yi = 0; yi < bitmap.rows; yi++) {
       unsigned char *texture_row = glyph->get_row(yi);
       nassertv(texture_row != (unsigned char *)NULL);
-      
+
       int bit = 0x80;
       unsigned char *b = buffer_row;
       for (int xi = 0; xi < bitmap.width; xi++) {
@@ -711,11 +661,11 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
           bit = 0x80;
         }
       }
-      
+
       buffer_row += bitmap.pitch;
     }
-    
-    
+
+
   } else if (bitmap.pixel_mode == ft_pixel_mode_grays) {
     // Here we must expand a grayscale pixmap with n levels of gray
     // into our 256-level texture.
@@ -728,19 +678,17 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
       }
       buffer_row += bitmap.pitch;
     }
-    
+
   } else {
     text_cat.error()
       << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::copy_pnmimage_to_texture
-//       Access: Private
-//  Description: Copies a bitmap stored in a PNMImage into
-//               the texture memory image for the indicated glyph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a bitmap stored in a PNMImage into the texture memory image for the
+ * indicated glyph.
+ */
 void DynamicTextFont::
 copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
   if (!_needs_image_processing) {
@@ -791,17 +739,14 @@ copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
     // color at this part of the texture was already initialized to
     // the background color.
     blend_pnmimage_to_texture(image, glyph, _fg);
-  }    
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::blend_pnmimage_to_texture
-//       Access: Private
-//  Description: Blends the PNMImage into the appropriate part of the
-//               texture, where 0.0 in the image indicates the color
-//               remains the same, and 1.0 indicates the color is
-//               assigned the indicated foreground color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blends the PNMImage into the appropriate part of the texture, where 0.0 in
+ * the image indicates the color remains the same, and 1.0 indicates the color
+ * is assigned the indicated foreground color.
+ */
 void DynamicTextFont::
 blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
                           const LColor &fg) {
@@ -872,15 +817,12 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::slot_glyph
-//       Access: Private
-//  Description: Chooses a page that will have room for a glyph of the
-//               indicated size (after expanding the indicated size by
-//               the current margin).  Returns the newly-allocated
-//               glyph on the chosen page; the glyph has not been
-//               filled in yet except with its size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Chooses a page that will have room for a glyph of the indicated size (after
+ * expanding the indicated size by the current margin).  Returns the newly-
+ * allocated glyph on the chosen page; the glyph has not been filled in yet
+ * except with its size.
+ */
 DynamicTextGlyph *DynamicTextFont::
 slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
   // Increase the indicated size by the current margin.
@@ -933,12 +875,10 @@ slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::render_wireframe_contours
-//       Access: Private
-//  Description: Converts from the _contours list to an actual glyph
-//               geometry, as a wireframe render.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts from the _contours list to an actual glyph geometry, as a wireframe
+ * render.
+ */
 void DynamicTextFont::
 render_wireframe_contours(TextGlyph *glyph) {
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -966,12 +906,10 @@ render_wireframe_contours(TextGlyph *glyph) {
   _contours.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::render_polygon_contours
-//       Access: Private
-//  Description: Converts from the _contours list to an actual glyph
-//               geometry, as a polygon render.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts from the _contours list to an actual glyph geometry, as a polygon
+ * render.
+ */
 void DynamicTextFont::
 render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -990,7 +928,7 @@ render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
     // determine which contours are solid and which are holes.
     for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
       Contour &contour = (*ci);
-      
+
       t.clear_polygon();
       contour._start_vertex = t.get_num_vertices();
       for (size_t i = 0; i < contour._points.size() - 1; ++i) {
@@ -1000,20 +938,20 @@ render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
         int vi = t.add_vertex(p[0], p[1]);
         t.add_polygon_vertex(vi);
       }
-      
+
       contour._is_solid = t.is_left_winding();
     }
 
     // Now go back and generate the actual triangles for the face.
     for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
       const Contour &contour = (*ci);
-      
+
       if (contour._is_solid && !contour._points.empty()) {
         t.clear_polygon();
         for (size_t i = 0; i < contour._points.size() - 1; ++i) {
           t.add_polygon_vertex(contour._start_vertex + i);
         }
-        
+
         // Also add all the holes to each polygon.
         Contours::iterator cj;
         for (cj = _contours.begin(); cj != _contours.end(); ++cj) {
@@ -1025,7 +963,7 @@ render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
             }
           }
         }
-        
+
         t.triangulate();
         int num_triangles = t.get_num_triangles();
         for (int ti = 0; ti < num_triangles; ++ti) {
@@ -1099,13 +1037,13 @@ render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
       // Now go back and generate the actual triangles for the face.
       for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
         const Contour &contour = (*ci);
-      
+
         if (contour._is_solid && !contour._points.empty()) {
           t.clear_polygon();
           for (size_t i = 0; i < contour._points.size() - 1; ++i) {
             t.add_polygon_vertex(contour._start_vertex + i);
           }
-        
+
           // Also add all the holes to each polygon.
           Contours::iterator cj;
           for (cj = _contours.begin(); cj != _contours.end(); ++cj) {
@@ -1117,7 +1055,7 @@ render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
               }
             }
           }
-        
+
           t.triangulate();
           int num_triangles = t.get_num_triangles();
           for (int ti = 0; ti < num_triangles; ++ti) {

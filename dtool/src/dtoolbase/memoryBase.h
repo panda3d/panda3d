@@ -57,23 +57,17 @@
 
 #endif  // USE_MEMORY_NOWRAPPERS
 
-////////////////////////////////////////////////////////////////////
-//       Class : MemoryBase
-// Description : This class is intended to be the base class of all
-//               objects in Panda that might be allocated and deleted
-//               via the new and delete operators.  It redefines these
-//               operators to provide some memory tracking support.
-//
-//               We used to try to override the global operator new
-//               and delete methods, but that seems to cause problems
-//               when including header files for C++-based system
-//               libraries (such as are found on OSX).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is intended to be the base class of all objects in Panda that
+ * might be allocated and deleted via the new and delete operators.  It
+ * redefines these operators to provide some memory tracking support.  We used
+ * to try to override the global operator new and delete methods, but that seems
+ * to cause problems when including header files for C++-based system libraries
+ * (such as are found on OSX).
+ */
 class EXPCL_DTOOL MemoryBase {
 public:
   ALLOC_MEMORY_BASE;
 };
 
 #endif
-
-

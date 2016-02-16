@@ -20,14 +20,12 @@
 #include "luse.h"
 #include "pset.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMorph
-// Description : A single <Dxyz> or <Duv> or some such entry.  This
-//               simply contains the morph name and the offset value.
-//               The class EggMorph is actually a template class on
-//               the type of value that is being offset; the specific
-//               kinds of morphs are instantiated from this below.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single <Dxyz> or <Duv> or some such entry.  This simply contains the morph
+ * name and the offset value.  The class EggMorph is actually a template class
+ * on the type of value that is being offset; the specific kinds of morphs are
+ * instantiated from this below.
+ */
 template<class Parameter>
 class EggMorph : public Namable {
 public:

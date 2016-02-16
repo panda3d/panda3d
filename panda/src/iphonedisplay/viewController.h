@@ -13,16 +13,16 @@
 
 #include "pandabase.h"
 
-#import <UIKit/UIKit.h> 
-#import <UIKit/UITextView.h> 
+#import <UIKit/UIKit.h>
+#import <UIKit/UITextView.h>
 
 class IPhoneGraphicsPipe;
 
-@interface ControllerDemoViewController : UIViewController { 
+@interface ControllerDemoViewController : UIViewController {
 
 @private
   IPhoneGraphicsPipe *_pipe;
-} 
+}
 
 - (id)initWithPipe: (IPhoneGraphicsPipe *)pipe;
-@end 
+@end

@@ -11,12 +11,9 @@
  * @date 2013-01-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidGraphicsStateGuardian::get_fb_properties
-//       Access: Private
-//  Description: Gets the FrameBufferProperties for all windows and
-//               buffers that use this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties for all windows and buffers that use this GSG.
+ */
 INLINE const FrameBufferProperties &AndroidGraphicsStateGuardian::
 get_fb_properties() const {
   return _fbprops;

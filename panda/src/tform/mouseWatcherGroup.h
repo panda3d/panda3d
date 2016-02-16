@@ -18,13 +18,11 @@
 #include "mouseWatcherBase.h"
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseWatcherGroup
-// Description : This represents a collection of MouseWatcherRegions
-//               that may be managed as a group.  The implementation
-//               for this is in MouseWatcherBase; this class exists
-//               so that we can inherit from ReferenceCount.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a collection of MouseWatcherRegions that may be managed as a
+ * group.  The implementation for this is in MouseWatcherBase; this class exists
+ * so that we can inherit from ReferenceCount.
+ */
 class EXPCL_PANDA_TFORM MouseWatcherGroup : public MouseWatcherBase,
                                             public ReferenceCount {
 public:

@@ -11,19 +11,17 @@
  * @date 2000-08-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_precomputed_linear_matrices
-//       Access: Protected
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const BaseIntegrator::MatrixVector &BaseIntegrator::
 get_precomputed_linear_matrices() const {
   return _precomputed_linear_matrices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_precomputed_angular_matrices
-//       Access: Protected
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const BaseIntegrator::MatrixVector &BaseIntegrator::
 get_precomputed_angular_matrices() const {
   return _precomputed_angular_matrices;

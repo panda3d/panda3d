@@ -25,14 +25,11 @@ class ModifierButtons;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonEventList
-// Description : Records a set of button events that happened
-//               recently.  This class is usually used only in the
-//               data graph, to transmit the recent button presses,
-//               but it may be used anywhere a list of ButtonEvents
-//               is desired.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a set of button events that happened recently.  This class is usually
+ * used only in the data graph, to transmit the recent button presses, but it
+ * may be used anywhere a list of ButtonEvents is desired.
+ */
 class EXPCL_PANDA_EVENT ButtonEventList : public ParamValueBase {
 public:
   INLINE ButtonEventList();
@@ -90,4 +87,3 @@ INLINE ostream &operator << (ostream &out, const ButtonEventList &buttonlist) {
 #include "buttonEventList.I"
 
 #endif
-

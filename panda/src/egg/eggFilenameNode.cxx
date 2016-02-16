@@ -15,11 +15,9 @@
 
 TypeHandle EggFilenameNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggFilenameNode::get_default_extension
-//       Access: Public, Virtual
-//  Description: Returns the default extension for this filename type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default extension for this filename type.
+ */
 string EggFilenameNode::
 get_default_extension() const {
   return string();

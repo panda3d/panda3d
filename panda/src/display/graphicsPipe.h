@@ -32,28 +32,18 @@ class Texture;
 class WindowHandle;
 class DisplayInformation;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsPipe
-// Description : An object to create GraphicsOutputs that share a
-//               particular 3-D API.  Normally, there will only be one
-//               GraphicsPipe in an application, although it is
-//               possible to have multiple of these at once if there
-//               are multiple different API's available in the same
-//               machine.
-//
-//               Often, the GraphicsPipe corresponds to a physical
-//               output device, hence the term "pipe", but this is not
-//               necessarily the case.
-//
-//               The GraphicsPipe is used by the GraphicsEngine object
-//               to create and destroy windows; it keeps ownership of
-//               the windows it creates.
-//
-//               M. Asad added new/interim functionality where GraphicsPipe
-//               now contains a device interface to directx/opengl which
-//               will be used to handle multiple windows from same device.
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * An object to create GraphicsOutputs that share a particular 3-D API.
+ * Normally, there will only be one GraphicsPipe in an application, although it
+ * is possible to have multiple of these at once if there are multiple different
+ * API's available in the same machine.  Often, the GraphicsPipe corresponds to
+ * a physical output device, hence the term "pipe", but this is not necessarily
+ * the case.  The GraphicsPipe is used by the GraphicsEngine object to create
+ * and destroy windows; it keeps ownership of the windows it creates.  M. Asad
+ * added new/interim functionality where GraphicsPipe now contains a device
+ * interface to directx/opengl which will be used to handle multiple windows
+ * from same device.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsPipe : public TypedReferenceCount {
 protected:
   GraphicsPipe();

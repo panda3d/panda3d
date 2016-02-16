@@ -19,10 +19,9 @@
 
 #include "config_physx.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSegment
-// Description : Represents a line segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a line segment.
+ */
 class EXPCL_PANDAPHYSX PhysxSegment {
 
 PUBLISHED:

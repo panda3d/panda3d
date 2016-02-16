@@ -18,10 +18,9 @@
 
 #include "fltGeometry.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltFace
-// Description : A single face bead, e.g. a polygon.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single face bead, e.g.  a polygon.
+ */
 class FltFace : public FltGeometry {
 public:
   FltFace(FltHeader *header);
@@ -52,5 +51,3 @@ private:
 #include "fltFace.I"
 
 #endif
-
-

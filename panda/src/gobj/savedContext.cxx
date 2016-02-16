@@ -16,21 +16,17 @@
 
 TypeHandle SavedContext::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SavedContext::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SavedContext::
 output(ostream &out) const {
   out << "SavedContext " << this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SavedContext::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SavedContext::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";

@@ -27,13 +27,10 @@
 #include "renderState.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::apply_transform_and_state
-//       Access: Published
-//  Description: Applies the transform and state from the current
-//               node onto the current data.  This also evaluates
-//               billboards, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the transform and state from the current node onto the current data.
+ * This also evaluates billboards, etc.
+ */
 void CullTraverserData::
 apply_transform_and_state(CullTraverser *trav) {
   CPT(RenderState) node_state = _node_reader.get_state();
@@ -54,13 +51,10 @@ apply_transform_and_state(CullTraverser *trav) {
                             _node_reader.get_off_clip_planes());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::apply_transform_and_state
-//       Access: Published
-//  Description: Applies the indicated transform and state changes
-//               (e.g. as extracted from a node) onto the current
-//               data.  This also evaluates billboards, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transform and state changes (e.g.  as extracted from a
+ * node) onto the current data.  This also evaluates billboards, etc.
+ */
 void CullTraverserData::
 apply_transform_and_state(CullTraverser *trav,
                           CPT(TransformState) node_transform,
@@ -113,11 +107,9 @@ apply_transform_and_state(CullTraverser *trav,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::is_in_view_impl
-//       Access: Private
-//  Description: The private implementation of is_in_view().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of is_in_view().
+ */
 bool CullTraverserData::
 is_in_view_impl() {
   const GeometricBoundingVolume *node_gbv = NULL;
@@ -221,13 +213,10 @@ is_in_view_impl() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::get_fake_view_frustum_cull_state
-//       Access: Private, Static
-//  Description: Returns a RenderState for rendering stuff in red
-//               wireframe, strictly for the fake_view_frustum_cull
-//               effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState for rendering stuff in red wireframe, strictly for the
+ * fake_view_frustum_cull effect.
+ */
 CPT(RenderState) CullTraverserData::
 get_fake_view_frustum_cull_state() {
 #ifdef NDEBUG

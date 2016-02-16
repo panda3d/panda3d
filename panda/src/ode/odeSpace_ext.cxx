@@ -31,12 +31,10 @@ extern Dtool_PyTypedObject Dtool_OdeQuadTreeSpace;
 
 PyObject *Extension<OdeSpace>::_python_callback = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeSpace::convert
-//       Access: Published
-//  Description: Do a sort of pseudo-downcast on this space in
-//               order to expose its specialized functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do a sort of pseudo-downcast on this space in order to expose its specialized
+ * functions.
+ */
 PyObject *Extension<OdeSpace>::
 convert() const {
   Dtool_PyTypedObject *class_type;

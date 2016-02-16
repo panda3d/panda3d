@@ -15,11 +15,9 @@
 
 TypeHandle AsyncTaskPause::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskPause::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AsyncTaskPause::
 AsyncTaskPause(double delay) :
   AsyncTask("pause")
@@ -27,14 +25,10 @@ AsyncTaskPause(double delay) :
   set_delay(delay);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskPause::do_task
-//       Access: Protected, Virtual
-//  Description: Override this function to do something useful for the
-//               task.
-//
-//               This function is called with the lock *not* held.
-////////////////////////////////////////////////////////////////////
+/**
+ * Override this function to do something useful for the task.  This function is
+ * called with the lock *not* held.
+ */
 AsyncTask::DoneStatus AsyncTaskPause::
 do_task() {
   return DS_pause;

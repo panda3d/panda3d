@@ -11,14 +11,14 @@
  * @date 2009-04-26
  */
 
-#import <UIKit/UIKit.h> 
+#import <UIKit/UIKit.h>
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
 using namespace std;
 
 #include "pnotify.h"
-    
+
 #ifdef LINK_ALL_STATIC
 extern "C" void initlibpandaexpress();
 extern "C" void initlibpanda();
@@ -27,12 +27,12 @@ extern "C" void initlibpandafx();
 extern "C" void initlibdirect();
 #endif  // LINK_ALL_STATIC
 
-//@class AppMFViewController; 
-@interface AppMFAppDelegate : NSObject <UIApplicationDelegate> { 
+//@class AppMFViewController;
+@interface AppMFAppDelegate : NSObject <UIApplicationDelegate> {
   NSString *app_directory;
   NSTimer *animationTimer;
   NSTimeInterval animationInterval;
-} 
+}
 @property (nonatomic, assign) NSString *app_directory;
 @property (nonatomic, assign) NSTimer *animationTimer;
 @property NSTimeInterval animationInterval;
@@ -41,9 +41,9 @@ extern "C" void initlibdirect();
 - (void)stopAnimation;
 - (void)drawView;
 
-@end 
+@end
 
-@implementation AppMFAppDelegate 
+@implementation AppMFAppDelegate
 
 @synthesize app_directory;
 @synthesize animationTimer;
@@ -51,7 +51,7 @@ extern "C" void initlibdirect();
 
 int startup = 0;
 
-- (void)applicationDidFinishLaunching: (UIApplication *)application { 
+- (void)applicationDidFinishLaunching: (UIApplication *)application {
   // Get the App bundle directory.
   NSBundle *bundle = [NSBundle mainBundle];
   if (bundle != nil) {
@@ -78,9 +78,9 @@ int startup = 0;
 
   animationInterval = 1.0 / 60.0;
   [self startAnimation];
-} 
+}
 
-- (void)applicationDidReceiveMemoryWarning: (UIApplication *)application { 
+- (void)applicationDidReceiveMemoryWarning: (UIApplication *)application {
   cerr << "applicationDidReceiveMemoryWarning\n";
 }
 
@@ -101,7 +101,7 @@ int startup = 0;
 
 
 - (void)setAnimationInterval:(NSTimeInterval)interval {
-    
+
     animationInterval = interval;
     if (animationTimer) {
         [self stopAnimation];
@@ -222,16 +222,16 @@ int startup = 0;
   Py_Finalize();
 }
 
-- (void)dealloc { 
-  [super dealloc]; 
-} 
+- (void)dealloc {
+  [super dealloc];
+}
 
-@end 
+@end
 
 extern "C" int main(int argc, char *argv[]);
 
 int
-main(int argc, char *argv[]) { 
+main(int argc, char *argv[]) {
   /*
   int logfile_fd = open("/tmp/foo.txt", O_WRONLY | O_CREAT | O_TRUNC, 0666);
   if (logfile_fd >= 0) {
@@ -242,11 +242,11 @@ main(int argc, char *argv[]) {
   */
 
   PyImport_FrozenModules = _PyImport_FrozenModules;
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; 
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-  /* Call with the name of our application delegate class */ 
-  int retVal = UIApplicationMain(argc, argv, nil, @"AppMFAppDelegate"); 
+  /* Call with the name of our application delegate class */
+  int retVal = UIApplicationMain(argc, argv, nil, @"AppMFAppDelegate");
 
-  [pool release]; 
-  return retVal; 
-} 
+  [pool release];
+  return retVal;
+}

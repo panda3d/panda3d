@@ -242,4 +242,3 @@ bool VertexElementArray::add_end_vertex_element(void) {
 
   return true;
 }
-

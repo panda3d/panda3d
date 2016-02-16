@@ -11,31 +11,25 @@
  * @date 2000-05-17
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionListenerData::operator ==
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ConnectionListenerData::
 operator == (const ConnectionListenerData &) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionListenerData::operator !=
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ConnectionListenerData::
 operator != (const ConnectionListenerData &) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionListenerData::operator <
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ConnectionListenerData::
 operator < (const ConnectionListenerData &) const {
   return false;

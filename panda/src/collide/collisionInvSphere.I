@@ -11,43 +11,34 @@
  * @date 2005-01-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CollisionInvSphere::
 CollisionInvSphere(const LPoint3 &center, PN_stdfloat radius) :
   CollisionSphere(center, radius)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CollisionInvSphere::
 CollisionInvSphere(PN_stdfloat cx, PN_stdfloat cy, PN_stdfloat cz, PN_stdfloat radius) :
   CollisionSphere(cx, cy, cz, radius)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::Default constructor
-//       Access: Protected
-//  Description: Creates an invalid sphere.  Only used when reading
-//               from a bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an invalid sphere.  Only used when reading from a bam file.
+ */
 INLINE CollisionInvSphere::
 CollisionInvSphere() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionInvSphere::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CollisionInvSphere::
 CollisionInvSphere(const CollisionInvSphere &copy) :
   CollisionSphere(copy)

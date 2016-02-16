@@ -24,20 +24,15 @@
 
 class MutexWin32Impl;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarWin32Impl
-// Description : Uses Windows native calls to implement a
-//               conditionVar.
-//
-//               The Windows native synchronization primitives don't
-//               actually implement a full POSIX-style condition
-//               variable, but the Event primitive does a fair job if
-//               we disallow notify_all() (POSIX broadcast).  See
-//               ConditionVarFullWin32Impl for a full implementation
-//               that includes notify_all().  This class is much
-//               simpler than that full implementation, so we can
-//               avoid the overhead required to support broadcast.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses Windows native calls to implement a conditionVar.  The Windows native
+ * synchronization primitives don't actually implement a full POSIX-style
+ * condition variable, but the Event primitive does a fair job if we disallow
+ * notify_all() (POSIX broadcast).  See ConditionVarFullWin32Impl for a full
+ * implementation that includes notify_all().  This class is much simpler than
+ * that full implementation, so we can avoid the overhead required to support
+ * broadcast.
+ */
 class EXPCL_PANDA_PIPELINE ConditionVarWin32Impl {
 public:
   INLINE ConditionVarWin32Impl(MutexWin32Impl &mutex);

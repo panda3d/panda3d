@@ -18,10 +18,9 @@
 
 class BamReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearDistanceForce
-// Description : Pure virtual class for sinks and sources
-////////////////////////////////////////////////////////////////////
+/**
+ * Pure virtual class for sinks and sources
+ */
 class EXPCL_PANDAPHYSICS LinearDistanceForce : public LinearForce {
 PUBLISHED:
   enum FalloffType {
@@ -39,7 +38,7 @@ PUBLISHED:
   INLINE LPoint3 get_force_center() const;
 
   INLINE PN_stdfloat get_scalar_term() const;
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

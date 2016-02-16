@@ -129,14 +129,12 @@ ConfigVariableDouble bullet_additional_damping_angular_threshold
 PRC_DESC("Only used when bullet-additional-damping is set to TRUE. "
          "Default value is 0.01."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libbullet
-//  Description: Initializes the library. This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used. Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libbullet() {
 
@@ -204,4 +202,3 @@ init_libbullet() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("Bullet");
 }
-

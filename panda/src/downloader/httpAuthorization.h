@@ -28,13 +28,11 @@
 
 class URLSpec;
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPAuthorization
-// Description : A base class for storing information used to fulfill
-//               authorization requests in the past, which can
-//               possibly be re-used for future requests to the same
-//               server.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for storing information used to fulfill authorization requests
+ * in the past, which can possibly be re-used for future requests to the same
+ * server.
+ */
 class EXPCL_PANDAEXPRESS HTTPAuthorization : public ReferenceCount {
 public:
   typedef pmap<string, string> Tokens;
@@ -62,8 +60,8 @@ public:
   static string base64_decode(const string &s);
 
 protected:
-  static size_t scan_quoted_or_unquoted_string(string &result, 
-                                               const string &source, 
+  static size_t scan_quoted_or_unquoted_string(string &result,
+                                               const string &source,
                                                size_t start);
 
 protected:
@@ -76,4 +74,3 @@ protected:
 #endif  // HAVE_OPENSSL
 
 #endif
-

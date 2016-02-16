@@ -19,14 +19,11 @@
 #include "mouseWatcherParameter.h"
 #include "typedWritableReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGMouseWatcherParameter
-// Description : This specialization on MouseWatcherParameter allows
-//               us to tag on additional elements to events for the
-//               gui system, and also inherits from
-//               TypedWritableReferenceCount so we can attach this thing to an
-//               event.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on MouseWatcherParameter allows us to tag on additional
+ * elements to events for the gui system, and also inherits from
+ * TypedWritableReferenceCount so we can attach this thing to an event.
+ */
 class EXPCL_PANDA_PGUI PGMouseWatcherParameter : public TypedWritableReferenceCount, public MouseWatcherParameter {
   // For now, this must inherit from TypedWritableReferenceCount on
   // the left, because MSVC++ wants to make that base class be the one

@@ -18,11 +18,9 @@
 #include "dxgsg9base.h"
 #include "indexBufferContext.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXIndexBufferContext9
-// Description : Caches a GeomPrimitive in the DirectX device as
-//               an index buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Caches a GeomPrimitive in the DirectX device as an index buffer.
+ */
 class EXPCL_PANDADX DXIndexBufferContext9 : public IndexBufferContext {
 public:
   DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data);

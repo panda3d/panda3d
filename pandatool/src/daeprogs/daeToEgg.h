@@ -19,11 +19,9 @@
 #include "somethingToEgg.h"
 #include "daeToEggConverter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DAEToEgg
-// Description : A program to read a DAE file and generate an egg
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a DAE file and generate an egg file.
+ */
 class DAEToEgg : public SomethingToEgg {
 public:
   DAEToEgg();

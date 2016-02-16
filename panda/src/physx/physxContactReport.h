@@ -18,11 +18,9 @@
 #include "pStatCollector.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxContactReport
-// Description : Implementation of the NxUserContactReport
-//               interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implementation of the NxUserContactReport interface.
+ */
 class EXPCL_PANDAPHYSX PhysxContactReport : public NxUserContactReport {
 
 public:

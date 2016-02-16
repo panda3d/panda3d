@@ -19,44 +19,36 @@
 
 PStatCollector PhysxTriggerReport::_pcollector("App:PhysX:Trigger Reporting");
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriggerReport::enable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriggerReport::
 enable() {
 
   _enabled = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriggerReport::disable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriggerReport::
 disable() {
 
   _enabled = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriggerReport::is_enabled
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxTriggerReport::
 is_enabled() const {
 
   return _enabled;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriggerReport::onTrigger
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriggerReport::
 onTrigger(NxShape &triggerShape, NxShape &otherShape, NxTriggerFlag status) {
 
@@ -89,4 +81,3 @@ onTrigger(NxShape &triggerShape, NxShape &otherShape, NxTriggerFlag status) {
 
   _pcollector.stop();
 }
-

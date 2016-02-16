@@ -31,14 +31,11 @@
 
 class NurbsCurveResult;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FreetypeFont
-// Description : This is a common base class for both DynamicTextFont
-//               and PNMTextMaker.  Both of these are utility classes
-//               that use the FreeType library to generate glyphs from
-//               fonts; this class abstracts out that common wrapper
-//               around FreeType.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a common base class for both DynamicTextFont and PNMTextMaker.  Both
+ * of these are utility classes that use the FreeType library to generate glyphs
+ * from fonts; this class abstracts out that common wrapper around FreeType.
+ */
 class EXPCL_PANDA_PNMTEXT FreetypeFont : public Namable {
 protected:
   FreetypeFont();

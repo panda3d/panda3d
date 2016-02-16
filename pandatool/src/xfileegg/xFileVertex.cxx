@@ -16,11 +16,9 @@
 #include "eggPrimitive.h"
 #include "config_xfile.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileVertex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileVertex::
 XFileVertex() {
   _has_color = false;
@@ -30,11 +28,9 @@ XFileVertex() {
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileVertex::set_from_egg
-//       Access: Public
-//  Description: Sets the structure up from the indicated egg data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the structure up from the indicated egg data.
+ */
 void XFileVertex::
 set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   LVertexd pos = egg_vertex->get_pos3();
@@ -75,11 +71,9 @@ set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileVertex::compare_to
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int XFileVertex::
 compare_to(const XFileVertex &other) const {
   int ct;

@@ -21,10 +21,9 @@
 #include "ode_includes.h"
 #include "odeGeom.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeCappedCylinderGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeCappedCylinderGeom : public OdeGeom {
   friend class OdeGeom;
 

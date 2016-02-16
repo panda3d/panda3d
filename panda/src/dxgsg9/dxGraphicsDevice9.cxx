@@ -15,11 +15,9 @@
 #include "dxGraphicsDevice9.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsDevice9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXGraphicsDevice9::
 DXGraphicsDevice9(wdxGraphicsPipe9 *pipe) :
   GraphicsDevice(pipe) {
@@ -29,11 +27,9 @@ DXGraphicsDevice9(wdxGraphicsPipe9 *pipe) :
   _swap_chain = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsDevice9::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXGraphicsDevice9::
 ~DXGraphicsDevice9() {
 }

@@ -20,11 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AntialiasAttrib
-// Description : Specifies whether or how to enable antialiasing, if
-//               supported by the backend renderer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether or how to enable antialiasing, if supported by the backend
+ * renderer.
+ */
 class EXPCL_PANDA_PGRAPH AntialiasAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -98,4 +97,3 @@ private:
 #include "antialiasAttrib.I"
 
 #endif
-

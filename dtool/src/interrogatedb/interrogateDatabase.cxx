@@ -22,11 +22,9 @@ int InterrogateDatabase::_file_minor_version = 0;
 int InterrogateDatabase::_current_major_version = 3;
 int InterrogateDatabase::_current_minor_version = 1;
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterrogateDatabase::
 InterrogateDatabase() {
   _error_flag = false;
@@ -34,12 +32,9 @@ InterrogateDatabase() {
   _lookups_fresh = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_ptr
-//       Access: Private
-//  Description: Returns the global pointer to the one
-//               InterrogateDatabase.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the global pointer to the one InterrogateDatabase.
+ */
 InterrogateDatabase *InterrogateDatabase::
 get_ptr() {
   if (_global_ptr == (InterrogateDatabase *)NULL) {
@@ -52,15 +47,12 @@ get_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::request_module
-//       Access: Public
-//  Description: Requests that the interrogate data for the given
-//               module be made available.  The function pointers will
-//               be made available immediately, while the database
-//               file will be read later, the next time someone asks
-//               for interrogate data that requires it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Requests that the interrogate data for the given module be made available.
+ * The function pointers will be made available immediately, while the database
+ * file will be read later, the next time someone asks for interrogate data that
+ * requires it.
+ */
 void InterrogateDatabase::
 request_module(InterrogateModuleDef *def) {
   if (interrogatedb_cat->is_debug()) {
@@ -98,41 +90,31 @@ request_module(InterrogateModuleDef *def) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_error_flag
-//       Access: Public
-//  Description: Returns the global error flag.  This will be set true
-//               if there was some problem importing the database
-//               (e.g. cannot find an .in file), or false if
-//               everything is ok.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the global error flag.  This will be set true if there was some
+ * problem importing the database (e.g.  cannot find an .in file), or false if
+ * everything is ok.
+ */
 bool InterrogateDatabase::
 get_error_flag() {
   return _error_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_num_global_types
-//       Access: Public
-//  Description: Returns the total number of "global" types known to
-//               the interrogate database.  These are types defined at
-//               the global level that should be considered for
-//               exporting, but not the incidental types (like
-//               pointers, etc.) that must be defined to support
-//               these.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of "global" types known to the interrogate database.
+ * These are types defined at the global level that should be considered for
+ * exporting, but not the incidental types (like pointers, etc.) that must be
+ * defined to support these.
+ */
 int InterrogateDatabase::
 get_num_global_types() {
   check_latest();
   return _global_types.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_global_type
-//       Access: Public
-//  Description: Returns the index of the nth global type known to the
-//               interrogate database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the nth global type known to the interrogate database.
+ */
 TypeIndex InterrogateDatabase::
 get_global_type(int n) {
   check_latest();
@@ -142,26 +124,20 @@ get_global_type(int n) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_num_all_types
-//       Access: Public
-//  Description: Returns the total number of types known to the
-//               interrogate database.  This includes all known types,
-//               global as well as incidental.  See also
-//               get_num_global_types().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of types known to the interrogate database.  This
+ * includes all known types, global as well as incidental.  See also
+ * get_num_global_types().
+ */
 int InterrogateDatabase::
 get_num_all_types() {
   check_latest();
   return _all_types.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_all_type
-//       Access: Public
-//  Description: Returns the index of the nth type known to the
-//               interrogate database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the nth type known to the interrogate database.
+ */
 TypeIndex InterrogateDatabase::
 get_all_type(int n) {
   check_latest();
@@ -171,26 +147,21 @@ get_all_type(int n) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_num_global_functions
-//       Access: Public
-//  Description: Returns the total number of global functions known to
-//               the interrogate database.  These are functions
-//               defined at the global level, e.g. non-member
-//               functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of global functions known to the interrogate
+ * database.  These are functions defined at the global level, e.g.  non-member
+ * functions.
+ */
 int InterrogateDatabase::
 get_num_global_functions() {
   check_latest();
   return _global_functions.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_global_function
-//       Access: Public
-//  Description: Returns the index of the nth global function known to
-//               the interrogate database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the nth global function known to the interrogate
+ * database.
+ */
 FunctionIndex InterrogateDatabase::
 get_global_function(int n) {
   check_latest();
@@ -200,26 +171,20 @@ get_global_function(int n) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_num_all_functions
-//       Access: Public
-//  Description: Returns the total number of functions known to the
-//               interrogate database.  This includes all known
-//               functions, global, method, or synthesized.  See also
-//               get_num_global_functions().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of functions known to the interrogate database.
+ * This includes all known functions, global, method, or synthesized.  See also
+ * get_num_global_functions().
+ */
 int InterrogateDatabase::
 get_num_all_functions() {
   check_latest();
   return _all_functions.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_all_function
-//       Access: Public
-//  Description: Returns the index of the nth function known to the
-//               interrogate database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the nth function known to the interrogate database.
+ */
 FunctionIndex InterrogateDatabase::
 get_all_function(int n) {
   check_latest();
@@ -229,24 +194,20 @@ get_all_function(int n) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_num_global_manifests
-//       Access: Public
-//  Description: Returns the total number of global manifest constants
-//               known to the interrogate database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of global manifest constants known to the
+ * interrogate database.
+ */
 int InterrogateDatabase::
 get_num_global_manifests() {
   check_latest();
   return _global_manifests.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_global_manifest
-//       Access: Public
-//  Description: Returns the index of the nth global manifest constant
-//               known to the interrogate database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the nth global manifest constant known to the
+ * interrogate database.
+ */
 ManifestIndex InterrogateDatabase::
 get_global_manifest(int n) {
   check_latest();
@@ -256,24 +217,20 @@ get_global_manifest(int n) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_num_global_elements
-//       Access: Public
-//  Description: Returns the total number of global data elements
-//               known to the interrogate database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of global data elements known to the interrogate
+ * database.
+ */
 int InterrogateDatabase::
 get_num_global_elements() {
   check_latest();
   return _global_elements.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_global_element
-//       Access: Public
-//  Description: Returns the index of the nth global data element
-//               known to the interrogate database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the nth global data element known to the interrogate
+ * database.
+ */
 ElementIndex InterrogateDatabase::
 get_global_element(int n) {
   check_latest();
@@ -283,12 +240,9 @@ get_global_element(int n) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_type
-//       Access: Public
-//  Description: Returns the type associated with the given TypeIndex,
-//               if there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type associated with the given TypeIndex, if there is one.
+ */
 const InterrogateType &InterrogateDatabase::
 get_type(TypeIndex type) {
   static InterrogateType bogus_type;
@@ -302,12 +256,10 @@ get_type(TypeIndex type) {
   return (*ti).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_function
-//       Access: Public
-//  Description: Returns the function associated with the given
-//               FunctionIndex, if there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the function associated with the given FunctionIndex, if there is
+ * one.
+ */
 const InterrogateFunction &InterrogateDatabase::
 get_function(FunctionIndex function) {
   static InterrogateFunction bogus_function;
@@ -321,12 +273,10 @@ get_function(FunctionIndex function) {
   return *(*fi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_wrapper
-//       Access: Public
-//  Description: Returns the function wrapper associated with the
-//               given FunctionWrapperIndex, if there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the function wrapper associated with the given FunctionWrapperIndex,
+ * if there is one.
+ */
 const InterrogateFunctionWrapper &InterrogateDatabase::
 get_wrapper(FunctionWrapperIndex wrapper) {
   static InterrogateFunctionWrapper bogus_wrapper;
@@ -340,12 +290,10 @@ get_wrapper(FunctionWrapperIndex wrapper) {
   return (*wi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_manifest
-//       Access: Public
-//  Description: Returns the manifest constant associated with the
-//               given ManifestIndex, if there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the manifest constant associated with the given ManifestIndex, if
+ * there is one.
+ */
 const InterrogateManifest &InterrogateDatabase::
 get_manifest(ManifestIndex manifest) {
   static InterrogateManifest bogus_manifest;
@@ -359,12 +307,10 @@ get_manifest(ManifestIndex manifest) {
   return (*mi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_element
-//       Access: Public
-//  Description: Returns the data element associated with the
-//               given ElementIndex, if there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the data element associated with the given ElementIndex, if there is
+ * one.
+ */
 const InterrogateElement &InterrogateDatabase::
 get_element(ElementIndex element) {
   static InterrogateElement bogus_element;
@@ -378,12 +324,9 @@ get_element(ElementIndex element) {
   return (*ei).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_make_seq
-//       Access: Public
-//  Description: Returns the make_seq associated with the given
-//               MakeSeqIndex, if there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the make_seq associated with the given MakeSeqIndex, if there is one.
+ */
 const InterrogateMakeSeq &InterrogateDatabase::
 get_make_seq(MakeSeqIndex make_seq) {
   static InterrogateMakeSeq bogus_make_seq;
@@ -397,24 +340,18 @@ get_make_seq(MakeSeqIndex make_seq) {
   return (*si).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::remove_type
-//       Access: Public
-//  Description: Erases the type from the database.
-////////////////////////////////////////////////////////////////////
+/**
+ * Erases the type from the database.
+ */
 void InterrogateDatabase::
 remove_type(TypeIndex type) {
   _type_map.erase(type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_fptr
-//       Access: Public
-//  Description: Returns the function pointer associated with the
-//               given function wrapper, if it has a pointer
-//               available.  Returns NULL if the pointer is not
-//               available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the function pointer associated with the given function wrapper, if
+ * it has a pointer available.  Returns NULL if the pointer is not available.
+ */
 void *InterrogateDatabase::
 get_fptr(FunctionWrapperIndex wrapper) {
   InterrogateModuleDef *def;
@@ -427,14 +364,11 @@ get_fptr(FunctionWrapperIndex wrapper) {
   return (void *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_wrapper_by_unique_name
-//       Access: Public
-//  Description: Looks up the function wrapper corresponding to the
-//               given unique name, if available.  Returns the
-//               corresponding wrapper index, or 0 if no such
-//               wrapper is found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the function wrapper corresponding to the given unique name, if
+ * available.  Returns the corresponding wrapper index, or 0 if no such wrapper
+ * is found.
+ */
 FunctionWrapperIndex InterrogateDatabase::
 get_wrapper_by_unique_name(const string &unique_name) {
   // First, split the unique_name into a library_hash_name and a
@@ -463,82 +397,63 @@ get_wrapper_by_unique_name(const string &unique_name) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_file_major_version
-//       Access: Public
-//  Description: Returns the major version number of the interrogate
-//               database file currently being read.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the major version number of the interrogate database file currently
+ * being read.
+ */
 int InterrogateDatabase::
 get_file_major_version() {
   return _file_major_version;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_file_minor_version
-//       Access: Public
-//  Description: Returns the minor version number of the interrogate
-//               database file currently being read.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the minor version number of the interrogate database file currently
+ * being read.
+ */
 int InterrogateDatabase::
 get_file_minor_version() {
   return _file_minor_version;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_current_major_version
-//       Access: Public
-//  Description: Returns the major version number currently expected
-//               in interrogate database files generated by this code
-//               base.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the major version number currently expected in interrogate database
+ * files generated by this code base.
+ */
 int InterrogateDatabase::
 get_current_major_version() {
   return _current_major_version;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_current_minor_version
-//       Access: Public
-//  Description: Returns the minor version number currently expected
-//               in interrogate database files generated by this code
-//               base.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the minor version number currently expected in interrogate database
+ * files generated by this code base.
+ */
 int InterrogateDatabase::
 get_current_minor_version() {
   return _current_minor_version;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::set_error_flag
-//       Access: Public
-//  Description: Sets the global error flag.  This should be set true
-//               if there was some problem importing the database
-//               (e.g. cannot find an .in file).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the global error flag.  This should be set true if there was some
+ * problem importing the database (e.g.  cannot find an .in file).
+ */
 void InterrogateDatabase::
 set_error_flag(bool error_flag) {
   _error_flag = error_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::get_next_index
-//       Access: Public
-//  Description: Returns a new index number suitable for the next
-//               thing, that will not be shared with any other index
-//               numbers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new index number suitable for the next thing, that will not be
+ * shared with any other index numbers.
+ */
 int InterrogateDatabase::
 get_next_index() {
   return _next_index++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::add_type
-//       Access: Public
-//  Description: Adds the indicated type to the database at the given
-//               index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated type to the database at the given index number.
+ */
 void InterrogateDatabase::
 add_type(TypeIndex index, const InterrogateType &type) {
   assert(index != 0);
@@ -562,12 +477,9 @@ add_type(TypeIndex index, const InterrogateType &type) {
   _all_types.push_back(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::add_function
-//       Access: Public
-//  Description: Adds the indicated function to the database at
-//               the given index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated function to the database at the given index number.
+ */
 void InterrogateDatabase::
 add_function(FunctionIndex index, InterrogateFunction *function) {
   bool inserted =
@@ -580,12 +492,10 @@ add_function(FunctionIndex index, InterrogateFunction *function) {
   _all_functions.push_back(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::add_wrapper
-//       Access: Public
-//  Description: Adds the indicated function wrapper to the database at
-//               the given index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated function wrapper to the database at the given index
+ * number.
+ */
 void InterrogateDatabase::
 add_wrapper(FunctionWrapperIndex index,
             const InterrogateFunctionWrapper &wrapper) {
@@ -594,12 +504,10 @@ add_wrapper(FunctionWrapperIndex index,
   assert(inserted);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::add_manifest
-//       Access: Public
-//  Description: Adds the indicated manifest constant to the database
-//               at the given index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated manifest constant to the database at the given index
+ * number.
+ */
 void InterrogateDatabase::
 add_manifest(ManifestIndex index, const InterrogateManifest &manifest) {
   bool inserted =
@@ -609,12 +517,9 @@ add_manifest(ManifestIndex index, const InterrogateManifest &manifest) {
   _global_manifests.push_back(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::add_element
-//       Access: Public
-//  Description: Adds the indicated data element to the database
-//               at the given index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated data element to the database at the given index number.
+ */
 void InterrogateDatabase::
 add_element(ElementIndex index, const InterrogateElement &element) {
   bool inserted =
@@ -626,12 +531,9 @@ add_element(ElementIndex index, const InterrogateElement &element) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::add_make_seq
-//       Access: Public
-//  Description: Adds the indicated make_seq to the database at
-//               the given index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated make_seq to the database at the given index number.
+ */
 void InterrogateDatabase::
 add_make_seq(MakeSeqIndex index, const InterrogateMakeSeq &make_seq) {
   bool inserted =
@@ -639,12 +541,10 @@ add_make_seq(MakeSeqIndex index, const InterrogateMakeSeq &make_seq) {
   assert(inserted);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::update_type
-//       Access: Public
-//  Description: Returns a non-const reference to the indicated type,
-//               allowing the user to update it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a non-const reference to the indicated type, allowing the user to
+ * update it.
+ */
 InterrogateType &InterrogateDatabase::
 update_type(TypeIndex type) {
   assert(type != 0);
@@ -652,90 +552,73 @@ update_type(TypeIndex type) {
   return _type_map[type];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::update_function
-//       Access: Public
-//  Description: Returns a non-const reference to the indicated
-//               function, allowing the user to update it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a non-const reference to the indicated function, allowing the user to
+ * update it.
+ */
 InterrogateFunction &InterrogateDatabase::
 update_function(FunctionIndex function) {
   check_latest();
   return *_function_map[function];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::update_wrapper
-//       Access: Public
-//  Description: Returns a non-const reference to the indicated
-//               function wrapper, allowing the user to update it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a non-const reference to the indicated function wrapper, allowing the
+ * user to update it.
+ */
 InterrogateFunctionWrapper &InterrogateDatabase::
 update_wrapper(FunctionWrapperIndex wrapper) {
   check_latest();
   return _wrapper_map[wrapper];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::update_manifest
-//       Access: Public
-//  Description: Returns a non-const reference to the indicated
-//               manifest constant, allowing the user to update it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a non-const reference to the indicated manifest constant, allowing
+ * the user to update it.
+ */
 InterrogateManifest &InterrogateDatabase::
 update_manifest(ManifestIndex manifest) {
   check_latest();
   return _manifest_map[manifest];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::update_element
-//       Access: Public
-//  Description: Returns a non-const reference to the indicated
-//               data element, allowing the user to update it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a non-const reference to the indicated data element, allowing the
+ * user to update it.
+ */
 InterrogateElement &InterrogateDatabase::
 update_element(ElementIndex element) {
   check_latest();
   return _element_map[element];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::update_make_seq
-//       Access: Public
-//  Description: Returns a non-const reference to the indicated
-//               make_seq, allowing the user to update it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a non-const reference to the indicated make_seq, allowing the user to
+ * update it.
+ */
 InterrogateMakeSeq &InterrogateDatabase::
 update_make_seq(MakeSeqIndex make_seq) {
   check_latest();
   return _make_seq_map[make_seq];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::remap_indices
-//       Access: Public
-//  Description: Resequences all of the various index numbers so that
-//               all of the functions start at first_index and
-//               increment consecutively from there, and then all of
-//               the types follow.  Returns the next available index
-//               number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resequences all of the various index numbers so that all of the functions
+ * start at first_index and increment consecutively from there, and then all of
+ * the types follow.  Returns the next available index number.
+ */
 int InterrogateDatabase::
 remap_indices(int first_index) {
   IndexRemapper remap;
   return remap_indices(first_index, remap);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::remap_indices
-//       Access: Public
-//  Description: This flavor of remap_indices() accepts a map that
-//               should be empty on initial call, and will be filled
-//               with the mapping of old index number to new index
-//               number.  This allows the caller to update its own
-//               data structures to match the new index numbers.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of remap_indices() accepts a map that should be empty on initial
+ * call, and will be filled with the mapping of old index number to new index
+ * number.  This allows the caller to update its own data structures to match
+ * the new index numbers.
+ */
 int InterrogateDatabase::
 remap_indices(int first_index, IndexRemapper &remap) {
   remap.clear();
@@ -848,12 +731,9 @@ remap_indices(int first_index, IndexRemapper &remap) {
   return _next_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::write
-//       Access: Public
-//  Description: Writes the database to the indicated stream for later
-//               reading.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the database to the indicated stream for later reading.
+ */
 void InterrogateDatabase::
 write(ostream &out, InterrogateModuleDef *def) const {
   // Write out the file header.
@@ -905,19 +785,13 @@ write(ostream &out, InterrogateModuleDef *def) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::read
-//       Access: Public
-//  Description: Reads a database from the indicated stream,
-//               associated with the indicated module definition and
-//               merges it with any existing data in the database,
-//               according to the expected index numbers specified in
-//               the module def.  The header information has already
-//               been read.
-//
-//               Returns true if the file is read successfully, false
-//               if there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a database from the indicated stream, associated with the indicated
+ * module definition and merges it with any existing data in the database,
+ * according to the expected index numbers specified in the module def.  The
+ * header information has already been read.  Returns true if the file is read
+ * successfully, false if there is an error.
+ */
 bool InterrogateDatabase::
 read(istream &in, InterrogateModuleDef *def) {
   InterrogateDatabase temp;
@@ -942,11 +816,9 @@ read(istream &in, InterrogateModuleDef *def) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::load_latest
-//       Access: Private
-//  Description: Reads in the latest interrogate data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in the latest interrogate data.
+ */
 void InterrogateDatabase::
 load_latest() {
   const DSearchPath &searchpath = interrogatedb_path;
@@ -1021,14 +893,11 @@ load_latest() {
   _requests.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::read_new
-//       Access: Private
-//  Description: Reads from the indicated stream (the header
-//               information has already been read) into the
-//               newly-created database.  It is an error if the
-//               database already has some data in it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads from the indicated stream (the header information has already been
+ * read) into the newly-created database.  It is an error if the database
+ * already has some data in it.
+ */
 bool InterrogateDatabase::
 read_new(istream &in, InterrogateModuleDef *def) {
   // We've already read the header.  Read the module definition.
@@ -1162,13 +1031,10 @@ read_new(istream &in, InterrogateModuleDef *def) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::merge_from
-//       Access: Private
-//  Description: Copies all the data from the indicated database into
-//               this one.  It is an error if any index numbers are
-//               shared between the two databases.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies all the data from the indicated database into this one.  It is an
+ * error if any index numbers are shared between the two databases.
+ */
 void InterrogateDatabase::
 merge_from(const InterrogateDatabase &other) {
   // We want to collapse shared types together.
@@ -1286,18 +1152,13 @@ merge_from(const InterrogateDatabase &other) {
   _lookups_fresh = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::find_module
-//       Access: Private
-//  Description: Looks up the wrapper definition in the set of module
-//               defs that are loaded in at runtime and represent the
-//               part of the interrogate database that's compiled in.
-//
-//               If the wrapper definition is not found, returns
-//               false.  If it is found, returns true and sets def and
-//               module_index to the particular module and the index
-//               within the module where the wrapper is defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the wrapper definition in the set of module defs that are loaded in
+ * at runtime and represent the part of the interrogate database that's compiled
+ * in.  If the wrapper definition is not found, returns false.  If it is found,
+ * returns true and sets def and module_index to the particular module and the
+ * index within the module where the wrapper is defined.
+ */
 bool InterrogateDatabase::
 find_module(FunctionWrapperIndex wrapper, InterrogateModuleDef *&def,
             int &module_index) {
@@ -1313,12 +1174,10 @@ find_module(FunctionWrapperIndex wrapper, InterrogateModuleDef *&def,
   return (wrapper < def->next_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::binary_search_module
-//       Access: Private
-//  Description: Searches for the function module that includes the
-//               given function index by binary search.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the function module that includes the given function index by
+ * binary search.
+ */
 int InterrogateDatabase::
 binary_search_module(int begin, int end, FunctionIndex function) {
   int mid = begin + (end - begin) / 2;
@@ -1335,13 +1194,11 @@ binary_search_module(int begin, int end, FunctionIndex function) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::binary_search_wrapper_hash
-//       Access: Private
-//  Description: Searches for the particular function wrapper's hash
-//               name within a given module.  Returns the index number
-//               local to the module, or -1 if it is not found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for the particular function wrapper's hash name within a given
+ * module.  Returns the index number local to the module, or -1 if it is not
+ * found.
+ */
 int InterrogateDatabase::
 binary_search_wrapper_hash(InterrogateUniqueNameDef *begin,
                            InterrogateUniqueNameDef *end,
@@ -1363,11 +1220,9 @@ binary_search_wrapper_hash(InterrogateUniqueNameDef *begin,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::freshen_types_by_name
-//       Access: Private
-//  Description: Builds up the lookup of types by name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up the lookup of types by name.
+ */
 void InterrogateDatabase::
 freshen_types_by_name() {
   _types_by_name.clear();
@@ -1377,11 +1232,9 @@ freshen_types_by_name() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::freshen_types_by_scoped_name
-//       Access: Private
-//  Description: Builds up the lookup of types by scoped name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up the lookup of types by scoped name.
+ */
 void InterrogateDatabase::
 freshen_types_by_scoped_name() {
   _types_by_scoped_name.clear();
@@ -1391,11 +1244,9 @@ freshen_types_by_scoped_name() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::freshen_types_by_true_name
-//       Access: Private
-//  Description: Builds up the lookup of types by true name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up the lookup of types by true name.
+ */
 void InterrogateDatabase::
 freshen_types_by_true_name() {
   _types_by_true_name.clear();
@@ -1405,11 +1256,9 @@ freshen_types_by_true_name() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::freshen_manifests_by_name
-//       Access: Private
-//  Description: Builds up the lookup of manifests by name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up the lookup of manifests by name.
+ */
 void InterrogateDatabase::
 freshen_manifests_by_name() {
   _manifests_by_name.clear();
@@ -1419,11 +1268,9 @@ freshen_manifests_by_name() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::freshen_elements_by_name
-//       Access: Private
-//  Description: Builds up the lookup of elements by name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up the lookup of elements by name.
+ */
 void InterrogateDatabase::
 freshen_elements_by_name() {
   _elements_by_name.clear();
@@ -1433,11 +1280,9 @@ freshen_elements_by_name() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::freshen_elements_by_scoped_name
-//       Access: Private
-//  Description: Builds up the lookup of elements by scoped name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up the lookup of elements by scoped name.
+ */
 void InterrogateDatabase::
 freshen_elements_by_scoped_name() {
   _elements_by_scoped_name.clear();
@@ -1447,13 +1292,10 @@ freshen_elements_by_scoped_name() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateDatabase::lookup
-//       Access: Private
-//  Description: Looks up a type, manifest, or element in the
-//               indicated lookup table by name.  This is an internal
-//               support function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up a type, manifest, or element in the indicated lookup table by name.
+ * This is an internal support function.
+ */
 int InterrogateDatabase::
 lookup(const string &name, Lookup &lookup, LookupType type,
        void (InterrogateDatabase::*freshen)()) {

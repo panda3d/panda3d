@@ -25,13 +25,11 @@ typedef pset<PartBundle *> PartBundles;
 typedef pmap<string, PartBundles> Parts;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: bind_anims
-//  Description: A support function for auto_bind(), below.  Given a
-//               set of AnimBundles and a set of PartBundles that all
-//               share the same name, perform whatever bindings make
-//               sense.
-////////////////////////////////////////////////////////////////////
+/**
+ * A support function for auto_bind(), below.  Given a set of AnimBundles and a
+ * set of PartBundles that all share the same name, perform whatever bindings
+ * make sense.
+ */
 static void
 bind_anims(const PartBundles &parts, const AnimBundles &anims,
            AnimControlCollection &controls,
@@ -84,13 +82,11 @@ bind_anims(const PartBundles &parts, const AnimBundles &anims,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: r_find_bundles
-//  Description: A support function for auto_bind(), below.  Walks
-//               through the hierarchy and finds all of the
-//               PartBundles and AnimBundles.
-////////////////////////////////////////////////////////////////////
-static void 
+/**
+ * A support function for auto_bind(), below.  Walks through the hierarchy and
+ * finds all of the PartBundles and AnimBundles.
+ */
+static void
 r_find_bundles(PandaNode *node, Anims &anims, Parts &parts) {
   if (node->is_of_type(AnimBundleNode::get_class_type())) {
     AnimBundleNode *bn = DCAST(AnimBundleNode, node);
@@ -114,25 +110,22 @@ r_find_bundles(PandaNode *node, Anims &anims, Parts &parts) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: auto_bind
-//  Description: Walks the scene graph or subgraph beginning at the
-//               indicated node, and attempts to bind any AnimBundles
-//               found to their matching PartBundles, when possible.
-//
-//               The list of all resulting AnimControls created is
-//               filled into controls.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the scene graph or subgraph beginning at the indicated node, and
+ * attempts to bind any AnimBundles found to their matching PartBundles, when
+ * possible.  The list of all resulting AnimControls created is filled into
+ * controls.
+ */
 void
 auto_bind(PandaNode *root_node, AnimControlCollection &controls,
           int hierarchy_match_flags) {
   // First, locate all the bundles in the subgraph.
-  Anims anims; 
+  Anims anims;
   AnimBundles extra_anims;
-  Parts parts; 
+  Parts parts;
   PartBundles extra_parts;
   r_find_bundles(root_node, anims, parts);
-  
+
   if (chan_cat.is_debug()) {
     int anim_count = 0;
     Anims::const_iterator ai;
@@ -222,7 +215,7 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
       }
       ++ai;
     }
-    
+
     while (pi != parts.end()) {
       // And here's a part with no matching anims.
       if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
@@ -233,10 +226,8 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
       }
       ++pi;
     }
-    
+
     bind_anims(extra_parts, extra_anims, controls,
                hierarchy_match_flags);
   }
 }
-
-

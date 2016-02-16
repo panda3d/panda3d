@@ -19,24 +19,19 @@
 
 TypeHandle FltCurve::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCurve::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltCurve::
 FltCurve(FltHeader *header) : FltBeadID(header) {
   _curve_type = CT_b_spline;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCurve::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltCurve::
 extract_record(FltRecordReader &reader) {
   if (!FltBeadID::extract_record(reader)) {
@@ -62,14 +57,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCurve::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltCurve::
 build_record(FltRecordWriter &writer) const {
   if (!FltBeadID::build_record(writer)) {

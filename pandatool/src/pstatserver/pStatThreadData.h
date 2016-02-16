@@ -24,16 +24,13 @@ class PStatCollectorDef;
 class PStatFrameData;
 class PStatClientData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatThreadData
-// Description : A collection of FrameData structures for
-//               recently-received frames within a particular thread.
-//               This holds the raw data as reported by the client,
-//               and it automatically handles frames received
-//               out-of-order or skipped.  You can ask for a
-//               particular frame by frame number or time and receive
-//               the data for the nearest frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * A collection of FrameData structures for recently-received frames within a
+ * particular thread.  This holds the raw data as reported by the client, and it
+ * automatically handles frames received out-of-order or skipped.  You can ask
+ * for a particular frame by frame number or time and receive the data for the
+ * nearest frame.
+ */
 class PStatThreadData : public ReferenceCount {
 public:
   PStatThreadData(const PStatClientData *client_data);
@@ -84,4 +81,3 @@ private:
 #include "pStatThreadData.I"
 
 #endif
-

@@ -17,17 +17,17 @@
 TypeHandle OdeContactJoint::_type_handle;
 
 OdeContactJoint::
-OdeContactJoint(dJointID id) : 
+OdeContactJoint(dJointID id) :
   OdeJoint(id) {
 }
 
 OdeContactJoint::
-OdeContactJoint(OdeWorld &world, const OdeContact &contact) : 
+OdeContactJoint(OdeWorld &world, const OdeContact &contact) :
   OdeJoint(dJointCreateContact(world.get_id(), 0, contact.get_contact_ptr())) {
 }
 
 OdeContactJoint::
-OdeContactJoint(OdeWorld &world, OdeJointGroup &joint_group, const OdeContact &contact) : 
+OdeContactJoint(OdeWorld &world, OdeJointGroup &joint_group, const OdeContact &contact) :
   OdeJoint(dJointCreateContact(world.get_id(), joint_group.get_id(), contact.get_contact_ptr())) {
 }
 

@@ -11,12 +11,9 @@
  * @date 2013-01-03
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ObjToEggConverter::VertexEntry::operator <
-//       Access: Public
-//  Description: Provides a unique but arbitrary ordering for
-//               VertexEntry objects in a map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides a unique but arbitrary ordering for VertexEntry objects in a map.
+ */
 INLINE bool ObjToEggConverter::VertexEntry::
 operator < (const VertexEntry &other) const {
   if (_vi != other._vi) {
@@ -38,23 +35,18 @@ operator < (const VertexEntry &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ObjToEggConverter::VertexEntry::operator ==
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool ObjToEggConverter::VertexEntry::
 operator == (const VertexEntry &other) const {
   return (_vi == other._vi && _vti == other._vti &&
           _vni == other._vni && _synth_vni == other._synth_vni);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ObjToEggConverter::VertexEntry::matches_except_normal
-//       Access: Public
-//  Description: Returns true if all the properties except _vni and _synth_vni
-//               are equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all the properties except _vni and _synth_vni are equivalent.
+ */
 INLINE bool ObjToEggConverter::VertexEntry::
 matches_except_normal(const VertexEntry &other) const {
   return (_vi == other._vi && _vti == other._vti);

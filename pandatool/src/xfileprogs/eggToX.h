@@ -24,12 +24,10 @@
 
 class Node;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToX
-// Description : A program to read in a egg file and write an
-//               equivalent, or nearly equivalent, DirectX-style "x"
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read in a egg file and write an equivalent, or nearly
+ * equivalent, DirectX-style "x" file.
+ */
 class EggToX : public EggToSomething {
 public:
   EggToX();

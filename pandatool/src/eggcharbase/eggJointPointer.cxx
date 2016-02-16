@@ -17,94 +17,69 @@
 TypeHandle EggJointPointer::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::add_frame
-//       Access: Public, Virtual
-//  Description: Appends a new frame onto the end of the data, if
-//               possible; returns true if not possible, or false
-//               otherwise (e.g. for a static joint).
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a new frame onto the end of the data, if possible; returns true if
+ * not possible, or false otherwise (e.g.  for a static joint).
+ */
 bool EggJointPointer::
 add_frame(const LMatrix4d &) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::move_vertices_to
-//       Access: Public, Virtual
-//  Description: Moves the vertices assigned to this joint into the
-//               other joint (which should be of the same type).
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the vertices assigned to this joint into the other joint (which should
+ * be of the same type).
+ */
 void EggJointPointer::
 move_vertices_to(EggJointPointer *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::do_rebuild
-//       Access: Public, Virtual
-//  Description: Rebuilds the entire table all at once, based on the
-//               frames added by repeated calls to add_rebuild_frame()
-//               since the last call to begin_rebuild().
-//
-//               Until do_rebuild() is called, the animation table is
-//               not changed.
-//
-//               The return value is true if all frames are
-//               acceptable, or false if there is some problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rebuilds the entire table all at once, based on the frames added by repeated
+ * calls to add_rebuild_frame() since the last call to begin_rebuild().  Until
+ * do_rebuild() is called, the animation table is not changed.  The return value
+ * is true if all frames are acceptable, or false if there is some problem.
+ */
 bool EggJointPointer::
 do_rebuild(EggCharacterDb &db) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::optimize
-//       Access: Public, Virtual
-//  Description: Resets the table before writing to disk so that
-//               redundant rows (e.g. i { 1 1 1 1 1 1 1 1 }) are
-//               collapsed out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the table before writing to disk so that redundant rows (e.g.  i { 1 1
+ * 1 1 1 1 1 1 }) are collapsed out.
+ */
 void EggJointPointer::
 optimize() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::expose
-//       Access: Public, Virtual
-//  Description: Flags the joint with the indicated DCS flag so that
-//               it will be loaded as a separate node in the player.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flags the joint with the indicated DCS flag so that it will be loaded as a
+ * separate node in the player.
+ */
 void EggJointPointer::
 expose(EggGroup::DCSType) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::zero_channels
-//       Access: Public, Virtual
-//  Description: Zeroes out the named components of the transform in
-//               the animation frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Zeroes out the named components of the transform in the animation frames.
+ */
 void EggJointPointer::
 zero_channels(const string &) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::quantize_channels
-//       Access: Public, Virtual
-//  Description: Rounds the named components of the transform to the
-//               nearest multiple of quantum.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rounds the named components of the transform to the nearest multiple of
+ * quantum.
+ */
 void EggJointPointer::
 quantize_channels(const string &, double) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggJointPointer::apply_default_pose
-//       Access: Public, Virtual
-//  Description: Applies the pose from the indicated frame of the
-//               indicated source joint as the initial pose for
-//               this joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the pose from the indicated frame of the indicated source joint as
+ * the initial pose for this joint.
+ */
 void EggJointPointer::
 apply_default_pose(EggJointPointer *source_joint, int frame) {
 }

@@ -15,11 +15,9 @@
 
 TypeHandle UserDataAudioCursor::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudioCursor::Constructor
-//       Access: 
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 UserDataAudioCursor::
 UserDataAudioCursor(UserDataAudio *src) :
   MovieAudioCursor(src)
@@ -35,29 +33,24 @@ UserDataAudioCursor(UserDataAudio *src) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudioCursor::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 UserDataAudioCursor::
 ~UserDataAudioCursor() {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
   source->_cursor = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudioCursor::read_samples
-//       Access: Private
-//  Description: Read audio samples from the stream.  N is the
-//               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.  
-//               Multiple-channel audio will be interleaved. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Read audio samples from the stream.  N is the number of samples you wish to
+ * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
+ * audio will be interleaved.
+ */
 void UserDataAudioCursor::
 read_samples(int n, PN_int16 *data) {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
-  
+
   if(source->_remove_after_read) {
     source->read_samples(n, data);
   }
@@ -78,11 +71,9 @@ read_samples(int n, PN_int16 *data) {
   _samples_read += n;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudioCursor::ready
-//       Access: Published
-//  Description: Set the offset if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the offset if possible.
+ */
 void UserDataAudioCursor::
 seek(double t) {
   if(_can_seek && 0 <= t && _length <= t) {
@@ -94,12 +85,9 @@ seek(double t) {
   _last_seek = t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudioCursor::ready
-//       Access: Private
-//  Description: Returns the number of audio samples ready to be
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of audio samples ready to be read.
+ */
 int UserDataAudioCursor::
 ready() const {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;

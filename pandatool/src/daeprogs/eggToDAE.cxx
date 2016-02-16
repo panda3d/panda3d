@@ -29,11 +29,9 @@
 #define FROM_MAT4(v) (FMMatrix44(v.get_data()))
 #define FROM_FSTRING(fs) (fs.c_str())
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDAE::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToDAE::
 EggToDAE() :
   EggToSomething("COLLADA", ".dae", true, false)
@@ -47,19 +45,17 @@ EggToDAE() :
   _document = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToDAE::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToDAE::
 run() {
   nassertv(has_output_filename());
   nassertv(_data != NULL);
-  
+
   FCollada::Initialize();
   _document = FCollada::NewTopDocument();
-  
+
   // Add the contributor part to the asset
   FCDAssetContributor* contributor = _document->GetAsset()->AddContributor();
   const char* user_name = getenv("USER");
@@ -70,7 +66,7 @@ run() {
   snprintf(authoring_tool, 1024, "Panda3D %s eggToDAE converter | FCollada v%d.%02d", PANDA_VERSION_STR, FCOLLADA_VERSION >> 16, FCOLLADA_VERSION & 0xFFFF);
   authoring_tool[1023] = 0;
   contributor->SetAuthoringTool(TO_FSTRING(authoring_tool));
-  
+
   // Set coordinate system
   switch (_data->get_coordinate_system()) {
     case CS_zup_right:
@@ -80,7 +76,7 @@ run() {
       _document->GetAsset()->SetUpAxis(FMVector3::YAxis);
       break;
   }
-  
+
   // Now actually start processing the data.
   FCDSceneNode* visual_scene = _document->AddVisualScene();
   for (EggGroupNode::iterator it = _data->begin(); it != _data->end(); ++it) {
@@ -88,12 +84,12 @@ run() {
       process_node(visual_scene, DCAST(EggGroup, *it));
     }
   }
-  
+
   // We're done here.
   FCollada::SaveDocument(_document, get_output_filename().to_os_specific().c_str());
   SAFE_DELETE(_document);
   FCollada::Release();
-  
+
   //if (!out) {
   //  nout << "An error occurred while writing.\n";
   //  exit(1);

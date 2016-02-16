@@ -28,13 +28,11 @@
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PlaneNode
-// Description : A node that contains a plane.  This is most often
-//               used as a clipping plane, but it can serve other
-//               purposes as well; whenever a plane is needed to be
-//               defined in some coordinate space in the world.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that contains a plane.  This is most often used as a clipping plane,
+ * but it can serve other purposes as well; whenever a plane is needed to be
+ * defined in some coordinate space in the world.
+ */
 class EXPCL_PANDA_PGRAPH PlaneNode : public PandaNode {
 PUBLISHED:
   PlaneNode(const string &name, const LPlane &plane = LPlane());
@@ -76,7 +74,7 @@ protected:
                                        int pipeline_stage,
                                        Thread *current_thread) const;
   PT(Geom) get_viz(CullTraverser *trav, CullTraverserData &data);
-  
+
 private:
   // The priority is not cycled, because there's no real reason to do
   // so, and cycling it makes it difficult to synchronize with the

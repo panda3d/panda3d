@@ -25,11 +25,9 @@
 #define HACK_SCREEN_HASH_CONTEXT true
 OSStatus report_agl_error(const string &comment);
 
-////////////////////////////////////////////////////////////////////
-//       Class : osxGraphicsWindow
-// Description : An interface to the osx/ system for managing GL
-//               windows under X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the osx/ system for managing GL windows under X.
+ */
 class osxGraphicsWindow : public GraphicsWindow {
 public:
   osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -146,4 +144,3 @@ private:
 #include "osxGraphicsWindow.I"
 
 #endif
-

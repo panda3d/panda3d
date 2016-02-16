@@ -16,12 +16,11 @@
 
 #include "p3d_plugin_common.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DConditionVar
-// Description : A simple condition-variable like object.  It doesn't
-//               support the full condition-var semantics, but it
-//               works well enough with one waiter and one signaller.
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple condition-variable like object.  It doesn't support the full
+ * condition-var semantics, but it works well enough with one waiter and one
+ * signaller.
+ */
 class P3DConditionVar {
 public:
   P3DConditionVar();
@@ -32,7 +31,7 @@ public:
   void wait(double timeout);
   void notify();
   void release();
-  
+
 private:
 #ifdef _WIN32
   CRITICAL_SECTION _lock;

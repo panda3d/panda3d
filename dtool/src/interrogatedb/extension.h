@@ -16,35 +16,28 @@
 
 #include "dtoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ExtensionBase
-// Description : This is where all extensions should derive from.
-//               It defines the _self and _this members that can
-//               be used from the extension method.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is where all extensions should derive from.  It defines the _self and
+ * _this members that can be used from the extension method.
+ */
 template<class T>
 class EXPCL_INTERROGATEDB ExtensionBase {
 public:
   T * _this;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension
-// Description : The default class template does not define any
-//               methods.  Classes that are extended should create
-//               a specialization of this class template.
-////////////////////////////////////////////////////////////////////
+/**
+ * The default class template does not define any methods.  Classes that are
+ * extended should create a specialization of this class template.
+ */
 template<class T>
 class EXPCL_INTERROGATEDB Extension : public ExtensionBase<T> {
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: invoke_extension
-//  Description: Creates a new extension object for the given
-//               pointer that can then be used to call extension
-//               methods, as follows:
-//               invoke_extension((MyClass) *ptr).method()
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new extension object for the given pointer that can then be used to
+ * call extension methods, as follows: invoke_extension((MyClass) *ptr).method()
+ */
 template<class T>
 inline Extension<T>
 invoke_extension(T *ptr) {
@@ -53,10 +46,9 @@ invoke_extension(T *ptr) {
   return ext;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: invoke_extension
-//  Description: The const version of the above function.
-////////////////////////////////////////////////////////////////////
+/**
+ * The const version of the above function.
+ */
 template<class T>
 inline const Extension<T>
 invoke_extension(const T *ptr) {

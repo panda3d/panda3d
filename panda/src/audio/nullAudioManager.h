@@ -22,13 +22,13 @@ class EXPCL_PANDA_AUDIO NullAudioManager : public AudioManager {
   // All of these methods are stubbed out to some degree.
   // If you're looking for a starting place for a new AudioManager,
   // please consider looking at the milesAudioManager.
-  
+
 public:
   NullAudioManager();
   virtual ~NullAudioManager();
-  
+
   virtual bool is_valid();
-  
+
   virtual PT(AudioSound) get_sound(const string&, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *sound, bool positional = false, int mode=SM_heuristic);
   virtual void uncache_sound(const string&);
@@ -41,7 +41,7 @@ public:
 
   virtual void set_play_rate(PN_stdfloat);
   virtual PN_stdfloat get_play_rate() const;
-  
+
   virtual void set_active(bool);
   virtual bool get_active() const;
 
@@ -60,7 +60,7 @@ public:
                                                 PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz,
                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
-  
+
   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_distance_factor() const;
 

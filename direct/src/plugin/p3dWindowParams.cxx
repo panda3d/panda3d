@@ -13,11 +13,9 @@
 
 #include "p3dWindowParams.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWindowParams::Default Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DWindowParams::
 P3DWindowParams() :
   _window_type(P3D_WT_hidden),
@@ -26,11 +24,9 @@ P3DWindowParams() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWindowParams::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DWindowParams::
 P3DWindowParams(P3D_window_type window_type,
                 int win_x, int win_y,
@@ -43,11 +39,9 @@ P3DWindowParams(P3D_window_type window_type,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWindowParams::Copy Assignment
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void P3DWindowParams::
 operator = (const P3DWindowParams &other) {
   _window_type = other._window_type;
@@ -58,13 +52,10 @@ operator = (const P3DWindowParams &other) {
   _parent_window = other._parent_window;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWindowParams::make_xml
-//       Access: Public
-//  Description: Returns a newly-allocated XML structure that
-//               corresponds to the window parameter data within this
-//               instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated XML structure that corresponds to the window
+ * parameter data within this instance.
+ */
 TiXmlElement *P3DWindowParams::
 make_xml(P3DInstance *inst) {
   TiXmlElement *xwparams = new TiXmlElement("wparams");

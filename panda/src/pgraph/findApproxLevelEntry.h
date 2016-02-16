@@ -21,13 +21,11 @@
 
 class NodePathCollection;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FindApproxLevelEntry
-// Description : This class is local to this package only; it doesn't
-//               get exported.  It represents a single node under
-//               consideration for matching at a single point in the
-//               breadth-first search.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is local to this package only; it doesn't get exported.  It
+ * represents a single node under consideration for matching at a single point
+ * in the breadth-first search.
+ */
 class FindApproxLevelEntry {
 public:
   INLINE FindApproxLevelEntry(const WorkingNodePath &node_path,
@@ -41,10 +39,10 @@ public:
 
   INLINE bool next_is_stashed(int increment) const;
 
-  bool consider_node(NodePathCollection &result, 
+  bool consider_node(NodePathCollection &result,
                      FindApproxLevelEntry *&next_level,
                      int max_matches, int increment) const;
-  void consider_next_step(PandaNode *child_node, 
+  void consider_next_step(PandaNode *child_node,
                           FindApproxLevelEntry *&next_level,
                           int increment) const;
   INLINE bool is_solution(int increment) const;

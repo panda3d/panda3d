@@ -89,13 +89,10 @@ static PN_int16 alaw_table[256] = {
 
 TypeHandle WavAudioCursor::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudioCursor::Constructor
-//       Access: Protected
-//  Description: Reads the .wav header from the indicated stream.
-//               This leaves the read pointer positioned at the
-//               start of the data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the .wav header from the indicated stream.  This leaves the read
+ * pointer positioned at the start of the data.
+ */
 WavAudioCursor::
 WavAudioCursor(WavAudio *src, istream *stream) :
   MovieAudioCursor(src),
@@ -276,11 +273,9 @@ WavAudioCursor(WavAudio *src, istream *stream) :
   _is_valid = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudioCursor::Destructor
-//       Access: Protected, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 WavAudioCursor::
 ~WavAudioCursor() {
   if (_stream != NULL) {
@@ -289,13 +284,10 @@ WavAudioCursor::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudioCursor::seek
-//       Access: Protected
-//  Description: Seeks to a target location.  Afterward, the
-//               packet_time is guaranteed to be less than or
-//               equal to the specified time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Seeks to a target location.  Afterward, the packet_time is guaranteed to be
+ * less than or equal to the specified time.
+ */
 void WavAudioCursor::
 seek(double t) {
   t = max(t, 0.0);
@@ -328,14 +320,11 @@ seek(double t) {
   _samples_read = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudioCursor::read_samples
-//       Access: Public, Virtual
-//  Description: Read audio samples from the stream.  N is the
-//               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.
-//               Multiple-channel audio will be interleaved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Read audio samples from the stream.  N is the number of samples you wish to
+ * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
+ * audio will be interleaved.
+ */
 void WavAudioCursor::
 read_samples(int n, PN_int16 *data) {
   int desired = n * _audio_channels;

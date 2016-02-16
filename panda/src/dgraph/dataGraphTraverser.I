@@ -11,22 +11,18 @@
  * @date 2002-03-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::get_current_thread
-//       Access: Public
-//  Description: Returns the currently-executing thread object, as
-//               passed to the DataGraphTraverser constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the currently-executing thread object, as passed to the
+ * DataGraphTraverser constructor.
+ */
 INLINE Thread *DataGraphTraverser::
 get_current_thread() const {
   return _current_thread;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DataGraphTraverser::CollectedData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE DataGraphTraverser::CollectedData::
 CollectedData() :
   _num_parents(0)

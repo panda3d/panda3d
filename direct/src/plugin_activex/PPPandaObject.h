@@ -27,12 +27,12 @@ public:
     PPandaObject( PPInterface* interfac, P3D_object* p3dObject );
     virtual ~PPandaObject();
 
-    // IUnknown methods 
+    // IUnknown methods
     STDMETHOD(QueryInterface)(REFIID riid, void FAR* FAR* ppvObj);
     STDMETHOD_(unsigned long, AddRef)(void);
     STDMETHOD_(unsigned long, Release)(void);
 
-    // IDispatch methods 
+    // IDispatch methods
     STDMETHOD(GetTypeInfoCount)(unsigned int FAR* pcTypeInfo);
 
     STDMETHOD(GetTypeInfo)(
@@ -59,7 +59,7 @@ public:
 
 private:
      PPandaObject();
-    
+
     // Props - Dispatch related
     unsigned long m_refs;
     ITypeInfo FAR* m_ptinfo;

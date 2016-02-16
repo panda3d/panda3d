@@ -21,15 +21,13 @@
 class CullableObject;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomDrawCallbackData
-// Description : This specialization on CallbackData is passed when
-//               the callback is initiated from deep within the draw
-//               traversal, for a particular Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on CallbackData is passed when the callback is initiated
+ * from deep within the draw traversal, for a particular Geom.
+ */
 class EXPCL_PANDA_PGRAPH GeomDrawCallbackData : public CallbackData {
 public:
-  INLINE GeomDrawCallbackData(CullableObject *obj, 
+  INLINE GeomDrawCallbackData(CullableObject *obj,
                               GraphicsStateGuardianBase *gsg, bool force);
 
 PUBLISHED:

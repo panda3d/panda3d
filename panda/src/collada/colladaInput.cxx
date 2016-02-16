@@ -33,10 +33,9 @@
 #define domList_of_uints domListOfUInts
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::Constructor
-//  Description: Pretty obvious what this does.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pretty obvious what this does.
+ */
 ColladaInput::
 ColladaInput(const string &semantic) :
   _column_name (NULL),
@@ -66,10 +65,9 @@ ColladaInput(const string &semantic) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::Constructor
-//  Description: Pretty obvious what this does.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pretty obvious what this does.
+ */
 ColladaInput::
 ColladaInput(const string &semantic, unsigned int set) :
   _column_name (NULL),
@@ -102,11 +100,10 @@ ColladaInput(const string &semantic, unsigned int set) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::from_dom
-//  Description: Returns the ColladaInput object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaInput object that represents the provided DOM input
+ * element.
+ */
 ColladaInput *ColladaInput::
 from_dom(domInput_local_offset &input) {
   // If we already loaded it before, use that.
@@ -137,11 +134,10 @@ from_dom(domInput_local_offset &input) {
   return new_input;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::from_dom
-//  Description: Returns the ColladaInput object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaInput object that represents the provided DOM input
+ * element.
+ */
 ColladaInput *ColladaInput::
 from_dom(domInput_local &input) {
   // If we already loaded it before, use that.
@@ -161,14 +157,11 @@ from_dom(domInput_local &input) {
   return new_input;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::make_vertex_columns
-//  Description: Takes a semantic and source URI, and adds a new
-//               column to the format.  If this is a vertex source,
-//               adds all of the inputs from the corresponding
-//               <vertices> element.  Returns the number of
-//               columns added to the format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes a semantic and source URI, and adds a new column to the format.  If
+ * this is a vertex source, adds all of the inputs from the corresponding
+ * <vertices> element.  Returns the number of columns added to the format.
+ */
 int ColladaInput::
 make_vertex_columns(GeomVertexArrayFormat *format) const {
 
@@ -187,10 +180,9 @@ make_vertex_columns(GeomVertexArrayFormat *format) const {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::read_data
-//  Description: Reads the data from the source and fills in _data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data from the source and fills in _data.
+ */
 bool ColladaInput::
 read_data(domSource &source) {
   _data.clear();
@@ -233,11 +225,9 @@ read_data(domSource &source) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::write_data
-//  Description: Writes data to the indicated GeomVertexData using
-//               the given indices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes data to the indicated GeomVertexData using the given indices.
+ */
 void ColladaInput::
 write_data(GeomVertexData *vdata, int start_row, domP &p, unsigned int stride) const {
   if (is_vertex_source()) {
@@ -251,10 +241,9 @@ write_data(GeomVertexData *vdata, int start_row, domP &p, unsigned int stride) c
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaInput::write_data
-//  Description: Called internally by the other write_data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally by the other write_data.
+ */
 void ColladaInput::
 write_data(GeomVertexData *vdata, int start_row, domP &p, unsigned int stride, unsigned int offset) const {
   nassertv(_column_name != NULL);

@@ -21,10 +21,9 @@
 
 class PhysxHeightField;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxHeightFieldShapeDesc
-// Description : Descriptor class for PhysxHeightFieldShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxHeightFieldShape.
+ */
 class EXPCL_PANDAPHYSX PhysxHeightFieldShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

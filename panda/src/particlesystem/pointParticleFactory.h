@@ -16,10 +16,9 @@
 
 #include "baseParticleFactory.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointParticleFactory
-// Description : Creates point particles to user specs
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates point particles to user specs
+ */
 
 class EXPCL_PANDAPHYSICS PointParticleFactory : public BaseParticleFactory {
 PUBLISHED:

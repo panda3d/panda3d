@@ -19,10 +19,9 @@
 #include "renderAttrib.h"
 #include "fog.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FogAttrib
-// Description : Applies a Fog to the geometry at and below this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a Fog to the geometry at and below this node.
+ */
 class EXPCL_PANDA_PGRAPH FogAttrib : public RenderAttrib {
 private:
   INLINE FogAttrib();
@@ -62,7 +61,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -86,4 +85,3 @@ private:
 #include "fogAttrib.I"
 
 #endif
-

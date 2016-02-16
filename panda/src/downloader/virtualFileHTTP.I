@@ -11,13 +11,11 @@
  * @date 2008-10-31
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::is_implicit_pz_file
-//       Access: Published
-//  Description: Returns true if this file is a .pz file that should
-//               be implicitly decompressed on load, or false if it is
-//               not a .pz file or if it should not be decompressed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file is a .pz file that should be implicitly
+ * decompressed on load, or false if it is not a .pz file or if it should not be
+ * decompressed.
+ */
 INLINE bool VirtualFileHTTP::
 is_implicit_pz_file() const {
   return _implicit_pz_file;

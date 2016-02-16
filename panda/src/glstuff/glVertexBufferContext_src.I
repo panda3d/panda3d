@@ -11,14 +11,12 @@
  * @date 2005-03-17
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(VertexBufferContext)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(VertexBufferContext)::
 CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
-                         PreparedGraphicsObjects *pgo, 
+                         PreparedGraphicsObjects *pgo,
                          GeomVertexArrayData *data) :
   VertexBufferContext(pgo, data),
   _glgsg(glgsg)

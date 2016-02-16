@@ -34,14 +34,12 @@ ConfigVariableInt fmod_audio_preload_threshold
           "will be streamed from disk.  Set this to -1 to preload "
           "every file."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libFmodAudio
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libFmodAudio() {
   static bool initialized = false;
@@ -59,12 +57,10 @@ init_libFmodAudio() {
   ps->set_system_tag("audio", "implementation", "FMOD");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_audio_manager_func_fmod_audio
-//  Description: This function is called when the dynamic library is
-//               loaded; it should return the Create_AudioManager
-//               function appropriate to create a FmodAudioManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called when the dynamic library is loaded; it should return
+ * the Create_AudioManager function appropriate to create a FmodAudioManager.
+ */
 Create_AudioManager_proc *
 get_audio_manager_func_fmod_audio() {
   init_libFmodAudio();

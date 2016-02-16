@@ -11,11 +11,9 @@
  * @date 2002-02-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinUnsorted::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullBinUnsorted::
 CullBinUnsorted(const string &name, GraphicsStateGuardianBase *gsg,
                 const PStatCollector &draw_region_pcollector) :

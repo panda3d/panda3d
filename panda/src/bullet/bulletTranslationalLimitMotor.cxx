@@ -13,35 +13,28 @@
 
 #include "bulletTranslationalLimitMotor.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTranslationalLimitMotor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletTranslationalLimitMotor::
-BulletTranslationalLimitMotor(btTranslationalLimitMotor &motor) 
+BulletTranslationalLimitMotor(btTranslationalLimitMotor &motor)
  : _motor(motor) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTranslationalLimitMotor::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletTranslationalLimitMotor::
 BulletTranslationalLimitMotor(const BulletTranslationalLimitMotor &copy)
   : _motor(copy._motor) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTranslationalLimitMotor::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletTranslationalLimitMotor::
 ~BulletTranslationalLimitMotor() {
 
 }
-

@@ -25,12 +25,11 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMesher
-// Description : Collects together unrelated EggPrimitives, determines
-//               their edge connectivity, and generates a set of
-//               EggTriangleStrips that represent the same geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collects together unrelated EggPrimitives, determines their edge
+ * connectivity, and generates a set of EggTriangleStrips that represent the
+ * same geometry.
+ */
 class EggMesher {
 public:
   EggMesher();
@@ -46,7 +45,7 @@ public:
 
 private:
   void clear();
-  bool add_polygon(const EggPolygon *egg_poly, 
+  bool add_polygon(const EggPolygon *egg_poly,
                    EggMesherStrip::MesherOrigin origin);
   void do_mesh();
   PT(EggPrimitive) get_prim(EggMesherStrip &strip);

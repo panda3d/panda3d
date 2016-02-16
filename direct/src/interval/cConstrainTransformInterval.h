@@ -18,11 +18,10 @@
 #include "cConstraintInterval.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConstrainTransformInterval
-// Description : A constraint interval that will constrain the
-//               transform of one node to the transform of another.
-////////////////////////////////////////////////////////////////////
+/**
+ * A constraint interval that will constrain the transform of one node to the
+ * transform of another.
+ */
 class EXPCL_DIRECT CConstrainTransformInterval : public CConstraintInterval {
 PUBLISHED:
   CConstrainTransformInterval(const string &name, double duration,
@@ -61,4 +60,3 @@ private:
 #include "cConstrainTransformInterval.I"
 
 #endif
-

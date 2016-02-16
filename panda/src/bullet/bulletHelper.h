@@ -23,10 +23,9 @@
 #include "nodePath.h"
 #include "nodePathCollection.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletHelper
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletHelper {
 
 PUBLISHED:
@@ -43,7 +42,7 @@ PUBLISHED:
   static CPT(GeomVertexFormat) add_sb_flip_column(const GeomVertexFormat *format);
 
   // Geom utils
-  static PT(Geom) make_geom_from_faces(BulletSoftBodyNode *node, 
+  static PT(Geom) make_geom_from_faces(BulletSoftBodyNode *node,
       const GeomVertexFormat *format=NULL,
       bool two_sided=false);
 
@@ -58,7 +57,7 @@ private:
 
   static bool is_tangible(CollisionNode *cnode);
 
-  static PT(Geom) make_geom(BulletSoftBodyNode *node, 
+  static PT(Geom) make_geom(BulletSoftBodyNode *node,
       const GeomVertexFormat *format,
       bool use_faces,
       bool two_sided);

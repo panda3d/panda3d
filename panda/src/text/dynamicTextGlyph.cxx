@@ -30,23 +30,18 @@
 
 TypeHandle DynamicTextGlyph::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextGlyph::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DynamicTextGlyph::
 ~DynamicTextGlyph() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextGlyph::get_row
-//       Access: Public
-//  Description: Returns a pointer to the first byte in the pixel
-//               buffer associated with the leftmost pixel in the
-//               indicated row, where 0 is the topmost row and _y_size
-//               - _margin * 2 - 1 is the bottommost row.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the first byte in the pixel buffer associated with the
+ * leftmost pixel in the indicated row, where 0 is the topmost row and _y_size -
+ * _margin * 2 - 1 is the bottommost row.
+ */
 unsigned char *DynamicTextGlyph::
 get_row(int y) {
   nassertr(y >= 0 && y < _y_size - _margin * 2, (unsigned char *)NULL);
@@ -63,14 +58,12 @@ get_row(int y) {
   int offset = (y * _page->get_x_size()) + x;
   int pixel_width = _page->get_num_components() * _page->get_component_width();
 
-  return _page->modify_ram_image() + offset * pixel_width; 
+  return _page->modify_ram_image() + offset * pixel_width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextGlyph::erase
-//       Access: Public
-//  Description: Erases the glyph from the texture map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Erases the glyph from the texture map.
+ */
 void DynamicTextGlyph::
 erase(DynamicTextFont *font) {
   nassertv(_page != (DynamicTextPage *)NULL);
@@ -80,19 +73,16 @@ erase(DynamicTextFont *font) {
   // (_x_size, _y_size), but it doesn't include _margin pixels around
   // the interior of the rectangle.  Erase all the pixels that the
   // glyph covers.
-  _page->fill_region(_x + _margin, 
+  _page->fill_region(_x + _margin,
                      _page->get_y_size() - (_y + _y_size - _margin),
                      _x_size - _margin * 2, _y_size - _margin * 2,
                      font->get_bg());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextGlyph::is_whitespace
-//       Access: Public, Virtual
-//  Description: Returns true if this glyph represents invisible
-//               whitespace, or false if it corresponds to some
-//               visible character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this glyph represents invisible whitespace, or false if it
+ * corresponds to some visible character.
+ */
 bool DynamicTextGlyph::
 is_whitespace() const {
   return (_page == (DynamicTextPage *)NULL);

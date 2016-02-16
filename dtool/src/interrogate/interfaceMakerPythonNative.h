@@ -21,11 +21,10 @@
 
 class FunctionRemap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMakerPythonNative
-// Description : An InterfaceMaker for generating complex Python
-//               function wrappers around C++ code.
-////////////////////////////////////////////////////////////////////
+/**
+ * An InterfaceMaker for generating complex Python function wrappers around C++
+ * code.
+ */
 class InterfaceMakerPythonNative : public InterfaceMakerPython {
 public:
   InterfaceMakerPythonNative(InterrogateModuleDef *def);

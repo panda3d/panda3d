@@ -18,4 +18,3 @@
 
 #include "dblnames.h"
 #include "lrotation_src.cxx"
-

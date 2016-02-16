@@ -19,16 +19,12 @@
 #include "programBase.h"
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WithOutputFile
-// Description : This is the bare functionality (intended to be
-//               inherited from along with ProgramBase or some
-//               derivative) for a program that might generate an
-//               output file.
-//
-//               This provides the has_output_filename() and
-//               get_output_filename() methods.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the bare functionality (intended to be inherited from along with
+ * ProgramBase or some derivative) for a program that might generate an output
+ * file.  This provides the has_output_filename() and get_output_filename()
+ * methods.
+ */
 class WithOutputFile {
 public:
   WithOutputFile(bool allow_last_param, bool allow_stdout,
@@ -63,5 +59,3 @@ private:
 #include "withOutputFile.I"
 
 #endif
-
-

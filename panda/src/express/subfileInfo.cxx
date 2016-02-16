@@ -13,11 +13,9 @@
 
 #include "subfileInfo.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubfileInfo::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SubfileInfo::
 output(ostream &out) const {
   out << "SubfileInfo(" << get_filename() << ", " << _start << ", " << _size << ")";

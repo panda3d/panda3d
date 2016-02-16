@@ -21,14 +21,11 @@
 class VrpnClient;
 class VrpnDial;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnDialDevice
-// Description : The Panda interface to a VRPN dial device.  This
-//               object will be returned by VrpnClient::make_device(),
-//               for attaching to a DialNode.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Panda interface to a VRPN dial device.  This object will be returned by
+ * VrpnClient::make_device(), for attaching to a DialNode.  This class does not
+ * need to be exported from the DLL.
+ */
 class VrpnDialDevice : public ClientDialDevice {
 public:
   VrpnDialDevice(VrpnClient *client, const string &device_name,

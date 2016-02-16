@@ -17,31 +17,24 @@
 
 TypeHandle AsyncTaskBase::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskBase::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AsyncTaskBase::
 AsyncTaskBase() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskBase::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AsyncTaskBase::
 ~AsyncTaskBase() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskBase::record_task
-//       Access: Protected
-//  Description: Indicates that this task is now the current task
-//               running on the indicated thread, presumably the
-//               current thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that this task is now the current task running on the indicated
+ * thread, presumably the current thread.
+ */
 void AsyncTaskBase::
 record_task(Thread *current_thread) {
   nassertv(current_thread->_current_task == NULL);
@@ -62,12 +55,9 @@ record_task(Thread *current_thread) {
 #endif  // __GNUC__
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskBase::clear_task
-//       Access: Protected
-//  Description: Indicates that this task is no longer running on the
-//               indicated thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that this task is no longer running on the indicated thread.
+ */
 void AsyncTaskBase::
 clear_task(Thread *current_thread) {
   nassertv(current_thread->_current_task == this);

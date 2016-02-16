@@ -120,4 +120,3 @@ enum FltOpcode {
 ostream &operator << (ostream &out, FltOpcode opcode);
 
 #endif
-

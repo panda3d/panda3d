@@ -21,14 +21,13 @@
 #include "winGraphicsWindow.h"
 #include "tinyWinGraphicsPipe.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyWinGraphicsWindow
-// Description : Opens a window on Microsoft Windows to display the
-//               TinyPanda software rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a window on Microsoft Windows to display the TinyPanda software
+ * rendering.
+ */
 class EXPCL_TINYDISPLAY TinyWinGraphicsWindow : public WinGraphicsWindow {
 public:
-  TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                         const string &name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,

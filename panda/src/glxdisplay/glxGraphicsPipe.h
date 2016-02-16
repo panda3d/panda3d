@@ -70,12 +70,10 @@ class FrameBufferProperties;
 
 #endif  // CPPPARSER
 
-////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL graphics windows on an X-based
-//               (e.g. Unix) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL graphics
+ * windows on an X-based (e.g.  Unix) client.
+ */
 class glxGraphicsPipe : public x11GraphicsPipe {
 public:
   glxGraphicsPipe(const string &display = string());
@@ -83,7 +81,7 @@ public:
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
-  
+
 protected:
   virtual PT(GraphicsOutput) make_output(const string &name,
                                          const FrameBufferProperties &fb_prop,

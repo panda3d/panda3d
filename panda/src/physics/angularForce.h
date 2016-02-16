@@ -16,10 +16,9 @@
 
 #include "baseForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AngularForce
-// Description : pure virtual parent of all quat-based forces.
-////////////////////////////////////////////////////////////////////
+/**
+ * pure virtual parent of all quat-based forces.
+ */
 class EXPCL_PANDAPHYSICS AngularForce : public BaseForce {
 PUBLISHED:
   virtual ~AngularForce();
@@ -27,7 +26,7 @@ PUBLISHED:
   virtual AngularForce *make_copy() const = 0;
   LRotation get_quat(const PhysicsObject *po);
   virtual bool is_linear() const;
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

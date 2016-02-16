@@ -15,12 +15,9 @@
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<GlobPattern>::match_files
-//       Access: Published
-//  Description: This variant on match_files returns a Python list
-//               of strings.
-////////////////////////////////////////////////////////////////////
+/**
+ * This variant on match_files returns a Python list of strings.
+ */
 PyObject *Extension<GlobPattern>::
 match_files(const Filename &cwd) const {
   vector_string contents;

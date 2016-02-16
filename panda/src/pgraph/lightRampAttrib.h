@@ -19,15 +19,12 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LightRampAttrib
-// Description : A Light Ramp is any unary operator that takes a 
-//               rendered pixel as input, and adjusts the brightness
-//               of that pixel.  For example, gamma correction is a
-//               kind of light ramp.  So is HDR tone mapping.  So is
-//               cartoon shading.  See the constructors for an
-//               explanation of each kind of ramp.
-////////////////////////////////////////////////////////////////////
+/**
+ * A Light Ramp is any unary operator that takes a rendered pixel as input, and
+ * adjusts the brightness of that pixel.  For example, gamma correction is a
+ * kind of light ramp.  So is HDR tone mapping.  So is cartoon shading.  See the
+ * constructors for an explanation of each kind of ramp.
+ */
 class EXPCL_PANDA_PGRAPH LightRampAttrib : public RenderAttrib {
 private:
   INLINE LightRampAttrib();
@@ -49,20 +46,20 @@ PUBLISHED:
   static CPT(RenderAttrib) make_hdr0();
   static CPT(RenderAttrib) make_hdr1();
   static CPT(RenderAttrib) make_hdr2();
-  
+
 
   INLINE LightRampMode get_mode() const;
   INLINE PN_stdfloat get_level(int n) const;
   INLINE PN_stdfloat get_threshold(int n) const;
-  
+
 public:
   virtual void output(ostream &out) const;
-  
+
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
-  
+
 private:
   LightRampMode _mode;
   PN_stdfloat _level[2];
@@ -85,7 +82,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -109,4 +106,3 @@ private:
 #include "lightRampAttrib.I"
 
 #endif
-

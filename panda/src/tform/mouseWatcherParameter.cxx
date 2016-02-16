@@ -13,11 +13,9 @@
 
 #include "mouseWatcherParameter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcherParameter::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MouseWatcherParameter::
 output(ostream &out) const {
   bool output_anything = false;

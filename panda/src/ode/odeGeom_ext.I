@@ -14,11 +14,9 @@
 #include "odeSpace_ext.h"
 #include "lpoint3.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeGeom::get_AA_bounds
-//       Access: Published
-//  Description: A more Pythonic way of calling getAABB()
-////////////////////////////////////////////////////////////////////
+/**
+ * A more Pythonic way of calling getAABB()
+ */
 INLINE PyObject *Extension<OdeGeom>::
 get_AA_bounds() const {
   LPoint3f *min_point = new LPoint3f;
@@ -30,11 +28,9 @@ get_AA_bounds() const {
   return Py_BuildValue("NN", min_inst, max_inst);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeGeom::get_converted_space
-//       Access: Published
-//  Description: Equivalent to get_space().convert()
-////////////////////////////////////////////////////////////////////
+/**
+ * Equivalent to get_space().convert()
+ */
 INLINE PyObject *Extension<OdeGeom>::
 get_converted_space() const {
   OdeSpace s = _this->get_space();

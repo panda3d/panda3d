@@ -23,10 +23,9 @@
 
 class GeomNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionPolygon
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_COLLIDE CollisionPolygon : public CollisionPlane {
 PUBLISHED:
   INLINE CollisionPolygon(const LVecBase3 &a, const LVecBase3 &b,
@@ -104,7 +103,7 @@ private:
   static PN_stdfloat dist_to_line_segment(const LPoint2 &p,
                                     const LPoint2 &f, const LPoint2 &t,
                                     const LVector2 &v);
-  
+
 private:
   class PointDef {
   public:
@@ -175,5 +174,3 @@ private:
 #include "collisionPolygon.I"
 
 #endif
-
-

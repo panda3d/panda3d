@@ -11,11 +11,9 @@
  * @date 2010-05-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletSoftBodyShape::
 ~BulletSoftBodyShape() {
 
@@ -23,4 +21,3 @@ INLINE BulletSoftBodyShape::
   // by the owning btSoftBody object. It must not be deleted
   // here!
 }
-

@@ -16,11 +16,9 @@
 
 TypeHandle TextureReloadRequest::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureReloadRequest::do_task
-//       Access: Protected, Virtual
-//  Description: Performs the task: that is, loads the one model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the task: that is, loads the one model.
+ */
 AsyncTask::DoneStatus TextureReloadRequest::
 do_task() {
   // Don't reload the texture if it doesn't need it.
@@ -29,7 +27,7 @@ do_task() {
     if (delay != 0.0) {
       Thread::sleep(delay);
     }
-    
+
     if (_texture->was_image_modified(_pgo)) {
       if (_allow_compressed) {
         _texture->get_ram_image();

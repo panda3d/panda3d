@@ -11,30 +11,24 @@
  * @date 2001-04-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffGenericChunk::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IffGenericChunk::
 IffGenericChunk() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffGenericChunk::get_data
-//       Access: Public
-//  Description: Returns the data in the chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the data in the chunk.
+ */
 INLINE const Datagram &IffGenericChunk::
 get_data() const {
   return _data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffGenericChunk::set_data
-//       Access: Public
-//  Description: Changes the data in the chunk
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the data in the chunk
+ */
 INLINE void IffGenericChunk::
 set_data(const Datagram &data) {
   _data = data;

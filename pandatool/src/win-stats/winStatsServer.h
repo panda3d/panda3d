@@ -17,15 +17,12 @@
 #include "pandatoolbase.h"
 #include "pStatServer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsServer
-// Description : The class that owns the main loop, waiting for client
-//               connections.
-////////////////////////////////////////////////////////////////////
+/**
+ * The class that owns the main loop, waiting for client connections.
+ */
 class WinStatsServer : public PStatServer {
 public:
   virtual PStatMonitor *make_monitor();
 };
 
 #endif
-

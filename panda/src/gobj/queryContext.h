@@ -19,21 +19,15 @@
 
 class PreparedGraphicsObjects;
 
-////////////////////////////////////////////////////////////////////
-//       Class : QueryContext
-// Description : This is a base class for queries that might require a
-//               round-trip to the graphics engine.  The idea is that
-//               when you ask the GSG to make a particular query, it
-//               returns a QueryContext, which does not necessarily
-//               have the answer right away (but it will eventually).
-//
-//               Unlike SavedContext, QueryContext is
-//               reference-counted.  It removes itself from the GSG
-//               when the last reference goes away.  You're
-//               responsible for keeping the pointer to the
-//               QueryContext as long as you are interested in the
-//               answer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for queries that might require a round-trip to the
+ * graphics engine.  The idea is that when you ask the GSG to make a particular
+ * query, it returns a QueryContext, which does not necessarily have the answer
+ * right away (but it will eventually).  Unlike SavedContext, QueryContext is
+ * reference-counted.  It removes itself from the GSG when the last reference
+ * goes away.  You're responsible for keeping the pointer to the QueryContext as
+ * long as you are interested in the answer.
+ */
 class EXPCL_PANDA_GOBJ QueryContext : public TypedReferenceCount {
 public:
   INLINE QueryContext();
@@ -63,4 +57,3 @@ private:
 #include "queryContext.I"
 
 #endif
-

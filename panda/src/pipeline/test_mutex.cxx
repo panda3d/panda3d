@@ -22,12 +22,12 @@ static const double thread_duration = 5.0;
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name, MutexImpl &m1, double period) : 
+  MyThread(const string &name, MutexImpl &m1, double period) :
     Thread(name, name),
-    _m1(m1), _period(period) 
+    _m1(m1), _period(period)
   {
   }
-    
+
   virtual void thread_main() {
     TrueClock *clock = TrueClock::get_global_ptr();
     double start = clock->get_short_time();

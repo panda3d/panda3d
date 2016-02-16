@@ -23,26 +23,21 @@
 #include "renderState.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBinStateSorted
-// Description : A specific kind of CullBin that sorts geometry to
-//               collect items of the same state together, so that
-//               minimal state changes are required on the GSG to
-//               render them.
-//
-//               This also sorts objects front-to-back within a
-//               particular state, to take advantage of hierarchical
-//               Z-buffer algorithms which can early-out when an
-//               object appears behind another one.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specific kind of CullBin that sorts geometry to collect items of the same
+ * state together, so that minimal state changes are required on the GSG to
+ * render them.  This also sorts objects front-to-back within a particular
+ * state, to take advantage of hierarchical Z-buffer algorithms which can early-
+ * out when an object appears behind another one.
+ */
 class EXPCL_PANDA_CULL CullBinStateSorted : public CullBin {
 public:
-  INLINE CullBinStateSorted(const string &name, 
+  INLINE CullBinStateSorted(const string &name,
                             GraphicsStateGuardianBase *gsg,
                             const PStatCollector &draw_region_pcollector);
   virtual ~CullBinStateSorted();
 
-  static CullBin *make_bin(const string &name, 
+  static CullBin *make_bin(const string &name,
                            GraphicsStateGuardianBase *gsg,
                            const PStatCollector &draw_region_pcollector);
 
@@ -58,7 +53,7 @@ private:
   public:
     INLINE ObjectData(CullableObject *object);
     INLINE bool operator < (const ObjectData &other) const;
-    
+
     CullableObject *_object;
     const GeomVertexFormat *_format;
   };
@@ -87,6 +82,3 @@ private:
 #include "cullBinStateSorted.I"
 
 #endif
-
-
-  

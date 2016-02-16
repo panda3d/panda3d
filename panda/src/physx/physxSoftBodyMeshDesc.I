@@ -11,11 +11,9 @@
  * @date 2010-09-12
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyMeshDesc::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxSoftBodyMeshDesc::
 PhysxSoftBodyMeshDesc() {
 
@@ -29,11 +27,9 @@ PhysxSoftBodyMeshDesc() {
   _tetrahedra = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyMeshDesc::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxSoftBodyMeshDesc::
 ~PhysxSoftBodyMeshDesc() {
 
@@ -46,25 +42,20 @@ INLINE PhysxSoftBodyMeshDesc::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyMeshDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxSoftBodyMeshDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyMeshDesc::get_desc
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const NxSoftBodyMeshDesc &PhysxSoftBodyMeshDesc::
 get_desc() const {
 
   return _desc;
 }
-

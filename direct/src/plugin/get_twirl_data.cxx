@@ -901,24 +901,17 @@ static const unsigned char * const twirl_data[4] = {
 };
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_twirl_data
-//  Description: Fills the indicated data array with a string of
-//               twirl_width * twirl_height * 3 bytes, representing
-//               the RGB pixel values of the twirl_width x
-//               twirl_height image at frame number step of
-//               twirl_num_steps frames.  The specified fg and bg
-//               colors are applied to the array appropriately.
-//
-//               Returns true on success, false on failure.  On false,
-//               the array is initialized with zero.
-//
-//               You must pass data_length = twirl_width *
-//               twirl_height * 3; this value is passed as a sanity
-//               check on array size.  You should pass step so that 0
-//               <= step < twirl_num_steps + 1.  (The special value of
-//               step == twirl_num_steps returns the "failed" icon.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated data array with a string of twirl_width * twirl_height *
+ * 3 bytes, representing the RGB pixel values of the twirl_width x twirl_height
+ * image at frame number step of twirl_num_steps frames.  The specified fg and
+ * bg colors are applied to the array appropriately.  Returns true on success,
+ * false on failure.  On false, the array is initialized with zero.  You must
+ * pass data_length = twirl_width * twirl_height * 3; this value is passed as a
+ * sanity check on array size.  You should pass step so that 0 <= step <
+ * twirl_num_steps + 1.  (The special value of step == twirl_num_steps returns
+ * the "failed" icon.)
+ */
 bool
 get_twirl_data(unsigned char data[], size_t data_length, int step,
                int fg_r, int fg_g, int fg_b,
@@ -966,4 +959,3 @@ get_twirl_data(unsigned char data[], size_t data_length, int step,
 
   return true;
 }
-

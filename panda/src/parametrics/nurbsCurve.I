@@ -11,11 +11,9 @@
  * @date 2001-03-02
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurve::get_curveseg
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CubicCurveseg *NurbsCurve::
 get_curveseg(int ti) {
   return (CubicCurveseg *)PiecewiseCurve::get_curveseg(ti);

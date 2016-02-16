@@ -24,10 +24,9 @@ class PhysxActor;
 class PhysxForceFieldShapeDesc;
 class PhysxForceFieldShapeGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxForceFieldDesc
-// Description : Descriptor class for force fields.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for force fields.
+ */
 class EXPCL_PANDAPHYSX PhysxForceFieldDesc : public PhysxEnums {
 
 PUBLISHED:

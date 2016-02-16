@@ -24,13 +24,11 @@
 class ShaderGenerator;
 class GraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LightLensNode
-// Description : A derivative of Light and of Camera. The name might
-//               be misleading: it does not directly derive from
-//               LensNode, but through the Camera class. The Camera
-//               serves no purpose unless shadows are enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * A derivative of Light and of Camera.  The name might be misleading: it does
+ * not directly derive from LensNode, but through the Camera class.  The Camera
+ * serves no purpose unless shadows are enabled.
+ */
 class EXPCL_PANDA_PGRAPHNODES LightLensNode : public Light, public Camera {
 PUBLISHED:
   LightLensNode(const string &name, Lens *lens = new PerspectiveLens());

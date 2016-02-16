@@ -16,11 +16,10 @@
 
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearVectorForce
-// Description : Simple directed vector force.  Suitable for
-//               gravity, non-turbulent wind, etc...
-////////////////////////////////////////////////////////////////////
+/**
+ * Simple directed vector force.  Suitable for gravity, non-turbulent wind,
+ * etc...
+ */
 class EXPCL_PANDAPHYSICS LinearVectorForce : public LinearForce {
 PUBLISHED:
   LinearVectorForce(const LVector3& vec, PN_stdfloat a = 1.0f, bool mass = false);

@@ -11,22 +11,17 @@
  * @date 2005-03-24
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::get_name
-//       Access: Published
-//  Description: Returns the name passed to the constructor.
-//               Completely arbitrary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name passed to the constructor.  Completely arbitrary.
+ */
 INLINE const string &UserVertexTransform::
 get_name() const {
   return _name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::set_matrix
-//       Access: Published
-//  Description: Stores the indicated matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated matrix.
+ */
 INLINE void UserVertexTransform::
 set_matrix(const LMatrix4 &matrix) {
   Thread *current_thread = Thread::get_current_thread();
@@ -35,22 +30,18 @@ set_matrix(const LMatrix4 &matrix) {
   mark_modified(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE UserVertexTransform::CData::
 CData() :
   _matrix(LMatrix4::ident_mat())
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UserVertexTransform::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE UserVertexTransform::CData::
 CData(const UserVertexTransform::CData &copy) :
   _matrix(copy._matrix)

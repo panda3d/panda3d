@@ -22,13 +22,11 @@
 #include "filename.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CVSCopy
-// Description : This is the base class for a family of programs that
-//               copy files, typically model files like .flt files and
-//               their associated textures, into a CVS-controlled
-//               source tree.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a family of programs that copy files, typically
+ * model files like .flt files and their associated textures, into a CVS-
+ * controlled source tree.
+ */
 class CVSCopy : public ProgramBase {
 public:
   CVSCopy();

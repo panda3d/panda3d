@@ -29,12 +29,10 @@ struct NSScreen;
 
 class FrameBufferProperties;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CocoaGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL graphics windows on a Cocoa-based
-//               (e.g. Mac OS X) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL graphics
+ * windows on a Cocoa-based (e.g.  Mac OS X) client.
+ */
 class CocoaGraphicsPipe : public GraphicsPipe {
 public:
   CocoaGraphicsPipe();

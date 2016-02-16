@@ -22,11 +22,9 @@
 template class ParamValue<int>;
 template class ParamValue<double>;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventParameter::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EventParameter::
 output(ostream &out) const {
   if (_ptr == (TypedWritableReferenceCount *)NULL) {

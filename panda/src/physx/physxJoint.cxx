@@ -28,11 +28,9 @@
 
 TypeHandle PhysxJoint::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxJoint::
 release() {
 
@@ -42,11 +40,9 @@ release() {
   ptr()->getScene().releaseJoint(*ptr());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::factory
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxJoint *PhysxJoint::
 factory(NxJointType shapeType) {
 
@@ -87,14 +83,10 @@ factory(NxJointType shapeType) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::set_name
-//       Access: Published
-//  Description: Sets a name string for this object. The name can
-//               be retrieved again with get_name().
-//               This is for debugging and is not used by the
-//               physics engine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets a name string for this object.  The name can be retrieved again with
+ * get_name(). This is for debugging and is not used by the physics engine.
+ */
 void PhysxJoint::
 set_name(const char *name) {
 
@@ -104,11 +96,9 @@ set_name(const char *name) {
   ptr()->setName(_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::get_name
-//       Access: Published
-//  Description: Returns the name string. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name string.
+ */
 const char *PhysxJoint::
 get_name() const {
 
@@ -116,12 +106,9 @@ get_name() const {
   return ptr()->getName();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::get_actor
-//       Access: Published
-//  Description: Retrieves the actor which this joint is associated
-//               with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the actor which this joint is associated with.
+ */
 PhysxActor *PhysxJoint::
 get_actor(unsigned int idx) const {
 
@@ -133,12 +120,9 @@ get_actor(unsigned int idx) const {
   return (PhysxActor *)(actorPtr[idx]->userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::get_scene
-//       Access: Published
-//  Description: Retrieves the scene which this joint is associated
-//               with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the scene which this joint is associated with.
+ */
 PhysxScene *PhysxJoint::
 get_scene() const {
 
@@ -146,12 +130,10 @@ get_scene() const {
   return (PhysxScene *)(ptr()->getScene().userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::set_global_anchor
-//       Access: Published
-//  Description: Sets the point where the two actors are attached,
-//               specified in global coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the point where the two actors are attached, specified in global
+ * coordinates.
+ */
 void PhysxJoint::
 set_global_anchor(const LPoint3f &anchor) {
 
@@ -159,11 +141,9 @@ set_global_anchor(const LPoint3f &anchor) {
   ptr()->setGlobalAnchor(PhysxManager::point3_to_nxVec3(anchor));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::get_global_anchor
-//       Access: Published
-//  Description: Retrieves the joint anchor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the joint anchor.
+ */
 LPoint3f PhysxJoint::
 get_global_anchor() const {
 
@@ -171,12 +151,10 @@ get_global_anchor() const {
   return PhysxManager::nxVec3_to_point3(ptr()->getGlobalAnchor());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::set_global_axis
-//       Access: Published
-//  Description: Sets the direction of the joint's primary axis,
-//               specified in global coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the direction of the joint's primary axis, specified in global
+ * coordinates.
+ */
 void PhysxJoint::
 set_global_axis(const LVector3f &axis) {
 
@@ -184,11 +162,9 @@ set_global_axis(const LVector3f &axis) {
   ptr()->setGlobalAxis(PhysxManager::vec3_to_nxVec3(axis));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::get_global_axis
-//       Access: Published
-//  Description: Retrieves the joint axis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the joint axis.
+ */
 LVector3f PhysxJoint::
 get_global_axis() const {
 
@@ -196,33 +172,19 @@ get_global_axis() const {
   return PhysxManager::nxVec3_to_vec3(ptr()->getGlobalAxis());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::set_breakable
-//       Access: Published
-//  Description: Sets the maximum force magnitude that the joint
-//               is able to withstand without breaking.
-//
-//               If the joint force rises above this threshold, the
-//               joint breaks, and becomes disabled.
-//
-//               There are two values, one for linear forces, and
-//               one for angular forces. Both values are used
-//               directly as a value for the maximum impulse
-//               tolerated by the joint constraints.
-//
-//               Both force values are NX_MAX_REAL by default.
-//               This setting makes the joint unbreakable. The values
-//               should always be nonnegative.
-//
-//               The distinction between maxForce and maxTorque is
-//               dependent on how the joint is implemented
-//               internally, which may not be obvious. For example
-//               what appears to be an angular degree of freedom may
-//               be constrained indirectly by a linear constraint.
-//
-//               So in most practical applications the user should
-//               set both maxTorque and maxForce to low values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the maximum force magnitude that the joint is able to withstand without
+ * breaking.  If the joint force rises above this threshold, the joint breaks,
+ * and becomes disabled.  There are two values, one for linear forces, and one
+ * for angular forces.  Both values are used directly as a value for the maximum
+ * impulse tolerated by the joint constraints.  Both force values are
+ * NX_MAX_REAL by default.  This setting makes the joint unbreakable.  The
+ * values should always be nonnegative.  The distinction between maxForce and
+ * maxTorque is dependent on how the joint is implemented internally, which may
+ * not be obvious.  For example what appears to be an angular degree of freedom
+ * may be constrained indirectly by a linear constraint.  So in most practical
+ * applications the user should set both maxTorque and maxForce to low values.
+ */
 void PhysxJoint::
 set_breakable(float maxForce, float maxTorque) {
 
@@ -230,11 +192,9 @@ set_breakable(float maxForce, float maxTorque) {
   ptr()->setBreakable(maxForce, maxTorque);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::set_use_acceleration_spring
-//       Access: Published
-//  Description: Switch between acceleration and force based spring.
-////////////////////////////////////////////////////////////////////
+/**
+ * Switch between acceleration and force based spring.
+ */
 void PhysxJoint::
 set_use_acceleration_spring(bool value) {
 
@@ -242,11 +202,9 @@ set_use_acceleration_spring(bool value) {
   ptr()->setUseAccelerationSpring(value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::get_use_acceleration_spring
-//       Access: Published
-//  Description: Checks whether acceleration spring is used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether acceleration spring is used.
+ */
 bool PhysxJoint::
 get_use_acceleration_spring() const {
 
@@ -254,11 +212,9 @@ get_use_acceleration_spring() const {
   return ptr()->getUseAccelerationSpring();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::set_solver_extrapolation_factor
-//       Access: Published
-//  Description: Sets the solver extrapolation factor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the solver extrapolation factor.
+ */
 void PhysxJoint::
 set_solver_extrapolation_factor(float factor) {
 
@@ -266,11 +222,9 @@ set_solver_extrapolation_factor(float factor) {
   ptr()->setSolverExtrapolationFactor(factor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::get_solver_extrapolation_factor
-//       Access: Published
-//  Description: Retrieves the solver extrapolation factor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the solver extrapolation factor.
+ */
 float PhysxJoint::
 get_solver_extrapolation_factor() const {
 
@@ -278,31 +232,17 @@ get_solver_extrapolation_factor() const {
   return ptr()->getSolverExtrapolationFactor();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::set_limit_point
-//       Access: Published
-//  Description: Sets the limit point.
-//               The point is specified in the global coordinate
-//               frame.
-//
-//               All types of joints may be limited with the same
-//               system: You may elect a point attached to one of
-//               the two actors to act as the limit point. You may
-//               also specify several planes attached to the other
-//               actor.
-//
-//               The points and planes move together with the actor
-//               they are attached to.
-//
-//               The simulation then makes certain that the pair
-//               of actors only move relative to each other so that
-//               the limit point stays on the positive side of all
-//               limit planes.
-//
-//               The default limit point is (0,0,0) in the local
-//               frame of actor2. Calling this deletes all existing
-//               limit planes
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the limit point.  The point is specified in the global coordinate frame.
+ * All types of joints may be limited with the same system: You may elect a
+ * point attached to one of the two actors to act as the limit point.  You may
+ * also specify several planes attached to the other actor.  The points and
+ * planes move together with the actor they are attached to.  The simulation
+ * then makes certain that the pair of actors only move relative to each other
+ * so that the limit point stays on the positive side of all limit planes.  The
+ * default limit point is (0,0,0) in the local frame of actor2. Calling this
+ * deletes all existing limit planes
+ */
 void PhysxJoint::
 set_limit_point(const LPoint3f &pos, bool isOnActor2) {
 
@@ -310,20 +250,13 @@ set_limit_point(const LPoint3f &pos, bool isOnActor2) {
   ptr()->setLimitPoint(PhysxManager::point3_to_nxVec3(pos), isOnActor2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::add_limit_plane
-//       Access: Published
-//  Description: Adds a limit plane. 
-//               The parameters are given in global coordinates.
-//               The plane is affixed to the actor that does not
-//               have the limit point.
-//
-//               The normal of the plane points toward the positive
-//               side of the plane, and thus toward the limit point.
-//               If the normal points away from the limit point at
-//               the time of this call, the method returns false
-//               and the limit plane is ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a limit plane.  The parameters are given in global coordinates.  The
+ * plane is affixed to the actor that does not have the limit point.  The normal
+ * of the plane points toward the positive side of the plane, and thus toward
+ * the limit point.  If the normal points away from the limit point at the time
+ * of this call, the method returns false and the limit plane is ignored.
+ */
 void PhysxJoint::
 add_limit_plane(const LVector3f &normal, const LPoint3f &pointInPlane, float restitution) {
 
@@ -333,15 +266,12 @@ add_limit_plane(const LVector3f &normal, const LPoint3f &pointInPlane, float res
                        restitution);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJoint::purge_limit_planes
-//       Access: Published
-//  Description: Deletes all limit planes added to the joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes all limit planes added to the joint.
+ */
 void PhysxJoint::
 purge_limit_planes() {
 
   nassertv(_error_type == ET_ok);
   ptr()->purgeLimitPlanes();
 }
-

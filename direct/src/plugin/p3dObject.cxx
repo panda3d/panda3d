@@ -28,12 +28,12 @@ object_finish(P3D_object *object) {
   delete (P3DObject *)object;
 }
 
-static P3D_object_type 
+static P3D_object_type
 object_get_type(P3D_object *object) {
   return ((P3DObject *)object)->get_type();
 }
 
-static bool 
+static bool
 object_get_bool(P3D_object *object) {
   return ((P3DObject *)object)->get_bool();
 }
@@ -43,17 +43,17 @@ object_get_int(P3D_object *object) {
   return ((P3DObject *)object)->get_int();
 }
 
-static double 
+static double
 object_get_float(P3D_object *object) {
   return ((P3DObject *)object)->get_float();
 }
 
-static int 
+static int
 object_get_string(P3D_object *object, char *buffer, int buffer_length) {
   return ((P3DObject *)object)->get_string(buffer, buffer_length);
 }
 
-static int 
+static int
 object_get_repr(P3D_object *object, char *buffer, int buffer_length) {
   return ((P3DObject *)object)->get_repr(buffer, buffer_length);
 }
@@ -115,7 +115,7 @@ generic_finish(P3D_object *object) {
   nout << "Warning!  default object_finish() method does nothing; object will leak.\n";
 }
 
-static P3D_object_type 
+static P3D_object_type
 generic_get_type(P3D_object *object) {
   // We assume anyone going through the trouble of subclassing this
   // will want to return an object, not one of the other fundamental
@@ -123,7 +123,7 @@ generic_get_type(P3D_object *object) {
   return P3D_OT_object;
 }
 
-static bool 
+static bool
 generic_get_bool(P3D_object *object) {
   return false;
 }
@@ -133,17 +133,17 @@ generic_get_int(P3D_object *object) {
   return 0;
 }
 
-static double 
+static double
 generic_get_float(P3D_object *object) {
   return 0.0;
 }
 
-static int 
+static int
 generic_get_string(P3D_object *object, char *buffer, int buffer_length) {
   return 0;
 }
 
-static int 
+static int
 generic_get_repr(P3D_object *object, char *buffer, int buffer_length) {
   return 0;
 }
@@ -190,48 +190,36 @@ P3D_class_definition P3DObject::_generic_class = {
   &generic_eval,
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DObject::
 ~P3DObject() {
   assert(_ref_count == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_int
-//       Access: Public, Virtual
-//  Description: Returns the object value coerced to an integer, if
-//               possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the object value coerced to an integer, if possible.
+ */
 int P3DObject::
 get_int() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_float
-//       Access: Public, Virtual
-//  Description: Returns the object value coerced to a floating-point
-//               value, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the object value coerced to a floating-point value, if possible.
+ */
 double P3DObject::
 get_float() {
   return get_int();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_string
-//       Access: Public
-//  Description: Stores a string that represents the object value in
-//               the indicated buffer; a null character is included if
-//               there is space.  Returns the number of characters
-//               needed in the output (which might be more than the
-//               actual number of characters stored if buffer_length
-//               was too small).
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores a string that represents the object value in the indicated buffer; a
+ * null character is included if there is space.  Returns the number of
+ * characters needed in the output (which might be more than the actual number
+ * of characters stored if buffer_length was too small).
+ */
 int P3DObject::
 get_string(char *buffer, int buffer_length) {
   string result;
@@ -240,12 +228,10 @@ get_string(char *buffer, int buffer_length) {
   return (int)result.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_repr
-//       Access: Public
-//  Description: Returns a user-friendly representation of the object,
-//               similar to get_string(), above.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a user-friendly representation of the object, similar to
+ * get_string(), above.
+ */
 int P3DObject::
 get_repr(char *buffer, int buffer_length) {
   ostringstream strm;
@@ -255,78 +241,58 @@ get_repr(char *buffer, int buffer_length) {
   return (int)result.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_property
-//       Access: Public, Virtual
-//  Description: Returns the named property element in the object.  The
-//               return value is a new-reference P3D_object, or NULL
-//               on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the named property element in the object.  The return value is a new-
+ * reference P3D_object, or NULL on error.
+ */
 P3D_object *P3DObject::
 get_property(const string &property) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::set_property
-//       Access: Public, Virtual
-//  Description: Modifies (or deletes, if value is NULL) the named
-//               property element in the object.  Returns true on
-//               success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Modifies (or deletes, if value is NULL) the named property element in the
+ * object.  Returns true on success, false on failure.
+ */
 bool P3DObject::
 set_property(const string &property, bool needs_response, P3D_object *value) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::has_method
-//       Access: Public, Virtual
-//  Description: Returns true if the named method exists on this
-//               object, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named method exists on this object, false otherwise.
+ */
 bool P3DObject::
 has_method(const string &method_name) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::call
-//       Access: Public, Virtual
-//  Description: Invokes the named method on the object, passing the
-//               indicated parameters.  If the method name is empty,
-//               invokes the object itself.
-//
-//               If needs_response is true, the return value is a
-//               new-reference P3D_object on success, or NULL on
-//               failure.  If needs_response is false, the return
-//               value is always NULL, and there is no way to
-//               determine success or failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes the named method on the object, passing the indicated parameters.  If
+ * the method name is empty, invokes the object itself.  If needs_response is
+ * true, the return value is a new-reference P3D_object on success, or NULL on
+ * failure.  If needs_response is false, the return value is always NULL, and
+ * there is no way to determine success or failure.
+ */
 P3D_object *P3DObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::eval
-//       Access: Public, Virtual
-//  Description: Evaluates an arbitrary JavaScript expression.  None
-//               of the P3DObject classes implement this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Evaluates an arbitrary JavaScript expression.  None of the P3DObject classes
+ * implement this.
+ */
 P3D_object *P3DObject::
 eval(const string &expression) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::output
-//       Access: Public, Virtual
-//  Description: Writes a formatted representation of the value to the
-//               indicated string.  This is intended for developer
-//               assistance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a formatted representation of the value to the indicated string.  This
+ * is intended for developer assistance.
+ */
 void P3DObject::
 output(ostream &out) {
   string value;
@@ -334,65 +300,50 @@ output(ostream &out) {
   out << value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::fill_xml
-//       Access: Public, Virtual
-//  Description: If this object has a valid XML representation for the
-//               indicated session (that hasn't already been
-//               implemented by the generic code in P3DSession), this
-//               method will apply it to the indicated "value" element
-//               and return true.  Otherwise, this method will leave
-//               the element unchanged and return false.
-////////////////////////////////////////////////////////////////////
+/**
+ * If this object has a valid XML representation for the indicated session (that
+ * hasn't already been implemented by the generic code in P3DSession), this
+ * method will apply it to the indicated "value" element and return true.
+ * Otherwise, this method will leave the element unchanged and return false.
+ */
 bool P3DObject::
 fill_xml(TiXmlElement *xvalue, P3DSession *session) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_object_array
-//       Access: Public, Virtual
-//  Description: Returns a pointer to the array of objects represented
-//               by this object, if any, or NULL if the object does
-//               not represent an array of objects.  This may also
-//               return NULL for a zero-length array; use
-//               get_object_array_size() to differentiate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the array of objects represented by this object, if any,
+ * or NULL if the object does not represent an array of objects.  This may also
+ * return NULL for a zero-length array; use get_object_array_size() to
+ * differentiate.
+ */
 P3D_object **P3DObject::
 get_object_array() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_object_array_size
-//       Access: Public, Virtual
-//  Description: Returns the number of elements in the array returned
-//               by get_object_array(), or -1 if this object does not
-//               representan array of objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of elements in the array returned by get_object_array(),
+ * or -1 if this object does not representan array of objects.
+ */
 int P3DObject::
 get_object_array_size() {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::as_python_object
-//       Access: Public, Virtual
-//  Description: Returns this object, downcast to a P3DPythonObject,
-//               if it is in fact an object of that type; or NULL if
-//               it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns this object, downcast to a P3DPythonObject, if it is in fact an
+ * object of that type; or NULL if it is not.
+ */
 P3DPythonObject *P3DObject::
 as_python_object() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_bool_property
-//       Access: Public
-//  Description: Returns the value of the named property, as a
-//               boolean.  Returns 0 if the property does not exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the named property, as a boolean.  Returns 0 if the
+ * property does not exist.
+ */
 bool P3DObject::
 get_bool_property(const string &property) {
   P3D_object *result = get_property(property);
@@ -404,12 +355,9 @@ get_bool_property(const string &property) {
   return bresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::set_bool_property
-//       Access: Public
-//  Description: Changes the value of the named property to the
-//               indicated boolean value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the value of the named property to the indicated boolean value.
+ */
 void P3DObject::
 set_bool_property(const string &property, bool value) {
   P3D_object *bvalue = new P3DBoolObject(value);
@@ -417,12 +365,10 @@ set_bool_property(const string &property, bool value) {
   P3D_OBJECT_DECREF(bvalue);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_int_property
-//       Access: Public
-//  Description: Returns the value of the named property, as an
-//               integer.  Returns 0 if the property does not exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the named property, as an integer.  Returns 0 if the
+ * property does not exist.
+ */
 int P3DObject::
 get_int_property(const string &property) {
   P3D_object *result = get_property(property);
@@ -434,12 +380,9 @@ get_int_property(const string &property) {
   return iresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::set_int_property
-//       Access: Public
-//  Description: Changes the value of the named property to the
-//               indicated integer value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the value of the named property to the indicated integer value.
+ */
 void P3DObject::
 set_int_property(const string &property, int value) {
   P3D_object *ivalue = new P3DIntObject(value);
@@ -447,13 +390,10 @@ set_int_property(const string &property, int value) {
   P3D_OBJECT_DECREF(ivalue);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_float_property
-//       Access: Public
-//  Description: Returns the value of the named property, as a
-//               floating-point number.  Returns 0.0 if the property
-//               does not exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the named property, as a floating-point number.  Returns
+ * 0.0 if the property does not exist.
+ */
 double P3DObject::
 get_float_property(const string &property) {
   P3D_object *result = get_property(property);
@@ -465,12 +405,10 @@ get_float_property(const string &property) {
   return fresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::set_float_property
-//       Access: Public
-//  Description: Changes the value of the named property to the
-//               indicated floating-point value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the value of the named property to the indicated floating-point
+ * value.
+ */
 void P3DObject::
 set_float_property(const string &property, double value) {
   P3D_object *fvalue = new P3DFloatObject(value);
@@ -478,13 +416,10 @@ set_float_property(const string &property, double value) {
   P3D_OBJECT_DECREF(fvalue);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_string_property
-//       Access: Public
-//  Description: Returns the value of the named property, as a
-//               string.  Returns empty string if the property does
-//               not exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the named property, as a string.  Returns empty string
+ * if the property does not exist.
+ */
 string P3DObject::
 get_string_property(const string &property) {
   P3D_object *result = get_property(property);
@@ -502,12 +437,9 @@ get_string_property(const string &property) {
   return sresult;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::set_string_property
-//       Access: Public
-//  Description: Changes the value of the named property to the
-//               indicated string value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the value of the named property to the indicated string value.
+ */
 void P3DObject::
 set_string_property(const string &property, const string &value) {
   P3D_object *svalue = new P3DStringObject(value);
@@ -515,12 +447,9 @@ set_string_property(const string &property, const string &value) {
   P3D_OBJECT_DECREF(svalue);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::set_undefined_property
-//       Access: Public
-//  Description: Changes the value of the named property to the
-//               undefined value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the value of the named property to the undefined value.
+ */
 void P3DObject::
 set_undefined_property(const string &property) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();

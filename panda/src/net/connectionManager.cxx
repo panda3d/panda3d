@@ -33,22 +33,18 @@
 #include <ifaddrs.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ConnectionManager::
-ConnectionManager() : _set_mutex("ConnectionManager::_set_mutex") 
+ConnectionManager() : _set_mutex("ConnectionManager::_set_mutex")
 {
   _interfaces_scanned = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ConnectionManager::
 ~ConnectionManager() {
   // Notify all of our associated readers and writers that we're gone.
@@ -63,44 +59,28 @@ ConnectionManager::
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::open_UDP_connection
-//       Access: Published
-//  Description: Opens a socket for sending and/or receiving UDP
-//               packets.  If the port number is greater than zero,
-//               the UDP connection will be opened for listening on
-//               the indicated port; otherwise, it will be useful only
-//               for sending.
-//
-//               Use a ConnectionReader and ConnectionWriter to handle
-//               the actual communication.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a socket for sending and/or receiving UDP packets.  If the port number
+ * is greater than zero, the UDP connection will be opened for listening on the
+ * indicated port; otherwise, it will be useful only for sending.  Use a
+ * ConnectionReader and ConnectionWriter to handle the actual communication.
+ */
 PT(Connection) ConnectionManager::
 open_UDP_connection(int port) {
   return open_UDP_connection("", port);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::open_UDP_connection
-//       Access: Published
-//  Description: Opens a socket for sending and/or receiving UDP
-//               packets.  If the port number is greater than zero,
-//               the UDP connection will be opened for listening on
-//               the indicated port; otherwise, it will be useful only
-//               for sending.
-//
-//               This variant accepts both a hostname and port to
-//               listen on a particular interface; if the hostname is
-//               empty, all interfaces will be available.
-//
-//               If for_broadcast is true, this UDP connection will be
-//               configured to send and/or receive messages on the
-//               broadcast address (255.255.255.255); otherwise, these
-//               messages may be automatically filtered by the OS.
-//
-//               Use a ConnectionReader and ConnectionWriter to handle
-//               the actual communication.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a socket for sending and/or receiving UDP packets.  If the port number
+ * is greater than zero, the UDP connection will be opened for listening on the
+ * indicated port; otherwise, it will be useful only for sending.  This variant
+ * accepts both a hostname and port to listen on a particular interface; if the
+ * hostname is empty, all interfaces will be available.  If for_broadcast is
+ * true, this UDP connection will be configured to send and/or receive messages
+ * on the broadcast address (255.255.255.255); otherwise, these messages may be
+ * automatically filtered by the OS.  Use a ConnectionReader and
+ * ConnectionWriter to handle the actual communication.
+ */
 PT(Connection) ConnectionManager::
 open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
   Socket_UDP *socket = new Socket_UDP;
@@ -112,7 +92,7 @@ open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
     } else {
       address.set_host(hostname, port);
     }
-    
+
     if (!socket->OpenForInput(address.get_addr())) {
       if (hostname.empty()) {
         net_cat.error()
@@ -120,7 +100,7 @@ open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
       } else {
         net_cat.error()
           << "Unable to bind to " << hostname << ":" << port << " for UDP.\n";
-      }        
+      }
       delete socket;
       return PT(Connection)();
     }
@@ -164,22 +144,14 @@ open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::open_TCP_server_rendezvous
-//       Access: Published
-//  Description: Creates a socket to be used as a rendezvous socket
-//               for a server to listen for TCP connections.  The
-//               socket returned by this call should only be added to
-//               a ConnectionListener (not to a generic
-//               ConnectionReader).
-//
-//               This variant of this method accepts a single port,
-//               and will listen to that port on all available
-//               interfaces.
-//
-//               backlog is the maximum length of the queue of pending
-//               connections.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a socket to be used as a rendezvous socket for a server to listen for
+ * TCP connections.  The socket returned by this call should only be added to a
+ * ConnectionListener (not to a generic ConnectionReader).  This variant of this
+ * method accepts a single port, and will listen to that port on all available
+ * interfaces.  backlog is the maximum length of the queue of pending
+ * connections.
+ */
 PT(Connection) ConnectionManager::
 open_TCP_server_rendezvous(int port, int backlog) {
   NetAddress address;
@@ -187,25 +159,16 @@ open_TCP_server_rendezvous(int port, int backlog) {
   return open_TCP_server_rendezvous(address, backlog);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::open_TCP_server_rendezvous
-//       Access: Published
-//  Description: Creates a socket to be used as a rendezvous socket
-//               for a server to listen for TCP connections.  The
-//               socket returned by this call should only be added to
-//               a ConnectionListener (not to a generic
-//               ConnectionReader).
-//
-//               This variant of this method accepts a "hostname",
-//               which is usually just an IP address in dotted
-//               notation, and a port number.  It will listen on the
-//               interface indicated by the IP address.  If the IP
-//               address is empty string, it will listen on all
-//               interfaces.
-//
-//               backlog is the maximum length of the queue of pending
-//               connections.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a socket to be used as a rendezvous socket for a server to listen for
+ * TCP connections.  The socket returned by this call should only be added to a
+ * ConnectionListener (not to a generic ConnectionReader).  This variant of this
+ * method accepts a "hostname", which is usually just an IP address in dotted
+ * notation, and a port number.  It will listen on the interface indicated by
+ * the IP address.  If the IP address is empty string, it will listen on all
+ * interfaces.  backlog is the maximum length of the queue of pending
+ * connections.
+ */
 PT(Connection) ConnectionManager::
 open_TCP_server_rendezvous(const string &hostname, int port, int backlog) {
   NetAddress address;
@@ -217,27 +180,19 @@ open_TCP_server_rendezvous(const string &hostname, int port, int backlog) {
   return open_TCP_server_rendezvous(address, backlog);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::open_TCP_server_rendezvous
-//       Access: Published
-//  Description: Creates a socket to be used as a rendezvous socket
-//               for a server to listen for TCP connections.  The
-//               socket returned by this call should only be added to
-//               a ConnectionListener (not to a generic
-//               ConnectionReader).
-//
-//               This variant of this method accepts a NetAddress,
-//               which allows you to specify a specific interface to
-//               listen to.
-//
-//               backlog is the maximum length of the queue of pending
-//               connections.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a socket to be used as a rendezvous socket for a server to listen for
+ * TCP connections.  The socket returned by this call should only be added to a
+ * ConnectionListener (not to a generic ConnectionReader).  This variant of this
+ * method accepts a NetAddress, which allows you to specify a specific interface
+ * to listen to.  backlog is the maximum length of the queue of pending
+ * connections.
+ */
 PT(Connection) ConnectionManager::
 open_TCP_server_rendezvous(const NetAddress &address, int backlog) {
   ostringstream strm;
   if (address.get_ip() == 0) {
-    strm << "port " << address.get_port();  
+    strm << "port " << address.get_port();
   } else {
     strm << address.get_ip_string() << ":" << address.get_port();
   }
@@ -259,14 +214,11 @@ open_TCP_server_rendezvous(const NetAddress &address, int backlog) {
   return connection;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::open_TCP_client_connection
-//       Access: Published
-//  Description: Attempts to establish a TCP client connection to a
-//               server at the indicated address.  If the connection
-//               is not established within timeout_ms milliseconds, a
-//               null connection is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to establish a TCP client connection to a server at the indicated
+ * address.  If the connection is not established within timeout_ms
+ * milliseconds, a null connection is returned.
+ */
 PT(Connection) ConnectionManager::
 open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
   Socket_TCP *socket = new Socket_TCP;
@@ -328,13 +280,10 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
   return connection;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::open_TCP_client_connection
-//       Access: Published
-//  Description: This is a shorthand version of the function to
-//               directly establish communications to a named host and
-//               port.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a shorthand version of the function to directly establish
+ * communications to a named host and port.
+ */
 PT(Connection) ConnectionManager::
 open_TCP_client_connection(const string &hostname, int port,
                            int timeout_ms) {
@@ -346,25 +295,17 @@ open_TCP_client_connection(const string &hostname, int port,
   return open_TCP_client_connection(address, timeout_ms);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::close_connection
-//       Access: Published
-//  Description: Terminates a UDP or TCP socket previously opened.
-//               This also removes it from any associated
-//               ConnectionReader or ConnectionListeners.
-//
-//               The socket itself may not be immediately closed--it
-//               will not be closed until all outstanding pointers to
-//               it are cleared, including any pointers remaining in
-//               NetDatagrams recently received from the socket.
-//
-//               The return value is true if the connection was marked
-//               to be closed, or false if close_connection() had
-//               already been called (or the connection did not belong
-//               to this ConnectionManager).  In neither case can you
-//               infer anything about whether the connection has
-//               *actually* been closed yet based on the return value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Terminates a UDP or TCP socket previously opened.  This also removes it from
+ * any associated ConnectionReader or ConnectionListeners.  The socket itself
+ * may not be immediately closed--it will not be closed until all outstanding
+ * pointers to it are cleared, including any pointers remaining in NetDatagrams
+ * recently received from the socket.  The return value is true if the
+ * connection was marked to be closed, or false if close_connection() had
+ * already been called (or the connection did not belong to this
+ * ConnectionManager).  In neither case can you infer anything about whether the
+ * connection has *actually* been closed yet based on the return value.
+ */
 bool ConnectionManager::
 close_connection(const PT(Connection) &connection) {
   if (connection != (Connection *)NULL) {
@@ -379,7 +320,7 @@ close_connection(const PT(Connection) &connection) {
       return false;
     }
     _connections.erase(ci);
-    
+
     Readers::iterator ri;
     for (ri = _readers.begin(); ri != _readers.end(); ++ri) {
       (*ri)->remove_connection(connection);
@@ -392,7 +333,7 @@ close_connection(const PT(Connection) &connection) {
   // there might be outstanding pointers to it.  But we can at least
   // shut it down.  It will be eventually closed when all the
   // pointers let go.
-  
+
   net_cat.info()
     << "Shutting down connection " << (void *)connection
     << " locally.\n";
@@ -402,26 +343,17 @@ close_connection(const PT(Connection) &connection) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::wait_for_readers
-//       Access: Published
-//  Description: Blocks the process for timeout number of seconds, or
-//               until any data is available on any of the
-//               non-threaded ConnectionReaders or
-//               ConnectionListeners, whichever comes first.  The
-//               return value is true if there is data available (but
-//               you have to iterate through all readers to find it),
-//               or false if the timeout occurred without any data.
-//
-//               If the timeout value is negative, this will block
-//               forever or until data is available.
-//
-//               This only works if all ConnectionReaders and
-//               ConnectionListeners are non-threaded.  If any
-//               threaded ConnectionReaders are part of the
-//               ConnectionManager, the timeout value is implicitly
-//               treated as 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blocks the process for timeout number of seconds, or until any data is
+ * available on any of the non-threaded ConnectionReaders or
+ * ConnectionListeners, whichever comes first.  The return value is true if
+ * there is data available (but you have to iterate through all readers to find
+ * it), or false if the timeout occurred without any data.  If the timeout value
+ * is negative, this will block forever or until data is available.  This only
+ * works if all ConnectionReaders and ConnectionListeners are non-threaded.  If
+ * any threaded ConnectionReaders are part of the ConnectionManager, the timeout
+ * value is implicitly treated as 0.
+ */
 bool ConnectionManager::
 wait_for_readers(double timeout) {
   bool block_forever = false;
@@ -437,10 +369,10 @@ wait_for_readers(double timeout) {
     Socket_fdset fdset;
     fdset.clear();
     bool any_threaded = false;
-    
+
     {
       LightMutexHolder holder(_set_mutex);
-      
+
       Readers::iterator ri;
       for (ri = _readers.begin(); ri != _readers.end(); ++ri) {
         ConnectionReader *reader = (*ri);
@@ -457,7 +389,7 @@ wait_for_readers(double timeout) {
     }
 
     double wait_timeout = get_net_max_block();
-    if (!block_forever) { 
+    if (!block_forever) {
       wait_timeout = min(wait_timeout, stop - now);
     }
 
@@ -496,13 +428,10 @@ wait_for_readers(double timeout) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::get_host_name
-//       Access: Published, Static
-//  Description: Returns the name of this particular machine on the
-//               network, if available, or the empty string if the
-//               hostname cannot be determined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of this particular machine on the network, if available, or
+ * the empty string if the hostname cannot be determined.
+ */
 string ConnectionManager::
 get_host_name() {
   char temp_buff[1024];
@@ -513,15 +442,12 @@ get_host_name() {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::scan_interfaces
-//       Access: Published
-//  Description: Repopulates the list reported by
-//               get_num_interface()/get_interface().  It is not
-//               necessary to call this explicitly, unless you want to
-//               re-determine the connected interfaces (for instance,
-//               if you suspect the hardware has recently changed).
-////////////////////////////////////////////////////////////////////
+/**
+ * Repopulates the list reported by get_num_interface()/get_interface().  It is
+ * not necessary to call this explicitly, unless you want to re-determine the
+ * connected interfaces (for instance, if you suspect the hardware has recently
+ * changed).
+ */
 void ConnectionManager::
 scan_interfaces() {
   LightMutexHolder holder(_set_mutex);
@@ -627,14 +553,11 @@ scan_interfaces() {
 #endif // WIN32_VC
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::get_num_interfaces
-//       Access: Published
-//  Description: This returns the number of usable network interfaces
-//               detected on this machine.  (Currently, only IPv4
-//               interfaces are reported.)  See scan_interfaces() to
-//               repopulate this list.
-////////////////////////////////////////////////////////////////////
+/**
+ * This returns the number of usable network interfaces detected on this
+ * machine.  (Currently, only IPv4 interfaces are reported.)  See
+ * scan_interfaces() to repopulate this list.
+ */
 int ConnectionManager::
 get_num_interfaces() {
   if (!_interfaces_scanned) {
@@ -644,14 +567,11 @@ get_num_interfaces() {
   return _interfaces.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::get_interface
-//       Access: Published
-//  Description: Returns the nth usable network interface detected on
-//               this machine.  (Currently, only IPv4 interfaces are
-//               reported.)  See scan_interfaces() to repopulate this
-//               list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth usable network interface detected on this machine.
+ * (Currently, only IPv4 interfaces are reported.)  See scan_interfaces() to
+ * repopulate this list.
+ */
 const ConnectionManager::Interface &ConnectionManager::
 get_interface(int n) {
   if (!_interfaces_scanned) {
@@ -662,29 +582,23 @@ get_interface(int n) {
   return _interfaces[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::new_connection
-//       Access: Protected
-//  Description: This internal function is called whenever a new
-//               connection is established.  It allows the
-//               ConnectionManager to save all of the pointers to open
-//               connections so they can't be inadvertently deleted
-//               until close_connection() is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called whenever a new connection is established.
+ * It allows the ConnectionManager to save all of the pointers to open
+ * connections so they can't be inadvertently deleted until close_connection()
+ * is called.
+ */
 void ConnectionManager::
 new_connection(const PT(Connection) &connection) {
   LightMutexHolder holder(_set_mutex);
   _connections.insert(connection);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::flush_read_connection
-//       Access: Protected, Virtual
-//  Description: An internal function called by ConnectionWriter only
-//               when a write failure has occurred.  This method
-//               ensures that all of the read data has been flushed
-//               from the pipe before the connection is fully removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by ConnectionWriter only when a write failure has
+ * occurred.  This method ensures that all of the read data has been flushed
+ * from the pipe before the connection is fully removed.
+ */
 void ConnectionManager::
 flush_read_connection(Connection *connection) {
   Readers readers;
@@ -709,15 +623,11 @@ flush_read_connection(Connection *connection) {
   socket->Close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::connection_reset
-//       Access: Protected, Virtual
-//  Description: An internal function called by the ConnectionReader,
-//               ConnectionWriter, or ConnectionListener when a
-//               connection has been externally reset.  This adds the
-//               connection to the queue of those which have recently
-//               been reset.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by the ConnectionReader, ConnectionWriter, or
+ * ConnectionListener when a connection has been externally reset.  This adds
+ * the connection to the queue of those which have recently been reset.
+ */
 void ConnectionManager::
 connection_reset(const PT(Connection) &connection, bool okflag) {
   if (net_cat.is_info()) {
@@ -740,59 +650,45 @@ connection_reset(const PT(Connection) &connection, bool okflag) {
   close_connection(connection);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::add_reader
-//       Access: Protected
-//  Description: This internal function is called by ConnectionReader
-//               when it is constructed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by ConnectionReader when it is constructed.
+ */
 void ConnectionManager::
 add_reader(ConnectionReader *reader) {
   LightMutexHolder holder(_set_mutex);
   _readers.insert(reader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::remove_reader
-//       Access: Protected
-//  Description: This internal function is called by ConnectionReader
-//               when it is destructed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by ConnectionReader when it is destructed.
+ */
 void ConnectionManager::
 remove_reader(ConnectionReader *reader) {
   LightMutexHolder holder(_set_mutex);
   _readers.erase(reader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::add_writer
-//       Access: Protected
-//  Description: This internal function is called by ConnectionWriter
-//               when it is constructed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by ConnectionWriter when it is constructed.
+ */
 void ConnectionManager::
 add_writer(ConnectionWriter *writer) {
   LightMutexHolder holder(_set_mutex);
   _writers.insert(writer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::remove_writer
-//       Access: Protected
-//  Description: This internal function is called by ConnectionWriter
-//               when it is destructed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by ConnectionWriter when it is destructed.
+ */
 void ConnectionManager::
 remove_writer(ConnectionWriter *writer) {
   LightMutexHolder holder(_set_mutex);
   _writers.erase(writer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::format_mac_address
-//       Access: Protected
-//  Description: Formats a device's MAC address into a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats a device's MAC address into a string.
+ */
 string ConnectionManager::
 format_mac_address(const unsigned char *data, int data_size) {
   stringstream strm;
@@ -806,11 +702,9 @@ format_mac_address(const unsigned char *data, int data_size) {
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionManager::Interface::Output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConnectionManager::Interface::
 output(ostream &out) const {
   out << get_name() << " [";

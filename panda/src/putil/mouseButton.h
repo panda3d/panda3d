@@ -18,12 +18,10 @@
 
 #include "buttonHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseButton
-// Description : This class is just used as a convenient namespace for
-//               grouping all of these handy functions that return
-//               buttons which map to standard mouse buttons.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is just used as a convenient namespace for grouping all of these
+ * handy functions that return buttons which map to standard mouse buttons.
+ */
 class EXPCL_PANDA_PUTIL MouseButton {
 PUBLISHED:
   static ButtonHandle button(int button_number);

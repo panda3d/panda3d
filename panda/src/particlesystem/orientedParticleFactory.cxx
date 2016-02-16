@@ -14,21 +14,17 @@
 #include "orientedParticleFactory.h"
 #include "orientedParticle.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrientedParticleFactory
-//       Access: Public
-//  Description: Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor
+ */
 OrientedParticleFactory::
 OrientedParticleFactory() :
   BaseParticleFactory() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrientedParticleFactory
-//       Access: Public
-//  Description: copy Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy Constructor
+ */
 OrientedParticleFactory::
 OrientedParticleFactory(const OrientedParticleFactory &copy) :
   BaseParticleFactory(copy) {
@@ -36,41 +32,32 @@ OrientedParticleFactory(const OrientedParticleFactory &copy) :
   _final_orientation = copy._final_orientation;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~OrientedParticleFactory
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 OrientedParticleFactory::
 ~OrientedParticleFactory() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: populate_child_particle
-//       Access: Private
-//  Description: child spawn
-////////////////////////////////////////////////////////////////////
+/**
+ * child spawn
+ */
 void OrientedParticleFactory::
 populate_child_particle(BaseParticle *bp) const {
   bp->set_orientation(_initial_orientation);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: alloc_particle
-//       Access: Public
-//  Description: child particle generation function
-////////////////////////////////////////////////////////////////////
+/**
+ * child particle generation function
+ */
 BaseParticle *OrientedParticleFactory::
 alloc_particle() const {
   return new OrientedParticle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void OrientedParticleFactory::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -78,12 +65,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void OrientedParticleFactory::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

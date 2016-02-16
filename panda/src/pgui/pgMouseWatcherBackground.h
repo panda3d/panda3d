@@ -18,13 +18,11 @@
 
 #include "mouseWatcherRegion.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGMouseWatcherBackground
-// Description : This is a special kind of MouseWatcherRegion that
-//               doesn't have a rectangle and is never active, but
-//               just quietly listens for keypresses and sends them to
-//               all the PGItems with background focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special kind of MouseWatcherRegion that doesn't have a rectangle
+ * and is never active, but just quietly listens for keypresses and sends them
+ * to all the PGItems with background focus.
+ */
 class EXPCL_PANDA_PGUI PGMouseWatcherBackground : public MouseWatcherRegion {
 PUBLISHED:
   PGMouseWatcherBackground();

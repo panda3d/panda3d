@@ -16,11 +16,9 @@
 
 TypeHandle MouseSubregion::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseSubregion::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MouseSubregion::
 MouseSubregion(const string &name) :
   MouseInterfaceNode(name)
@@ -41,28 +39,21 @@ MouseSubregion(const string &name) :
   _button_events = new ButtonEventList;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseSubregion::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MouseSubregion::
 ~MouseSubregion() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseSubregion::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output parameters.
+ * The input parameters may be accessed with the index numbers returned by the
+ * define_input() calls that were made earlier (presumably in the constructor);
+ * likewise, the output parameters should be set with the index numbers returned
+ * by the define_output() calls.
+ */
 void MouseSubregion::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
@@ -91,7 +82,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
 
         PN_stdfloat xf = (1.0f + n[0]) * 0.5f * s[0];
         PN_stdfloat yf = (1.0f - n[1]) * 0.5f * s[1];
-        
+
         _pixel_xy->set_value(LPoint2(xf, yf));
         output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
       }

@@ -176,4 +176,3 @@ BMPlenfile(
 }
 
 #endif /* _BMP_H_ */
-

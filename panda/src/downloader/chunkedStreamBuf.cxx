@@ -23,11 +23,9 @@
 typedef int streamsize;
 #endif /* HAVE_STREAMSIZE */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ChunkedStreamBuf::
 ChunkedStreamBuf() {
   _chunk_remaining = 0;
@@ -48,11 +46,9 @@ ChunkedStreamBuf() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ChunkedStreamBuf::
 ~ChunkedStreamBuf() {
   close_read();
@@ -61,13 +57,10 @@ ChunkedStreamBuf::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::open_read
-//       Access: Public
-//  Description: If the document pointer is non-NULL, it will be
-//               updated with the length of the file as it is derived
-//               from the chunked encoding.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the document pointer is non-NULL, it will be updated with the length of
+ * the file as it is derived from the chunked encoding.
+ */
 void ChunkedStreamBuf::
 open_read(BioStreamPtr *source, HTTPChannel *doc) {
   _source = source;
@@ -90,22 +83,18 @@ open_read(BioStreamPtr *source, HTTPChannel *doc) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::close_read
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ChunkedStreamBuf::
 close_read() {
   _source.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int ChunkedStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
@@ -135,11 +124,9 @@ underflow() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::read_chars
-//       Access: Private
-//  Description: Gets some characters from the source stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets some characters from the source stream.
+ */
 size_t ChunkedStreamBuf::
 read_chars(char *start, size_t length) {
   while (true) {
@@ -147,7 +134,7 @@ read_chars(char *start, size_t length) {
     if (_done) {
       return 0;
     }
-    
+
     if (_chunk_remaining != 0) {
       // Extract some of the bytes remaining in the chunk.
       length = min(length, _chunk_remaining);
@@ -162,15 +149,15 @@ read_chars(char *start, size_t length) {
         }
       }
       _chunk_remaining -= read_count;
-      
+
       if (read_count == 0 && (*_source)->is_closed()) {
         // Whoops, the socket closed while we were downloading.
         _read_state = ISocketStream::RS_error;
       }
-      
+
       return read_count;
     }
-    
+
     // Read the next chunk.
     string line;
     bool got_line = http_getline(line);
@@ -186,7 +173,7 @@ read_chars(char *start, size_t length) {
         // Whoops, the socket closed while we were downloading.
         _read_state = ISocketStream::RS_error;
       }
-      
+
       if (!_wanted_nonblocking) {
         // Simulate blocking.
         thread_yield();
@@ -200,7 +187,7 @@ read_chars(char *start, size_t length) {
       downloader_cat.spam()
         << "Got chunk of size " << chunk_size << " bytes.\n";
     }
-    
+
     if (chunk_size == 0) {
       // Last chunk; we're done.
       _done = true;
@@ -211,11 +198,11 @@ read_chars(char *start, size_t length) {
       _read_state = ISocketStream::RS_complete;
       return 0;
     }
-    
+
     if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
       _doc->_transfer_file_size += chunk_size;
     }
-    
+
     _chunk_remaining = chunk_size;
 
     // Back to the top.
@@ -225,14 +212,11 @@ read_chars(char *start, size_t length) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ChunkedStreamBuf::http_getline
-//       Access: Private
-//  Description: Reads a single line from the stream.  Returns
-//               true if the line is successfully retrieved, or false
-//               if a complete line has not yet been received or if
-//               the connection has been closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single line from the stream.  Returns true if the line is
+ * successfully retrieved, or false if a complete line has not yet been received
+ * or if the connection has been closed.
+ */
 bool ChunkedStreamBuf::
 http_getline(string &str) {
   nassertr(!_source.is_null(), false);

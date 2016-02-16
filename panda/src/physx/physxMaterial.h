@@ -24,29 +24,17 @@
 class PhysxScene;
 class PhysxMaterialDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxMaterial
-// Description : A class for describing a shape's surface
-//               properties.
-//
-//               You can create a material which has different
-//               friction coefficients depending on the direction
-//               that a body in contact is trying to move in. This
-//               is called anisotropic friction.
-//
-//               Anisotropic friction is useful for modeling things
-//               like sledges, skis etc
-//
-//               When you create an anisotropic material you specify
-//               the default friction parameters and also friction
-//               parameters for the V axis. The friction parameters
-//               for the V axis are applied to motion along the
-//               direction of anisotropy (dirOfAnisotropy).
-//
-//               Default material: You can change the properties of
-//               the default material by querying for material
-//               index 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class for describing a shape's surface properties.  You can create a
+ * material which has different friction coefficients depending on the direction
+ * that a body in contact is trying to move in.  This is called anisotropic
+ * friction.  Anisotropic friction is useful for modeling things like sledges,
+ * skis etc  When you create an anisotropic material you specify the default
+ * friction parameters and also friction parameters for the V axis.  The
+ * friction parameters for the V axis are applied to motion along the direction
+ * of anisotropy (dirOfAnisotropy).  Default material: You can change the
+ * properties of the default material by querying for material index 0.
+ */
 class EXPCL_PANDAPHYSX PhysxMaterial : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -100,7 +88,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxMaterial", 
+    register_type(_type_handle, "PhysxMaterial",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -22,10 +22,9 @@
 
 #include "pnmImage.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletHeightfieldShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
 
 PUBLISHED:
@@ -51,7 +50,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletHeightfieldShape", 
+    register_type(_type_handle, "BulletHeightfieldShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

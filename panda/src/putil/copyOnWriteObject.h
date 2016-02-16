@@ -34,12 +34,10 @@
   #undef COW_THREADED
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : CopyOnWriteObject
-// Description : This base class provides basic reference counting,
-//               but also can be used with a CopyOnWritePointer to
-//               provide get_read_pointer() and get_write_pointer().
-////////////////////////////////////////////////////////////////////
+/**
+ * This base class provides basic reference counting, but also can be used with
+ * a CopyOnWritePointer to provide get_read_pointer() and get_write_pointer().
+ */
 class EXPCL_PANDA_PUTIL CopyOnWriteObject : public CachedTypedWritableReferenceCount {
 public:
   INLINE CopyOnWriteObject();
@@ -92,12 +90,10 @@ private:
   friend class CopyOnWritePointer;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : CopyOnWriteObj
-// Description : This is similar to RefCountObj, but it implements a
-//               CopyOnWriteObject inheritance instead of a
-//               ReferenceCount inheritance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to RefCountObj, but it implements a CopyOnWriteObject
+ * inheritance instead of a ReferenceCount inheritance.
+ */
 template<class Base>
 class CopyOnWriteObj : public CopyOnWriteObject, public Base {
 public:
@@ -127,11 +123,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : CopyOnWriteObj1
-// Description : For objects (e.g. pvectors) whose constructor
-//               takes a single parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * For objects (e.g.  pvectors) whose constructor takes a single parameter.
+ */
 template<class Base, class Param1>
 class CopyOnWriteObj1 : public CopyOnWriteObject, public Base {
 public:

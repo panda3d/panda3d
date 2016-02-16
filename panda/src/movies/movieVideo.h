@@ -26,18 +26,13 @@ class FactoryParams;
 class BamWriter;
 class BamReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovieVideo
-// Description : A MovieVideo is actually any source that provides
-//               a sequence of video frames.  That could include an
-//               AVI file, a digital camera, or an internet TV station.
-//
-//               The difference between a MovieVideo and a
-//               MovieVideoCursor is like the difference between a
-//               filename and a file handle.  The MovieVideo just
-//               indicates a particular movie.  The MovieVideoCursor
-//               is what allows access.
-////////////////////////////////////////////////////////////////////
+/**
+ * A MovieVideo is actually any source that provides a sequence of video frames.
+ * That could include an AVI file, a digital camera, or an internet TV station.
+ * The difference between a MovieVideo and a MovieVideoCursor is like the
+ * difference between a filename and a file handle.  The MovieVideo just
+ * indicates a particular movie.  The MovieVideoCursor is what allows access.
+ */
 class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   MovieVideo(const string &name = "Blank Video");
@@ -59,7 +54,7 @@ public:
 
 protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

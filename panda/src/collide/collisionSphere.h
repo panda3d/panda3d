@@ -19,10 +19,9 @@
 #include "parabola.h"
 #include "collisionBox.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionSphere
-// Description : A spherical collision volume or object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A spherical collision volume or object.
+ */
 class EXPCL_PANDA_COLLIDE CollisionSphere : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionSphere(const LPoint3 &center, PN_stdfloat radius);
@@ -124,5 +123,3 @@ private:
 #include "collisionSphere.I"
 
 #endif
-
-

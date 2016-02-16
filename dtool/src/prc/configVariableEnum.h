@@ -17,27 +17,22 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableEnum
-// Description : This class specializes ConfigVariable as an
-//               enumerated type.  It is a template class, so it
-//               cannot be easily published; it's not really necessary
-//               outside of C++ anyway.
-//
-//               This variable assumes that the enumerated type in
-//               question has input and output stream operators
-//               defined that do the right thing (outputting a
-//               sensible string for the type, and converting a string
-//               to the correct value).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class specializes ConfigVariable as an enumerated type.  It is a
+ * template class, so it cannot be easily published; it's not really necessary
+ * outside of C++ anyway.  This variable assumes that the enumerated type in
+ * question has input and output stream operators defined that do the right
+ * thing (outputting a sensible string for the type, and converting a string to
+ * the correct value).
+ */
 template<class EnumType>
 class ConfigVariableEnum : public ConfigVariable {
 public:
-  INLINE ConfigVariableEnum(const string &name, EnumType default_value, 
-                            const string &description = string(), 
+  INLINE ConfigVariableEnum(const string &name, EnumType default_value,
+                            const string &description = string(),
                             int flags = 0);
-  INLINE ConfigVariableEnum(const string &name, const string &default_value, 
-                            const string &description = string(), 
+  INLINE ConfigVariableEnum(const string &name, const string &default_value,
+                            const string &description = string(),
                             int flags = 0);
   INLINE ~ConfigVariableEnum();
 
@@ -71,4 +66,3 @@ private:
 #include "configVariableEnum.I"
 
 #endif
-

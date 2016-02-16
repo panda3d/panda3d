@@ -11,13 +11,10 @@
  * @date 2010-03-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletPersistentManifold::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletPersistentManifold::
 ~BulletPersistentManifold() {
 
 }
-

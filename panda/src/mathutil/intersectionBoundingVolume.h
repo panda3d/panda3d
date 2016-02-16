@@ -19,15 +19,12 @@
 #include "geometricBoundingVolume.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IntersectionBoundingVolume
-// Description : This special bounding volume is the intersection of all of
-//               its constituent bounding volumes.
-//
-//               A point is defined to be within an
-//               IntersectionBoundingVolume if it is within all of its
-//               component bounding volumes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special bounding volume is the intersection of all of its constituent
+ * bounding volumes.  A point is defined to be within an
+ * IntersectionBoundingVolume if it is within all of its component bounding
+ * volumes.
+ */
 class EXPCL_PANDA_MATHUTIL IntersectionBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL IntersectionBoundingVolume();
@@ -100,4 +97,3 @@ private:
 #include "intersectionBoundingVolume.I"
 
 #endif
-

@@ -18,11 +18,10 @@
 
 #include "selectiveChildNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SwitchNode
-// Description : A node that renders only one of its children,
-//               according to the user's indication.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that renders only one of its children, according to the user's
+ * indication.
+ */
 class EXPCL_PANDA_PGRAPHNODES SwitchNode : public SelectiveChildNode {
 PUBLISHED:
   INLINE SwitchNode(const string &name);

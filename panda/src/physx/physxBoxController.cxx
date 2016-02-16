@@ -16,11 +16,9 @@
 
 TypeHandle PhysxBoxController::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxController::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxBoxController::
 link(NxController *controllerPtr) {
 
@@ -39,11 +37,9 @@ link(NxController *controllerPtr) {
   actor->link_controller(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxController::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxBoxController::
 unlink() {
 
@@ -58,11 +54,9 @@ unlink() {
   scene->_controllers.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxController::set_extents
-//       Access: Published
-//  Description: Sets controller's extents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets controller's extents.
+ */
 void PhysxBoxController::
 set_extents(const LVector3f &extents) {
 
@@ -70,15 +64,12 @@ set_extents(const LVector3f &extents) {
   _ptr->setExtents(PhysxManager::vec3_to_nxVec3(extents));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxController::get_extents
-//       Access: Published
-//  Description: Returns controller's extents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns controller's extents.
+ */
 LVector3f PhysxBoxController::
 get_extents() const {
 
   nassertr(_error_type == ET_ok, LVector3f::zero());
   return PhysxManager::nxVec3_to_vec3(_ptr->getExtents());
 }
-

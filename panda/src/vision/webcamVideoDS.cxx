@@ -9,13 +9,13 @@
  * @file webcamVideoDS.cxx
  * @author jyelon
  * @date 2007-11-01
- * 
+ *
  * It goes against Panda3D coding style conventions to hide an
  * entire class in a C++ file and not expose it through header
  * files at all.  However, in this case, these classes are so full
  * of OS-specific junk that I feel it is better to hide them
  * entirely.  - Josh
- * 
+ *
  * This code was created by studying and adapting the VDOGRAB
  * library by Shu-Kai Yang and the videoInput library by Theodore
  * Watson.  We owe both of them a great deal of thanks for
@@ -74,17 +74,16 @@
 #import "libid:78530B68-61F9-11D2-8CAD-00A024580902" \
   no_namespace named_guids raw_interfaces_only no_implementation \
   exclude("_AMMediaType", "_FilterState", "IReferenceClock", "IMediaFilter", \
-  	      "_PinDirection", "IEnumMediaTypes", "IFilterGraph", "_FilterInfo", \
-  	      "IGraphBuilder", "IBaseFilter", "_PinInfo", "IPin", "IEnumPins", \
-  	      "IEnumFilters", "IEnumMediaTypes", "IAMSetErrorLog","IAMTimelineObj", \
-  	      "IMediaDet", "IMediaSample", "IPersistStream", "IPersist", "IStream", \
-  	      "ISequentialStream", "_LARGE_INTEGER", "_ULARGE_INTEGER", \
-  	      "tagSTATSTG", "_FILETIME", "IPropertyBag", "IErrorLog")
+          "_PinDirection", "IEnumMediaTypes", "IFilterGraph", "_FilterInfo", \
+          "IGraphBuilder", "IBaseFilter", "_PinInfo", "IPin", "IEnumPins", \
+          "IEnumFilters", "IEnumMediaTypes", "IAMSetErrorLog","IAMTimelineObj", \
+          "IMediaDet", "IMediaSample", "IPersistStream", "IPersist", "IStream", \
+          "ISequentialStream", "_LARGE_INTEGER", "_ULARGE_INTEGER", \
+          "tagSTATSTG", "_FILETIME", "IPropertyBag", "IErrorLog")
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideoDS
-// Description : The directshow implementation of webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * The directshow implementation of webcams.
+ */
 
 class WebcamVideoDS : public WebcamVideo
 {
@@ -131,10 +130,9 @@ private:
 
 TypeHandle WebcamVideoDS::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideoCursorDS
-// Description : The directshow implementation of webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * The directshow implementation of webcams.
+ */
 
 
 class WebcamVideoCursorDS : public MovieVideoCursor
@@ -193,12 +191,10 @@ private:
 
 TypeHandle WebcamVideoCursorDS::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::media_score
-//       Access: Public, Static
-//  Description: Evaluate an AM_MEDIA_TYPE to determine how
-//               desirable it is for our purposes.  Lower is better.
-////////////////////////////////////////////////////////////////////
+/**
+ * Evaluate an AM_MEDIA_TYPE to determine how desirable it is for our purposes.
+ * Lower is better.
+ */
 int WebcamVideoDS::
 media_score(AM_MEDIA_TYPE *media) {
   const GUID &subtype = media->subtype;
@@ -209,44 +205,36 @@ media_score(AM_MEDIA_TYPE *media) {
   return 4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::media_x
-//       Access: Public, Static
-//  Description: Returns the x-resolution of the AM_MEDIA_TYPE
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the x-resolution of the AM_MEDIA_TYPE
+ */
 int WebcamVideoDS::
 media_x(AM_MEDIA_TYPE *media) {
   VIDEOINFOHEADER *header = (VIDEOINFOHEADER*)(media->pbFormat);
   return (header->bmiHeader.biWidth);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::media_y
-//       Access: Public, Static
-//  Description: Returns the y-resolution of the AM_MEDIA_TYPE
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the y-resolution of the AM_MEDIA_TYPE
+ */
 int WebcamVideoDS::
 media_y(AM_MEDIA_TYPE *media) {
   VIDEOINFOHEADER *header = (VIDEOINFOHEADER*)(media->pbFormat);
   return (header->bmiHeader.biHeight);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::media_fps
-//       Access: Public, Static
-//  Description: Returns the frame-rate of the AM_MEDIA_TYPE
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the frame-rate of the AM_MEDIA_TYPE
+ */
 int WebcamVideoDS::
 media_fps(AM_MEDIA_TYPE *media) {
   VIDEOINFOHEADER *header = (VIDEOINFOHEADER*)(media->pbFormat);
   return int(10000000.0 / (header->AvgTimePerFrame));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::delete_media_type
-//       Access: Public, Static
-//  Description: Free all memory of the AM_MEDIA_TYPE
-////////////////////////////////////////////////////////////////////
+/**
+ * Free all memory of the AM_MEDIA_TYPE
+ */
 void WebcamVideoDS::
 delete_media_type(AM_MEDIA_TYPE *pmt) {
   if (pmt == NULL) {
@@ -265,11 +253,9 @@ delete_media_type(AM_MEDIA_TYPE *pmt) {
   CoTaskMemFree(pmt);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::bstr_to_string
-//       Access: Public, Static
-//  Description: Converts a visual basic BSTR to a C++ string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a visual basic BSTR to a C++ string.
+ */
 string WebcamVideoDS::
 bstr_to_string(const BSTR &source) {
   string res = "";
@@ -281,11 +267,9 @@ bstr_to_string(const BSTR &source) {
   return res;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::get_moniker_name
-//       Access: Public, Static
-//  Description: Obtains the text name associated with an IMoniker
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains the text name associated with an IMoniker
+ */
 string WebcamVideoDS::
 get_moniker_name(IMoniker *pMoniker) {
   string res = "Unknown Device";
@@ -309,15 +293,12 @@ get_moniker_name(IMoniker *pMoniker) {
   return res;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::add_device
-//       Access: Public, Static
-//  Description: Creates a new WebcamVideoDS and adds it to the list,
-//               unless there is already a very similar configuration
-//               in the list.  If there is already a very similar
-//               configuration, this routine will leave one or the
-//               other on the list based on a scoring system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new WebcamVideoDS and adds it to the list, unless there is already
+ * a very similar configuration in the list.  If there is already a very similar
+ * configuration, this routine will leave one or the other on the list based on
+ * a scoring system.
+ */
 void WebcamVideoDS::
 add_device(WebcamVideoList &list, IMoniker *pMoniker, AM_MEDIA_TYPE *media) {
   for (int i=0; i<(int)list.size(); i++) {
@@ -346,12 +327,9 @@ add_device(WebcamVideoList &list, IMoniker *pMoniker, AM_MEDIA_TYPE *media) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::find_all_webcams_ds
-//       Access: Public, Static
-//  Description: Finds all DirectShow webcams and adds them to
-//               the global list _all_webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds all DirectShow webcams and adds them to the global list _all_webcams.
+ */
 void WebcamVideoDS::
 find_all_webcams_ds() {
 
@@ -434,21 +412,17 @@ void find_all_webcams_ds() {
   WebcamVideoDS::find_all_webcams_ds();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoDS::open
-//       Access: Published, Virtual
-//  Description: Open this video, returning a MovieVideoCursor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this video, returning a MovieVideoCursor.
+ */
 PT(MovieVideoCursor) WebcamVideoDS::
 open() {
   return new WebcamVideoCursorDS(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorDS::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoCursorDS::
 WebcamVideoCursorDS(WebcamVideoDS *src) :
   MovieVideoCursor(src),
@@ -614,8 +588,8 @@ WebcamVideoCursorDS(WebcamVideoDS *src) :
   }
 
   if(pGrabberFilter != NULL) {
-  	pGrabberFilter->Release();
-  	pGrabberFilter=NULL;
+    pGrabberFilter->Release();
+    pGrabberFilter=NULL;
   }
 
   _pSampleGrabber->SetBufferSamples(FALSE);
@@ -630,11 +604,9 @@ WebcamVideoCursorDS(WebcamVideoDS *src) :
   _pMediaCtrl->Run();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorDS::cleanup
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void WebcamVideoCursorDS::
 cleanup() {
   if (_buffer) {
@@ -655,21 +627,17 @@ cleanup() {
   if(_pStreamConfig)    {  _pStreamConfig->Release();  _pStreamConfig=NULL;  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorDS::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoCursorDS::
 ~WebcamVideoCursorDS() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorDS::fetch_buffer
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(MovieVideoCursor::Buffer) WebcamVideoCursorDS::
 fetch_buffer() {
   if (!_ready) {
@@ -699,11 +667,9 @@ fetch_buffer() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorDS::CSampleGrabberCB::QueryInterface
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HRESULT __stdcall WebcamVideoCursorDS::CSampleGrabberCB::QueryInterface(REFIID riid, void **ppv)
 {
   if((riid == IID_ISampleGrabberCB) || (riid == IID_IUnknown)) {
@@ -714,11 +680,9 @@ HRESULT __stdcall WebcamVideoCursorDS::CSampleGrabberCB::QueryInterface(REFIID r
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorDS::CSampleGrabberCB::SampleCB
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HRESULT __stdcall WebcamVideoCursorDS::CSampleGrabberCB::SampleCB(double SampleTime, IMediaSample *pSample)
 {
   if (_host->_ready) {
@@ -744,11 +708,9 @@ HRESULT __stdcall WebcamVideoCursorDS::CSampleGrabberCB::SampleCB(double SampleT
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorDS::CSampleGrabberCB::BufferCB
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HRESULT __stdcall WebcamVideoCursorDS::CSampleGrabberCB::BufferCB(double dblSampleTime, BYTE *pBuffer, long lBufferSize)
 {
   // Not used.

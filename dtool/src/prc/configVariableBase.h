@@ -32,18 +32,14 @@
 #define PRC_DESC(description) ""
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableBase
-// Description : This class is the base class for both
-//               ConfigVariableList and ConfigVariable (and hence for
-//               all of the ConfigVariableBool, ConfigVaribleString,
-//               etc. classes).  It collects together the common
-//               interface for all generic ConfigVariables.
-//
-//               Mostly, this class serves as a thin wrapper around
-//               ConfigVariableCore and/or ConfigDeclaration, more or
-//               less duplicating the interface presented there.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is the base class for both ConfigVariableList and ConfigVariable
+ * (and hence for all of the ConfigVariableBool, ConfigVaribleString, etc.
+ * classes).  It collects together the common interface for all generic
+ * ConfigVariables.  Mostly, this class serves as a thin wrapper around
+ * ConfigVariableCore and/or ConfigDeclaration, more or less duplicating the
+ * interface presented there.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableBase : public ConfigFlags {
 protected:
   INLINE ConfigVariableBase(const string &name, ValueType type);

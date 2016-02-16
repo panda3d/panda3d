@@ -15,13 +15,11 @@ class GraphicsStateGuardian;
 
 #ifndef OPENGLES  // Timer queries not supported by OpenGL ES.
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLLatencyQueryContext
-// Description : This is a special variant of GLTimerQueryContext
-//               that measures the command latency, ie. the time
-//               it takes for the GPU to actually get to the commands
-//               we are issuing right now.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special variant of GLTimerQueryContext that measures the command
+ * latency, ie.  the time it takes for the GPU to actually get to the commands
+ * we are issuing right now.
+ */
 class EXPCL_GL CLP(LatencyQueryContext) : public CLP(TimerQueryContext) {
 public:
   CLP(LatencyQueryContext)(CLP(GraphicsStateGuardian) *glgsg, int pstats_index);
@@ -53,4 +51,3 @@ private:
 #include "glLatencyQueryContext_src.I"
 
 #endif  // OPENGLES
-

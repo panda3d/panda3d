@@ -13,12 +13,9 @@
 
 #include "imageWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageWriter::Constructor
-//       Access: Public
-//  Description: Image-writing type programs *must* specify their
-//               output file using -o.
-////////////////////////////////////////////////////////////////////
+/**
+ * Image-writing type programs *must* specify their output file using -o.
+ */
 ImageWriter::
 ImageWriter(bool allow_last_param) :
   WithOutputFile(allow_last_param, false, true)
@@ -46,29 +43,23 @@ ImageWriter(bool allow_last_param) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageWriter::write_image
-//       Access: Public
-//  Description: Writes the generated to the user's specified output
-//               filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the generated to the user's specified output filename.
+ */
 void ImageWriter::
 write_image(const PNMImage &image) {
   if (!image.write(get_output_filename())) {
-    nout << "Unable to write output image to " 
+    nout << "Unable to write output image to "
          << get_output_filename() << "\n";
     exit(1);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageWriter::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool ImageWriter::
 handle_args(ProgramBase::Args &args) {
   if (!check_last_arg(args, 0)) {

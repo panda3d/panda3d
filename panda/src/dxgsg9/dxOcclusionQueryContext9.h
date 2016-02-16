@@ -20,10 +20,9 @@
 
 class GraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXOcclusionQueryContext9
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDADX DXOcclusionQueryContext9 : public OcclusionQueryContext {
 public:
   INLINE DXOcclusionQueryContext9(IDirect3DQuery9 *query);

@@ -23,28 +23,18 @@ class BamReader;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SparseArray
-// Description : This class records a set of integers, where each
-//               integer is either present or not present in the set.
-//
-//               It is similar in principle and in interface to a
-//               BitArray (which can be thought of as a set of
-//               integers, one integer corresponding to each different
-//               bit position), but the SparseArray is implemented as
-//               a list of min/max subrange lists, rather than as a
-//               bitmask.  
-//
-//               This makes it particularly efficient for storing sets
-//               which consist of large sections of consecutively
-//               included or consecutively excluded elements, with
-//               arbitrarily large integers, but particularly
-//               inefficient for doing boolean operations such as & or
-//               |.
-//
-//               Also, unlike BitArray, the SparseArray can store
-//               negative integers.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class records a set of integers, where each integer is either present or
+ * not present in the set.  It is similar in principle and in interface to a
+ * BitArray (which can be thought of as a set of integers, one integer
+ * corresponding to each different bit position), but the SparseArray is
+ * implemented as a list of min/max subrange lists, rather than as a bitmask.
+ * This makes it particularly efficient for storing sets which consist of large
+ * sections of consecutively included or consecutively excluded elements, with
+ * arbitrarily large integers, but particularly inefficient for doing boolean
+ * operations such as & or |.  Also, unlike BitArray, the SparseArray can store
+ * negative integers.
+ */
 class EXPCL_PANDA_PUTIL SparseArray {
 PUBLISHED:
   INLINE SparseArray();
@@ -176,4 +166,3 @@ operator << (ostream &out, const SparseArray &array) {
 }
 
 #endif
-

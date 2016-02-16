@@ -22,11 +22,9 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DOsxSplashWindow
-// Description : This is the OSX implementation of the
-//               initial-download window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the OSX implementation of the initial-download window.
+ */
 class P3DOsxSplashWindow : public P3DSplashWindow {
 public:
   P3DOsxSplashWindow(P3DInstance *inst, bool make_visible);
@@ -57,7 +55,7 @@ private:
   void paint_progress_bar(CGContextRef context);
 
   static pascal OSStatus
-  st_event_callback(EventHandlerCallRef my_handler, EventRef event, 
+  st_event_callback(EventHandlerCallRef my_handler, EventRef event,
                     void *user_data);
   OSStatus event_callback(EventHandlerCallRef my_handler, EventRef event);
 

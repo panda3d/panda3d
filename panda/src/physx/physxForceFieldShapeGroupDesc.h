@@ -21,10 +21,9 @@
 
 class PhysxForceFieldShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxForceFieldShapeGroupDesc
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxForceFieldShapeGroupDesc : public PhysxEnums {
 
 PUBLISHED:

@@ -19,11 +19,10 @@
 #include "somethingToEggConverter.h"
 #include "dxfFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from a DXF file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from a DXF
+ * file.
+ */
 class DXFToEggConverter : public SomethingToEggConverter, public DXFFile {
 public:
   DXFToEggConverter();
@@ -47,5 +46,3 @@ protected:
 };
 
 #endif
-
-

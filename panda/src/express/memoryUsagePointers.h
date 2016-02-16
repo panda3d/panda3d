@@ -23,27 +23,19 @@
 #include "referenceCount.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MemoryUsagePointers
-// Description : This is a list of pointers returned by a MemoryUsage
-//               object in response to some query.
-//
-//               Warning: once pointers are stored in a
-//               MemoryUsagePointers object, they are
-//               reference-counted, and will not be freed until the
-//               MemoryUsagePointers object is freed (or clear() is
-//               called on the object).  However, they may not even be
-//               freed then; pointers may leak once they have been
-//               added to this structure.  This is because we don't
-//               store enough information in this structure to
-//               correctly free the pointers that have been added.
-//               Since this is intended primarily as a debugging tool,
-//               this is not a major issue.
-//
-//               This class is just a user interface to talk about
-//               pointers stored in a MemoryUsage object.  It doesn't
-//               even exist when compiled with NDEBUG.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a list of pointers returned by a MemoryUsage object in response to
+ * some query.  Warning: once pointers are stored in a MemoryUsagePointers
+ * object, they are reference-counted, and will not be freed until the
+ * MemoryUsagePointers object is freed (or clear() is called on the object).
+ * However, they may not even be freed then; pointers may leak once they have
+ * been added to this structure.  This is because we don't store enough
+ * information in this structure to correctly free the pointers that have been
+ * added.  Since this is intended primarily as a debugging tool, this is not a
+ * major issue.  This class is just a user interface to talk about pointers
+ * stored in a MemoryUsage object.  It doesn't even exist when compiled with
+ * NDEBUG.
+ */
 class EXPCL_PANDAEXPRESS MemoryUsagePointers {
 PUBLISHED:
   MemoryUsagePointers();
@@ -103,4 +95,3 @@ INLINE ostream &operator << (ostream &out, const MemoryUsagePointers &mup) {
 #endif  // MEMORY_USAGE_POINTERS
 
 #endif
-

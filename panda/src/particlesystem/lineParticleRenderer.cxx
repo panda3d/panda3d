@@ -21,11 +21,9 @@
 
 PStatCollector LineParticleRenderer::_render_collector("App:Particles:Line:Render");
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineParticleRenderer
-//       Access: Public
-//  Description: Default Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Constructor
+ */
 
 LineParticleRenderer::
 LineParticleRenderer() :
@@ -37,11 +35,9 @@ LineParticleRenderer() :
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineParticleRenderer
-//       Access: Public
-//  Description: Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor
+ */
 
 LineParticleRenderer::
 LineParticleRenderer(const LColor& head,
@@ -53,11 +49,9 @@ LineParticleRenderer(const LColor& head,
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LineParticleRenderer
-//       Access: Public
-//  Description: Copy Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy Constructor
+ */
 
 LineParticleRenderer::
 LineParticleRenderer(const LineParticleRenderer& copy) :
@@ -68,53 +62,42 @@ LineParticleRenderer(const LineParticleRenderer& copy) :
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~LineParticleRenderer
-//       Access: Public
-//  Description: Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 
 LineParticleRenderer::
 ~LineParticleRenderer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make copy
-//       Access: Public
-//  Description: child virtual for spawning systems
-////////////////////////////////////////////////////////////////////
+/**
+ * child virtual for spawning systems
+ */
 
 BaseParticleRenderer *LineParticleRenderer::
 make_copy() {
   return new LineParticleRenderer(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: birth_particle
-//       Access: Private, Virtual
-//  Description: child birth
-////////////////////////////////////////////////////////////////////
+/**
+ * child birth
+ */
 
 void LineParticleRenderer::
 birth_particle(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: kill_particle
-//       Access: Private, Virtual
-//  Description: child kill
-////////////////////////////////////////////////////////////////////
+/**
+ * child kill
+ */
 
 void LineParticleRenderer::
 kill_particle(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: resize_pool
-//       Access: Private
-//  Description: resizes the render pool.  Reference counting
-//               makes this easy.
-////////////////////////////////////////////////////////////////////
+/**
+ * resizes the render pool.  Reference counting makes this easy.
+ */
 
 void LineParticleRenderer::
 resize_pool(int new_size) {
@@ -123,11 +106,9 @@ resize_pool(int new_size) {
   init_geoms();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_geoms
-//       Access: Private
-//  Description: initializes the geomnodes
-////////////////////////////////////////////////////////////////////
+/**
+ * initializes the geomnodes
+ */
 
 void LineParticleRenderer::
 init_geoms() {
@@ -144,11 +125,9 @@ init_geoms() {
   render_node->add_geom(_line_primitive, _render_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: render
-//       Access: Private
-//  Description: populates the GeomLine
-////////////////////////////////////////////////////////////////////
+/**
+ * populates the GeomLine
+ */
 
 void LineParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
@@ -249,12 +228,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   get_render_node()->mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LineParticleRenderer::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -262,12 +238,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LineParticleRenderer::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "LineParticleRenderer:\n";

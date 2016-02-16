@@ -18,12 +18,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import org.panda3d.android.NativeIStream;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaActivity
-// Description : The entry point for a Panda-based activity.  Loads
-//               the Panda libraries and also provides some utility
-//               functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * The entry point for a Panda-based activity.  Loads the Panda libraries and
+ * also provides some utility functions.
+ */
 public class PandaActivity extends NativeActivity {
     protected static BitmapFactory.Options readBitmapSize(long istreamPtr) {
         BitmapFactory.Options options = new BitmapFactory.Options();

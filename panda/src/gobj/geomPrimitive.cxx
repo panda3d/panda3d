@@ -40,42 +40,33 @@ PStatCollector GeomPrimitive::_doubleside_pcollector("*:Munge:Doubleside");
 PStatCollector GeomPrimitive::_reverse_pcollector("*:Munge:Reverse");
 PStatCollector GeomPrimitive::_rotate_pcollector("*:Munge:Rotate");
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::Default Constructor
-//       Access: Protected
-//  Description: Constructs an invalid object.  Only used when reading
-//               from bam.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an invalid object.  Only used when reading from bam.
+ */
 GeomPrimitive::
 GeomPrimitive() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::make_cow_copy
-//       Access: Protected, Virtual
-//  Description: Required to implement CopyOnWriteObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required to implement CopyOnWriteObject.
+ */
 PT(CopyOnWriteObject) GeomPrimitive::
 make_cow_copy() {
   return make_copy().p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomPrimitive::
 GeomPrimitive(GeomPrimitive::UsageHint usage_hint) {
   CDWriter cdata(_cycler, true);
   cdata->_usage_hint = usage_hint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomPrimitive::
 GeomPrimitive(const GeomPrimitive &copy) :
   CopyOnWriteObject(copy),
@@ -83,37 +74,29 @@ GeomPrimitive(const GeomPrimitive &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::Copy Assignment Operator
-//       Access: Published
-//  Description: The copy assignment operator is not pipeline-safe.
-//               This will completely obliterate all stages of the
-//               pipeline, so don't do it for a GeomPrimitive that is
-//               actively being used for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * The copy assignment operator is not pipeline-safe.  This will completely
+ * obliterate all stages of the pipeline, so don't do it for a GeomPrimitive
+ * that is actively being used for rendering.
+ */
 void GeomPrimitive::
 operator = (const GeomPrimitive &copy) {
   CopyOnWriteObject::operator = (copy);
   _cycler = copy._cycler;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomPrimitive::
 ~GeomPrimitive() {
   release_all();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_geom_rendering
-//       Access: Published, Virtual
-//  Description: Returns the set of GeomRendering bits that represent
-//               the rendering properties required to properly render
-//               this primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of GeomRendering bits that represent the rendering properties
+ * required to properly render this primitive.
+ */
 int GeomPrimitive::
 get_geom_rendering() const {
   if (is_indexed()) {
@@ -123,16 +106,11 @@ get_geom_rendering() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::set_usage_hint
-//       Access: Published
-//  Description: Changes the UsageHint hint for this primitive.  See
-//               get_usage_hint().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the UsageHint hint for this primitive.  See get_usage_hint().  Don't
+ * call this in a downstream thread unless you don't mind it blowing away other
+ * changes you might have recently made in an upstream thread.
+ */
 void GeomPrimitive::
 set_usage_hint(GeomPrimitive::UsageHint usage_hint) {
   CDWriter cdata(_cycler, true);
@@ -144,24 +122,16 @@ set_usage_hint(GeomPrimitive::UsageHint usage_hint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::set_index_type
-//       Access: Published
-//  Description: Changes the numeric type of the index column.
-//               Normally, this should be either NT_uint16 or
-//               NT_uint32.
-//
-//               The index type must be large enough to include all of
-//               the index values in the primitive.  It may be
-//               automatically elevated, if necessary, to a larger
-//               index type, by a subsequent call to add_index() that
-//               names an index value that does not fit in the index
-//               type you specify.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the numeric type of the index column.  Normally, this should be
+ * either NT_uint16 or NT_uint32.  The index type must be large enough to
+ * include all of the index values in the primitive.  It may be automatically
+ * elevated, if necessary, to a larger index type, by a subsequent call to
+ * add_index() that names an index value that does not fit in the index type you
+ * specify.  Don't call this in a downstream thread unless you don't mind it
+ * blowing away other changes you might have recently made in an upstream
+ * thread.
+ */
 void GeomPrimitive::
 set_index_type(GeomPrimitive::NumericType index_type) {
   nassertv(get_max_vertex() <= get_highest_index_value(index_type));
@@ -172,20 +142,14 @@ set_index_type(GeomPrimitive::NumericType index_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::add_vertex
-//       Access: Published
-//  Description: Adds the indicated vertex to the list of vertex
-//               indices used by the graphics primitive type.  To
-//               define a primitive, you must call add_vertex() for
-//               each vertex of the new primitive, and then call
-//               close_primitive() after you have specified the last
-//               vertex of each primitive.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated vertex to the list of vertex indices used by the graphics
+ * primitive type.  To define a primitive, you must call add_vertex() for each
+ * vertex of the new primitive, and then call close_primitive() after you have
+ * specified the last vertex of each primitive.  Don't call this in a downstream
+ * thread unless you don't mind it blowing away other changes you might have
+ * recently made in an upstream thread.
+ */
 void GeomPrimitive::
 add_vertex(int vertex) {
   CDWriter cdata(_cycler, true);
@@ -241,16 +205,12 @@ add_vertex(int vertex) {
   cdata->_got_minmax = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::add_consecutive_vertices
-//       Access: Published
-//  Description: Adds a consecutive sequence of vertices, beginning at
-//               start, to the primitive.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a consecutive sequence of vertices, beginning at start, to the
+ * primitive.  Don't call this in a downstream thread unless you don't mind it
+ * blowing away other changes you might have recently made in an upstream
+ * thread.
+ */
 void GeomPrimitive::
 add_consecutive_vertices(int start, int num_vertices) {
   if (num_vertices == 0) {
@@ -310,17 +270,12 @@ add_consecutive_vertices(int start, int num_vertices) {
   cdata->_got_minmax = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::add_next_vertices
-//       Access: Published
-//  Description: Adds the next n vertices in sequence, beginning from
-//               the last vertex added to the primitive + 1.
-//
-//               This is most useful when you are building up a
-//               primitive and a GeomVertexData at the same time, and
-//               you just want the primitive to reference the first n
-//               vertices from the data, then the next n, and so on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the next n vertices in sequence, beginning from the last vertex added to
+ * the primitive + 1.  This is most useful when you are building up a primitive
+ * and a GeomVertexData at the same time, and you just want the primitive to
+ * reference the first n vertices from the data, then the next n, and so on.
+ */
 void GeomPrimitive::
 add_next_vertices(int num_vertices) {
   if (get_num_vertices() == 0) {
@@ -330,28 +285,19 @@ add_next_vertices(int num_vertices) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::reserve_num_vertices
-//       Access: Published
-//  Description: This ensures that enough memory space for n vertices
-//               is allocated, so that you may increase the number of
-//               vertices to n without causing a new memory
-//               allocation.  This is a performance optimization only;
-//               it is especially useful when you know ahead of time
-//               that you will be adding n vertices to the primitive.
-//
-//               Note that the total you specify here should also
-//               include implicit vertices which may be added at each
-//               close_primitive() call, according to
-//               get_num_unused_vertices_per_primitive().
-//
-//               Note also that making this call will implicitly make
-//               the primitive indexed if it is not already, which
-//               could result in a performance *penalty*.  If you
-//               would prefer not to lose the nonindexed nature of
-//               your existing GeomPrimitives, check is_indexed()
-//               before making this call.
-////////////////////////////////////////////////////////////////////
+/**
+ * This ensures that enough memory space for n vertices is allocated, so that
+ * you may increase the number of vertices to n without causing a new memory
+ * allocation.  This is a performance optimization only; it is especially useful
+ * when you know ahead of time that you will be adding n vertices to the
+ * primitive.  Note that the total you specify here should also include implicit
+ * vertices which may be added at each close_primitive() call, according to
+ * get_num_unused_vertices_per_primitive().  Note also that making this call
+ * will implicitly make the primitive indexed if it is not already, which could
+ * result in a performance *penalty*.  If you would prefer not to lose the
+ * nonindexed nature of your existing GeomPrimitives, check is_indexed() before
+ * making this call.
+ */
 void GeomPrimitive::
 reserve_num_vertices(int num_vertices) {
   if (gobj_cat.is_debug()) {
@@ -366,18 +312,13 @@ reserve_num_vertices(int num_vertices) {
   array_obj->reserve_num_rows(num_vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::close_primitive
-//       Access: Published
-//  Description: Indicates that the previous n calls to add_vertex(),
-//               since the last call to close_primitive(), have fully
-//               defined a new primitive.  Returns true if successful,
-//               false otherwise.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the previous n calls to add_vertex(), since the last call to
+ * close_primitive(), have fully defined a new primitive.  Returns true if
+ * successful, false otherwise.  Don't call this in a downstream thread unless
+ * you don't mind it blowing away other changes you might have recently made in
+ * an upstream thread.
+ */
 bool GeomPrimitive::
 close_primitive() {
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
@@ -421,16 +362,12 @@ close_primitive() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::clear_vertices
-//       Access: Published
-//  Description: Removes all of the vertices and primitives from the
-//               object, so they can be re-added.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the vertices and primitives from the object, so they can be
+ * re-added.  Don't call this in a downstream thread unless you don't mind it
+ * blowing away other changes you might have recently made in an upstream
+ * thread.
+ */
 void GeomPrimitive::
 clear_vertices() {
   CDWriter cdata(_cycler, true);
@@ -450,16 +387,11 @@ clear_vertices() {
   cdata->_got_minmax = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::offset_vertices
-//       Access: Published
-//  Description: Adds the indicated offset to all vertices used by the
-//               primitive.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated offset to all vertices used by the primitive.  Don't call
+ * this in a downstream thread unless you don't mind it blowing away other
+ * changes you might have recently made in an upstream thread.
+ */
 void GeomPrimitive::
 offset_vertices(int offset) {
   if (offset == 0) {
@@ -499,18 +431,13 @@ offset_vertices(int offset) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::offset_vertices
-//       Access: Published
-//  Description: Adds the indicated offset to the indicated segment
-//               of vertices used by the primitive.  Unlike the
-//               other version of offset_vertices, this makes the
-//               geometry indexed if it isn't already.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated offset to the indicated segment of vertices used by the
+ * primitive.  Unlike the other version of offset_vertices, this makes the
+ * geometry indexed if it isn't already.  Don't call this in a downstream thread
+ * unless you don't mind it blowing away other changes you might have recently
+ * made in an upstream thread.
+ */
 void GeomPrimitive::
 offset_vertices(int offset, int begin_row, int end_row) {
   if (offset == 0 || end_row <= begin_row) {
@@ -568,14 +495,11 @@ offset_vertices(int offset, int begin_row, int end_row) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::make_nonindexed
-//       Access: Published
-//  Description: Converts the primitive from indexed to nonindexed by
-//               duplicating vertices as necessary into the indicated
-//               dest GeomVertexData.  Note: does not support
-//               primitives with strip cut indices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the primitive from indexed to nonindexed by duplicating vertices as
+ * necessary into the indicated dest GeomVertexData.  Note: does not support
+ * primitives with strip cut indices.
+ */
 void GeomPrimitive::
 make_nonindexed(GeomVertexData *dest, const GeomVertexData *source) {
   Thread *current_thread = Thread::get_current_thread();
@@ -593,13 +517,10 @@ make_nonindexed(GeomVertexData *dest, const GeomVertexData *source) {
   set_nonindexed_vertices(dest_start, num_vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::pack_vertices
-//       Access: Published
-//  Description: Packs the vertices used by the primitive from the
-//               indicated source array onto the end of the indicated
-//               destination array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the vertices used by the primitive from the indicated source array onto
+ * the end of the indicated destination array.
+ */
 void GeomPrimitive::
 pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
   Thread *current_thread = Thread::get_current_thread();
@@ -644,41 +565,29 @@ pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::make_indexed
-//       Access: Published
-//  Description: Converts the primitive from nonindexed form to
-//               indexed form.  This will simply create an index table
-//               that is numbered consecutively from
-//               get_first_vertex(); it does not automatically
-//               collapse together identical vertices that may have
-//               been split apart by a previous call to
-//               make_nonindexed().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the primitive from nonindexed form to indexed form.  This will
+ * simply create an index table that is numbered consecutively from
+ * get_first_vertex(); it does not automatically collapse together identical
+ * vertices that may have been split apart by a previous call to
+ * make_nonindexed().  Don't call this in a downstream thread unless you don't
+ * mind it blowing away other changes you might have recently made in an
+ * upstream thread.
+ */
 void GeomPrimitive::
 make_indexed() {
   CDWriter cdata(_cycler, true);
   do_make_indexed(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_primitive_start
-//       Access: Published
-//  Description: Returns the element within the _vertices list at which
-//               the nth primitive starts.
-//
-//               If i is one more than the highest valid primitive
-//               vertex, the return value will be one more than the
-//               last valid vertex.  Thus, it is generally true that
-//               the vertices used by a particular primitive i are the
-//               set get_primitive_start(n) <= vi <
-//               get_primitive_start(n + 1) (although this range also
-//               includes the unused vertices between primitives).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the element within the _vertices list at which the nth primitive
+ * starts.  If i is one more than the highest valid primitive vertex, the return
+ * value will be one more than the last valid vertex.  Thus, it is generally
+ * true that the vertices used by a particular primitive i are the set
+ * get_primitive_start(n) <= vi < get_primitive_start(n + 1) (although this
+ * range also includes the unused vertices between primitives).
+ */
 int GeomPrimitive::
 get_primitive_start(int n) const {
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
@@ -702,13 +611,10 @@ get_primitive_start(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_primitive_end
-//       Access: Published
-//  Description: Returns the element within the _vertices list at which
-//               the nth primitive ends.  This is one past the last
-//               valid element for the nth primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the element within the _vertices list at which the nth primitive
+ * ends.  This is one past the last valid element for the nth primitive.
+ */
 int GeomPrimitive::
 get_primitive_end(int n) const {
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
@@ -728,13 +634,10 @@ get_primitive_end(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_primitive_num_vertices
-//       Access: Published
-//  Description: Returns the number of vertices used by the nth
-//               primitive.  This is the same thing as
-//               get_primitive_end(n) - get_primitive_start(n).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of vertices used by the nth primitive.  This is the same
+ * thing as get_primitive_end(n) - get_primitive_start(n).
+ */
 int GeomPrimitive::
 get_primitive_num_vertices(int n) const {
   int num_vertices_per_primitive = get_num_vertices_per_primitive();
@@ -758,16 +661,12 @@ get_primitive_num_vertices(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_num_used_vertices
-//       Access: Published
-//  Description: Returns the number of vertices used by all of the
-//               primitives.  This is the same as summing
-//               get_primitive_num_vertices(n) for n in
-//               get_num_primitives().  It is like get_num_vertices
-//               except that it excludes all of the degenerate
-//               vertices and strip-cut indices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of vertices used by all of the primitives.  This is the
+ * same as summing get_primitive_num_vertices(n) for n in get_num_primitives().
+ * It is like get_num_vertices except that it excludes all of the degenerate
+ * vertices and strip-cut indices.
+ */
 int GeomPrimitive::
 get_num_used_vertices() const {
   int num_primitives = get_num_primitives();
@@ -780,12 +679,10 @@ get_num_used_vertices() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_primitive_min_vertex
-//       Access: Published
-//  Description: Returns the minimum vertex index number used by the
-//               nth primitive in this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the minimum vertex index number used by the nth primitive in this
+ * object.
+ */
 int GeomPrimitive::
 get_primitive_min_vertex(int n) const {
   if (is_indexed()) {
@@ -800,12 +697,10 @@ get_primitive_min_vertex(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_primitive_max_vertex
-//       Access: Published
-//  Description: Returns the maximum vertex index number used by the
-//               nth primitive in this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the maximum vertex index number used by the nth primitive in this
+ * object.
+ */
 int GeomPrimitive::
 get_primitive_max_vertex(int n) const {
   if (is_indexed()) {
@@ -820,20 +715,14 @@ get_primitive_max_vertex(int n) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::decompose
-//       Access: Published
-//  Description: Decomposes a complex primitive type into a simpler
-//               primitive type, for instance triangle strips to
-//               triangles, and returns a pointer to the new primitive
-//               definition.  If the decomposition cannot be
-//               performed, this might return the original object.
-//
-//               This method is useful for application code that wants
-//               to iterate through the set of triangles on the
-//               primitive without having to write handlers for each
-//               possible kind of primitive type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decomposes a complex primitive type into a simpler primitive type, for
+ * instance triangle strips to triangles, and returns a pointer to the new
+ * primitive definition.  If the decomposition cannot be performed, this might
+ * return the original object.  This method is useful for application code that
+ * wants to iterate through the set of triangles on the primitive without having
+ * to write handlers for each possible kind of primitive type.
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 decompose() const {
   if (gobj_cat.is_debug()) {
@@ -845,20 +734,13 @@ decompose() const {
   return decompose_impl();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::rotate
-//       Access: Published
-//  Description: Returns a new primitive with the shade_model reversed
-//               (if it is flat shaded), if possible.  If the
-//               primitive type cannot be rotated, returns the
-//               original primitive, unrotated.
-//
-//               If the current shade_model indicates
-//               flat_vertex_last, this should bring the last vertex
-//               to the first position; if it indicates
-//               flat_vertex_first, this should bring the first vertex
-//               to the last position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new primitive with the shade_model reversed (if it is flat shaded),
+ * if possible.  If the primitive type cannot be rotated, returns the original
+ * primitive, unrotated.  If the current shade_model indicates flat_vertex_last,
+ * this should bring the last vertex to the first position; if it indicates
+ * flat_vertex_first, this should bring the first vertex to the last position.
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 rotate() const {
   if (gobj_cat.is_debug()) {
@@ -893,21 +775,15 @@ rotate() const {
   return new_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::doubleside
-//       Access: Published
-//  Description: Duplicates triangles in the primitive so that each
-//               triangle is back-to-back with another triangle facing
-//               in the opposite direction.  Note that this doesn't
-//               affect vertex normals, so this operation alone won't
-//               work in the presence of lighting (but see
-//               SceneGraphReducer::doubleside()).
-//
-//               Also see CullFaceAttrib, which can enable rendering
-//               of both sides of a triangle without having to
-//               duplicate it (but which doesn't necessarily work in
-//               the presence of lighting).
-////////////////////////////////////////////////////////////////////
+/**
+ * Duplicates triangles in the primitive so that each triangle is back-to-back
+ * with another triangle facing in the opposite direction.  Note that this
+ * doesn't affect vertex normals, so this operation alone won't work in the
+ * presence of lighting (but see SceneGraphReducer::doubleside()).  Also see
+ * CullFaceAttrib, which can enable rendering of both sides of a triangle
+ * without having to duplicate it (but which doesn't necessarily work in the
+ * presence of lighting).
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 doubleside() const {
   if (gobj_cat.is_debug()) {
@@ -919,21 +795,15 @@ doubleside() const {
   return doubleside_impl();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::reverse
-//       Access: Published
-//  Description: Reverses the winding order in the primitive so that
-//               each triangle is facing in the opposite direction it
-//               was originally.  Note that this doesn't affect vertex
-//               normals, so this operation alone won't work in the
-//               presence of lighting (but see
-//               SceneGraphReducer::reverse()).
-//
-//               Also see CullFaceAttrib, which can change the visible
-//               direction of a triangle without having to duplicate
-//               it (but which doesn't necessarily work in the
-//               presence of lighting).
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the winding order in the primitive so that each triangle is facing
+ * in the opposite direction it was originally.  Note that this doesn't affect
+ * vertex normals, so this operation alone won't work in the presence of
+ * lighting (but see SceneGraphReducer::reverse()).  Also see CullFaceAttrib,
+ * which can change the visible direction of a triangle without having to
+ * duplicate it (but which doesn't necessarily work in the presence of
+ * lighting).
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 reverse() const {
   if (gobj_cat.is_debug()) {
@@ -945,19 +815,13 @@ reverse() const {
   return reverse_impl();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::match_shade_model
-//       Access: Published
-//  Description: Returns a new primitive that is compatible with the
-//               indicated shade model, if possible, or NULL if this
-//               is not possible.
-//
-//               In most cases, this will return either NULL or the
-//               original primitive.  In the case of a
-//               SM_flat_first_vertex vs. a SM_flat_last_vertex (or
-//               vice-versa), however, it will return a rotated
-//               primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new primitive that is compatible with the indicated shade model, if
+ * possible, or NULL if this is not possible.  In most cases, this will return
+ * either NULL or the original primitive.  In the case of a SM_flat_first_vertex
+ * vs.  a SM_flat_last_vertex (or vice-versa), however, it will return a rotated
+ * primitive.
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 match_shade_model(GeomPrimitive::ShadeModel shade_model) const {
   ShadeModel this_shade_model = get_shade_model();
@@ -986,15 +850,11 @@ match_shade_model(GeomPrimitive::ShadeModel shade_model) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::make_points
-//       Access: Published
-//  Description: Returns a new GeomPoints primitive that represents
-//               each of the vertices in the original primitive,
-//               rendered exactly once.  If the original primitive is
-//               already a GeomPoints primitive, returns the original
-//               primitive unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new GeomPoints primitive that represents each of the vertices in
+ * the original primitive, rendered exactly once.  If the original primitive is
+ * already a GeomPoints primitive, returns the original primitive unchanged.
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 make_points() const {
   if (is_exact_type(GeomPoints::get_class_type())) {
@@ -1045,15 +905,11 @@ make_points() const {
   return points;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::make_lines
-//       Access: Published
-//  Description: Returns a new GeomLines primitive that represents
-//               each of the edges in the original primitive rendered
-//               as a line.  If the original primitive is already a
-//               GeomLines primitive, returns the original primitive
-//               unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new GeomLines primitive that represents each of the edges in the
+ * original primitive rendered as a line.  If the original primitive is already
+ * a GeomLines primitive, returns the original primitive unchanged.
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 make_lines() const {
   if (is_exact_type(GeomLines::get_class_type())) {
@@ -1105,19 +961,14 @@ make_lines() const {
   return lines;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::make_patches
-//       Access: Published
-//  Description: Decomposes a complex primitive type into a simpler
-//               primitive type, for instance triangle strips to
-//               triangles, puts these in a new GeomPatches object
-//               and returns a pointer to the new primitive
-//               definition.  If the decomposition cannot be
-//               performed, this might return the original object.
-//
-//               This method is useful for application code that wants
-//               to use tesselation shaders on arbitrary geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decomposes a complex primitive type into a simpler primitive type, for
+ * instance triangle strips to triangles, puts these in a new GeomPatches object
+ * and returns a pointer to the new primitive definition.  If the decomposition
+ * cannot be performed, this might return the original object.  This method is
+ * useful for application code that wants to use tesselation shaders on
+ * arbitrary geometry.
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 make_patches() const {
   if (is_exact_type(GeomPatches::get_class_type())) {
@@ -1139,12 +990,9 @@ make_patches() const {
   return patches;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_num_bytes
-//       Access: Published
-//  Description: Returns the number of bytes consumed by the primitive
-//               and its index table(s).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bytes consumed by the primitive and its index table(s).
+ */
 int GeomPrimitive::
 get_num_bytes() const {
   CDReader cdata(_cycler);
@@ -1156,14 +1004,11 @@ get_num_bytes() const {
   return num_bytes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::request_resident
-//       Access: Published
-//  Description: Returns true if the primitive data is currently
-//               resident in memory.  If this returns false, the
-//               primitive data will be brought back into memory
-//               shortly; try again later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the primitive data is currently resident in memory.  If this
+ * returns false, the primitive data will be brought back into memory shortly;
+ * try again later.
+ */
 bool GeomPrimitive::
 request_resident() const {
   CDReader cdata(_cycler);
@@ -1189,22 +1034,18 @@ request_resident() const {
   return resident;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GeomPrimitive::
 output(ostream &out) const {
   out << get_type() << ", " << get_num_primitives()
       << ", " << get_num_vertices();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GeomPrimitive::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -1240,31 +1081,19 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::modify_vertices
-//       Access: Published
-//  Description: Returns a modifiable pointer to the vertex index
-//               list, so application code can directly fiddle with
-//               this data.  Use with caution, since there are no
-//               checks that the data will be left in a stable state.
-//
-//               If this is called on a nonindexed primitive, it will
-//               implicitly be converted to an indexed primitive.
-//
-//               If num_vertices is not -1, it specifies an artificial
-//               limit to the number of vertices in the array.
-//               Otherwise, all of the vertices in the array will be
-//               used.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable pointer to the vertex index list, so application code
+ * can directly fiddle with this data.  Use with caution, since there are no
+ * checks that the data will be left in a stable state.  If this is called on a
+ * nonindexed primitive, it will implicitly be converted to an indexed
+ * primitive.  If num_vertices is not -1, it specifies an artificial limit to
+ * the number of vertices in the array.  Otherwise, all of the vertices in the
+ * array will be used.  Don't call this in a downstream thread unless you don't
+ * mind it blowing away other changes you might have recently made in an
+ * upstream thread.  This method is intended for low-level usage only.  There
+ * are higher-level methods for more common usage.  We recommend you do not use
+ * this method directly.  If you do, be sure you know what you are doing!
+ */
 PT(GeomVertexArrayData) GeomPrimitive::
 modify_vertices(int num_vertices) {
   CDWriter cdata(_cycler, true);
@@ -1273,27 +1102,17 @@ modify_vertices(int num_vertices) {
   return vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::set_vertices
-//       Access: Published
-//  Description: Completely replaces the vertex index list with a new
-//               table.  Chances are good that you should also replace
-//               the ends list with set_ends() at the same time.
-//
-//               If num_vertices is not -1, it specifies an artificial
-//               limit to the number of vertices in the array.
-//               Otherwise, all of the vertices in the array will be
-//               used.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely replaces the vertex index list with a new table.  Chances are good
+ * that you should also replace the ends list with set_ends() at the same time.
+ * If num_vertices is not -1, it specifies an artificial limit to the number of
+ * vertices in the array.  Otherwise, all of the vertices in the array will be
+ * used.  Don't call this in a downstream thread unless you don't mind it
+ * blowing away other changes you might have recently made in an upstream
+ * thread.  This method is intended for low-level usage only.  There are higher-
+ * level methods for more common usage.  We recommend you do not use this method
+ * directly.  If you do, be sure you know what you are doing!
+ */
 void GeomPrimitive::
 set_vertices(const GeomVertexArrayData *vertices, int num_vertices) {
   CDWriter cdata(_cycler, true);
@@ -1309,21 +1128,14 @@ set_vertices(const GeomVertexArrayData *vertices, int num_vertices) {
   cdata->_got_minmax = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::set_nonindexed_vertices
-//       Access: Published
-//  Description: Sets the primitive up as a nonindexed primitive,
-//               using the indicated vertex range.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the primitive up as a nonindexed primitive, using the indicated vertex
+ * range.  Don't call this in a downstream thread unless you don't mind it
+ * blowing away other changes you might have recently made in an upstream
+ * thread.  This method is intended for low-level usage only.  There are higher-
+ * level methods for more common usage.  We recommend you do not use this method
+ * directly.  If you do, be sure you know what you are doing!
+ */
 void GeomPrimitive::
 set_nonindexed_vertices(int first_vertex, int num_vertices) {
   nassertv(num_vertices != -1);
@@ -1339,27 +1151,18 @@ set_nonindexed_vertices(int first_vertex, int num_vertices) {
   recompute_minmax(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::modify_ends
-//       Access: Published
-//  Description: Returns a modifiable pointer to the primitive ends
-//               array, so application code can directly fiddle with
-//               this data.  Use with caution, since there are no
-//               checks that the data will be left in a stable state.
-//
-//               Note that simple primitive types, like triangles, do
-//               not have a ends array: since all the primitives
-//               have the same number of vertices, it is not needed.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable pointer to the primitive ends array, so application code
+ * can directly fiddle with this data.  Use with caution, since there are no
+ * checks that the data will be left in a stable state.  Note that simple
+ * primitive types, like triangles, do not have a ends array: since all the
+ * primitives have the same number of vertices, it is not needed.  Don't call
+ * this in a downstream thread unless you don't mind it blowing away other
+ * changes you might have recently made in an upstream thread.  This method is
+ * intended for low-level usage only.  There are higher-level methods for more
+ * common usage.  We recommend you do not use this method directly.  If you do,
+ * be sure you know what you are doing!
+ */
 PTA_int GeomPrimitive::
 modify_ends() {
   CDWriter cdata(_cycler, true);
@@ -1375,27 +1178,17 @@ modify_ends() {
   return cdata->_ends;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::set_ends
-//       Access: Published
-//  Description: Completely replaces the primitive ends array with
-//               a new table.  Chances are good that you should also
-//               replace the vertices list with set_vertices() at the
-//               same time.
-//
-//               Note that simple primitive types, like triangles, do
-//               not have a ends array: since all the primitives
-//               have the same number of vertices, it is not needed.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely replaces the primitive ends array with a new table.  Chances are
+ * good that you should also replace the vertices list with set_vertices() at
+ * the same time.  Note that simple primitive types, like triangles, do not have
+ * a ends array: since all the primitives have the same number of vertices, it
+ * is not needed.  Don't call this in a downstream thread unless you don't mind
+ * it blowing away other changes you might have recently made in an upstream
+ * thread.  This method is intended for low-level usage only.  There are higher-
+ * level methods for more common usage.  We recommend you do not use this method
+ * directly.  If you do, be sure you know what you are doing!
+ */
 void GeomPrimitive::
 set_ends(PTA_int ends) {
   CDWriter cdata(_cycler, true);
@@ -1405,27 +1198,17 @@ set_ends(PTA_int ends) {
   cdata->_got_minmax = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::set_minmax
-//       Access: Published
-//  Description: Explicitly specifies the minimum and maximum
-//               vertices, as well as the lists of per-component min
-//               and max.
-//
-//               Use this method with extreme caution.  It's generally
-//               better to let the GeomPrimitive compute these
-//               explicitly, unless for some reason you can do it
-//               faster and you absolutely need the speed improvement.
-//
-//               Note that any modification to the vertex array will
-//               normally cause this to be recomputed, unless you set
-//               it immediately again.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly specifies the minimum and maximum vertices, as well as the lists
+ * of per-component min and max.  Use this method with extreme caution.  It's
+ * generally better to let the GeomPrimitive compute these explicitly, unless
+ * for some reason you can do it faster and you absolutely need the speed
+ * improvement.  Note that any modification to the vertex array will normally
+ * cause this to be recomputed, unless you set it immediately again.  This
+ * method is intended for low-level usage only.  There are higher-level methods
+ * for more common usage.  We recommend you do not use this method directly.  If
+ * you do, be sure you know what you are doing!
+ */
 void GeomPrimitive::
 set_minmax(int min_vertex, int max_vertex,
            GeomVertexArrayData *mins, GeomVertexArrayData *maxs) {
@@ -1439,92 +1222,65 @@ set_minmax(int min_vertex, int max_vertex,
   cdata->_got_minmax = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::clear_minmax
-//       Access: Published
-//  Description: Undoes a previous call to set_minmax(), and allows
-//               the minimum and maximum values to be recomputed
-//               normally.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Undoes a previous call to set_minmax(), and allows the minimum and maximum
+ * values to be recomputed normally.  This method is intended for low-level
+ * usage only.  There are higher-level methods for more common usage.  We
+ * recommend you do not use this method directly.  If you do, be sure you know
+ * what you are doing!
+ */
 void GeomPrimitive::
 clear_minmax() {
   CDWriter cdata(_cycler, true);
   cdata->_got_minmax = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_num_vertices_per_primitive
-//       Access: Published, Virtual
-//  Description: If the primitive type is a simple type in which all
-//               primitives have the same number of vertices, like
-//               triangles, returns the number of vertices per
-//               primitive.  If the primitive type is a more complex
-//               type in which different primitives might have
-//               different numbers of vertices, for instance a
-//               triangle strip, returns 0.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * If the primitive type is a simple type in which all primitives have the same
+ * number of vertices, like triangles, returns the number of vertices per
+ * primitive.  If the primitive type is a more complex type in which different
+ * primitives might have different numbers of vertices, for instance a triangle
+ * strip, returns 0.  This method is intended for low-level usage only.  There
+ * are higher-level methods for more common usage.  We recommend you do not use
+ * this method directly.  If you do, be sure you know what you are doing!
+ */
 int GeomPrimitive::
 get_num_vertices_per_primitive() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_min_num_vertices_per_primitive
-//       Access: Published, Virtual
-//  Description: Returns the minimum number of vertices that must be
-//               added before close_primitive() may legally be called.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the minimum number of vertices that must be added before
+ * close_primitive() may legally be called.  This method is intended for low-
+ * level usage only.  There are higher-level methods for more common usage.  We
+ * recommend you do not use this method directly.  If you do, be sure you know
+ * what you are doing!
+ */
 int GeomPrimitive::
 get_min_num_vertices_per_primitive() const {
   return 3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_num_unused_vertices_per_primitive
-//       Access: Published, Virtual
-//  Description: Returns the number of vertices that are added between
-//               primitives that aren't, strictly speaking, part of
-//               the primitives themselves.  This is used, for
-//               instance, to define degenerate triangles to connect
-//               otherwise disconnected triangle strips.
-//
-//               This method is intended for low-level usage only.
-//               There are higher-level methods for more common usage.
-//               We recommend you do not use this method directly.  If
-//               you do, be sure you know what you are doing!
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of vertices that are added between primitives that aren't,
+ * strictly speaking, part of the primitives themselves.  This is used, for
+ * instance, to define degenerate triangles to connect otherwise disconnected
+ * triangle strips.  This method is intended for low-level usage only.  There
+ * are higher-level methods for more common usage.  We recommend you do not use
+ * this method directly.  If you do, be sure you know what you are doing!
+ */
 int GeomPrimitive::
 get_num_unused_vertices_per_primitive() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::prepare
-//       Access: Public
-//  Description: Indicates that the data should be enqueued to be
-//               prepared in the indicated prepared_objects at the
-//               beginning of the next frame.  This will ensure the
-//               data is already loaded into the GSG if it is expected
-//               to be rendered soon.
-//
-//               Use this function instead of prepare_now() to preload
-//               datas from a user interface standpoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the data should be enqueued to be prepared in the indicated
+ * prepared_objects at the beginning of the next frame.  This will ensure the
+ * data is already loaded into the GSG if it is expected to be rendered soon.
+ * Use this function instead of prepare_now() to preload datas from a user
+ * interface standpoint.
+ */
 void GeomPrimitive::
 prepare(PreparedGraphicsObjects *prepared_objects) {
   if (is_indexed()) {
@@ -1532,13 +1288,10 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::is_prepared
-//       Access: Published
-//  Description: Returns true if the data has already been prepared
-//               or enqueued for preparation on the indicated GSG,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the data has already been prepared or enqueued for
+ * preparation on the indicated GSG, false otherwise.
+ */
 bool GeomPrimitive::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   Contexts::const_iterator ci;
@@ -1549,22 +1302,15 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   return prepared_objects->is_index_buffer_queued(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::prepare_now
-//       Access: Public
-//  Description: Creates a context for the data on the particular
-//               GSG, if it does not already exist.  Returns the new
-//               (or old) IndexBufferContext.  This assumes that the
-//               GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               datas.  If this is not necessarily the case, you
-//               should use prepare() instead.
-//
-//               Normally, this is not called directly except by the
-//               GraphicsStateGuardian; a data does not need to be
-//               explicitly prepared by the user before it may be
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a context for the data on the particular GSG, if it does not already
+ * exist.  Returns the new (or old) IndexBufferContext.  This assumes that the
+ * GraphicsStateGuardian is the currently active rendering context and that it
+ * is ready to accept new datas.  If this is not necessarily the case, you
+ * should use prepare() instead.  Normally, this is not called directly except
+ * by the GraphicsStateGuardian; a data does not need to be explicitly prepared
+ * by the user before it may be rendered.
+ */
 IndexBufferContext *GeomPrimitive::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
@@ -1583,13 +1329,10 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   return ibc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::release
-//       Access: Public
-//  Description: Frees the data context only on the indicated object,
-//               if it exists there.  Returns true if it was released,
-//               false if it had not been prepared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the data context only on the indicated object, if it exists there.
+ * Returns true if it was released, false if it had not been prepared.
+ */
 bool GeomPrimitive::
 release(PreparedGraphicsObjects *prepared_objects) {
   Contexts::iterator ci;
@@ -1604,13 +1347,10 @@ release(PreparedGraphicsObjects *prepared_objects) {
   return prepared_objects->dequeue_index_buffer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::release_all
-//       Access: Public
-//  Description: Frees the context allocated on all objects for which
-//               the data has been declared.  Returns the number of
-//               contexts which have been freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the context allocated on all objects for which the data has been
+ * declared.  Returns the number of contexts which have been freed.
+ */
 int GeomPrimitive::
 release_all() {
   // We have to traverse a copy of the _contexts list, because the
@@ -1634,13 +1374,10 @@ release_all() {
   return num_freed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_index_format
-//       Access: Public, Static
-//  Description: Returns a registered GeomVertexArrayFormat of the
-//               indicated unsigned integer numeric type for storing
-//               index values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a registered GeomVertexArrayFormat of the indicated unsigned integer
+ * numeric type for storing index values.
+ */
 const GeomVertexArrayFormat *GeomPrimitive::
 get_index_format(NumericType index_type) {
   switch (index_type) {
@@ -1678,16 +1415,12 @@ get_index_format(NumericType index_type) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::clear_prepared
-//       Access: Private
-//  Description: Removes the indicated PreparedGraphicsObjects table
-//               from the data array's table, without actually
-//               releasing the data array.  This is intended to be
-//               called only from
-//               PreparedGraphicsObjects::release_index_buffer(); it should
-//               never be called by user code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated PreparedGraphicsObjects table from the data array's
+ * table, without actually releasing the data array.  This is intended to be
+ * called only from PreparedGraphicsObjects::release_index_buffer(); it should
+ * never be called by user code.
+ */
 void GeomPrimitive::
 clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   Contexts::iterator ci;
@@ -1701,13 +1434,10 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_highest_index_value
-//       Access: Private, Static
-//  Description: Returns the largest index value that can be stored
-//               in an index of the indicated type, minus one (to
-//               leave room for a potential strip cut index)
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the largest index value that can be stored in an index of the
+ * indicated type, minus one (to leave room for a potential strip cut index)
+ */
 int GeomPrimitive::
 get_highest_index_value(NumericType index_type) {
   // Reserve the highest possible index because implementations use
@@ -1729,15 +1459,12 @@ get_highest_index_value(NumericType index_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_strip_cut_index
-//       Access: Private, Static
-//  Description: Returns the index of the indicated type that is
-//               reserved for use as a strip cut index, if enabled
-//               for the primitive.  When the renderer encounters
-//               this index, it will restart the primitive.  This
-//               is guaranteed not to point to an actual vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the indicated type that is reserved for use as a strip
+ * cut index, if enabled for the primitive.  When the renderer encounters this
+ * index, it will restart the primitive.  This is guaranteed not to point to an
+ * actual vertex.
+ */
 int GeomPrimitive::
 get_strip_cut_index(NumericType index_type) {
   // Reserve the highest possible index because implementations use
@@ -1755,21 +1482,15 @@ get_strip_cut_index(NumericType index_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::calc_tight_bounds
-//       Access: Public, Virtual
-//  Description: Expands min_point and max_point to include all of the
-//               vertices in the Geom, if any (or the data of any
-//               point type, for instance, texture coordinates--based
-//               on the column name).  found_any is set true if any
-//               points are found.  It is the caller's responsibility
-//               to initialize min_point, max_point, and found_any
-//               before calling this function.
-//               It also sets sq_center_dist, which is the square of
-//               the maximum distance of the points to the center.
-//               This can be useful when deciding whether a sphere
-//               volume might be more appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Expands min_point and max_point to include all of the vertices in the Geom,
+ * if any (or the data of any point type, for instance, texture coordinates--
+ * based on the column name).  found_any is set true if any points are found.
+ * It is the caller's responsibility to initialize min_point, max_point, and
+ * found_any before calling this function.  It also sets sq_center_dist, which
+ * is the square of the maximum distance of the points to the center.  This can
+ * be useful when deciding whether a sphere volume might be more appropriate.
+ */
 void GeomPrimitive::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   PN_stdfloat &sq_center_dist, bool &found_any,
@@ -1910,15 +1631,11 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::calc_sphere_radius
-//       Access: Public, Virtual
-//  Description: Expands radius so that a sphere with the given
-//               center point fits all of the vertices.
-//
-//               The center point is assumed to already have been
-//               transformed by the matrix, if one is given.
-////////////////////////////////////////////////////////////////////
+/**
+ * Expands radius so that a sphere with the given center point fits all of the
+ * vertices.  The center point is assumed to already have been transformed by
+ * the matrix, if one is given.
+ */
 void GeomPrimitive::
 calc_sphere_radius(const LPoint3 &center, PN_stdfloat &sq_radius,
                    bool &found_any, const GeomVertexData *vertex_data,
@@ -1973,30 +1690,22 @@ calc_sphere_radius(const LPoint3 &center, PN_stdfloat &sq_radius,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::decompose_impl
-//       Access: Protected, Virtual
-//  Description: Decomposes a complex primitive type into a simpler
-//               primitive type, for instance triangle strips to
-//               triangles, and returns a pointer to the new primitive
-//               definition.  If the decomposition cannot be
-//               performed, this might return the original object.
-//
-//               This method is useful for application code that wants
-//               to iterate through the set of triangles on the
-//               primitive without having to write handlers for each
-//               possible kind of primitive type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decomposes a complex primitive type into a simpler primitive type, for
+ * instance triangle strips to triangles, and returns a pointer to the new
+ * primitive definition.  If the decomposition cannot be performed, this might
+ * return the original object.  This method is useful for application code that
+ * wants to iterate through the set of triangles on the primitive without having
+ * to write handlers for each possible kind of primitive type.
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 decompose_impl() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::rotate_impl
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of rotate().
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of rotate().
+ */
 CPT(GeomVertexArrayData) GeomPrimitive::
 rotate_impl() const {
   // The default implementation doesn't even try to do anything.
@@ -2004,59 +1713,45 @@ rotate_impl() const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::doubleside_impl
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of doubleside().
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of doubleside().
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 doubleside_impl() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::reverse_impl
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of reverse().
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of reverse().
+ */
 CPT(GeomPrimitive) GeomPrimitive::
 reverse_impl() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::requires_unused_vertices
-//       Access: Protected, Virtual
-//  Description: Should be redefined to return true in any primitive
-//               that implements append_unused_vertices().
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be redefined to return true in any primitive that implements
+ * append_unused_vertices().
+ */
 bool GeomPrimitive::
 requires_unused_vertices() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::append_unused_vertices
-//       Access: Protected, Virtual
-//  Description: Called when a new primitive is begun (other than the
-//               first primitive), this should add some degenerate
-//               vertices between primitives, if the primitive type
-//               requires that.  The second parameter is the first
-//               vertex that begins the new primitive.
-//
-//               This method is only called if
-//               requires_unused_vertices(), above, returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a new primitive is begun (other than the first primitive), this
+ * should add some degenerate vertices between primitives, if the primitive type
+ * requires that.  The second parameter is the first vertex that begins the new
+ * primitive.  This method is only called if requires_unused_vertices(), above,
+ * returns true.
+ */
 void GeomPrimitive::
 append_unused_vertices(GeomVertexArrayData *, int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::recompute_minmax
-//       Access: Private
-//  Description: Recomputes the _min_vertex and _max_vertex values if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the _min_vertex and _max_vertex values if necessary.
+ */
 void GeomPrimitive::
 recompute_minmax(GeomPrimitive::CData *cdata) {
   if (cdata->_vertices.is_null()) {
@@ -2164,11 +1859,9 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
   cdata->_got_minmax = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::do_make_indexed
-//       Access: Private
-//  Description: The private implementation of make_indexed().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of make_indexed().
+ */
 void GeomPrimitive::
 do_make_indexed(CData *cdata) {
   if (cdata->_vertices.is_null()) {
@@ -2191,13 +1884,10 @@ do_make_indexed(CData *cdata) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::consider_elevate_index_type
-//       Access: Private
-//  Description: If the indicated new vertex index won't fit in the
-//               specified index type, automatically elevates the
-//               index type to the next available size.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the indicated new vertex index won't fit in the specified index type,
+ * automatically elevates the index type to the next available size.
+ */
 void GeomPrimitive::
 consider_elevate_index_type(CData *cdata, int vertex) {
   // Note that we reserve the highest possible index of a particular
@@ -2226,11 +1916,9 @@ consider_elevate_index_type(CData *cdata, int vertex) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::do_set_index_type
-//       Access: Private
-//  Description: The private implementation of set_index_type().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of set_index_type().
+ */
 void GeomPrimitive::
 do_set_index_type(CData *cdata, GeomPrimitive::NumericType index_type) {
   int old_strip_cut_index = get_strip_cut_index(cdata->_index_type);
@@ -2267,11 +1955,9 @@ do_set_index_type(CData *cdata, GeomPrimitive::NumericType index_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::do_modify_vertices
-//       Access: Private
-//  Description: The private implementation of modify_vertices().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of modify_vertices().
+ */
 PT(GeomVertexArrayData) GeomPrimitive::
 do_modify_vertices(GeomPrimitive::CData *cdata) {
   if (cdata->_vertices.is_null()) {
@@ -2285,12 +1971,10 @@ do_modify_vertices(GeomPrimitive::CData *cdata) {
   return vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void GeomPrimitive::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -2298,13 +1982,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::finalize
-//       Access: Public, Virtual
-//  Description: Called by the BamReader to perform any final actions
-//               needed for setting up the object after all objects
-//               have been read and all pointers have been completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
 void GeomPrimitive::
 finalize(BamReader *manager) {
   const GeomVertexArrayData *vertices = get_vertices();
@@ -2313,13 +1995,10 @@ finalize(BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomPrimitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new GeomPrimitive.
+ */
 void GeomPrimitive::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
@@ -2328,22 +2007,18 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->register_finalize(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *GeomPrimitive::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void GeomPrimitive::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint8(_shade_model);
@@ -2356,13 +2031,10 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   WRITE_PTA(manager, dg, IPD_int::write_datagram, _ends);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::CData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int GeomPrimitive::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
@@ -2379,13 +2051,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomPrimitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new GeomPrimitive.
+ */
 void GeomPrimitive::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _shade_model = (ShadeModel)scan.get_uint8();
@@ -2401,12 +2070,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _got_minmax = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::check_minmax
-//       Access: Public
-//  Description: Ensures that the primitive's minmax cache has been
-//               computed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the primitive's minmax cache has been computed.
+ */
 void GeomPrimitivePipelineReader::
 check_minmax() const {
   if (!_cdata->_got_minmax) {
@@ -2440,11 +2106,9 @@ check_minmax() const {
   nassertv(_cdata->_got_minmax);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::get_first_vertex
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int GeomPrimitivePipelineReader::
 get_first_vertex() const {
   if (_cdata->_vertices.is_null()) {
@@ -2457,11 +2121,9 @@ get_first_vertex() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::get_vertex
-//       Access: Public
-//  Description: Returns the ith vertex index in the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ith vertex index in the table.
+ */
 int GeomPrimitivePipelineReader::
 get_vertex(int i) const {
   if (!_cdata->_vertices.is_null()) {
@@ -2478,11 +2140,9 @@ get_vertex(int i) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::get_num_primitives
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int GeomPrimitivePipelineReader::
 get_num_primitives() const {
   int num_vertices_per_primitive = _object->get_num_vertices_per_primitive();
@@ -2499,11 +2159,9 @@ get_num_primitives() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::check_valid
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool GeomPrimitivePipelineReader::
 check_valid(const GeomVertexDataPipelineReader *data_reader) const {
   if (get_num_vertices() != 0  &&

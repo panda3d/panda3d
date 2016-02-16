@@ -30,14 +30,11 @@ class BamReader;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BitArray
-// Description : A dynamic array with an unlimited number of bits.
-//
-//               This is similar to a BitMask, except it appears to
-//               contain an infinite number of bits.  You can use it
-//               very much as you would use a BitMask.
-////////////////////////////////////////////////////////////////////
+/**
+ * A dynamic array with an unlimited number of bits.  This is similar to a
+ * BitMask, except it appears to contain an infinite number of bits.  You can
+ * use it very much as you would use a BitMask.
+ */
 class EXPCL_PANDA_PUTIL BitArray {
 public:
   typedef BitMaskNative MaskType;

@@ -26,12 +26,10 @@ class LwoToEggConverter;
 class LwoVertexMap;
 class CLwoLayer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLwoPoints
-// Description : This class is a wrapper around LwoPoints and stores
-//               additional information useful during the
-//               conversion-to-egg process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a wrapper around LwoPoints and stores additional information
+ * useful during the conversion-to-egg process.
+ */
 class CLwoPoints {
 public:
   INLINE CLwoPoints(LwoToEggConverter *converter, const LwoPoints *points,
@@ -58,5 +56,3 @@ public:
 #include "cLwoPoints.I"
 
 #endif
-
-

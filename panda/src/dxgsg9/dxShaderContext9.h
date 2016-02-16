@@ -55,10 +55,9 @@ class CLP(GraphicsStateGuardian);
 // }
 // DIRECT_3D_SHADER;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXShaderContext9
-// Description : xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 class EXPCL_PANDADX CLP(ShaderContext) : public ShaderContext {
 public:
   typedef CLP(GraphicsStateGuardian) GSG;

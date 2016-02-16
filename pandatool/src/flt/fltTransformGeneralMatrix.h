@@ -18,12 +18,10 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformGeneralMatrix
-// Description : A general 4x4 matrix.  This appears in the flt file
-//               when there is no record of the composition of the
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * A general 4x4 matrix.  This appears in the flt file when there is no record
+ * of the composition of the transform.
+ */
 class FltTransformGeneralMatrix : public FltTransformRecord {
 public:
   FltTransformGeneralMatrix(FltHeader *header);
@@ -54,5 +52,3 @@ private:
 };
 
 #endif
-
-

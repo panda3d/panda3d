@@ -29,15 +29,12 @@ class EggVertexPool;
 class EggGroup;
 class TextureImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMakeFont
-// Description : This program uses FreeType to generate an egg file
-//               and a series of texture images from a font file
-//               input, such as a TTF file.  The resulting egg file
-//               can be loaded in Panda as a StaticTextFont object for
-//               rendering text, even if FreeType is not compiled into
-//               the executing Panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * This program uses FreeType to generate an egg file and a series of texture
+ * images from a font file input, such as a TTF file.  The resulting egg file
+ * can be loaded in Panda as a StaticTextFont object for rendering text, even if
+ * FreeType is not compiled into the executing Panda.
+ */
 class EggMakeFont : public EggWriter {
 public:
   EggMakeFont();
@@ -86,7 +83,7 @@ private:
   string _output_palette_pattern;
 
   PNMTextMaker *_text_maker;
-  
+
   EggTexture::Format _format;
   int _num_channels;
   EggVertexPool *_vpool;
@@ -101,4 +98,3 @@ private:
 
 
 #endif
-

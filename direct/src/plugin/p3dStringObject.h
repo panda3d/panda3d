@@ -17,10 +17,9 @@
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DStringObject
-// Description : An object type that contains a string value.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object type that contains a string value.
+ */
 class P3DStringObject : public P3DObject {
 public:
   P3DStringObject(const string &value);
@@ -41,4 +40,3 @@ private:
 };
 
 #endif
-

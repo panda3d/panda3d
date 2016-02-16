@@ -36,14 +36,12 @@ class CullTraverserData;
 class PortalClipper;
 class NodePath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullTraverser
-// Description : This object performs a depth-first traversal of the
-//               scene graph, with optional view-frustum culling,
-//               collecting CullState and searching for GeomNodes.
-//               Each renderable Geom encountered is passed along with
-//               its associated RenderState to the CullHandler object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object performs a depth-first traversal of the scene graph, with
+ * optional view-frustum culling, collecting CullState and searching for
+ * GeomNodes.  Each renderable Geom encountered is passed along with its
+ * associated RenderState to the CullHandler object.
+ */
 class EXPCL_PANDA_PGRAPH CullTraverser : public TypedReferenceCount {
 PUBLISHED:
   CullTraverser();

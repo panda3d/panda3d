@@ -21,12 +21,10 @@
 #include "pointerToArray.h"
 #include "pta_stdfloat.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannelScalarTable
-// Description : An animation channel that issues a scalar each frame,
-//               read from a table such as might have been read from
-//               an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * An animation channel that issues a scalar each frame, read from a table such
+ * as might have been read from an egg file.
+ */
 class EXPCL_PANDA_CHAN AnimChannelScalarTable : public AnimChannelScalar {
 protected:
   AnimChannelScalarTable();
@@ -35,7 +33,7 @@ protected:
 public:
   AnimChannelScalarTable(AnimGroup *parent, const string &name);
 
-  virtual bool has_changed(int last_frame, double last_frac, 
+  virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, PN_stdfloat &value);
 

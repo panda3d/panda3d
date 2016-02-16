@@ -21,14 +21,12 @@
 
 #include "aiBehaviors.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AICharacter
-// Description : This class is used for creating the AI characters.
-//               It assigns both physics and AI attributes to the
-//               character.  It also has an update function which
-//               updates the physics and AI of the character.
-//               This update function is called by the AIWorld update.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used for creating the AI characters.  It assigns both physics
+ * and AI attributes to the character.  It also has an update function which
+ * updates the physics and AI of the character.  This update function is called
+ * by the AIWorld update.
+ */
 class AIBehaviors;
 class AIWorld;
 

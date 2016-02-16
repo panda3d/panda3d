@@ -18,11 +18,10 @@
 
 #include "parameterRemap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapUnchanged
-// Description : A ParameterRemap class that represents no change to
-//               the parameter: the parameter type is legal as is.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ParameterRemap class that represents no change to the parameter: the
+ * parameter type is legal as is.
+ */
 class ParameterRemapUnchanged : public ParameterRemap {
 public:
   ParameterRemapUnchanged(CPPType *orig_type);

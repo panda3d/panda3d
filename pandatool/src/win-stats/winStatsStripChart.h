@@ -24,10 +24,9 @@
 
 class WinStatsMonitor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsStripChart
-// Description : A window that draws a strip chart, given a view.
-////////////////////////////////////////////////////////////////////
+/**
+ * A window that draws a strip chart, given a view.
+ */
 class WinStatsStripChart : public PStatStripChart, public WinStatsGraph {
 public:
   WinStatsStripChart(WinStatsMonitor *monitor,
@@ -49,7 +48,7 @@ protected:
 
   virtual void clear_region();
   virtual void copy_region(int start_x, int end_x, int dest_x);
-  virtual void draw_slice(int x, int w, 
+  virtual void draw_slice(int x, int w,
                           const PStatStripChart::FrameData &fdata);
   virtual void draw_empty(int x, int w);
   virtual void draw_cursor(int x);
@@ -59,7 +58,7 @@ protected:
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual void additional_window_paint(HDC hdc);
   virtual void additional_graph_window_paint(HDC hdc);
-  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
+  virtual DragMode consider_drag_start(int mouse_x, int mouse_y,
                                        int width, int height);
   virtual void set_drag_mode(DragMode drag_mode);
   virtual void move_graph_window(int graph_left, int graph_top,
@@ -84,4 +83,3 @@ private:
 };
 
 #endif
-

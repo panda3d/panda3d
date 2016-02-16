@@ -22,22 +22,17 @@
 TypeHandle EggPoolUniquifier::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPoolUniquifier::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggPoolUniquifier::
 EggPoolUniquifier() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPoolUniquifier::get_category
-//       Access: Public
-//  Description: Returns the category name into which the given node
-//               should be collected, or the empty string if the
-//               node's name should be left alone.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the category name into which the given node should be collected, or
+ * the empty string if the node's name should be left alone.
+ */
 string EggPoolUniquifier::
 get_category(EggNode *node) {
   if (node->is_of_type(EggTexture::get_class_type())) {

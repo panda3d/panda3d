@@ -11,21 +11,16 @@
  * @date 2005-08-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingPlane::Default Constructor
-//       Access: Published
-//  Description: Constructs an empty "plane" that has no
-//               intersections.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an empty "plane" that has no intersections.
+ */
 INLINE_MATHUTIL BoundingPlane::
 BoundingPlane() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingPlane::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_MATHUTIL BoundingPlane::
 BoundingPlane(const LPlane &plane) :
   _plane(plane)
@@ -33,11 +28,9 @@ BoundingPlane(const LPlane &plane) :
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingPlane::get_plane
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_MATHUTIL const LPlane &BoundingPlane::
 get_plane() const {
   nassertr(!is_empty(), _plane);

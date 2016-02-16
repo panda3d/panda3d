@@ -11,29 +11,23 @@
  * @date 2005-03-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTriangleStrip::
 EggTriangleStrip(const string &name) : EggCompositePrimitive(name) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::Copy constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTriangleStrip::
 EggTriangleStrip(const EggTriangleStrip &copy) : EggCompositePrimitive(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::Copy assignment operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTriangleStrip &EggTriangleStrip::
 operator = (const EggTriangleStrip &copy) {
   EggCompositePrimitive::operator = (copy);

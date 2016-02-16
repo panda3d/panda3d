@@ -11,32 +11,26 @@
  * @date 2009-09-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRevoluteJointDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxRevoluteJointDesc::
 PhysxRevoluteJointDesc() : PhysxJointDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRevoluteJointDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxRevoluteJointDesc::
 ~PhysxRevoluteJointDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRevoluteJointDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxRevoluteJointDesc::
 set_to_default() {
 
@@ -44,14 +38,11 @@ set_to_default() {
   set_name("");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRevoluteJointDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxRevoluteJointDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

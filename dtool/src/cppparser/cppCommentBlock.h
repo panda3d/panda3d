@@ -20,14 +20,11 @@
 
 #include <list>
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPCommentBlock
-// Description : This represents a comment appearing in the source
-//               code.  The CPPPreprocessor collects these, and saves
-//               the complete list of comments encountered; it also
-//               stores a list of the comment blocks appearing before
-//               each declaration.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a comment appearing in the source code.  The CPPPreprocessor
+ * collects these, and saves the complete list of comments encountered; it also
+ * stores a list of the comment blocks appearing before each declaration.
+ */
 class CPPCommentBlock {
 public:
   CPPFile _file;

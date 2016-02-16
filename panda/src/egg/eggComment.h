@@ -18,11 +18,9 @@
 
 #include "eggNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggComment
-// Description : A comment that appears in an egg file within a
-//               <Comment> entry.
-////////////////////////////////////////////////////////////////////
+/**
+ * A comment that appears in an egg file within a <Comment> entry.
+ */
 class EXPCL_PANDAEGG EggComment : public EggNode {
 PUBLISHED:
   INLINE EggComment(const string &node_name, const string &comment);

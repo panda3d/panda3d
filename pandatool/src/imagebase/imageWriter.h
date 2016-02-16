@@ -20,11 +20,10 @@
 
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ImageWriter
-// Description : This is the base class for a program that generates
-//               an image file output, but doesn't read any for input.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a program that generates an image file output, but
+ * doesn't read any for input.
+ */
 class ImageWriter : virtual public ImageBase, public WithOutputFile {
 public:
   ImageWriter(bool allow_last_param);
@@ -39,5 +38,3 @@ protected:
 #include "imageWriter.I"
 
 #endif
-
-

@@ -24,35 +24,28 @@
 
 TypeHandle AnimChannelScalarTable::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AnimChannelScalarTable::
 AnimChannelScalarTable() : _table(get_class_type()) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::Copy Constructor
-//       Access: Protected
-//  Description: Creates a new AnimChannelScalarTable, just like
-//               this one, without copying any children.  The new copy
-//               is added to the indicated parent.  Intended to be
-//               called by make_copy() only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new AnimChannelScalarTable, just like this one, without copying any
+ * children.  The new copy is added to the indicated parent.  Intended to be
+ * called by make_copy() only.
+ */
 AnimChannelScalarTable::
-AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy) : 
+AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy) :
   AnimChannelScalar(parent, copy),
   _table(copy._table)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AnimChannelScalarTable::
 AnimChannelScalarTable(AnimGroup *parent, const string &name) :
   AnimChannelScalar(parent, name),
@@ -60,20 +53,17 @@ AnimChannelScalarTable(AnimGroup *parent, const string &name) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::has_changed
-//       Access: Public, Virtual
-//  Description: Returns true if the value has changed since the last
-//               call to has_changed().  last_frame is the frame
-//               number of the last call; this_frame is the current
-//               frame number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the value has changed since the last call to has_changed().
+ * last_frame is the frame number of the last call; this_frame is the current
+ * frame number.
+ */
 bool AnimChannelScalarTable::
-has_changed(int last_frame, double last_frac, 
+has_changed(int last_frame, double last_frac,
             int this_frame, double this_frac) {
   if (_table.size() > 1) {
     if (last_frame != this_frame) {
-      if (_table[last_frame % _table.size()] != 
+      if (_table[last_frame % _table.size()] !=
           _table[this_frame % _table.size()]) {
         return true;
       }
@@ -81,7 +71,7 @@ has_changed(int last_frame, double last_frac,
     if (last_frac != this_frac) {
       // If we have some fractional changes, also check the next
       // subsequent frame (since we'll be blending with that).
-      if (_table[last_frame % _table.size()] != 
+      if (_table[last_frame % _table.size()] !=
           _table[(this_frame + 1) % _table.size()]) {
         return true;
       }
@@ -91,11 +81,9 @@ has_changed(int last_frame, double last_frac,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::get_value
-//       Access: Public, Virtual
-//  Description: Gets the value of the channel at the indicated frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the value of the channel at the indicated frame.
+ */
 void AnimChannelScalarTable::
 get_value(int frame, PN_stdfloat &value) {
   if (_table.empty()) {
@@ -106,11 +94,9 @@ get_value(int frame, PN_stdfloat &value) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::set_table
-//       Access: Public
-//  Description: Assigns the data table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the data table.
+ */
 void AnimChannelScalarTable::
 set_table(const CPTA_stdfloat &table) {
   int num_frames = _root->get_num_frames();
@@ -125,12 +111,9 @@ set_table(const CPTA_stdfloat &table) {
   _table = table;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::write
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the table and all of
-//               its descendants.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the table and all of its descendants.
+ */
 void AnimChannelScalarTable::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -145,25 +128,20 @@ write(ostream &out, int indent_level) const {
   out << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::make_copy
-//       Access: Protected, Virtual
-//  Description: Returns a copy of this object, and attaches it to the
-//               indicated parent (which may be NULL only if this is
-//               an AnimBundle).  Intended to be called by
-//               copy_subtree() only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a copy of this object, and attaches it to the indicated parent (which
+ * may be NULL only if this is an AnimBundle).  Intended to be called by
+ * copy_subtree() only.
+ */
 AnimGroup *AnimChannelScalarTable::
 make_copy(AnimGroup *parent) const {
   return new AnimChannelScalarTable(parent, *this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void AnimChannelScalarTable::
 write_datagram(BamWriter *manager, Datagram &me) {
   AnimChannelScalar::write_datagram(manager, me);
@@ -268,14 +246,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void AnimChannelScalarTable::
 fillin(DatagramIterator& scan, BamReader* manager) {
   AnimChannelScalar::fillin(scan, manager);
@@ -341,11 +316,9 @@ fillin(DatagramIterator& scan, BamReader* manager) {
   _table = temp_table;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::make_AnimChannelScalarTable
-//       Access: Protected
-//  Description: Factory method to generate a AnimChannelScalarTable object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a AnimChannelScalarTable object
+ */
 TypedWritable* AnimChannelScalarTable::
 make_AnimChannelScalarTable(const FactoryParams &params) {
   AnimChannelScalarTable *me = new AnimChannelScalarTable;
@@ -357,16 +330,10 @@ make_AnimChannelScalarTable(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::register_with_factory
-//       Access: Public, Static
-//  Description: Factory method to generate a AnimChannelScalarTable object
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate a AnimChannelScalarTable object
+ */
 void AnimChannelScalarTable::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelScalarTable);
 }
-
-
-
-

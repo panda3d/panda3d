@@ -17,15 +17,13 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 #include "filename.h"
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableFilename
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a Filename type.  It is almost the
-//               same thing as ConfigVariableString, except it handles
-//               an implicit Filename::expand_from() operation so that
-//               the user may put OS-specific filenames, or filenames
-//               based on environment variables, in the prc file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a Filename type.
+ * It is almost the same thing as ConfigVariableString, except it handles an
+ * implicit Filename::expand_from() operation so that the user may put OS-
+ * specific filenames, or filenames based on environment variables, in the prc
+ * file.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableFilename : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableFilename(const string &name);

@@ -15,13 +15,10 @@
 
 TypeHandle MaxNodeDesc::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::Constructor
-//       Access: Public
-//  Description: Creates a MaxNodeDesc.  The name is copied from
-//               the given max node.  Use from_INode to actually
-//               associate the desc with a given max node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a MaxNodeDesc.  The name is copied from the given max node.  Use
+ * from_INode to actually associate the desc with a given max node.
+ */
 MaxNodeDesc::
 MaxNodeDesc(MaxNodeDesc *parent, INode *max_node) :
   _parent(parent) {
@@ -51,20 +48,15 @@ MaxNodeDesc(MaxNodeDesc *parent, INode *max_node) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MaxNodeDesc::
 ~MaxNodeDesc() {}
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::from_INode
-//       Access: Public
-//  Description: Indicates an associated between the MaxNodeDesc and
-//               some Max Node instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates an associated between the MaxNodeDesc and some Max Node instance.
+ */
 void MaxNodeDesc::
 from_INode(INode *max_node) {
   if (_max_node == (INode *)NULL) {
@@ -94,24 +86,19 @@ from_INode(INode *max_node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::has_max_node
-//       Access: Public
-//  Description: Returns true if a Max INode has been associated
-//               with this node, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a Max INode has been associated with this node, false
+ * otherwise.
+ */
 bool MaxNodeDesc::
 has_max_node() const {
   return (_max_node != (INode *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::get_max_node
-//       Access: Public
-//  Description: Returns the INode associated with this node.  It
-//               is an error to call this unless has_max_node()
-//               returned true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the INode associated with this node.  It is an error to call this
+ * unless has_max_node() returned true.
+ */
 INode *MaxNodeDesc::
 get_max_node() const {
   nassertr(_max_node != (INode *)NULL, _max_node);
@@ -126,46 +113,34 @@ set_joint(bool onoff) {
   else
     _joint_type = JT_none;
 }
-    
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::is_joint
-//       Access: Private
-//  Description: Returns true if the node should be treated as a joint
-//               by the converter.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Returns true if the node should be treated as a joint by the converter.
+ */
 bool MaxNodeDesc::
 is_joint() const {
   return _joint_type == JT_joint || _joint_type == JT_pseudo_joint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::is_joint_parent
-//       Access: Private
-//  Description: Returns true if the node is the parent or ancestor of
-//               a joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node is the parent or ancestor of a joint.
+ */
 bool MaxNodeDesc::
 is_joint_parent() const {
   return _joint_type == JT_joint_parent;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::is_joint_parent
-//       Access: Private
-//  Description: Returns true if the node is the parent or ancestor of
-//               a joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the node is the parent or ancestor of a joint.
+ */
 bool MaxNodeDesc::
 is_node_joint() const {
   return _joint_type == JT_node_joint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::clear_egg
-//       Access: Private
-//  Description: Recursively clears the egg pointers from this node
-//               and all children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively clears the egg pointers from this node and all children.
+ */
 void MaxNodeDesc::
 clear_egg() {
   _egg_group = (EggGroup *)NULL;
@@ -179,12 +154,10 @@ clear_egg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::mark_joint_parent
-//       Access: Private
-//  Description: Indicates that this node has at least one child that
-//               is a joint or a pseudo-joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that this node has at least one child that is a joint or a pseudo-
+ * joint.
+ */
 void MaxNodeDesc::
 mark_joint_parent() {
   if (_joint_type == JT_none) {
@@ -195,14 +168,11 @@ mark_joint_parent() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::check_pseudo_joints
-//       Access: Private
-//  Description: Walks the hierarchy, looking for non-joint nodes that
-//               are both children and parents of a joint.  These
-//               nodes are deemed to be pseudo joints, since the
-//               converter must treat them as joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the hierarchy, looking for non-joint nodes that are both children and
+ * parents of a joint.  These nodes are deemed to be pseudo joints, since the
+ * converter must treat them as joints.
+ */
 void MaxNodeDesc::
 check_pseudo_joints(bool joint_above) {
   if (_joint_type == JT_joint_parent && joint_above) {

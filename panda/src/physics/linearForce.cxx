@@ -20,11 +20,9 @@
 
 TypeHandle LinearForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearForce
-//       Access: Protected
-//  Description: Default/component-based constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Default/component-based constructor
+ */
 LinearForce::
 LinearForce(PN_stdfloat a, bool mass) :
   BaseForce(true),
@@ -32,11 +30,9 @@ LinearForce(PN_stdfloat a, bool mass) :
   _x_mask(true), _y_mask(true), _z_mask(true) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearForce
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 LinearForce::
 LinearForce(const LinearForce& copy) :
   BaseForce(copy) {
@@ -47,19 +43,16 @@ LinearForce(const LinearForce& copy) :
   _z_mask = copy._z_mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~LinearForce
-//       Access: Public
-//  Description: Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 LinearForce::
 ~LinearForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_vector
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LVector3 LinearForce::
 get_vector(const PhysicsObject *po) {
   LVector3 child_vector = get_child_vector(po) * _amplitude;
@@ -77,21 +70,17 @@ get_vector(const PhysicsObject *po) {
   return child_vector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_linear
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool LinearForce::
 is_linear() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -99,12 +88,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

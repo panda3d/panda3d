@@ -11,25 +11,20 @@
  * @date 2012-11-26
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTickCallbackData::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletTickCallbackData::
 BulletTickCallbackData(btScalar timestep) :
   _timestep(timestep) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTickCallbackData::get_timestep
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat BulletTickCallbackData::
 get_timestep() const {
 
   return (PN_stdfloat)_timestep;
 }
-

@@ -19,15 +19,11 @@
 #include "typedWritableReferenceCount.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CFCommand
-// Description : A single command in the Connected-Frame protocol.
-//               This can be sent client-to-server or
-//               server-to-client.
-//
-//               This is an abstract base class.  Individual commands
-//               will specialize from this.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single command in the Connected-Frame protocol.  This can be sent client-
+ * to-server or server-to-client.  This is an abstract base class.  Individual
+ * commands will specialize from this.
+ */
 class EXPCL_CFTALK CFCommand : public TypedWritableReferenceCount {
 protected:
   CFCommand();
@@ -53,11 +49,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : CFDoCullCommand
-// Description : Starts the cull process for a particular
-//               DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the cull process for a particular DisplayRegion.
+ */
 class EXPCL_CFTALK CFDoCullCommand : public CFCommand {
 protected:
   INLINE CFDoCullCommand();

@@ -22,10 +22,9 @@
 
 class PhysxActor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxJointDesc
-// Description : Abstract base class for joint descriptors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for joint descriptors.
+ */
 class EXPCL_PANDAPHYSX PhysxJointDesc : public PhysxEnums {
 
 PUBLISHED:

@@ -18,14 +18,12 @@
 #include "luse.h"
 #include "pointerToArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_LMatrix3f
-// Description : A pta of LMatrix3fs.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of LMatrix3fs.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a pta of this type (whether they
+ * need to export it or not) should include this header file, rather than
+ * defining the pta again.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LMatrix3f> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LMatrix3f>)
@@ -35,14 +33,12 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerTo
 typedef PointerToArray<LMatrix3f> PTA_LMatrix3f;
 typedef ConstPointerToArray<LMatrix3f> CPTA_LMatrix3f;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_LMatrix3d
-// Description : A pta of LMatrix3ds.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of LMatrix3ds.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a pta of this type (whether they
+ * need to export it or not) should include this header file, rather than
+ * defining the pta again.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LMatrix3d> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LMatrix3d>)

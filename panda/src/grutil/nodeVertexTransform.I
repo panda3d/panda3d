@@ -11,23 +11,18 @@
  * @date 2007-02-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeVertexTransform::get_node
-//       Access: Published
-//  Description: Returns the PandaNode whose transform supplies this
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the PandaNode whose transform supplies this object.
+ */
 INLINE const PandaNode *NodeVertexTransform::
 get_node() const {
   return _node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeVertexTransform::get_prev
-//       Access: Published
-//  Description: Returns the VertexTransform object whose matrix will
-//               be composed with the result of this node's transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the VertexTransform object whose matrix will be composed with the
+ * result of this node's transform.
+ */
 INLINE const VertexTransform *NodeVertexTransform::
 get_prev() const {
   return _prev;

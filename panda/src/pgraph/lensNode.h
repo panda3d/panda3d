@@ -21,13 +21,11 @@
 #include "perspectiveLens.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LensNode
-// Description : A node that contains a Lens.  The most important
-//               example of this kind of node is a Camera, but other
-//               kinds of nodes also contain a lens (for instance, a
-//               Spotlight).
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that contains a Lens.  The most important example of this kind of node
+ * is a Camera, but other kinds of nodes also contain a lens (for instance, a
+ * Spotlight).
+ */
 class EXPCL_PANDA_PGRAPH LensNode : public PandaNode {
 PUBLISHED:
   LensNode(const string &name, Lens *lens = NULL);
@@ -47,7 +45,7 @@ PUBLISHED:
   INLINE void set_lens(Lens *lens);
   void set_lens(int index, Lens *lens);
   INLINE Lens *get_lens(int index = 0) const;
-  
+
   bool set_lens_active(int index, bool active);
   INLINE bool get_lens_active(int index) const;
 
@@ -71,7 +69,7 @@ protected:
 
   typedef pvector<LensSlot> Lenses;
   Lenses _lenses;
-  
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

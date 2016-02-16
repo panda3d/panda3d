@@ -16,11 +16,9 @@
 
 TypeHandle PhysxTriangleMeshShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMeshShape::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriangleMeshShape::
 link(NxShape *shapePtr) {
 
@@ -34,11 +32,9 @@ link(NxShape *shapePtr) {
   actor->_shapes.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMeshShape::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriangleMeshShape::
 unlink() {
 
@@ -49,16 +45,12 @@ unlink() {
   actor->_shapes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMeshShape::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the shape object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the shape object to a descriptor.
+ */
 void PhysxTriangleMeshShape::
 save_to_desc(PhysxTriangleMeshShapeDesc &shapeDesc) const {
 
   nassertv(_error_type == ET_ok);
   _ptr->saveToDesc(shapeDesc._desc);
 }
-

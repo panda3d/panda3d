@@ -18,20 +18,15 @@
 #include "typedObject.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggRenderMode
-// Description : This class stores miscellaneous rendering properties
-//               that is associated with geometry, and which may be
-//               set on the geometry primitive level, on the group
-//               above it, or indirectly via a texture.  It's intended
-//               to be a base class for egg objects that can have
-//               these properties set.
-//
-//               This class cannot inherit from EggObject, because it
-//               causes problems at the EggPolygon level with multiple
-//               appearances of the EggObject base class.  And making
-//               EggObject a virtual base class is just no fun.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class stores miscellaneous rendering properties that is associated with
+ * geometry, and which may be set on the geometry primitive level, on the group
+ * above it, or indirectly via a texture.  It's intended to be a base class for
+ * egg objects that can have these properties set.  This class cannot inherit
+ * from EggObject, because it causes problems at the EggPolygon level with
+ * multiple appearances of the EggObject base class.  And making EggObject a
+ * virtual base class is just no fun.
+ */
 class EXPCL_PANDAEGG EggRenderMode {
 PUBLISHED:
   EggRenderMode();
@@ -41,7 +36,7 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
   enum AlphaMode {  // Specifies implementation of transparency.
-    AM_unspecified, 
+    AM_unspecified,
     AM_off,     // No transparency.
     AM_on,      // Use whatever the default model is.
     AM_blend,   // Normal alpha blending, e.g. TransparencyAttrib::M_alpha.
@@ -135,4 +130,3 @@ EXPCL_PANDAEGG ostream &operator << (ostream &out, EggRenderMode::VisibilityMode
 #include "eggRenderMode.I"
 
 #endif
-

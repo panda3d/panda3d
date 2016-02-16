@@ -29,5 +29,3 @@ EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, LODNodeType lnt);
 EXPCL_PANDA_PGRAPH istream &operator >> (istream &in, LODNodeType &cs);
 
 #endif
-
-

@@ -19,15 +19,12 @@
 #include "animChannel.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannelFixed
-// Description : This template class is a special kind of AnimChannel
-//               that always returns just one fixed value.  It is a
-//               special channel, in that it need not be assigned
-//               within a hierarchy.  It may stand alone, so that it
-//               may be created on-the-fly for parts that need default
-//               anims to bind against.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class is a special kind of AnimChannel that always returns just
+ * one fixed value.  It is a special channel, in that it need not be assigned
+ * within a hierarchy.  It may stand alone, so that it may be created on-the-fly
+ * for parts that need default anims to bind against.
+ */
 template<class SwitchType>
 class AnimChannelFixed : public AnimChannel<SwitchType> {
 public:
@@ -39,7 +36,7 @@ protected:
 public:
   INLINE AnimChannelFixed(const string &name, const ValueType &value);
 
-  virtual bool has_changed(int last_frame, double last_frac, 
+  virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, ValueType &value);
 

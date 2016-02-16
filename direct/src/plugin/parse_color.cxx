@@ -16,21 +16,19 @@
 
 static bool parse_hexdigit(int &result, char digit);
 
-////////////////////////////////////////////////////////////////////
-//     Function: parse_color
-//  Description: Parses a HTML color spec of the form #rgb or #rrggbb.
-//               Returns true on success, false on failure.  On
-//               success, fills r, g, b with the color values in the
-//               range 0..255.  On failure, r, g, b are undefined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a HTML color spec of the form #rgb or #rrggbb.  Returns true on
+ * success, false on failure.  On success, fills r, g, b with the color values
+ * in the range 0..255.  On failure, r, g, b are undefined.
+ */
 bool
 parse_color(int &r, int &g, int &b, const string &color) {
   if (color.empty() || color[0] != '#') {
     return false;
   }
   if (color.length() == 4) {
-    if (!parse_hexdigit(r, color[1]) || 
-        !parse_hexdigit(g, color[2]) || 
+    if (!parse_hexdigit(r, color[1]) ||
+        !parse_hexdigit(g, color[2]) ||
         !parse_hexdigit(b, color[3])) {
       return false;
     }
@@ -58,12 +56,10 @@ parse_color(int &r, int &g, int &b, const string &color) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: parse_hexdigit
-//  Description: Parses a single hex digit.  Returns true on success,
-//               false on failure.  On success, fills result with the
-//               parsed value, an integer in the range 0..15.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses a single hex digit.  Returns true on success, false on failure.  On
+ * success, fills result with the parsed value, an integer in the range 0..15.
+ */
 bool
 parse_hexdigit(int &result, char digit) {
   if (isdigit(digit)) {

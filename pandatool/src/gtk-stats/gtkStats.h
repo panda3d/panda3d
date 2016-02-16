@@ -21,4 +21,3 @@
 extern GtkWidget *main_window;
 
 #endif
-

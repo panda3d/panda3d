@@ -49,7 +49,7 @@ event_T(const Event *, void *data) {
   static const int tex_x_size = 256;
   static const int tex_y_size = 256;
 
-  cerr << "Loading " << num_quads_side * num_quads_side << " textures at " 
+  cerr << "Loading " << num_quads_side * num_quads_side << " textures at "
        << tex_x_size << ", " << tex_y_size << "\n";
 
   PNMImage white_center(tex_x_size / 4, tex_y_size / 4);
@@ -78,7 +78,7 @@ event_T(const Event *, void *data) {
       bogus_image.copy_sub_image(white_center,
                                  (tex_x_size - white_center.get_x_size()) / 2,
                                  (tex_y_size - white_center.get_y_size()) / 2);
-      
+
       PT(Texture) tex = new Texture;
       tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);
       tex->load(bogus_image);

@@ -20,13 +20,11 @@
 class DCAtomicField;
 class DCParameter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCMolecularField
-// Description : A single molecular field of a Distributed Class, as
-//               read from a .dc file.  This represents a combination
-//               of two or more related atomic fields, that will often
-//               be treated as a unit.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single molecular field of a Distributed Class, as read from a .dc file.
+ * This represents a combination of two or more related atomic fields, that will
+ * often be treated as a unit.
+ */
 class EXPCL_DIRECT DCMolecularField : public DCField {
 public:
   DCMolecularField(const string &name, DCClass *dclass);
@@ -65,5 +63,3 @@ private:
 };
 
 #endif
-
-

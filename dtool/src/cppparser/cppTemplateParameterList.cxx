@@ -16,20 +16,16 @@
 #include "cppInstance.h"
 #include "cppExpression.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPTemplateParameterList::
 CPPTemplateParameterList() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPTemplateParameterList::
 get_string() const {
   ostringstream strname;
@@ -37,15 +33,11 @@ get_string() const {
   return strname.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::build_subst_decl
-//       Access: Public
-//  Description: Matches up the actual parameters one-to-one with the
-//               formal parameters they are replacing, so the template
-//               may be instantiated by swapping out each occurrence
-//               of a template standin type with its appropriate
-//               replacement.
-////////////////////////////////////////////////////////////////////
+/**
+ * Matches up the actual parameters one-to-one with the formal parameters they
+ * are replacing, so the template may be instantiated by swapping out each
+ * occurrence of a template standin type with its appropriate replacement.
+ */
 void CPPTemplateParameterList::
 build_subst_decl(const CPPTemplateParameterList &formal_params,
                  CPPDeclaration::SubstDecl &subst,
@@ -99,17 +91,13 @@ build_subst_decl(const CPPTemplateParameterList &formal_params,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::is_fully_specified
-//       Access: Public
-//  Description: This function returns true if all the parameters in
-//               the list are real expressions or classes, and not
-//               types yet to-be-determined or template parameter
-//               types.  That is, this returns true for a normal
-//               template instantiation, and false for a template
-//               instantiation based on template parameters that have
-//               not yet been specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function returns true if all the parameters in the list are real
+ * expressions or classes, and not types yet to-be-determined or template
+ * parameter types.  That is, this returns true for a normal template
+ * instantiation, and false for a template instantiation based on template
+ * parameters that have not yet been specified.
+ */
 bool CPPTemplateParameterList::
 is_fully_specified() const {
   for (int i = 0; i < (int)_parameters.size(); ++i) {
@@ -120,13 +108,10 @@ is_fully_specified() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::is_tbd
-//       Access: Public
-//  Description: Returns true if any type within the parameter list is
-//               a CPPTBDType and thus isn't fully determined right
-//               now.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any type within the parameter list is a CPPTBDType and thus
+ * isn't fully determined right now.
+ */
 bool CPPTemplateParameterList::
 is_tbd() const {
   for (int i = 0; i < (int)_parameters.size(); ++i) {
@@ -143,11 +128,9 @@ is_tbd() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::Equivalence Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CPPTemplateParameterList::
 operator == (const CPPTemplateParameterList &other) const {
   if (_parameters.size() != other._parameters.size()) {
@@ -161,21 +144,17 @@ operator == (const CPPTemplateParameterList &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::Nonequivalence Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CPPTemplateParameterList::
 operator != (const CPPTemplateParameterList &other) const {
   return !(*this == other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CPPTemplateParameterList::
 operator < (const CPPTemplateParameterList &other) const {
   if (_parameters.size() != other._parameters.size()) {
@@ -189,11 +168,9 @@ operator < (const CPPTemplateParameterList &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::substitute_decl
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPTemplateParameterList *CPPTemplateParameterList::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
@@ -216,11 +193,9 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   return rep;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTemplateParameterList::
 output(ostream &out, CPPScope *scope) const {
   if (!_parameters.empty()) {
@@ -236,13 +211,11 @@ output(ostream &out, CPPScope *scope) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTemplateParameterList::write_formal
-//       Access: Public
-//  Description: Writes the list as a set of formal parameters for a
-//               template scope.  Includes the keyword "template" and
-//               the angle brackets, as well as the trailing newline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the list as a set of formal parameters for a template scope.  Includes
+ * the keyword "template" and the angle brackets, as well as the trailing
+ * newline.
+ */
 void CPPTemplateParameterList::
 write_formal(ostream &out, CPPScope *scope) const {
   out << "template<";

@@ -17,14 +17,12 @@
 
 TypeHandle ModelSaveRequest::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelSaveRequest::Constructor
-//       Access: Published
-//  Description: Create a new ModelSaveRequest, and add it to the loader
-//               via save_async(), to begin an asynchronous save.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a new ModelSaveRequest, and add it to the loader via save_async(), to
+ * begin an asynchronous save.
+ */
 ModelSaveRequest::
-ModelSaveRequest(const string &name, 
+ModelSaveRequest(const string &name,
                  const Filename &filename, const LoaderOptions &options,
                  PandaNode *node, Loader *loader) :
   AsyncTask(name),
@@ -37,11 +35,9 @@ ModelSaveRequest(const string &name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelSaveRequest::do_task
-//       Access: Protected, Virtual
-//  Description: Performs the task: that is, saves the one model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the task: that is, saves the one model.
+ */
 AsyncTask::DoneStatus ModelSaveRequest::
 do_task() {
   double delay = async_load_delay;

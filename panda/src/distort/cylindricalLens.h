@@ -18,24 +18,17 @@
 
 #include "lens.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CylindricalLens
-// Description : A cylindrical lens.  This is the kind of lens
-//               generally used for extremely wide panoramic shots.
-//               It behaves like a normal perspective lens in the
-//               vertical direction, but it is non-linear in the
-//               horizontal dimension: a point on the film corresponds
-//               to a point in space in linear proportion to its angle
-//               to the camera, not to its straight-line distance from
-//               the center.
-//
-//               This allows up to 360 degree lenses in the horizontal
-//               dimension, with relatively little distortion.  The
-//               distortion is not very apparent between two
-//               relatively nearby points on the film, but it becomes
-//               increasingly evident as you compare points widely
-//               spaced on the film.
-////////////////////////////////////////////////////////////////////
+/**
+ * A cylindrical lens.  This is the kind of lens generally used for extremely
+ * wide panoramic shots.  It behaves like a normal perspective lens in the
+ * vertical direction, but it is non-linear in the horizontal dimension: a point
+ * on the film corresponds to a point in space in linear proportion to its angle
+ * to the camera, not to its straight-line distance from the center.  This
+ * allows up to 360 degree lenses in the horizontal dimension, with relatively
+ * little distortion.  The distortion is not very apparent between two
+ * relatively nearby points on the film, but it becomes increasingly evident as
+ * you compare points widely spaced on the film.
+ */
 class EXPCL_PANDAFX CylindricalLens : public Lens {
 PUBLISHED:
   INLINE CylindricalLens();
@@ -48,11 +41,11 @@ public:
   virtual PT(Lens) make_copy() const;
 
 protected:
-  virtual bool do_extrude(const Lens::CData *lens_cdata, const LPoint3 &point2d, 
+  virtual bool do_extrude(const Lens::CData *lens_cdata, const LPoint3 &point2d,
                           LPoint3 &near_point, LPoint3 &far_point) const;
-  virtual bool do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, 
+  virtual bool do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d,
                               LVector3 &vec) const;
-  virtual bool do_project(const Lens::CData *lens_cdata, 
+  virtual bool do_project(const Lens::CData *lens_cdata,
                           const LPoint3 &point3d, LPoint3 &point2d) const;
 
   virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;

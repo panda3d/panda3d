@@ -11,11 +11,9 @@
  * @date 2000-05-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointers::Entry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MemoryUsagePointers::Entry::
 Entry(ReferenceCount *ref_ptr, TypedObject *typed_ptr,
       TypeHandle type, double age) :
@@ -27,11 +25,9 @@ Entry(ReferenceCount *ref_ptr, TypedObject *typed_ptr,
   _ref_ptr->ref();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointers::Entry::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MemoryUsagePointers::Entry::
 Entry(const Entry &copy) :
   _ref_ptr(copy._ref_ptr),
@@ -42,11 +38,9 @@ Entry(const Entry &copy) :
   _ref_ptr->ref();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointers::Entry::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void MemoryUsagePointers::Entry::
 operator = (const Entry &copy) {
   if (_ref_ptr != copy._ref_ptr) {
@@ -61,15 +55,12 @@ operator = (const Entry &copy) {
   _age = copy._age;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointers::Entry::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MemoryUsagePointers::Entry::
 ~Entry() {
   // We can't call unref_delete(), because we don't know what kind
   // of pointer it is precisely.  Potential leak.
   _ref_ptr->unref();
 }
-

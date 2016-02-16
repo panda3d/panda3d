@@ -18,10 +18,9 @@
 #include "paramValue.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParamNodePath
-// Description : A class object for storing a NodePath as a parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class object for storing a NodePath as a parameter.
+ */
 class EXPCL_PANDA_GOBJ ParamNodePath : public ParamValueBase {
 protected:
   INLINE ParamNodePath() {};

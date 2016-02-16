@@ -29,11 +29,9 @@
 #include <signal.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Panda3D::
 Panda3D(bool console_environment) : Panda3DBase(console_environment) {
   // We use the runtime PandaSystem setting for this value, rather
@@ -42,12 +40,10 @@ Panda3D(bool console_environment) : Panda3DBase(console_environment) {
   _host_url = PandaSystem::get_package_host_url();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::run_command_line
-//       Access: Public
-//  Description: Starts the program going, with command-line arguments.  
-//               Returns 0 on success, nonzero on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the program going, with command-line arguments.  Returns 0 on success,
+ * nonzero on failure.
+ */
 int Panda3D::
 run_command_line(int argc, char *argv[]) {
   extern char *optarg;
@@ -211,7 +207,7 @@ run_command_line(int argc, char *argv[]) {
       instance_filenames = argv + 1;
       num_instance_args = 0;
       instance_args = argv + argc;
-      
+
     } else {
       // Without -m, there is one instance filename, and everything else
       // gets delivered to that instance.
@@ -220,7 +216,7 @@ run_command_line(int argc, char *argv[]) {
       num_instance_args = argc - 2;
       instance_args = argv + 2;
     }
-    
+
     if (_window_type == P3D_WT_embedded) {
       // The user asked for an embedded window.  Create a toplevel
       // window to be its parent, of the requested size.
@@ -228,62 +224,62 @@ run_command_line(int argc, char *argv[]) {
         _win_width = 800;
         _win_height = 600;
       }
-      
+
       make_parent_window();
-      
+
       // Center the child window(s) within the parent window.
 #ifdef _WIN32
       assert(_parent_window._window_handle_type == P3D_WHT_win_hwnd);
       HWND parent_hwnd = _parent_window._handle._win_hwnd._hwnd;
-      
+
       RECT rect;
       GetClientRect(parent_hwnd, &rect);
-      
+
       _win_x = (int)(rect.right * 0.1);
       _win_y = (int)(rect.bottom * 0.1);
       _win_width = (int)(rect.right * 0.8);
       _win_height = (int)(rect.bottom * 0.8);
 #endif
-      
+
       // Subdivide the window into num_x_spans * num_y_spans sub-windows.
       int num_y_spans = int(sqrt((double)num_instance_filenames));
       int num_x_spans = (num_instance_filenames + num_y_spans - 1) / num_y_spans;
-      
+
       int origin_x = _win_x;
       int origin_y = _win_y;
       _win_width = _win_width / num_x_spans;
       _win_height = _win_height / num_y_spans;
       _got_win_size = true;
-      
+
       for (int yi = 0; yi < num_y_spans; ++yi) {
         for (int xi = 0; xi < num_x_spans; ++xi) {
           int i = yi * num_x_spans + xi;
           if (i >= num_instance_filenames) {
             continue;
           }
-          
+
           // Create instance i at window slot (xi, yi).
           _win_x = origin_x + xi * _win_width;
           _win_y = origin_y + yi * _win_height;
-          
+
           P3D_instance *inst = create_instance
             (instance_filenames[i], true,
              instance_args, num_instance_args);
           _instances.insert(inst);
         }
       }
-      
+
     } else {
       // Not an embedded window.  Create each window with the same parameters.
       for (int i = 0; i < num_instance_filenames; ++i) {
         P3D_instance *inst = create_instance
-          (instance_filenames[i], true, 
+          (instance_filenames[i], true,
            instance_args, num_instance_args);
         _instances.insert(inst);
       }
     }
   }
-    
+
   run_main_loop();
 
   // All instances have finished; we can exit.
@@ -291,13 +287,10 @@ run_command_line(int argc, char *argv[]) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::post_arg_processing
-//       Access: Protected
-//  Description: Sets up some internal state after processing the
-//               command-line arguments.  Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up some internal state after processing the command-line arguments.
+ * Returns true on success, false on failure.
+ */
 bool Panda3D::
 post_arg_processing() {
   // Now is a good time to assign _root_dir.
@@ -344,13 +337,10 @@ post_arg_processing() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::get_plugin
-//       Access: Protected
-//  Description: Downloads the contents.xml file from the named URL
-//               and attempts to use it to load the core API.  Returns
-//               true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Downloads the contents.xml file from the named URL and attempts to use it to
+ * load the core API.  Returns true on success, false on failure.
+ */
 bool Panda3D::
 get_plugin() {
   // First, look for the existing contents.xml file.
@@ -391,14 +381,11 @@ get_plugin() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::download_contents_file
-//       Access: Protected
-//  Description: Redownloads the contents.xml file from the named
-//               URL without first checking if it is up to date.
-//               Returns true if we have a contents.xml file that
-//               might be usable, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Redownloads the contents.xml file from the named URL without first checking
+ * if it is up to date.  Returns true if we have a contents.xml file that might
+ * be usable, false otherwise.
+ */
 bool Panda3D::
 download_contents_file(const Filename &contents_filename) {
   bool success = false;
@@ -469,14 +456,10 @@ download_contents_file(const Filename &contents_filename) {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::read_contents_file
-//       Access: Protected
-//  Description: Attempts to open and read the contents.xml file on
-//               disk.  Copies the file to its standard location
-//               on success.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open and read the contents.xml file on disk.  Copies the file to
+ * its standard location on success.  Returns true on success, false on failure.
+ */
 bool Panda3D::
 read_contents_file(const Filename &contents_filename, bool fresh_download) {
   string os_contents_filename = contents_filename.to_os_specific();
@@ -507,7 +490,7 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
 
       xorig = new TiXmlElement("orig");
       xcontents->LinkEndChild(xorig);
-      
+
       xorig->SetAttribute("expiration", (int)_contents_expiration);
 
     } else {
@@ -517,7 +500,7 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
       if (xorig != NULL) {
         xorig->Attribute("expiration", &expiration);
       }
-      
+
       _contents_expiration = min(_contents_expiration, (time_t)expiration);
     }
 
@@ -542,7 +525,7 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
           break;
         }
       }
-    
+
       xpackage = xpackage->NextSiblingElement("package");
     }
   }
@@ -597,12 +580,9 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::find_host
-//       Access: Protected
-//  Description: Scans the <contents> element for the matching <host>
-//               element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the <contents> element for the matching <host> element.
+ */
 void Panda3D::
 find_host(TiXmlElement *xcontents) {
   TiXmlElement *xhost = xcontents->FirstChildElement("host");
@@ -612,7 +592,7 @@ find_host(TiXmlElement *xcontents) {
       // We're the primary host.  This is the normal case.
       read_xhost(xhost);
       return;
-      
+
     } else {
       // We're not the primary host; perhaps we're an alternate host.
       TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
@@ -633,12 +613,10 @@ find_host(TiXmlElement *xcontents) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::read_xhost
-//       Access: Protected
-//  Description: Reads the host data from the <host> (or <alt_host>)
-//               entry in the contents.xml file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the host data from the <host> (or <alt_host>) entry in the contents.xml
+ * file.
+ */
 void Panda3D::
 read_xhost(TiXmlElement *xhost) {
   // Get the "download" URL, which is the source from which we
@@ -658,7 +636,7 @@ read_xhost(TiXmlElement *xhost) {
       _download_url_prefix += "/";
     }
   }
-        
+
   TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
   while (xmirror != NULL) {
     const char *url = xmirror->Attribute("url");
@@ -669,35 +647,29 @@ read_xhost(TiXmlElement *xhost) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::add_mirror
-//       Access: Protected
-//  Description: Adds a new URL to serve as a mirror for this host.
-//               The mirrors will be consulted first, before
-//               consulting the host directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new URL to serve as a mirror for this host.  The mirrors will be
+ * consulted first, before consulting the host directly.
+ */
 void Panda3D::
 add_mirror(string mirror_url) {
   // Ensure the URL ends in a slash.
   if (!mirror_url.empty() && mirror_url[mirror_url.size() - 1] != '/') {
     mirror_url += '/';
   }
-  
+
   // Add it to the _mirrors list, but only if it's not already
   // there.
   if (find(_mirrors.begin(), _mirrors.end(), mirror_url) == _mirrors.end()) {
     _mirrors.push_back(mirror_url);
   }
 }
-    
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::choose_random_mirrors
-//       Access: Public
-//  Description: Selects num_mirrors elements, chosen at random, from
-//               the _mirrors list.  Adds the selected mirrors to
-//               result.  If there are fewer than num_mirrors elements
-//               in the list, adds only as many mirrors as we can get.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Selects num_mirrors elements, chosen at random, from the _mirrors list.  Adds
+ * the selected mirrors to result.  If there are fewer than num_mirrors elements
+ * in the list, adds only as many mirrors as we can get.
+ */
 void Panda3D::
 choose_random_mirrors(vector_string &result, int num_mirrors) {
   pvector<size_t> selected;
@@ -715,13 +687,10 @@ choose_random_mirrors(vector_string &result, int num_mirrors) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::get_core_api
-//       Access: Protected
-//  Description: Checks the core API DLL file against the
-//               specification in the contents file, and downloads it
-//               if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks the core API DLL file against the specification in the contents file,
+ * and downloads it if necessary.
+ */
 bool Panda3D::
 get_core_api() {
   bool is_fresh = false;
@@ -790,12 +759,9 @@ get_core_api() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::download_core_api
-//       Access: Protected
-//  Description: Downloads the latest version of the core API from
-//               the plug-in server.
-////////////////////////////////////////////////////////////////////
+/**
+ * Downloads the latest version of the core API from the plug-in server.
+ */
 bool Panda3D::
 download_core_api() {
   // The DLL file needs to be downloaded.  Build up our list of
@@ -871,15 +837,13 @@ download_core_api() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::usage
-//       Access: Protected
-//  Description: Reports the available command-line options.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports the available command-line options.
+ */
 void Panda3D::
 usage() {
   cerr
-    << "\nThis is panda3d version " 
+    << "\nThis is panda3d version "
     << P3D_PLUGIN_MAJOR_VERSION << "."
     << P3D_PLUGIN_MINOR_VERSION << "."
     << P3D_PLUGIN_SEQUENCE_VERSION;
@@ -891,7 +855,7 @@ usage() {
     << "\n\nUsage:\n"
     << "   panda3d [opts] file.p3d [args]\n"
     << "   panda3d -m [opts] file_a.p3d file_b.p3d [file_c.p3d ...]\n\n"
-  
+
     << "This program is used to execute a Panda3D application bundle stored\n"
     << "in a .p3d file.  In the first form, without the -m option, it\n"
     << "executes one application; remaining arguments following the\n"

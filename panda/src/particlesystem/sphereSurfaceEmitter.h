@@ -16,11 +16,9 @@
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SphereSurfaceEmitter
-// Description : Describes a curved space in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a curved space in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS SphereSurfaceEmitter : public BaseParticleEmitter {
 PUBLISHED:
   SphereSurfaceEmitter();

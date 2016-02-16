@@ -16,13 +16,11 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FirstOfPairCompare
-// Description : An STL function object class, this is intended to be
-//               used on any ordered collection of pairs of objects.
-//               It invokes the indicated comparison function object
-//               on the first object of its pair.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object class, this is intended to be used on any ordered
+ * collection of pairs of objects.  It invokes the indicated comparison function
+ * object on the first object of its pair.
+ */
 template<class ObjectType, class Compare>
 class FirstOfPairCompare {
 public:
@@ -34,4 +32,3 @@ public:
 #include "firstOfPairCompare.I"
 
 #endif
-

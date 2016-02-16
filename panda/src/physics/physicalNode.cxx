@@ -16,51 +16,41 @@
 // static stuff.
 TypeHandle PhysicalNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicalNode
-//       Access: Public
-//  Description: default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 PhysicalNode::
 PhysicalNode(const string &name) :
   PandaNode(name)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicalNode
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 PhysicalNode::
 PhysicalNode(const PhysicalNode &copy) :
   PandaNode(copy), _physicals(copy._physicals) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~PhysicalNode
-//       Access: Protected, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 PhysicalNode::
 ~PhysicalNode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public, Virtual
-//  Description: dynamic child copy
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic child copy
+ */
 PandaNode *PhysicalNode::
 make_copy() const {
   return new PhysicalNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_physicals_from
-//       Access: Public
-//  Description: append operation
-////////////////////////////////////////////////////////////////////
+/**
+ * append operation
+ */
 void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
   pvector< PT(Physical) >::iterator last = _physicals.end() - 1;
@@ -73,11 +63,9 @@ add_physicals_from(const PhysicalNode &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_physical
-//       Access: Public
-//  Description: remove operation
-////////////////////////////////////////////////////////////////////
+/**
+ * remove operation
+ */
 void PhysicalNode::
 remove_physical(Physical *physical) {
   pvector< PT(Physical) >::iterator found;
@@ -88,11 +76,9 @@ remove_physical(Physical *physical) {
   _physicals.erase(found);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_physical
-//       Access: Public
-//  Description: remove operation
-////////////////////////////////////////////////////////////////////
+/**
+ * remove operation
+ */
 void PhysicalNode::
 remove_physical(int index) {
   nassertv(index >= 0 && index <= (int)_physicals.size());
@@ -104,12 +90,9 @@ remove_physical(int index) {
   _physicals.erase(remove);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicalNode::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

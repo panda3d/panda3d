@@ -11,13 +11,10 @@
  * @date 2009-09-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllerDesc::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxControllerDesc::
 PhysxControllerDesc() {
 
 }
-

@@ -27,10 +27,9 @@
 #include "pvector.h"
 #include "epvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ObjToEggConverter
-// Description : Convert an Obj file to egg data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convert an Obj file to egg data.
+ */
 class ObjToEggConverter : public SomethingToEggConverter {
 public:
   ObjToEggConverter();

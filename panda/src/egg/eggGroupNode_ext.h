@@ -22,12 +22,10 @@
 #include "eggGroupNode.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<EggGroupNode>
-// Description : This class defines the extension methods for
-//               EggGroupNode, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for EggGroupNode, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<EggGroupNode> : public ExtensionBase<EggGroupNode> {
 public:

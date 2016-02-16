@@ -23,11 +23,9 @@
 #include "bioStreamPtr.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ChunkedStreamBuf
-// Description : The streambuf object that implements
-//               IChunkedStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements IChunkedStream.
+ */
 class ChunkedStreamBuf : public streambuf {
   // No need to export from DLL.
 public:

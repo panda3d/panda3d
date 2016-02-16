@@ -24,14 +24,11 @@
 
 class ConfigVariableCore;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigDeclaration
-// Description : A single declaration of a config variable, typically
-//               defined as one line in a .prc file,
-//               e.g. "show-frame-rate-meter 1".  This is really just
-//               a pairing of a string name (actually, a
-//               ConfigVariableCore pointer) to a string value.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single declaration of a config variable, typically defined as one line in a
+ * .prc file, e.g.  "show-frame-rate-meter 1".  This is really just a pairing of
+ * a string name (actually, a ConfigVariableCore pointer) to a string value.
+ */
 class EXPCL_DTOOLCONFIG ConfigDeclaration : public ConfigFlags {
 private:
   ConfigDeclaration(ConfigPage *page, ConfigVariableCore *variable,

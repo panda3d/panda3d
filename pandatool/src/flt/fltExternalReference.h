@@ -20,11 +20,10 @@
 
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltExternalReference
-// Description : An external reference to another flt file (possibly
-//               to a specific bead within the flt file).
-////////////////////////////////////////////////////////////////////
+/**
+ * An external reference to another flt file (possibly to a specific bead within
+ * the flt file).
+ */
 class FltExternalReference : public FltBead {
 public:
   FltExternalReference(FltHeader *header);
@@ -72,5 +71,3 @@ private:
 };
 
 #endif
-
-

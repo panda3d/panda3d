@@ -18,13 +18,11 @@
 
 #include "collisionHandlerPhysical.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandlerPusher
-// Description : A specialized kind of CollisionHandler that simply
-//               pushes back on things that attempt to move into solid
-//               walls.  This is the simplest kind of "real-world"
-//               collisions you can have.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialized kind of CollisionHandler that simply pushes back on things that
+ * attempt to move into solid walls.  This is the simplest kind of "real-world"
+ * collisions you can have.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandlerPusher : public CollisionHandlerPhysical {
 PUBLISHED:
   CollisionHandlerPusher();
@@ -67,6 +65,3 @@ private:
 #include "collisionHandlerPusher.I"
 
 #endif
-
-
-

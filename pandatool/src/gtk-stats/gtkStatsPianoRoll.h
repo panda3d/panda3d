@@ -24,12 +24,10 @@
 
 class GtkStatsMonitor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsPianoRoll
-// Description : A window that draws a piano-roll style chart,
-//               which shows the collectors explicitly stopping and
-//               starting, one frame at a time.
-////////////////////////////////////////////////////////////////////
+/**
+ * A window that draws a piano-roll style chart, which shows the collectors
+ * explicitly stopping and starting, one frame at a time.
+ */
 class GtkStatsPianoRoll : public PStatPianoRoll, public GtkStatsGraph {
 public:
   GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index);
@@ -54,7 +52,7 @@ protected:
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
 
   virtual gboolean handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-				       bool double_click);
+               bool double_click);
   virtual gboolean handle_button_release(GtkWidget *widget, int graph_x, int graph_y);
   virtual gboolean handle_motion(GtkWidget *widget, int graph_x, int graph_y);
 
@@ -65,9 +63,8 @@ private:
   void draw_guide_labels();
   void draw_guide_label(const PStatGraph::GuideBar &bar);
 
-  static gboolean expose_event_callback(GtkWidget *widget, 
-					GdkEventExpose *event, gpointer data);
+  static gboolean expose_event_callback(GtkWidget *widget,
+          GdkEventExpose *event, gpointer data);
 };
 
 #endif
-

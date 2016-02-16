@@ -11,12 +11,9 @@
  * @date 2000-06-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageWriter::write_image
-//       Access: Public
-//  Description: Writes the generated to the user's specified output
-//               filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the generated to the user's specified output filename.
+ */
 INLINE void ImageWriter::
 write_image() {
   write_image(_image);

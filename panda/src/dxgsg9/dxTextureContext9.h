@@ -18,10 +18,9 @@
 #include "texture.h"
 #include "textureContext.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXTextureContext9
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDADX DXTextureContext9 : public TextureContext {
 public:
   DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex, int view);
@@ -65,7 +64,7 @@ private:
 private:
   bool _has_mipmaps;
   bool _is_render_target;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

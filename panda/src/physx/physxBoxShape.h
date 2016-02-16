@@ -22,21 +22,14 @@
 
 class PhysxBoxShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBoxShape
-// Description : A box shaped collision detection primitive. Each
-//               shape is owned by the actor which it is attached
-//               to.
-//
-//               An instance can be created by calling the
-//               createShape() method of the PhysxActor object that
-//               will own it, with a PhysxBoxShapeDesc object as the
-//               parameter, or by adding the shape descriptor to the
-//               PhysxActorDesc class before creating the actor.
-//
-//               The shape is deleted by calling release() on the
-//               shape itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * A box shaped collision detection primitive.  Each shape is owned by the actor
+ * which it is attached to.  An instance can be created by calling the
+ * createShape() method of the PhysxActor object that will own it, with a
+ * PhysxBoxShapeDesc object as the parameter, or by adding the shape descriptor
+ * to the PhysxActorDesc class before creating the actor.  The shape is deleted
+ * by calling release() on the shape itself.
+ */
 class EXPCL_PANDAPHYSX PhysxBoxShape : public PhysxShape {
 
 PUBLISHED:
@@ -63,7 +56,7 @@ public:
   }
   static void init_type() {
     PhysxShape::init_type();
-    register_type(_type_handle, "PhysxBoxShape", 
+    register_type(_type_handle, "PhysxBoxShape",
                   PhysxShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

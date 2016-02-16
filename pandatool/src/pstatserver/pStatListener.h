@@ -22,12 +22,10 @@
 class PStatServer;
 class PStatMonitor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatListener
-// Description : This is the TCP rendezvous socket listener.  We need
-//               one of these to listen for new connections on the
-//               socket(s) added to the PStatServer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the TCP rendezvous socket listener.  We need one of these to listen
+ * for new connections on the socket(s) added to the PStatServer.
+ */
 class PStatListener : public ConnectionListener {
 public:
   PStatListener(PStatServer *manager);

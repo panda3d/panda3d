@@ -20,10 +20,9 @@
 #include "awesomium_includes.h"
 
 class AwWebView;
-////////////////////////////////////////////////////////////////////
-//       Class : AwWebCore
-// Description : Thin wrappings arround WebCore.h
-////////////////////////////////////////////////////////////////////
+/**
+ * Thin wrappings arround WebCore.h
+ */
 class EXPCL_PANDAAWESOMIUM AwWebCore : public TypedReferenceCount, public Awesomium::WebCore {
 PUBLISHED:
   /**

@@ -17,11 +17,9 @@
 #include "pandabase.h"
 #include "autoTextureScale.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderOptions
-// Description : Specifies parameters that may be passed to the
-//               loader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies parameters that may be passed to the loader.
+ */
 class EXPCL_PANDA_PUTIL LoaderOptions {
 PUBLISHED:
   // Flags for loading model files.
@@ -74,9 +72,9 @@ PUBLISHED:
   void output(ostream &out) const;
 
 private:
-  void write_flag(ostream &out, string &sep, 
+  void write_flag(ostream &out, string &sep,
                   const string &flag_name, int flag) const;
-  void write_texture_flag(ostream &out, string &sep, 
+  void write_texture_flag(ostream &out, string &sep,
                           const string &flag_name, int flag) const;
   int _flags;
   int _texture_flags;

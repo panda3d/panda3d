@@ -27,11 +27,9 @@
 #define PY_AS_FLOATTYPE (FLOATTYPE)PyFloat_AsDouble
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::__repr__
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH string Extension<FLOATNAME(LVecBase2)>::
 __repr__() const {
   ostringstream out;
@@ -41,12 +39,10 @@ __repr__() const {
   return out.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special Python method is implement to provide support for the pickle
+ * module.
+ */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
 __reduce__(PyObject *self) const {
   // We should return at least a 2-tuple, (Class, (args)): the
@@ -73,11 +69,9 @@ __reduce__(PyObject *self) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::__getattr__
-//       Access: Published
-//  Description: This is used to implement swizzle masks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement swizzle masks.
+ */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
 __getattr__(PyObject *self, const string &attr_name) const {
 #ifndef CPPPARSER
@@ -123,11 +117,9 @@ __getattr__(PyObject *self, const string &attr_name) const {
   return Dtool_Raise_AttributeError(self, attr_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::__setattr__
-//       Access: Published
-//  Description: This is used to implement write masks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement write masks.
+ */
 INLINE_LINMATH int Extension<FLOATNAME(LVecBase2)>::
 __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
 #ifndef NDEBUG
@@ -209,11 +201,9 @@ __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::__pow__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH FLOATNAME(LVecBase2) Extension<FLOATNAME(LVecBase2)>::
 __pow__(FLOATTYPE exponent) const {
   return FLOATNAME(LVecBase2)(
@@ -221,11 +211,9 @@ __pow__(FLOATTYPE exponent) const {
     cpow(_this->_v(1), exponent));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::__ipow__
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
 __ipow__(PyObject *self, FLOATTYPE exponent) {
   _this->_v(0) = cpow(_this->_v(0), exponent);

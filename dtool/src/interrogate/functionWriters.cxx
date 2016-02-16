@@ -13,20 +13,16 @@
 
 #include "functionWriters.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionWriters::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FunctionWriters::
 FunctionWriters() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionWriters::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FunctionWriters::
 ~FunctionWriters() {
   Writers::iterator wi;
@@ -35,17 +31,12 @@ FunctionWriters::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionWriters::add_writer
-//       Access: Public
-//  Description: Adds the indicated FunctionWriter to the set of
-//               functions to be written, unless there is already a
-//               matching FunctionWriter.
-//
-//               The return value is the FunctionWriter pointer that
-//               was added to the set, which may be the same pointer
-//               or a previously-allocated (but equivalent) pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated FunctionWriter to the set of functions to be written,
+ * unless there is already a matching FunctionWriter.  The return value is the
+ * FunctionWriter pointer that was added to the set, which may be the same
+ * pointer or a previously-allocated (but equivalent) pointer.
+ */
 FunctionWriter *FunctionWriters::
 add_writer(FunctionWriter *writer) {
   pair<Writers::iterator, bool> result = _writers.insert(writer);
@@ -58,11 +49,9 @@ add_writer(FunctionWriter *writer) {
   return *result.first;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionWriters::write_prototypes
-//       Access: Public
-//  Description: Generates prototypes for all of the functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates prototypes for all of the functions.
+ */
 void FunctionWriters::
 write_prototypes(ostream &out) {
   Writers::iterator wi;
@@ -72,11 +61,9 @@ write_prototypes(ostream &out) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FunctionWriters::write_code
-//       Access: Public
-//  Description: Generates all of the functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates all of the functions.
+ */
 void FunctionWriters::
 write_code(ostream &out) {
   Writers::iterator wi;

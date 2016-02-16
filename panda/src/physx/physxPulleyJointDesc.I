@@ -11,32 +11,26 @@
  * @date 2009-09-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxPulleyJointDesc::
 PhysxPulleyJointDesc() : PhysxJointDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxPulleyJointDesc::
 ~PhysxPulleyJointDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxPulleyJointDesc::
 set_to_default() {
 
@@ -44,14 +38,11 @@ set_to_default() {
   set_name("");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPulleyJointDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxPulleyJointDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

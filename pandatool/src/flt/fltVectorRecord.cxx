@@ -17,34 +17,27 @@
 
 TypeHandle FltVectorRecord::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVectorRecord::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltVectorRecord::
 FltVectorRecord(FltHeader *header) : FltRecord(header) {
   _vector.set(0.0f, 0.0f, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVectorRecord::get_vector
-//       Access: Public
-//  Description: Returns the vector value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the vector value.
+ */
 const LVector3 &FltVectorRecord::
 get_vector() const {
   return _vector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVectorRecord::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltVectorRecord::
 extract_record(FltRecordReader &reader) {
   if (!FltRecord::extract_record(reader)) {
@@ -62,14 +55,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVectorRecord::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltVectorRecord::
 build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {
@@ -85,4 +75,3 @@ build_record(FltRecordWriter &writer) const {
 
   return true;
 }
-

@@ -11,22 +11,17 @@
  * @date 2001-07-09
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherGroup::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PGMouseWatcherGroup::
 PGMouseWatcherGroup(PGTop *top) : _top(top) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherGroup::clear_top
-//       Access: Public
-//  Description: Called by the PGTop object to indicate that it is no
-//               longer keeping the pointer to the PGMouseWatcherGroup
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the PGTop object to indicate that it is no longer keeping the
+ * pointer to the PGMouseWatcherGroup object.
+ */
 INLINE void PGMouseWatcherGroup::
 clear_top(PGTop *top) {
   nassertv(_top == top);

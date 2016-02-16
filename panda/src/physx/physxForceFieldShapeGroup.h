@@ -27,10 +27,9 @@ class PhysxForceFieldShape;
 class PhysxForceFieldShapeDesc;
 class PhysxForceFieldShapeGroupDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxForceFieldShapeGroup
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxForceFieldShapeGroup : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -75,7 +74,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxForceFieldShapeGroup", 
+    register_type(_type_handle, "PhysxForceFieldShapeGroup",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -37,18 +37,16 @@ TypeHandle HTTPChannel::_type_handle;
 
 #define _NOTIFY_HTTP_CHANNEL_ID   "[" << this << "] "
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::Constructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HTTPChannel::
 HTTPChannel(HTTPClient *client) :
   _client(client)
 {
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
     << "created.\n";
   }
 
@@ -71,7 +69,7 @@ HTTPChannel(HTTPClient *client) :
   _seconds_per_update = downloader_frequency;
   _max_updates_per_second = 1.0f / _seconds_per_update;
   _bytes_per_update = int(_max_bytes_per_second * _seconds_per_update);
-  
+
   // _nonblocking is true if the socket is actually in non-blocking mode.
   _nonblocking = false;
 
@@ -115,16 +113,14 @@ HTTPChannel(HTTPClient *client) :
   _download_to_stream = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HTTPChannel::
 ~HTTPChannel() {
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
     << "destroyed.\n";
   }
 
@@ -132,13 +128,10 @@ HTTPChannel::
   reset_download_to();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_status_string
-//       Access: Published
-//  Description: Returns the string as returned by the server
-//               describing the status code for humans.  This may or
-//               may not be meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the string as returned by the server describing the status code for
+ * humans.  This may or may not be meaningful.
+ */
 string HTTPChannel::
 get_status_string() const {
   switch (_status_entry._status_code) {
@@ -204,13 +197,10 @@ get_status_string() const {
   return _status_entry._status_string;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_header_value
-//       Access: Published
-//  Description: Returns the HTML header value associated with the
-//               indicated key, or empty string if the key was not
-//               defined in the message returned by the server.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the HTML header value associated with the indicated key, or empty
+ * string if the key was not defined in the message returned by the server.
+ */
 string HTTPChannel::
 get_header_value(const string &key) const {
   Headers::const_iterator hi = _headers.find(downcase(key));
@@ -220,14 +210,11 @@ get_header_value(const string &key) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::will_close_connection
-//       Access: Published
-//  Description: Returns true if the server has indicated it will
-//               close the connection after this document has been
-//               read, or false if it will remain open (and future
-//               documents may be requested on the same connection).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the server has indicated it will close the connection after
+ * this document has been read, or false if it will remain open (and future
+ * documents may be requested on the same connection).
+ */
 bool HTTPChannel::
 will_close_connection() const {
   if (get_http_version() < HTTPEnum::HV_11) {
@@ -250,22 +237,15 @@ will_close_connection() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_file_size
-//       Access: Published, Virtual
-//  Description: Returns the size of the file, if it is known.
-//               Returns the value set by set_expected_file_size() if
-//               the file size is not known, or 0 if this value was
-//               not set.
-//
-//               If the file is dynamically generated, the size may
-//               not be available until a read has started
-//               (e.g. open_read_body() has been called); and even
-//               then it may increase as more of the file is read due
-//               to the nature of HTTP/1.1 requests which can change
-//               their minds midstream about how much data they're
-//               sending you.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size of the file, if it is known.  Returns the value set by
+ * set_expected_file_size() if the file size is not known, or 0 if this value
+ * was not set.  If the file is dynamically generated, the size may not be
+ * available until a read has started (e.g.  open_read_body() has been called);
+ * and even then it may increase as more of the file is read due to the nature
+ * of HTTP/1.1 requests which can change their minds midstream about how much
+ * data they're sending you.
+ */
 streamsize HTTPChannel::
 get_file_size() const {
   if (_got_file_size) {
@@ -279,12 +259,10 @@ get_file_size() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::write_headers
-//       Access: Published
-//  Description: Outputs a list of all headers defined by the server
-//               to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a list of all headers defined by the server to the indicated output
+ * stream.
+ */
 void HTTPChannel::
 write_headers(ostream &out) const {
   Headers::const_iterator hi;
@@ -293,24 +271,19 @@ write_headers(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run
-//       Access: Published
-//  Description: This must be called from time to time when
-//               non-blocking I/O is in use.  It checks for data
-//               coming in on the socket and writes data out to the
-//               socket when possible, and does whatever processing is
-//               required towards completing the current task.
-//
-//               The return value is true if the task is still pending
-//               (and run() will need to be called again in the
-//               future), or false if the current task is complete.
-////////////////////////////////////////////////////////////////////
+/**
+ * This must be called from time to time when non-blocking I/O is in use.  It
+ * checks for data coming in on the socket and writes data out to the socket
+ * when possible, and does whatever processing is required towards completing
+ * the current task.  The return value is true if the task is still pending (and
+ * run() will need to be called again in the future), or false if the current
+ * task is complete.
+ */
 bool HTTPChannel::
 run() {
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "run().\n";
   }
 
@@ -335,9 +308,9 @@ run() {
       _bytes_requested += _bytes_per_update * num_potential_updates;
       if (downloader_cat.is_spam()) {
         downloader_cat.spam()
-          << _NOTIFY_HTTP_CHANNEL_ID 
-          << "elapsed = " << elapsed << " num_potential_updates = " 
-          << num_potential_updates << " bytes_requested = " 
+          << _NOTIFY_HTTP_CHANNEL_ID
+          << "elapsed = " << elapsed << " num_potential_updates = "
+          << num_potential_updates << " bytes_requested = "
           << _bytes_requested << "\n";
       }
     }
@@ -369,7 +342,7 @@ run() {
   /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "begin run(), _state = " << _state << ", _done_state = "
       << _done_state << "\n";
   }
@@ -391,7 +364,7 @@ run() {
         // individual case has similar logic to prevent more than two
         // consecutive lost connections.
         downloader_cat.warning()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Too many lost connections, giving up.\n";
         _status_entry._status_code = SC_lost_connection;
         _state = S_failure;
@@ -412,19 +385,19 @@ run() {
       if (downloader_cat.is_debug()) {
         if (_connect_count > 0) {
           downloader_cat.debug()
-            << _NOTIFY_HTTP_CHANNEL_ID 
-            << "Reconnecting to " << _bio->get_server_name() << ":" 
+            << _NOTIFY_HTTP_CHANNEL_ID
+            << "Reconnecting to " << _bio->get_server_name() << ":"
             << _bio->get_port() << "\n";
         } else {
           downloader_cat.debug()
-            << _NOTIFY_HTTP_CHANNEL_ID 
-            << "Connecting to " << _bio->get_server_name() << ":" 
+            << _NOTIFY_HTTP_CHANNEL_ID
+            << "Connecting to " << _bio->get_server_name() << ":"
             << _bio->get_port() << "\n";
         }
       }
-      
+
       _state = S_connecting;
-      _started_connecting_time = 
+      _started_connecting_time =
         TrueClock::get_global_ptr()->get_short_time();
       _connect_count++;
     }
@@ -432,7 +405,7 @@ run() {
     /*
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "continue run(), _state = " << _state << "\n";
     }
     */
@@ -445,71 +418,71 @@ run() {
     case S_connecting:
       repeat_later = run_connecting();
       break;
-      
+
     case S_connecting_wait:
       repeat_later = run_connecting_wait();
       break;
-      
+
     case S_http_proxy_ready:
       repeat_later = run_http_proxy_ready();
       break;
-      
+
     case S_http_proxy_request_sent:
       repeat_later = run_http_proxy_request_sent();
       break;
-      
+
     case S_http_proxy_reading_header:
       repeat_later = run_http_proxy_reading_header();
       break;
-      
+
     case S_socks_proxy_greet:
       repeat_later = run_socks_proxy_greet();
       break;
-      
+
     case S_socks_proxy_greet_reply:
       repeat_later = run_socks_proxy_greet_reply();
       break;
-      
+
     case S_socks_proxy_connect:
       repeat_later = run_socks_proxy_connect();
       break;
-      
+
     case S_socks_proxy_connect_reply:
       repeat_later = run_socks_proxy_connect_reply();
       break;
-      
+
     case S_setup_ssl:
       repeat_later = run_setup_ssl();
       break;
-      
+
     case S_ssl_handshake:
       repeat_later = run_ssl_handshake();
       break;
-      
+
     case S_ready:
       repeat_later = run_ready();
       break;
-      
+
     case S_request_sent:
       repeat_later = run_request_sent();
       break;
-      
+
     case S_reading_header:
       repeat_later = run_reading_header();
       break;
-      
+
     case S_start_direct_file_read:
       repeat_later = run_start_direct_file_read();
       break;
-      
+
     case S_read_header:
       repeat_later = run_read_header();
       break;
-      
+
     case S_begin_body:
       repeat_later = run_begin_body();
       break;
-      
+
     case S_reading_body:
       repeat_later = run_reading_body();
       break;
@@ -521,10 +494,10 @@ run() {
     case S_read_trailer:
       repeat_later = run_read_trailer();
       break;
-      
+
     default:
       downloader_cat.warning()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Unhandled state " << _state << "\n";
       return false;
     }
@@ -540,7 +513,7 @@ run() {
   /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "later run(), _state = " << _state
       << ", _done_state = " << _done_state << "\n";
   }
@@ -550,24 +523,16 @@ run() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::open_read_body
-//       Access: Published
-//  Description: Returns a newly-allocated istream suitable for
-//               reading the body of the document.  This may only be
-//               called immediately after a call to get_document() or
-//               post_form(), or after a call to run() has returned
-//               false.
-//
-//               Note that, in nonblocking mode, the returned stream
-//               may report an early EOF, even before the actual end
-//               of file.  When this happens, you should call
-//               stream->is_closed() to determine whether you should
-//               attempt to read some more later.
-//
-//               The user is responsible for passing the returned
-//               istream to close_read_body() later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated istream suitable for reading the body of the
+ * document.  This may only be called immediately after a call to get_document()
+ * or post_form(), or after a call to run() has returned false.  Note that, in
+ * nonblocking mode, the returned stream may report an early EOF, even before
+ * the actual end of file.  When this happens, you should call
+ * stream->is_closed() to determine whether you should attempt to read some more
+ * later.  The user is responsible for passing the returned istream to
+ * close_read_body() later.
+ */
 ISocketStream *HTTPChannel::
 open_read_body() {
   reset_body_stream();
@@ -604,15 +569,11 @@ open_read_body() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::close_read_body
-//       Access: Public
-//  Description: Closes a file opened by a previous call to
-//               open_read_body().  This really just deletes the
-//               istream pointer, but it is recommended to use this
-//               interface instead of deleting it explicitly, to help
-//               work around compiler issues.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes a file opened by a previous call to open_read_body().  This really
+ * just deletes the istream pointer, but it is recommended to use this interface
+ * instead of deleting it explicitly, to help work around compiler issues.
+ */
 void HTTPChannel::
 close_read_body(istream *stream) const {
   if (stream != (istream *)NULL) {
@@ -629,40 +590,26 @@ close_read_body(istream *stream) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::download_to_file
-//       Access: Published
-//  Description: Specifies the name of a file to download the
-//               resulting document to.  This should be called
-//               immediately after get_document() or
-//               begin_get_document() or related functions.
-//
-//               In the case of the blocking I/O methods like
-//               get_document(), this function will download the
-//               entire document to the file and return true if it was
-//               successfully downloaded, false otherwise.
-//
-//               In the case of non-blocking I/O methods like
-//               begin_get_document(), this function simply indicates an
-//               intention to download to the indicated file.  It
-//               returns true if the file can be opened for writing,
-//               false otherwise, but the contents will not be
-//               completely downloaded until run() has returned false.
-//               At this time, it is possible that a communications
-//               error will have left a partial file, so
-//               is_download_complete() may be called to test this.
-//
-//               If subdocument_resumes is true and the document in
-//               question was previously requested as a subdocument
-//               (i.e. get_subdocument() with a first_byte value
-//               greater than zero), this will automatically seek to
-//               the appropriate byte within the file for writing the
-//               output.  In this case, the file must already exist
-//               and must have at least first_byte bytes in it.  If
-//               subdocument_resumes is false, a subdocument will
-//               always be downloaded beginning at the first byte of
-//               the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the name of a file to download the resulting document to.  This
+ * should be called immediately after get_document() or begin_get_document() or
+ * related functions.  In the case of the blocking I/O methods like
+ * get_document(), this function will download the entire document to the file
+ * and return true if it was successfully downloaded, false otherwise.  In the
+ * case of non-blocking I/O methods like begin_get_document(), this function
+ * simply indicates an intention to download to the indicated file.  It returns
+ * true if the file can be opened for writing, false otherwise, but the contents
+ * will not be completely downloaded until run() has returned false.  At this
+ * time, it is possible that a communications error will have left a partial
+ * file, so is_download_complete() may be called to test this.  If
+ * subdocument_resumes is true and the document in question was previously
+ * requested as a subdocument (i.e.  get_subdocument() with a first_byte value
+ * greater than zero), this will automatically seek to the appropriate byte
+ * within the file for writing the output.  In this case, the file must already
+ * exist and must have at least first_byte bytes in it.  If subdocument_resumes
+ * is false, a subdocument will always be downloaded beginning at the first byte
+ * of the file.
+ */
 bool HTTPChannel::
 download_to_file(const Filename &filename, bool subdocument_resumes) {
   reset_download_to();
@@ -689,37 +636,24 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
   return is_download_complete() && is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::download_to_ram
-//       Access: Published
-//  Description: Specifies a Ramfile object to download the
-//               resulting document to.  This should be called
-//               immediately after get_document() or
-//               begin_get_document() or related functions.
-//
-//               In the case of the blocking I/O methods like
-//               get_document(), this function will download the
-//               entire document to the Ramfile and return true if it
-//               was successfully downloaded, false otherwise.
-//
-//               In the case of non-blocking I/O methods like
-//               begin_get_document(), this function simply indicates an
-//               intention to download to the indicated Ramfile.  It
-//               returns true if the file can be opened for writing,
-//               false otherwise, but the contents will not be
-//               completely downloaded until run() has returned false.
-//               At this time, it is possible that a communications
-//               error will have left a partial file, so
-//               is_download_complete() may be called to test this.
-//
-//               If subdocument_resumes is true and the document in
-//               question was previously requested as a subdocument
-//               (i.e. get_subdocument() with a first_byte value
-//               greater than zero), this will automatically seek to
-//               the appropriate byte within the Ramfile for writing
-//               the output.  In this case, the Ramfile must already
-//               have at least first_byte bytes in it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a Ramfile object to download the resulting document to.  This
+ * should be called immediately after get_document() or begin_get_document() or
+ * related functions.  In the case of the blocking I/O methods like
+ * get_document(), this function will download the entire document to the
+ * Ramfile and return true if it was successfully downloaded, false otherwise.
+ * In the case of non-blocking I/O methods like begin_get_document(), this
+ * function simply indicates an intention to download to the indicated Ramfile.
+ * It returns true if the file can be opened for writing, false otherwise, but
+ * the contents will not be completely downloaded until run() has returned
+ * false.  At this time, it is possible that a communications error will have
+ * left a partial file, so is_download_complete() may be called to test this.
+ * If subdocument_resumes is true and the document in question was previously
+ * requested as a subdocument (i.e.  get_subdocument() with a first_byte value
+ * greater than zero), this will automatically seek to the appropriate byte
+ * within the Ramfile for writing the output.  In this case, the Ramfile must
+ * already have at least first_byte bytes in it.
+ */
 bool HTTPChannel::
 download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   nassertr(ramfile != (Ramfile *)NULL, false);
@@ -746,40 +680,26 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   return is_download_complete() && is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::download_to_stream
-//       Access: Published
-//  Description: Specifies the name of an ostream to download the
-//               resulting document to.  This should be called
-//               immediately after get_document() or
-//               begin_get_document() or related functions.
-//
-//               In the case of the blocking I/O methods like
-//               get_document(), this function will download the
-//               entire document to the file and return true if it was
-//               successfully downloaded, false otherwise.
-//
-//               In the case of non-blocking I/O methods like
-//               begin_get_document(), this function simply indicates an
-//               intention to download to the indicated file.  It
-//               returns true if the file can be opened for writing,
-//               false otherwise, but the contents will not be
-//               completely downloaded until run() has returned false.
-//               At this time, it is possible that a communications
-//               error will have left a partial file, so
-//               is_download_complete() may be called to test this.
-//
-//               If subdocument_resumes is true and the document in
-//               question was previously requested as a subdocument
-//               (i.e. get_subdocument() with a first_byte value
-//               greater than zero), this will automatically seek to
-//               the appropriate byte within the file for writing the
-//               output.  In this case, the file must already exist
-//               and must have at least first_byte bytes in it.  If
-//               subdocument_resumes is false, a subdocument will
-//               always be downloaded beginning at the first byte of
-//               the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the name of an ostream to download the resulting document to.  This
+ * should be called immediately after get_document() or begin_get_document() or
+ * related functions.  In the case of the blocking I/O methods like
+ * get_document(), this function will download the entire document to the file
+ * and return true if it was successfully downloaded, false otherwise.  In the
+ * case of non-blocking I/O methods like begin_get_document(), this function
+ * simply indicates an intention to download to the indicated file.  It returns
+ * true if the file can be opened for writing, false otherwise, but the contents
+ * will not be completely downloaded until run() has returned false.  At this
+ * time, it is possible that a communications error will have left a partial
+ * file, so is_download_complete() may be called to test this.  If
+ * subdocument_resumes is true and the document in question was previously
+ * requested as a subdocument (i.e.  get_subdocument() with a first_byte value
+ * greater than zero), this will automatically seek to the appropriate byte
+ * within the file for writing the output.  In this case, the file must already
+ * exist and must have at least first_byte bytes in it.  If subdocument_resumes
+ * is false, a subdocument will always be downloaded beginning at the first byte
+ * of the file.
+ */
 bool HTTPChannel::
 download_to_stream(ostream *strm, bool subdocument_resumes) {
   reset_download_to();
@@ -806,18 +726,13 @@ download_to_stream(ostream *strm, bool subdocument_resumes) {
   return is_download_complete() && is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_connection
-//       Access: Published
-//  Description: Returns the connection that was established via a
-//               previous call to connect_to() or begin_connect_to(),
-//               or NULL if the connection attempt failed or if those
-//               methods have not recently been called.
-//
-//               This stream has been allocated from the free store.
-//               It is the user's responsibility to delete this
-//               pointer when finished with it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the connection that was established via a previous call to
+ * connect_to() or begin_connect_to(), or NULL if the connection attempt failed
+ * or if those methods have not recently been called.  This stream has been
+ * allocated from the free store.  It is the user's responsibility to delete
+ * this pointer when finished with it.
+ */
 SocketStream *HTTPChannel::
 get_connection() {
   if (!is_connection_ready()) {
@@ -830,7 +745,7 @@ get_connection() {
   // We're now passing ownership of the connection to the caller.
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "passing ownership of connection to caller.\n";
   }
   reset_to_new();
@@ -838,12 +753,9 @@ get_connection() {
   return stream;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::downcase
-//       Access: Public, Static
-//  Description: Returns the input string with all uppercase letters
-//               converted to lowercase.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the input string with all uppercase letters converted to lowercase.
+ */
 string HTTPChannel::
 downcase(const string &s) {
   string result;
@@ -855,12 +767,9 @@ downcase(const string &s) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::body_stream_destructs
-//       Access: Public
-//  Description: Called by ISocketStream destructor when _body_stream
-//               is destructing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by ISocketStream destructor when _body_stream is destructing.
+ */
 void HTTPChannel::
 body_stream_destructs(ISocketStream *stream) {
   if (stream == _body_stream) {
@@ -869,12 +778,12 @@ body_stream_destructs(ISocketStream *stream) {
       case ISocketStream::RS_complete:
         finished_body(false);
         break;
-        
+
       case ISocketStream::RS_error:
         _state = HTTPChannel::S_failure;
         _status_entry._status_code = HTTPChannel::SC_lost_connection;
         break;
-    
+
       default:
         break;
       }
@@ -885,19 +794,16 @@ body_stream_destructs(ISocketStream *stream) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::reached_done_state
-//       Access: Private
-//  Description: Called by run() after it reaches the done state, this
-//               simply checks to see if a download was requested, and
-//               begins the download if it has been.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by run() after it reaches the done state, this simply checks to see if
+ * a download was requested, and begins the download if it has been.
+ */
 bool HTTPChannel::
 reached_done_state() {
   /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "terminating run(), _state = " << _state
       << ", _done_state = " << _done_state << "\n";
   }
@@ -911,31 +817,31 @@ reached_done_state() {
       _status_list.push_back(_status_entry);
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Reexamining failure responses.\n";
       }
       size_t best_i = 0;
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "  " << 0 << ". " << _status_list[0]._status_code << " "
           << _status_list[0]._status_string << "\n";
       }
       for (size_t i = 1; i < _status_list.size(); i++) {
         if (downloader_cat.is_debug()) {
           downloader_cat.debug()
-            << _NOTIFY_HTTP_CHANNEL_ID 
+            << _NOTIFY_HTTP_CHANNEL_ID
             << "  " << i << ". " << _status_list[i]._status_code << " "
             << _status_list[i]._status_string << "\n";
         }
-        if (more_useful_status_code(_status_list[i]._status_code, 
+        if (more_useful_status_code(_status_list[i]._status_code,
                                     _status_list[best_i]._status_code)) {
           best_i = i;
         }
       }
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "chose index " << best_i << ", above.\n";
       }
       _status_entry = _status_list[best_i];
@@ -951,14 +857,14 @@ reached_done_state() {
   if (_download_dest == DD_none) {
     // All done.
     return false;
-    
+
   } else {
     // Oops, we have to download the body now.
     open_read_body();
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Unable to download body: " << _request.get_url() << "\n";
       }
       return false;
@@ -976,16 +882,12 @@ reached_done_state() {
     }
   }
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_try_next_proxy
-//       Access: Private
-//  Description: This state is reached when a previous connection
-//               attempt fails.  If we have multiple proxies in line
-//               to try, it sets us up for the next proxy and tries to
-//               connect again; otherwise, it sets the state to
-//               S_failure.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * This state is reached when a previous connection attempt fails.  If we have
+ * multiple proxies in line to try, it sets us up for the next proxy and tries
+ * to connect again; otherwise, it sets the state to S_failure.
+ */
 bool HTTPChannel::
 run_try_next_proxy() {
   if (_proxy_next_index < _proxies.size()) {
@@ -1009,13 +911,11 @@ run_try_next_proxy() {
   _state = S_failure;
   return false;
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_connecting
-//       Access: Private
-//  Description: In this state, we have not yet established a
-//               network connection to the server (or proxy).
-////////////////////////////////////////////////////////////////////
+
+/**
+ * In this state, we have not yet established a network connection to the server
+ * (or proxy).
+ */
 bool HTTPChannel::
 run_connecting() {
   _status_entry = StatusEntry();
@@ -1026,8 +926,8 @@ run_connecting() {
       return false;
     }
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
-      << "Could not connect to " << _bio->get_server_name() << ":" 
+      << _NOTIFY_HTTP_CHANNEL_ID
+      << "Could not connect to " << _bio->get_server_name() << ":"
       << _bio->get_port() << "\n";
     OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
     _status_entry._status_code = SC_no_connection;
@@ -1037,8 +937,8 @@ run_connecting() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
-      << "Connected to " << _bio->get_server_name() << ":" 
+      << _NOTIFY_HTTP_CHANNEL_ID
+      << "Connected to " << _bio->get_server_name() << ":"
       << _bio->get_port() << "\n";
   }
 
@@ -1059,20 +959,17 @@ run_connecting() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_connecting_wait
-//       Access: Private
-//  Description: Here we have begun to establish a nonblocking
-//               connection, but we got a come-back-later message, so
-//               we are waiting for the socket to finish connecting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Here we have begun to establish a nonblocking connection, but we got a come-
+ * back-later message, so we are waiting for the socket to finish connecting.
+ */
 bool HTTPChannel::
 run_connecting_wait() {
   int fd = -1;
   BIO_get_fd(*_bio, &fd);
   if (fd < 0) {
     downloader_cat.warning()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "nonblocking socket BIO has no file descriptor.\n";
     // This shouldn't be possible.
     _status_entry._status_code = SC_internal_error;
@@ -1082,7 +979,7 @@ run_connecting_wait() {
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "waiting to connect to " << _request.get_url().get_server_and_port() << ".\n";
   }
   fd_set wset;
@@ -1102,24 +999,24 @@ run_connecting_wait() {
   int errcode = select(fd + 1, NULL, &wset, NULL, &tv);
   if (errcode < 0) {
     downloader_cat.warning()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Error in select.\n";
     // This shouldn't be possible.
     _status_entry._status_code = SC_internal_error;
     _state = S_try_next_proxy;
     return false;
   }
-  
+
   if (errcode == 0) {
     // Nothing's happened so far; come back later.
     if (get_blocking_connect() ||
-        (TrueClock::get_global_ptr()->get_short_time() - 
+        (TrueClock::get_global_ptr()->get_short_time() -
          _started_connecting_time > get_connect_timeout())) {
       // Time to give up.
       downloader_cat.info()
-        << _NOTIFY_HTTP_CHANNEL_ID 
-        << "Timeout connecting to " 
-        << _request.get_url().get_server_and_port() 
+        << _NOTIFY_HTTP_CHANNEL_ID
+        << "Timeout connecting to "
+        << _request.get_url().get_server_and_port()
         << " for " << _request.get_url()
         << ".\n";
       _status_entry._status_code = SC_timeout;
@@ -1128,20 +1025,18 @@ run_connecting_wait() {
     }
     return true;
   }
-  
+
   // The socket is now ready for writing.
   _state = S_connecting;
   return false;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_http_proxy_ready
-//       Access: Private
-//  Description: This state is reached only after first establishing a
-//               connection to the proxy, if a proxy is in use and we
-//               are tunneling through it via a CONNECT command.
-////////////////////////////////////////////////////////////////////
+/**
+ * This state is reached only after first establishing a connection to the
+ * proxy, if a proxy is in use and we are tunneling through it via a CONNECT
+ * command.
+ */
 bool HTTPChannel::
 run_http_proxy_ready() {
   // If there's a request to be sent to the proxy, send it now.
@@ -1149,22 +1044,18 @@ run_http_proxy_ready() {
   if (!server_send(_proxy_request_text, false)) {
     return true;
   }
-    
+
   // All done sending request.
   _state = S_http_proxy_request_sent;
   _sent_request_time = TrueClock::get_global_ptr()->get_short_time();
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_http_proxy_request_sent
-//       Access: Private
-//  Description: This state is reached only after we have sent a
-//               special message to the proxy and we are waiting for
-//               the proxy's response.  It is not used in the normal
-//               http-over-proxy case, which does not require a
-//               special message to the proxy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This state is reached only after we have sent a special message to the proxy
+ * and we are waiting for the proxy's response.  It is not used in the normal
+ * http-over-proxy case, which does not require a special message to the proxy.
+ */
 bool HTTPChannel::
 run_http_proxy_request_sent() {
   // Wait for the first line to come back from the server.
@@ -1193,12 +1084,10 @@ run_http_proxy_request_sent() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_http_proxy_reading_header
-//       Access: Private
-//  Description: In this state we are reading the header lines from
-//               the proxy's response to our special message.
-////////////////////////////////////////////////////////////////////
+/**
+ * In this state we are reading the header lines from the proxy's response to
+ * our special message.
+ */
 bool HTTPChannel::
 run_http_proxy_reading_header() {
   if (parse_http_header()) {
@@ -1209,7 +1098,7 @@ run_http_proxy_reading_header() {
   // We can take the proxy's word for it that this is the actual URL
   // for the redirect.
 
-  _server_response_has_no_body = 
+  _server_response_has_no_body =
     (get_status_code() / 100 == 1 ||
      get_status_code() == 204 ||
      get_status_code() == 304);
@@ -1260,13 +1149,10 @@ run_http_proxy_reading_header() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_socks_proxy_greet
-//       Access: Private
-//  Description: This state is reached only after first establishing a
-//               connection to a SOCKS proxy, with which we now have
-//               to negotiate a connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * This state is reached only after first establishing a connection to a SOCKS
+ * proxy, with which we now have to negotiate a connection.
+ */
 bool HTTPChannel::
 run_socks_proxy_greet() {
   static const char socks_greeting[] = {
@@ -1283,18 +1169,15 @@ run_socks_proxy_greet() {
     return true;
   }
   _sent_request_time = TrueClock::get_global_ptr()->get_short_time();
-    
+
   // All done sending request.
   _state = S_socks_proxy_greet_reply;
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_socks_proxy_greet_reply
-//       Access: Private
-//  Description: We are waiting for the SOCKS proxy to respond to our
-//               greeting.
-////////////////////////////////////////////////////////////////////
+/**
+ * We are waiting for the SOCKS proxy to respond to our greeting.
+ */
 bool HTTPChannel::
 run_socks_proxy_greet_reply() {
   string reply;
@@ -1307,7 +1190,7 @@ run_socks_proxy_greet_reply() {
   if (reply[0] != 0x05) {
     // We only speak Socks5.
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Rejecting Socks version " << (int)reply[0] << "\n";
     _status_entry._status_code = SC_socks_invalid_version;
     _state = S_try_next_proxy;
@@ -1316,7 +1199,7 @@ run_socks_proxy_greet_reply() {
 
   if (reply[1] == (char)0xff) {
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Socks server does not accept our available login methods.\n";
     _status_entry._status_code = SC_socks_no_acceptable_login_method;
     _state = S_try_next_proxy;
@@ -1332,7 +1215,7 @@ run_socks_proxy_greet_reply() {
 
   // The server accepted a login method we didn't offer!
   downloader_cat.info()
-    << _NOTIFY_HTTP_CHANNEL_ID 
+    << _NOTIFY_HTTP_CHANNEL_ID
     << "Socks server accepted unrequested login method "
     << (int)reply[1] << "\n";
   _status_entry._status_code = SC_socks_no_acceptable_login_method;
@@ -1340,12 +1223,9 @@ run_socks_proxy_greet_reply() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_socks_proxy_connect
-//       Access: Private
-//  Description: The SOCKS proxy has accepted us, and now we may issue
-//               the connect request.
-////////////////////////////////////////////////////////////////////
+/**
+ * The SOCKS proxy has accepted us, and now we may issue the connect request.
+ */
 bool HTTPChannel::
 run_socks_proxy_connect() {
   static const char socks_connect[] = {
@@ -1361,12 +1241,12 @@ run_socks_proxy_connect() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
-      << "Requesting SOCKS5 connection to " 
+      << _NOTIFY_HTTP_CHANNEL_ID
+      << "Requesting SOCKS5 connection to "
       << _request.get_url().get_server_and_port() << "\n";
   }
 
-  string connect = 
+  string connect =
     string(socks_connect, socks_connect_len) +
     string(1, (char)hostname.length()) +
     hostname +
@@ -1377,17 +1257,14 @@ run_socks_proxy_connect() {
     return true;
   }
   _sent_request_time = TrueClock::get_global_ptr()->get_short_time();
-    
+
   _state = S_socks_proxy_connect_reply;
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_socks_proxy_connect_reply
-//       Access: Private
-//  Description: We are waiting for the SOCKS proxy to honor our
-//               connect request.
-////////////////////////////////////////////////////////////////////
+/**
+ * We are waiting for the SOCKS proxy to honor our connect request.
+ */
 bool HTTPChannel::
 run_socks_proxy_connect_reply() {
   string reply;
@@ -1400,7 +1277,7 @@ run_socks_proxy_connect_reply() {
   if (reply[0] != 0x05) {
     // We only speak Socks5.
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Rejecting Socks version " << (int)reply[0] << "\n";
     close_connection();  // connection is now bad.
     _status_entry._status_code = SC_socks_invalid_version;
@@ -1410,7 +1287,7 @@ run_socks_proxy_connect_reply() {
 
   if (reply[1] != 0x00) {
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Connection refused, SOCKS code " << (int)reply[1] << "\n";
     /*
       Socks error codes (from RFC1928):
@@ -1439,7 +1316,7 @@ run_socks_proxy_connect_reply() {
     default:
       _status_entry._status_code = SC_socks_refused;
     }
-    
+
     close_connection();  // connection is now bad.
     _state = S_try_next_proxy;
     return false;
@@ -1465,7 +1342,7 @@ run_socks_proxy_connect_reply() {
 
   default:
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Unsupported SOCKS address type: " << (int)reply[3] << "\n";
     _status_entry._status_code = SC_socks_invalid_version;
     _state = S_try_next_proxy;
@@ -1487,25 +1364,25 @@ run_socks_proxy_connect_reply() {
     case 0x01:  // IPv4
       {
         ostringstream strm;
-        strm << (unsigned int)(unsigned char)reply[4] << "." 
+        strm << (unsigned int)(unsigned char)reply[4] << "."
              << (unsigned int)(unsigned char)reply[5] << "."
-             << (unsigned int)(unsigned char)reply[6] << "." 
+             << (unsigned int)(unsigned char)reply[6] << "."
              << (unsigned int)(unsigned char)reply[7];
         connect_host = strm.str();
       }
       break;
-      
+
     case 0x03:  // DNS
       connect_host = string(&reply[5], (unsigned int)reply[4]);
       break;
     }
-    
+
     int connect_port =
       (((unsigned int)(unsigned char)reply[total_bytes - 2]) << 8) |
       ((unsigned int)(unsigned char)reply[total_bytes - 1]);
-    
+
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << _proxy << " directed us to " << connect_host << ":"
       << connect_port << "\n";
   }
@@ -1519,12 +1396,10 @@ run_socks_proxy_connect_reply() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_setup_ssl
-//       Access: Private
-//  Description: This state begins elevating our existing, unsecure
-//               connection to a secure, SSL connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * This state begins elevating our existing, unsecure connection to a secure,
+ * SSL connection.
+ */
 bool HTTPChannel::
 run_setup_ssl() {
   _sbio = BIO_new_ssl(_client->get_ssl_ctx(), true);
@@ -1546,13 +1421,13 @@ run_setup_ssl() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Setting ssl-cipher-list '" << cipher_list << "'\n";
   }
   int result = SSL_set_cipher_list(ssl, cipher_list.c_str());
   if (result == 0) {
     downloader_cat.error()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Invalid cipher list: '" << cipher_list << "'\n";
     OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
     _status_entry._status_code = SC_ssl_internal_failure;
@@ -1574,21 +1449,21 @@ run_setup_ssl() {
     SSL_use_PrivateKey(ssl, _client->_client_certificate_priv);
     if (!SSL_check_private_key(ssl)) {
       downloader_cat.warning()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Client private key does not match public key!\n";
     }
   }
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "SSL Ciphers available:\n";
     const char *name;
     int pri = 0;
     name = SSL_get_cipher_list(ssl, pri);
     while (name != NULL) {
       downloader_cat.spam()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "  " << pri + 1 << ". " << name << "\n";
       pri++;
       name = SSL_get_cipher_list(ssl, pri);
@@ -1597,26 +1472,23 @@ run_setup_ssl() {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "performing SSL handshake\n";
   }
   _state = S_ssl_handshake;
 
   // We start the connect timer over again when we reach the SSL
   // handshake.
-  _started_connecting_time = 
+  _started_connecting_time =
     TrueClock::get_global_ptr()->get_short_time();
 
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_ssl_handshake
-//       Access: Private
-//  Description: This state performs the SSL handshake with the
-//               server, and also verifies the server's identity when
-//               the handshake has successfully completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This state performs the SSL handshake with the server, and also verifies the
+ * server's identity when the handshake has successfully completed.
+ */
 bool HTTPChannel::
 run_ssl_handshake() {
   if (BIO_do_handshake(_sbio) <= 0) {
@@ -1632,8 +1504,8 @@ run_ssl_handshake() {
     }
 
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
-      << "Could not establish SSL handshake with " 
+      << _NOTIFY_HTTP_CHANNEL_ID
+      << "Could not establish SSL handshake with "
       << _request.get_url().get_server_and_port() << "\n";
     OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
 
@@ -1675,12 +1547,12 @@ run_ssl_handshake() {
   const SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
   if (cipher == (const SSL_CIPHER *)NULL) {
     downloader_cat.warning()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "No current cipher on SSL connection.\n";
   } else {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Using cipher " << SSL_CIPHER_get_name((SSL_CIPHER *) cipher) << "\n";
     }
   }
@@ -1693,7 +1565,7 @@ run_ssl_handshake() {
   X509 *cert = SSL_get_peer_certificate(ssl);
   if (cert == (X509 *)NULL) {
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "No certificate was presented by server.\n";
 
     // This shouldn't be possible, per the SSL specs.
@@ -1701,21 +1573,21 @@ run_ssl_handshake() {
     _state = S_failure;
     return false;
   }
-  
+
   X509_NAME *subject = X509_get_subject_name(cert);
   if (downloader_cat.is_debug()) {
     string org_name = get_x509_name_component(subject, NID_organizationName);
     string org_unit_name = get_x509_name_component(subject, NID_organizationalUnitName);
     string common_name = get_x509_name_component(subject, NID_commonName);
-    
+
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Server is " << common_name << " from " << org_unit_name
       << " / " << org_name << "\n";
 
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Received certificate from server:\n" << flush;
       X509_print_fp(stderr, cert);
       fflush(stderr);
@@ -1732,15 +1604,15 @@ run_ssl_handshake() {
 
   if (verify_result == X509_V_ERR_CERT_HAS_EXPIRED) {
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Expired certificate from " << _request.get_url().get_server_and_port() << "\n";
-    if (_client->get_verify_ssl() == HTTPClient::VS_normal && !cert_preapproved) { 
+    if (_client->get_verify_ssl() == HTTPClient::VS_normal && !cert_preapproved) {
       cert_valid = false;
     }
 
   } else if (verify_result == X509_V_ERR_CERT_NOT_YET_VALID) {
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Premature certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() == HTTPClient::VS_normal && !cert_preapproved) {
       cert_valid = false;
@@ -1749,7 +1621,7 @@ run_ssl_handshake() {
   } else if (verify_result == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT ||
              verify_result == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN) {
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Self-signed certificate from " << _request.get_url().get_server_and_port() << "\n";
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify && !cert_preapproved) {
       cert_valid = false;
@@ -1757,20 +1629,20 @@ run_ssl_handshake() {
 
   } else if (verify_result != X509_V_OK) {
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Unable to verify identity of " << _request.get_url().get_server_and_port()
       << ", verify error code " << verify_result << "\n";
     if (_client->get_verify_ssl() != HTTPClient::VS_no_verify && !cert_preapproved) {
       cert_valid = false;
     }
   }
-  
+
   if (!cert_valid) {
     _status_entry._status_code = SC_ssl_invalid_server_certificate;
     _state = S_failure;
     return false;
   }
-  
+
   if (_client->get_verify_ssl() != HTTPClient::VS_no_verify && !cert_name_preapproved) {
     // Check that the server is someone we expected to be talking
     // to.
@@ -1780,25 +1652,20 @@ run_ssl_handshake() {
       return false;
     }
   }
-  
+
   X509_free(cert);
 
   _state = S_ready;
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_ready
-//       Access: Private
-//  Description: This is the main "ready" state.  In this state, we
-//               have established a (possibly secure) connection to
-//               the server (or proxy), and the server (or proxy) is
-//               idle and waiting for us to send a request.
-//
-//               If persistent_connection is true, we will generally
-//               come back to this state after finishing each request
-//               on a given connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the main "ready" state.  In this state, we have established a
+ * (possibly secure) connection to the server (or proxy), and the server (or
+ * proxy) is idle and waiting for us to send a request.  If
+ * persistent_connection is true, we will generally come back to this state
+ * after finishing each request on a given connection.
+ */
 bool HTTPChannel::
 run_ready() {
   // If there's a request to be sent upstream, send it now.
@@ -1807,19 +1674,17 @@ run_ready() {
       return true;
     }
   }
-    
+
   // All done sending request.
   _state = S_request_sent;
   _sent_request_time = TrueClock::get_global_ptr()->get_short_time();
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_request_sent
-//       Access: Private
-//  Description: In this state we have sent our request to the server
-//               (or proxy) and we are waiting for a response.
-////////////////////////////////////////////////////////////////////
+/**
+ * In this state we have sent our request to the server (or proxy) and we are
+ * waiting for a response.
+ */
 bool HTTPChannel::
 run_request_sent() {
   // Wait for the first line to come back from the server.
@@ -1849,26 +1714,23 @@ run_request_sent() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_reading_header
-//       Access: Private
-//  Description: In this state we have received the first response to
-//               our request from the server (or proxy) and we are
-//               reading the set of header lines preceding the
-//               requested document.
-////////////////////////////////////////////////////////////////////
+/**
+ * In this state we have received the first response to our request from the
+ * server (or proxy) and we are reading the set of header lines preceding the
+ * requested document.
+ */
 bool HTTPChannel::
 run_reading_header() {
   if (parse_http_header()) {
     if (_bio.is_null()) {
       downloader_cat.info()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Connection lost while reading HTTP response.\n";
       if (_response_type == RT_http_hangup) {
         // This was our second hangup in a row.  Give up.
         _status_entry._status_code = SC_lost_connection;
         _state = S_try_next_proxy;
-        
+
       } else {
         // Try again, once.
         _response_type = RT_http_hangup;
@@ -1881,10 +1743,10 @@ run_reading_header() {
       if (elapsed > get_http_timeout()) {
         // Time to give up.
         downloader_cat.info()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Timeout waiting for "
-          << _request.get_url().get_server_and_port() 
-          << " in run_reading_header (" << elapsed 
+          << _request.get_url().get_server_and_port()
+          << " in run_reading_header (" << elapsed
           << " seconds elapsed).\n";
         _status_entry._status_code = SC_timeout;
         _state = S_try_next_proxy;
@@ -1898,10 +1760,10 @@ run_reading_header() {
   // extra send headers have done their job; clear them for next time.
   clear_extra_headers();
 
-  _server_response_has_no_body = 
+  _server_response_has_no_body =
     (get_status_code() / 100 == 1 ||
      get_status_code() == 204 ||
-     get_status_code() == 304 || 
+     get_status_code() == 304 ||
      _method == HTTPEnum::M_head);
 
   // Look for key properties in the header fields.
@@ -1909,7 +1771,7 @@ run_reading_header() {
     string content_range = get_header_value("Content-Range");
     if (content_range.empty()) {
       downloader_cat.warning()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Got 206 response without Content-Range header!\n";
       _status_entry._status_code = SC_invalid_http;
       _state = S_failure;
@@ -1918,7 +1780,7 @@ run_reading_header() {
     } else {
       if (!parse_content_range(content_range)) {
         downloader_cat.warning()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Couldn't parse Content-Range: " << content_range << "\n";
         _status_entry._status_code = SC_invalid_http;
         _state = S_failure;
@@ -1934,7 +1796,7 @@ run_reading_header() {
     if (_first_byte_requested != 0 || _last_byte_requested != 0 ||
         _first_byte_delivered != 0 || _last_byte_delivered != 0) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Requested byte range " << _first_byte_requested
         << " to " << _last_byte_delivered
         << "; server delivers range " << _first_byte_delivered
@@ -1969,7 +1831,7 @@ run_reading_header() {
   _got_expected_file_size = false;
   _got_file_size = false;
   _got_transfer_file_size = false;
-  
+
   string content_length = get_header_value("Content-Length");
   if (!content_length.empty()) {
     _file_size = atoi(content_length.c_str());
@@ -2012,7 +1874,7 @@ run_reading_header() {
   if (get_status_code() == 407 && last_status != 407 && !_proxy.empty()) {
     // 407: not authorized to proxy.  Try to get the authorization.
     string authenticate_request = get_header_value("Proxy-Authenticate");
-    _proxy_auth = 
+    _proxy_auth =
       _client->generate_auth(_proxy, true, authenticate_request);
     if (_proxy_auth != (HTTPAuthorization *)NULL) {
       _proxy_realm = _proxy_auth->get_realm();
@@ -2036,7 +1898,7 @@ run_reading_header() {
       _www_username = _client->select_username(_request.get_url(), false, _www_realm);
       if (!_www_username.empty()) {
         make_request_text();
-      
+
         // Roll the state forward to force a new request.
         _state = S_begin_body;
         return false;
@@ -2044,7 +1906,7 @@ run_reading_header() {
     }
   }
 
-  if ((get_status_code() == 300 || 
+  if ((get_status_code() == 300 ||
        get_status_code() == 301 ||
        get_status_code() == 302 ||
        get_status_code() == 303 ||
@@ -2067,15 +1929,15 @@ run_reading_header() {
       if (find(_redirect_trail.begin(), _redirect_trail.end(),
                new_url) != _redirect_trail.end()) {
         downloader_cat.warning()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "cycle detected in redirect to " << new_url << "\n";
-        
+
       } else {
         _redirect_trail.push_back(new_url);
 
         if (downloader_cat.is_debug()) {
           downloader_cat.debug()
-            << _NOTIFY_HTTP_CHANNEL_ID 
+            << _NOTIFY_HTTP_CHANNEL_ID
             << "following redirect to " << new_url << "\n";
         }
         if (_request.get_url().has_username()) {
@@ -2095,7 +1957,7 @@ run_reading_header() {
     }
   }
 
-  if (_state == S_read_header && 
+  if (_state == S_read_header &&
       ((get_status_code() / 100) == 4 || (get_status_code() / 100) == 5) &&
       _proxy_serves_document && _proxy_next_index < _proxies.size()) {
     // If we were using a proxy (but not tunneling through the proxy)
@@ -2113,12 +1975,10 @@ run_reading_header() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_start_direct_file_read
-//       Access: Private
-//  Description: This is the first state when reading a file:// URL.
-//               All it does is skip past the non-existent "header".
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the first state when reading a file:// URL. All it does is skip past
+ * the non-existent "header".
+ */
 bool HTTPChannel::
 run_start_direct_file_read() {
   _state = S_read_header;
@@ -2128,36 +1988,26 @@ run_start_direct_file_read() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_read_header
-//       Access: Private
-//  Description: In this state we have completely read the header
-//               lines returned by the server (or proxy) in response
-//               to our request.  This state represents the normal
-//               stopping point of a call to get_document(), etc.;
-//               further reads will return the body of the request,
-//               the requested document.
-//
-//               Normally run_read_header() is not called unless the
-//               user has elected not to read the returned document
-//               himself.  In fact, the state itself only exists so we
-//               can make a distinction between S_read_header and
-//               S_begin_body, where S_read_header is safe to return
-//               to the user and S_begin_body means we need to start
-//               skipping the document.
-////////////////////////////////////////////////////////////////////
+/**
+ * In this state we have completely read the header lines returned by the server
+ * (or proxy) in response to our request.  This state represents the normal
+ * stopping point of a call to get_document(), etc.; further reads will return
+ * the body of the request, the requested document.  Normally run_read_header()
+ * is not called unless the user has elected not to read the returned document
+ * himself.  In fact, the state itself only exists so we can make a distinction
+ * between S_read_header and S_begin_body, where S_read_header is safe to return
+ * to the user and S_begin_body means we need to start skipping the document.
+ */
 bool HTTPChannel::
 run_read_header() {
   _state = S_begin_body;
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_begin_body
-//       Access: Private
-//  Description: This state begins to skip over the body in
-//               preparation for making a new request.
-////////////////////////////////////////////////////////////////////
+/**
+ * This state begins to skip over the body in preparation for making a new
+ * request.
+ */
 bool HTTPChannel::
 run_begin_body() {
   if (will_close_connection()) {
@@ -2165,7 +2015,7 @@ run_begin_body() {
     // previous body; just reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "resetting to begin body; server would close anyway.\n";
     }
     reset_to_new();
@@ -2182,8 +2032,8 @@ run_begin_body() {
     // connection and get a new one.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
-        << "Dropping connection rather than skipping past " 
+        << _NOTIFY_HTTP_CHANNEL_ID
+        << "Dropping connection rather than skipping past "
         << get_file_size() << " bytes.\n";
     }
     reset_to_new();
@@ -2193,11 +2043,11 @@ run_begin_body() {
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Unable to skip body.\n";
       }
       reset_to_new();
-      
+
     } else {
       _owns_body_stream = true;
       if (_state != S_reading_body) {
@@ -2209,17 +2059,12 @@ run_begin_body() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_reading_body
-//       Access: Private
-//  Description: In this state we are in the process of reading the
-//               response's body.  We will only come to this function
-//               if the user did not choose to read the entire body
-//               himself (by calling open_read_body()).
-//
-//               In this case we should skip past the body to reset
-//               the connection for making a new request.
-////////////////////////////////////////////////////////////////////
+/**
+ * In this state we are in the process of reading the response's body.  We will
+ * only come to this function if the user did not choose to read the entire body
+ * himself (by calling open_read_body()).  In this case we should skip past the
+ * body to reset the connection for making a new request.
+ */
 bool HTTPChannel::
 run_reading_body() {
   if (will_close_connection()) {
@@ -2227,7 +2072,7 @@ run_reading_body() {
     // previous body; just reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "resetting to read body; server would close anyway.\n";
     }
     reset_to_new();
@@ -2239,7 +2084,7 @@ run_reading_body() {
     // Whoops, we're not in skip-body mode.  Better reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "resetting, not in skip-body mode.\n";
     }
     reset_to_new();
@@ -2250,8 +2095,8 @@ run_reading_body() {
   getline(*_body_stream, line);
   while (!_body_stream->fail() && !_body_stream->eof()) {
     if (downloader_cat.is_spam()) {
-      downloader_cat.spam() 
-        << _NOTIFY_HTTP_CHANNEL_ID 
+      downloader_cat.spam()
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "skip: " << line << "\n";
     }
     getline(*_body_stream, line);
@@ -2269,20 +2114,14 @@ run_reading_body() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_read_body
-//       Access: Private
-//  Description: In this state we have completely read (or skipped
-//               over) the body of the response.  We should continue
-//               skipping past the trailer following the body.
-//
-//               Not all bodies come with trailers; in particular, the
-//               "identity" transfer encoding does not include a
-//               trailer.  It is therefore the responsibility of the
-//               IdentityStreamBuf or ChunkedStreamBuf to set the
-//               state appropriately to either S_read_body or
-//               S_read_trailer following the completion of the body.
-////////////////////////////////////////////////////////////////////
+/**
+ * In this state we have completely read (or skipped over) the body of the
+ * response.  We should continue skipping past the trailer following the body.
+ * Not all bodies come with trailers; in particular, the "identity" transfer
+ * encoding does not include a trailer.  It is therefore the responsibility of
+ * the IdentityStreamBuf or ChunkedStreamBuf to set the state appropriately to
+ * either S_read_body or S_read_trailer following the completion of the body.
+ */
 bool HTTPChannel::
 run_read_body() {
   if (will_close_connection()) {
@@ -2290,7 +2129,7 @@ run_read_body() {
     // previous body; just reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "resetting to read body; server would close anyway.\n";
     }
     reset_to_new();
@@ -2312,13 +2151,10 @@ run_read_body() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_read_trailer
-//       Access: Private
-//  Description: In this state we have completely read the body and
-//               the trailer.  This state is simply a pass-through
-//               back to S_ready.
-////////////////////////////////////////////////////////////////////
+/**
+ * In this state we have completely read the body and the trailer.  This state
+ * is simply a pass-through back to S_ready.
+ */
 bool HTTPChannel::
 run_read_trailer() {
   if (will_close_connection()) {
@@ -2326,7 +2162,7 @@ run_read_trailer() {
     // previous body; just reset.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "resetting to read trailer; server would close anyway.\n";
     }
     reset_to_new();
@@ -2337,12 +2173,10 @@ run_read_trailer() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_download_to_file
-//       Access: Private
-//  Description: After the headers, etc. have been read, this streams
-//               the download to the named file.
-////////////////////////////////////////////////////////////////////
+/**
+ * After the headers, etc.  have been read, this streams the download to the
+ * named file.
+ */
 bool HTTPChannel::
 run_download_to_file() {
   nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
@@ -2378,7 +2212,7 @@ run_download_to_file() {
 
   if (_download_to_stream->fail()) {
     downloader_cat.warning()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Error writing to " << _download_to_filename << "\n";
     _status_entry._status_code = SC_download_write_error;
     _state = S_failure;
@@ -2400,12 +2234,10 @@ run_download_to_file() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_download_to_ram
-//       Access: Private
-//  Description: After the headers, etc. have been read, this streams
-//               the download to the specified Ramfile object.
-////////////////////////////////////////////////////////////////////
+/**
+ * After the headers, etc.  have been read, this streams the download to the
+ * specified Ramfile object.
+ */
 bool HTTPChannel::
 run_download_to_ram() {
   nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
@@ -2452,12 +2284,10 @@ run_download_to_ram() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::run_download_to_stream
-//       Access: Private
-//  Description: After the headers, etc. have been read, this streams
-//               the download to the named file.
-////////////////////////////////////////////////////////////////////
+/**
+ * After the headers, etc.  have been read, this streams the download to the
+ * named file.
+ */
 bool HTTPChannel::
 run_download_to_stream() {
   nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
@@ -2493,7 +2323,7 @@ run_download_to_stream() {
 
   if (_download_to_stream->fail()) {
     downloader_cat.warning()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Error writing to stream\n";
     _status_entry._status_code = SC_download_write_error;
     _state = S_failure;
@@ -2516,22 +2346,19 @@ run_download_to_stream() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::begin_request
-//       Access: Private
-//  Description: Begins a new document request to the server, throwing
-//               away whatever request was currently pending if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins a new document request to the server, throwing away whatever request
+ * was currently pending if necessary.
+ */
 void HTTPChannel::
 begin_request(HTTPEnum::Method method, const DocumentSpec &url,
-              const string &body, bool nonblocking, 
+              const string &body, bool nonblocking,
               size_t first_byte, size_t last_byte) {
-  
+
   downloader_cat.info()
-    << _NOTIFY_HTTP_CHANNEL_ID 
+    << _NOTIFY_HTTP_CHANNEL_ID
     << "begin " << method << " " << url << "\n";
-                
+
   reset_for_new_request();
 
   _wanted_nonblocking = nonblocking;
@@ -2572,7 +2399,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     _proxy_auth = (HTTPAuthorization *)NULL;
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "resetting to change proxy to " << _proxy << "\n";
     }
     reset_to_new();
@@ -2583,7 +2410,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     _nonblocking = nonblocking;
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "resetting to change nonblocking state to " << _nonblocking << ".\n";
     }
     reset_to_new();
@@ -2641,21 +2468,21 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     if (_state == S_failure || (_state < S_read_header && _state != S_ready)) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "resetting to clear previous request.\n";
       }
       reset_to_new();
-      
+
     } else if (TrueClock::get_global_ptr()->get_short_time() - _last_run_time >= _idle_timeout) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << _NOTIFY_HTTP_CHANNEL_ID 
-          << "resetting old connection: " 
+          << _NOTIFY_HTTP_CHANNEL_ID
+          << "resetting old connection: "
           << TrueClock::get_global_ptr()->get_short_time() - _last_run_time
           << " s old.\n";
       }
       reset_to_new();
-      
+
     } else if (_state == S_read_header) {
       // Roll one step forwards to start skipping past the previous
       // body.
@@ -2670,20 +2497,17 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::reconsider_proxy
-//       Access: Private
-//  Description: Reevaluates the flags and strings that are computed
-//               based on the particular proxy we are attempting to
-//               connect to.  This should be called when we initiate a
-//               request, and also whenever we change proxies while
-//               processing a request.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reevaluates the flags and strings that are computed based on the particular
+ * proxy we are attempting to connect to.  This should be called when we
+ * initiate a request, and also whenever we change proxies while processing a
+ * request.
+ */
 void HTTPChannel::
 reconsider_proxy() {
   _proxy_tunnel_now = false;
   _proxy_serves_document = false;
-  
+
   if (!_proxy.empty()) {
     // If the user insists we always tunnel through a proxy, or if
     // we're opening an SSL connection, or the user has explicitly
@@ -2706,11 +2530,11 @@ reconsider_proxy() {
     // Maybe we need to tunnel through the proxy to connect to the
     // server directly.
     ostringstream request;
-    request 
+    request
       << "CONNECT " << _request.get_url().get_server_and_port()
       << " " << _client->get_http_version_string() << "\r\n";
     if (_client->get_http_version() >= HTTPEnum::HV_11) {
-      request 
+      request
         << "Host: " << _request.get_url().get_server_and_port() << "\r\n";
     }
     _proxy_header = request.str();
@@ -2723,20 +2547,18 @@ reconsider_proxy() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::reset_for_new_request
-//       Access: Private
-//  Description: Resets the internal state variables in preparation
-//               for beginning a new request.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the internal state variables in preparation for beginning a new
+ * request.
+ */
 void HTTPChannel::
 reset_for_new_request() {
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "reset_for_new_request.\n";
   }
-  
+
   reset_download_to();
   reset_body_stream();
 
@@ -2749,24 +2571,19 @@ reset_for_new_request() {
   _bytes_requested = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::finished_body
-//       Access: Private
-//  Description: This is called by the body reading
-//               classes--ChunkedStreamBuf and IdentityStreamBuf--when
-//               they have finished reading the body.  It advances the
-//               state appropriately.
-//
-//               has_trailer should be set true if the body type has
-//               an associated trailer which should be read or
-//               skipped, or false if there is no trailer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the body reading classes--ChunkedStreamBuf and
+ * IdentityStreamBuf--when they have finished reading the body.  It advances the
+ * state appropriately.  has_trailer should be set true if the body type has an
+ * associated trailer which should be read or skipped, or false if there is no
+ * trailer.
+ */
 void HTTPChannel::
 finished_body(bool has_trailer) {
   if (will_close_connection() && _download_dest == DD_none) {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "resetting to finish body; server would close anyway.\n";
     }
     reset_to_new();
@@ -2780,17 +2597,13 @@ finished_body(bool has_trailer) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::open_download_file
-//       Access: Private
-//  Description: If a download has been requested, opens the file on
-//               disk (or prepares the RamFile or stream) and seeks
-//               within it to the appropriate _first_byte_delivered
-//               position, so that downloaded bytes will be written to
-//               the appropriate point within the file.  Returns true
-//               if the starting position is valid, false otherwise
-//               (in which case the state is set to S_failure).
-////////////////////////////////////////////////////////////////////
+/**
+ * If a download has been requested, opens the file on disk (or prepares the
+ * RamFile or stream) and seeks within it to the appropriate
+ * _first_byte_delivered position, so that downloaded bytes will be written to
+ * the appropriate point within the file.  Returns true if the starting position
+ * is valid, false otherwise (in which case the state is set to S_failure).
+ */
 bool HTTPChannel::
 open_download_file() {
   _subdocument_resumes = (_subdocument_resumes && _first_byte_delivered != 0);
@@ -2800,7 +2613,7 @@ open_download_file() {
     _download_to_stream = vfs->open_write_file(_download_to_filename, false, !_subdocument_resumes);
     if (_download_to_stream == NULL) {
       downloader_cat.info()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Could not open " << _download_to_filename << " for writing.\n";
       _status_entry._status_code = SC_download_open_error;
       _state = S_failure;
@@ -2817,24 +2630,24 @@ open_download_file() {
       _download_to_stream->seekp(0, ios::end);
       if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
         downloader_cat.info()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Invalid starting position of byte " << _first_byte_delivered
-          << " within " << _download_to_filename << " (which has " 
+          << " within " << _download_to_filename << " (which has "
           << _download_to_stream->tellp() << " bytes)\n";
         close_download_stream();
         _status_entry._status_code = SC_download_invalid_range;
         _state = S_failure;
         return false;
       }
-      
+
       _download_to_stream->seekp(_first_byte_delivered);
-      
+
     } else if (_download_dest == DD_ram) {
       if (_first_byte_delivered > _download_to_ramfile->_data.length()) {
         downloader_cat.info()
-          << _NOTIFY_HTTP_CHANNEL_ID 
-          << "Invalid starting position of byte " << _first_byte_delivered 
-          << " within Ramfile (which has " 
+          << _NOTIFY_HTTP_CHANNEL_ID
+          << "Invalid starting position of byte " << _first_byte_delivered
+          << " within Ramfile (which has "
           << _download_to_ramfile->_data.length() << " bytes)\n";
         close_download_stream();
         _status_entry._status_code = SC_download_invalid_range;
@@ -2845,7 +2658,7 @@ open_download_file() {
       if (_first_byte_delivered == 0) {
         _download_to_ramfile->_data = string();
       } else {
-        _download_to_ramfile->_data = 
+        _download_to_ramfile->_data =
           _download_to_ramfile->_data.substr(0, _first_byte_delivered);
       }
     } else if (_download_dest == DD_stream) {
@@ -2856,16 +2669,16 @@ open_download_file() {
       _download_to_stream->seekp(0, ios::end);
       if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
         downloader_cat.info()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Invalid starting position of byte " << _first_byte_delivered
-          << " within stream (which has " 
+          << " within stream (which has "
           << _download_to_stream->tellp() << " bytes)\n";
         close_download_stream();
         _status_entry._status_code = SC_download_invalid_range;
         _state = S_failure;
         return false;
       }
-      
+
       _download_to_stream->seekp(_first_byte_delivered);
     }
 
@@ -2884,14 +2697,11 @@ open_download_file() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::server_getline
-//       Access: Private
-//  Description: Reads a single line from the server's reply.  Returns
-//               true if the line is successfully retrieved, or false
-//               if a complete line has not yet been received or if
-//               the connection has been closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single line from the server's reply.  Returns true if the line is
+ * successfully retrieved, or false if a complete line has not yet been received
+ * or if the connection has been closed.
+ */
 bool HTTPChannel::
 server_getline(string &str) {
   nassertr(!_source.is_null(), false);
@@ -2912,8 +2722,8 @@ server_getline(string &str) {
         str = str.substr(0, p);
       }
       if (downloader_cat.is_debug()) {
-        downloader_cat.debug() 
-          << _NOTIFY_HTTP_CHANNEL_ID 
+        downloader_cat.debug()
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "recv: " << str << "\n";
       }
       return true;
@@ -2932,14 +2742,11 @@ server_getline(string &str) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::server_getline_failsafe
-//       Access: Private
-//  Description: Reads a line from the server's reply.  If the server
-//               disconnects or times out before sending a reply,
-//               moves on to the next proxy server (or sets failure
-//               mode) and returns false; otherwise, returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a line from the server's reply.  If the server disconnects or times out
+ * before sending a reply, moves on to the next proxy server (or sets failure
+ * mode) and returns false; otherwise, returns true.
+ */
 bool HTTPChannel::
 server_getline_failsafe(string &str) {
   if (!server_getline(str)) {
@@ -2949,7 +2756,7 @@ server_getline_failsafe(string &str) {
         // This was our second immediate hangup in a row.  Give up.
         _status_entry._status_code = SC_lost_connection;
         _state = S_try_next_proxy;
-        
+
       } else {
         // Try again, once.
         _response_type = RT_hangup;
@@ -2962,30 +2769,26 @@ server_getline_failsafe(string &str) {
       if (elapsed > get_http_timeout()) {
         // Time to give up.
         downloader_cat.info()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Timeout waiting for "
-          << _request.get_url().get_server_and_port() 
-          << " in server_getline_failsafe (" << elapsed 
+          << _request.get_url().get_server_and_port()
+          << " in server_getline_failsafe (" << elapsed
           << " seconds elapsed).\n";
         _status_entry._status_code = SC_timeout;
         _state = S_try_next_proxy;
       }
     }
-    
+
     return false;
   }
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::server_get
-//       Access: Private
-//  Description: Reads a fixed number of bytes from the server's
-//               reply.  Returns true if the indicated number of bytes
-//               are successfully retrieved, or false if the complete
-//               set has not yet been received or if the connection
-//               has been closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a fixed number of bytes from the server's reply.  Returns true if the
+ * indicated number of bytes are successfully retrieved, or false if the
+ * complete set has not yet been received or if the connection has been closed.
+ */
 bool HTTPChannel::
 server_get(string &str, size_t num_bytes) {
   nassertr(!_source.is_null(), false);
@@ -3005,15 +2808,11 @@ server_get(string &str, size_t num_bytes) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::server_get_failsafe
-//       Access: Private
-//  Description: Reads a fixed number of bytes from the server.  If
-//               the server disconnects or times out before sending a
-//               reply, moves on to the next proxy server (or sets
-//               failure mode) and returns false; otherwise, returns
-//               true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a fixed number of bytes from the server.  If the server disconnects or
+ * times out before sending a reply, moves on to the next proxy server (or sets
+ * failure mode) and returns false; otherwise, returns true.
+ */
 bool HTTPChannel::
 server_get_failsafe(string &str, size_t num_bytes) {
   if (!server_get(str, num_bytes)) {
@@ -3023,12 +2822,12 @@ server_get_failsafe(string &str, size_t num_bytes) {
         // This was our second immediate hangup in a row.  Give up.
         _status_entry._status_code = SC_lost_connection;
         _state = S_try_next_proxy;
-        
+
       } else {
         // Try again, once.
         _response_type = RT_hangup;
       }
-      
+
     } else {
       double elapsed =
         TrueClock::get_global_ptr()->get_short_time() -
@@ -3036,35 +2835,29 @@ server_get_failsafe(string &str, size_t num_bytes) {
       if (elapsed > get_http_timeout()) {
         // Time to give up.
         downloader_cat.info()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "Timeout waiting for "
-          << _request.get_url().get_server_and_port() 
-          << " in server_get_failsafe (" << elapsed 
+          << _request.get_url().get_server_and_port()
+          << " in server_get_failsafe (" << elapsed
           << " seconds elapsed).\n";
         _status_entry._status_code = SC_timeout;
         _state = S_try_next_proxy;
       }
     }
-    
+
     return false;
   }
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::server_send
-//       Access: Private
-//  Description: Sends a series of lines to the server.  Returns true
-//               if the buffer is fully sent, or false if some of it
-//               remains.  If this returns false, the function must be
-//               called again later, passing in the exact same string,
-//               until the return value is true.
-//
-//               If the secret flag is true, the data is not echoed to
-//               the log (even in spam mode).  This may be desirable
-//               if the data may contain binary data, or if it may
-//               contain passwords etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends a series of lines to the server.  Returns true if the buffer is fully
+ * sent, or false if some of it remains.  If this returns false, the function
+ * must be called again later, passing in the exact same string, until the
+ * return value is true.  If the secret flag is true, the data is not echoed to
+ * the log (even in spam mode).  This may be desirable if the data may contain
+ * binary data, or if it may contain passwords etc.
+ */
 bool HTTPChannel::
 server_send(const string &str, bool secret) {
   nassertr(str.length() > _sent_so_far, true);
@@ -3075,7 +2868,7 @@ server_send(const string &str, bool secret) {
   size_t bytes_to_send = str.length() - _sent_so_far;
   int write_count =
     BIO_write(*_bio, str.data() + _sent_so_far, bytes_to_send);
-    
+
   if (write_count <= 0) {
     if (BIO_should_retry(*_bio)) {
       // Temporary failure: the pipe is full.  Wait till later.
@@ -3084,7 +2877,7 @@ server_send(const string &str, bool secret) {
     // Oops, the connection has been closed!
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Lost connection to server unexpectedly during write.\n";
     }
     reset_to_new();
@@ -3093,16 +2886,16 @@ server_send(const string &str, bool secret) {
 
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "wrote " << write_count << " bytes to " << _bio << "\n";
   }
-  
+
 #ifndef NDEBUG
   if (!secret && downloader_cat.is_debug()) {
     show_send(str.substr(0, write_count));
   }
 #endif
-  
+
   if (write_count < (int)bytes_to_send) {
     _sent_so_far += write_count;
     return false;
@@ -3113,14 +2906,11 @@ server_send(const string &str, bool secret) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::parse_http_response
-//       Access: Private
-//  Description: Parses the first line sent back from an HTTP server
-//               or proxy and stores the result in _status_code and
-//               _http_version, etc.  Returns true on success, false
-//               on invalid response.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the first line sent back from an HTTP server or proxy and stores the
+ * result in _status_code and _http_version, etc.  Returns true on success,
+ * false on invalid response.
+ */
 bool HTTPChannel::
 parse_http_response(const string &line) {
   // The first line back should include the HTTP version and the
@@ -3137,7 +2927,7 @@ parse_http_response(const string &line) {
       // and try again, once.
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << _NOTIFY_HTTP_CHANNEL_ID 
+          << _NOTIFY_HTTP_CHANNEL_ID
           << "got non-HTTP response, resetting.\n";
       }
       reset_to_new();
@@ -3172,13 +2962,10 @@ parse_http_response(const string &line) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::parse_http_header
-//       Access: Private
-//  Description: Reads the series of header lines from the server and
-//               stores them in _headers.  Returns true if there is
-//               more to read, false when done.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the series of header lines from the server and stores them in _headers.
+ * Returns true if there is more to read, false when done.
+ */
 bool HTTPChannel::
 parse_http_header() {
   string line;
@@ -3229,14 +3016,11 @@ parse_http_header() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::parse_content_range
-//       Access: Private
-//  Description: Interprets the "Content-Range" header in the reply,
-//               and fills in _first_byte_delivered and
-//               _last_byte_delivered appropriately if the header
-//               response can be understood.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interprets the "Content-Range" header in the reply, and fills in
+ * _first_byte_delivered and _last_byte_delivered appropriately if the header
+ * response can be understood.
+ */
 bool HTTPChannel::
 parse_content_range(const string &content_range) {
   // First, get the units indication.
@@ -3261,7 +3045,7 @@ parse_content_range(const string &content_range) {
         if (p < content_range.length() && isdigit(content_range[p])) {
           long last_byte = strtol(c_str + p, &endptr, 10);
           p = endptr - c_str;
-          
+
           if (last_byte >= first_byte) {
             _first_byte_delivered = first_byte;
             _last_byte_delivered = last_byte;
@@ -3271,26 +3055,23 @@ parse_content_range(const string &content_range) {
       }
     }
   }
-    
+
   // Invalid or unhandled response.
   return false;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::check_socket
-//       Access: Private
-//  Description: Checks whether the connection to the server has been
-//               closed after a failed read.  If it has, issues a
-//               warning and calls reset_to_new().
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the connection to the server has been closed after a failed
+ * read.  If it has, issues a warning and calls reset_to_new().
+ */
 void HTTPChannel::
 check_socket() {
   nassertv(!_source.is_null());
   if ((*_source)->is_closed()) {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
+        << _NOTIFY_HTTP_CHANNEL_ID
         << "Lost connection to server unexpectedly during read.\n";
     }
     reset_to_new();
@@ -3472,40 +3253,28 @@ certificate signing
 
 */
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::check_preapproved_server_certificate
-//       Access: Private
-//  Description: Checks to see if the indicated certificate is on the
-//               pre-approved list for the current server.
-//
-//               If the full cert itself (including its key) is on the
-//               pre-approved list, sets both cert_preapproved and
-//               cert_name_preapproved to true.
-//
-//               If the full cert is not on the pre-approved list, but
-//               its name matches a name on the pre-approved list,
-//               sets cert_name_preapproved to true, and
-//               cert_preapproved to false.
-//
-//               Otherwise, sets both values to false.  This doesn't
-//               mean the cert is necessarily invalid, just that it
-//               wasn't on the pre-approved list (which is usually
-//               empty anyway).
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks to see if the indicated certificate is on the pre-approved list for
+ * the current server.  If the full cert itself (including its key) is on the
+ * pre-approved list, sets both cert_preapproved and cert_name_preapproved to
+ * true.  If the full cert is not on the pre-approved list, but its name matches
+ * a name on the pre-approved list, sets cert_name_preapproved to true, and
+ * cert_preapproved to false.  Otherwise, sets both values to false.  This
+ * doesn't mean the cert is necessarily invalid, just that it wasn't on the pre-
+ * approved list (which is usually empty anyway).
+ */
 void HTTPChannel::
-check_preapproved_server_certificate(X509 *cert, bool &cert_preapproved, 
+check_preapproved_server_certificate(X509 *cert, bool &cert_preapproved,
                                      bool &cert_name_preapproved) const {
   return _client->check_preapproved_server_certificate(_request.get_url(),
                                                        cert, cert_preapproved,
                                                        cert_name_preapproved);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::validate_server_name
-//       Access: Private
-//  Description: Returns true if the name in the cert matches the
-//               hostname of the server, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the name in the cert matches the hostname of the server,
+ * false otherwise.
+ */
 bool HTTPChannel::
 validate_server_name(X509 *cert) {
   string hostname = _request.get_url().get_server();
@@ -3520,9 +3289,9 @@ validate_server_name(X509 *cert) {
     int num_alts = sk_GENERAL_NAME_num(subject_alt_names);
     for (int i = 0; i < num_alts; ++i) {
       // Get the ith alt name.
-      const GENERAL_NAME *alt_name = 
+      const GENERAL_NAME *alt_name =
         sk_GENERAL_NAME_value(subject_alt_names, i);
-      
+
       if (alt_name->type == GEN_DNS) {
         char *buffer = NULL;
         int len = ASN1_STRING_to_UTF8((unsigned char**)&buffer,
@@ -3539,7 +3308,7 @@ validate_server_name(X509 *cert) {
 
   if (cert_names.empty()) {
     // If there were no DNS names, use the common name instead.
-  
+
     X509_NAME *xname = X509_get_subject_name(cert);
     if (xname != NULL) {
       string common_name = get_x509_name_component(xname, NID_commonName);
@@ -3549,7 +3318,7 @@ validate_server_name(X509 *cert) {
 
   if (cert_names.empty()) {
     downloader_cat.info()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Server certificate from " << hostname
       << " provides no name.\n";
     return false;
@@ -3557,7 +3326,7 @@ validate_server_name(X509 *cert) {
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "Server certificate from " << hostname
       << " provides name(s):";
     vector_string::const_iterator si;
@@ -3582,7 +3351,7 @@ validate_server_name(X509 *cert) {
   }
 
   downloader_cat.info()
-    << _NOTIFY_HTTP_CHANNEL_ID 
+    << _NOTIFY_HTTP_CHANNEL_ID
     << "Server certificate from " << hostname
     << " provides wrong name(s):";
   for (si = cert_names.begin(); si != cert_names.end(); ++si) {
@@ -3596,13 +3365,10 @@ validate_server_name(X509 *cert) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::match_cert_name
-//       Access: Private, Static
-//  Description: Returns true if this particular name from the
-//               certificate matches the indicated hostname, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular name from the certificate matches the
+ * indicated hostname, false otherwise.
+ */
 bool HTTPChannel::
 match_cert_name(const string &cert_name, const string &hostname) {
   // We use GlobPattern to match the name.  This isn't quite
@@ -3615,13 +3381,11 @@ match_cert_name(const string &cert_name, const string &hostname) {
   pattern.set_nomatch_chars(".");
   return pattern.matches(hostname);
 }
-    
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_x509_name_component
-//       Access: Private, Static
-//  Description: Returns the indicated component of the X509 name as a
-//               string, if defined, or empty string if it is not.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Returns the indicated component of the X509 name as a string, if defined, or
+ * empty string if it is not.
+ */
 string HTTPChannel::
 get_x509_name_component(X509_NAME *name, int nid) {
   ASN1_OBJECT *obj = OBJ_nid2obj(nid);
@@ -3637,16 +3401,14 @@ get_x509_name_component(X509_NAME *name, int nid) {
   }
 
   ASN1_STRING *data = X509_NAME_ENTRY_get_data(X509_NAME_get_entry(name, i));
-  return string((char *)data->data, data->length);  
+  return string((char *)data->data, data->length);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::make_header
-//       Access: Private
-//  Description: Formats the appropriate GET or POST (or whatever)
-//               request to send to the server, based on the current
-//               _method, _document_spec, _body, and _proxy settings.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the appropriate GET or POST (or whatever) request to send to the
+ * server, based on the current _method, _document_spec, _body, and _proxy
+ * settings.
+ */
 void HTTPChannel::
 make_header() {
   _proxy_auth = _client->select_auth(_proxy, true, _proxy_realm);
@@ -3695,13 +3457,13 @@ make_header() {
 
   ostringstream stream;
 
-  stream 
-    << _method << " " << request_path << " " 
+  stream
+    << _method << " " << request_path << " "
     << _client->get_http_version_string() << "\r\n";
 
   if (_client->get_http_version() >= HTTPEnum::HV_11) {
-    
-    stream 
+
+    stream
       << "Host: " << _request.get_url().get_server();
     if (!_request.get_url().is_default_port()) {
       // It appears that some servers (notably gstatic.com) might
@@ -3718,19 +3480,19 @@ make_header() {
   }
 
   if (_last_byte_requested != 0) {
-    stream 
-      << "Range: bytes=" << _first_byte_requested << "-" 
+    stream
+      << "Range: bytes=" << _first_byte_requested << "-"
       << _last_byte_requested << "\r\n";
 
   } else if (_first_byte_requested != 0) {
-    stream 
+    stream
       << "Range: bytes=" << _first_byte_requested << "-\r\n";
   }
 
   switch (_request.get_request_mode()) {
   case DocumentSpec::RM_any:
     // No particular request; give us any document that matches the
-    // URL.  
+    // URL.
     if (_first_byte_requested != 0) {
       // Unless we're requesting a subrange, in which case if the
       // exact document matches, retrieve the subrange indicated;
@@ -3815,37 +3577,30 @@ make_header() {
   _header = stream.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::make_proxy_request_text
-//       Access: Private
-//  Description: Builds the _proxy_request_text string.  This is a
-//               special request that will be sent directly to the
-//               proxy prior to the request tailored for the server.
-//               Generally this is used to open a tunnelling
-//               connection for https-over-proxy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds the _proxy_request_text string.  This is a special request that will
+ * be sent directly to the proxy prior to the request tailored for the server.
+ * Generally this is used to open a tunnelling connection for https-over-proxy.
+ */
 void HTTPChannel::
 make_proxy_request_text() {
   _proxy_request_text = _proxy_header;
 
   if (_proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
     _proxy_request_text += "Proxy-Authorization: ";
-    _proxy_request_text += 
+    _proxy_request_text +=
       _proxy_auth->generate(HTTPEnum::M_connect, _request.get_url().get_server_and_port(),
                             _proxy_username, _body);
     _proxy_request_text += "\r\n";
   }
-    
+
   _proxy_request_text += "\r\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::make_request_text
-//       Access: Private
-//  Description: Builds the _request_text string.  This is the
-//               specific request that will be sent to the server this
-//               pass, based on the current header and body.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds the _request_text string.  This is the specific request that will be
+ * sent to the server this pass, based on the current header and body.
+ */
 void HTTPChannel::
 make_request_text() {
   _request_text = _header;
@@ -3853,13 +3608,13 @@ make_request_text() {
   if (_proxy_serves_document &&
       _proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
     _request_text += "Proxy-Authorization: ";
-    _request_text += 
+    _request_text +=
       _proxy_auth->generate(_method, _request.get_url().get_url(), _proxy_username, _body);
     _request_text += "\r\n";
   }
 
   if (_www_auth != (HTTPAuthorization *)NULL && !_www_username.empty()) {
-    string authorization = 
+    string authorization =
     _request_text += "Authorization: ";
     _request_text +=
       _www_auth->generate(_method, _request.get_url().get_path_and_query(), _www_username, _body);
@@ -3870,14 +3625,11 @@ make_request_text() {
   _request_text += "\r\n";
   _request_text += _body;
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::reset_url
-//       Access: Private
-//  Description: Redirects the next connection to the indicated URL
-//               (from the previous URL).  This resets the socket if
-//               necessary when we are about to switch servers.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Redirects the next connection to the indicated URL (from the previous URL).
+ * This resets the socket if necessary when we are about to switch servers.
+ */
 void HTTPChannel::
 reset_url(const URLSpec &old_url, const URLSpec &new_url) {
   // If we change between http and https, we have to reset the
@@ -3886,25 +3638,22 @@ reset_url(const URLSpec &old_url, const URLSpec &new_url) {
   // communicating through a proxy.
 
   if (new_url.get_scheme() != old_url.get_scheme() ||
-      (_proxy.empty() && (new_url.get_server() != old_url.get_server() || 
+      (_proxy.empty() && (new_url.get_server() != old_url.get_server() ||
                           new_url.get_port() != old_url.get_port()))) {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << _NOTIFY_HTTP_CHANNEL_ID 
-        << "resetting for new server " 
+        << _NOTIFY_HTTP_CHANNEL_ID
+        << "resetting for new server "
         << new_url.get_server_and_port() << "\n";
     }
     reset_to_new();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::store_header_field
-//       Access: Private
-//  Description: Stores a single name: value pair in the header list,
-//               or appends the value to the end of the existing
-//               value, if the header has been repeated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores a single name: value pair in the header list, or appends the value to
+ * the end of the existing value, if the header has been repeated.
+ */
 void HTTPChannel::
 store_header_field(const string &field_name, const string &field_value) {
   pair<Headers::iterator, bool> insert_result =
@@ -3924,12 +3673,9 @@ store_header_field(const string &field_name, const string &field_value) {
 }
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::show_send
-//       Access: Private, Static
-//  Description: Writes the outgoing message, one line at a time, to
-//               the debugging log.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the outgoing message, one line at a time, to the debugging log.
+ */
 void HTTPChannel::
 show_send(const string &message) {
   size_t start = 0;
@@ -3949,13 +3695,10 @@ show_send(const string &message) {
 }
 #endif   // NDEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::reset_download_to
-//       Access: Private
-//  Description: Resets the indication of how the document will be
-//               downloaded.  This must be re-specified after each
-//               get_document() (or related) call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the indication of how the document will be downloaded.  This must be
+ * re-specified after each get_document() (or related) call.
+ */
 void HTTPChannel::
 reset_download_to() {
   _started_download = false;
@@ -3963,12 +3706,9 @@ reset_download_to() {
   _download_dest = DD_none;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::close_download_stream
-//       Access: Private
-//  Description: Ensures the file opened for receiving the download
-//               has been correctly closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures the file opened for receiving the download has been correctly closed.
+ */
 void HTTPChannel::
 close_download_stream() {
   if (_download_to_stream != NULL) {
@@ -3982,28 +3722,24 @@ close_download_stream() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::reset_to_new
-//       Access: Private
-//  Description: Closes the connection and resets the state to S_new.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the connection and resets the state to S_new.
+ */
 void HTTPChannel::
 reset_to_new() {
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
-      << _NOTIFY_HTTP_CHANNEL_ID 
+      << _NOTIFY_HTTP_CHANNEL_ID
       << "reset_to_new.\n";
   }
-  
+
   close_connection();
   _state = S_new;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::reset_body_stream
-//       Access: Private
-//  Description: Clears the _body_stream pointer, if it is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the _body_stream pointer, if it is set.
+ */
 void HTTPChannel::
 reset_body_stream() {
   if (_owns_body_stream) {
@@ -4017,12 +3753,9 @@ reset_body_stream() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::close_connection
-//       Access: Private
-//  Description: Closes the connection but leaves the _state
-//               unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the connection but leaves the _state unchanged.
+ */
 void HTTPChannel::
 close_connection() {
   reset_body_stream();
@@ -4033,14 +3766,11 @@ close_connection() {
   _read_index++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::more_useful_status_code
-//       Access: Private, Static
-//  Description: Returns true if status code a is a more useful value
-//               (that is, it represents a more-nearly successfully
-//               connection attempt, or contains more information)
-//               than b, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if status code a is a more useful value (that is, it represents
+ * a more-nearly successfully connection attempt, or contains more information)
+ * than b, or false otherwise.
+ */
 bool HTTPChannel::
 more_useful_status_code(int a, int b) {
   if (a >= 100 && b >= 100) {
@@ -4048,10 +3778,10 @@ more_useful_status_code(int a, int b) {
     // 1000) are better than those from a proxy; we take advantage of
     // the fact that we have already added 1000 to proxy responses.
     // Except for 407, so let's fix that now.
-    if (a == 407) { 
+    if (a == 407) {
       a += 1000;
     }
-    if (b == 407) { 
+    if (b == 407) {
       b += 1000;
     }
 
@@ -4080,10 +3810,9 @@ more_useful_status_code(int a, int b) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::State output operator
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, HTTPChannel::State state) {
 #ifdef NDEBUG

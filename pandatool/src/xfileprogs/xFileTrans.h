@@ -19,12 +19,10 @@
 #include "programBase.h"
 #include "withOutputFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileTrans
-// Description : A program to read a X file and output an
-//               essentially similar X file.  This is mainly useful
-//               to test the X file parser used in Panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a X file and output an essentially similar X file.  This is
+ * mainly useful to test the X file parser used in Panda.
+ */
 class XFileTrans : public ProgramBase, public WithOutputFile {
 public:
   XFileTrans();
@@ -38,4 +36,3 @@ protected:
 };
 
 #endif
-

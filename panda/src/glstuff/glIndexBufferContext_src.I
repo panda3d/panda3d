@@ -11,11 +11,9 @@
  * @date 2005-03-17
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(IndexBufferContext)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(IndexBufferContext)::
 CLP(IndexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
                         PreparedGraphicsObjects *pgo,

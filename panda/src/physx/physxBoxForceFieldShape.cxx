@@ -17,11 +17,9 @@
 
 TypeHandle PhysxBoxForceFieldShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShape::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxBoxForceFieldShape::
 link(NxForceFieldShape *shapePtr) {
 
@@ -35,11 +33,9 @@ link(NxForceFieldShape *shapePtr) {
   group->_shapes.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShape::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxBoxForceFieldShape::
 unlink() {
 
@@ -50,12 +46,9 @@ unlink() {
   group->_shapes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShape::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the shape object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the shape object to a descriptor.
+ */
 void PhysxBoxForceFieldShape::
 save_to_desc(PhysxBoxForceFieldShapeDesc &shapeDesc) const {
 
@@ -63,15 +56,11 @@ save_to_desc(PhysxBoxForceFieldShapeDesc &shapeDesc) const {
   _ptr->saveToDesc(shapeDesc._desc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShape::set_dimensions
-//       Access: Published
-//  Description: Sets the box dimensions.
-//
-//               The dimensions are the 'radii' of the box,
-//               meaning 1/2 extents in x dimension, 1/2 extents
-//               in y dimension, 1/2 extents in z dimension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the box dimensions.  The dimensions are the 'radii' of the box, meaning
+ * 1/2 extents in x dimension, 1/2 extents in y dimension, 1/2 extents in z
+ * dimension.
+ */
 void PhysxBoxForceFieldShape::
 set_dimensions(const LVector3f &vec) {
 
@@ -79,19 +68,14 @@ set_dimensions(const LVector3f &vec) {
   _ptr->setDimensions(PhysxManager::vec3_to_nxVec3(vec));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShape::get_dimensions
-//       Access: Published
-//  Description: Retrieves the dimensions of the box.
-//
-//               The dimensions are the 'radii' of the box,
-//               meaning 1/2 extents in x dimension, 1/2 extents
-//               in y dimension, 1/2 extents in z dimension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the dimensions of the box.  The dimensions are the 'radii' of the
+ * box, meaning 1/2 extents in x dimension, 1/2 extents in y dimension, 1/2
+ * extents in z dimension.
+ */
 LVector3f PhysxBoxForceFieldShape::
 get_dimensions() const {
 
   nassertr(_error_type == ET_ok, LVector3f::zero());
   return PhysxManager::nxVec3_to_vec3(_ptr->getDimensions());
 }
-

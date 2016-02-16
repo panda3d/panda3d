@@ -19,10 +19,9 @@ class GraphicsStateGuardian;
 
 #ifndef OPENGLES  // Occlusion queries not supported by OpenGL ES.
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLOcclusionQueryContext
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_GL CLP(OcclusionQueryContext) : public OcclusionQueryContext {
 public:
   INLINE CLP(OcclusionQueryContext)(GraphicsStateGuardian *gsg);
@@ -57,4 +56,3 @@ private:
 #include "glOcclusionQueryContext_src.I"
 
 #endif  // OPENGLES
-

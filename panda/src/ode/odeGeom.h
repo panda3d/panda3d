@@ -39,10 +39,9 @@ class OdeQuadTreeSpace;
 class OdeUtil;
 class OdeCollisionEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeGeom : public TypedObject {
   friend class OdeContactGeom;
   friend class OdeSpace;
@@ -53,7 +52,7 @@ public:
   OdeGeom(dGeomID id);
 
 PUBLISHED:
-  enum GeomClass { GC_sphere = 0, 
+  enum GeomClass { GC_sphere = 0,
                    GC_box,
                    GC_capped_cylinder,
                    GC_cylinder,

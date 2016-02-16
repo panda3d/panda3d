@@ -18,24 +18,21 @@
 #include "pvector.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFVertex
-// Description : Stored within DXFFile, this is the basic Vertex data
-//               of a DXF file.  When DXFFile::DoneEntity() is called,
-//               if the entity is a type to have vertices, then
-//               DXFFile::_verts contains a list of all the vertices
-//               that belong to the entity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stored within DXFFile, this is the basic Vertex data of a DXF file.  When
+ * DXFFile::DoneEntity() is called, if the entity is a type to have vertices,
+ * then DXFFile::_verts contains a list of all the vertices that belong to the
+ * entity.
+ */
 class DXFVertex {
 public:
   DXFVertex() { }
   DXFVertex(const LPoint3d &p) : _p(p) { }
   int operator < (const DXFVertex &other) const;
-  
+
   LPoint3d _p;
 };
 
 typedef pvector<DXFVertex> DXFVertices;
 
 #endif
-

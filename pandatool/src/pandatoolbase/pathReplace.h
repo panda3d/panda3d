@@ -23,19 +23,14 @@
 #include "pvector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PathReplace
-// Description : This encapsulates the user's command-line request to
-//               replace existing, incorrect pathnames to models and
-//               textures from a file with correct pathnames.  It
-//               corresponds to a sequence of -pr command-line
-//               options, as well as the -pp option.
-//
-//               This can also go the next step, which is to convert a
-//               known file into a suitable form for storing in a
-//               model file.  In this capacity, it corresponds to the
-//               -ps and -pd options.
-////////////////////////////////////////////////////////////////////
+/**
+ * This encapsulates the user's command-line request to replace existing,
+ * incorrect pathnames to models and textures from a file with correct
+ * pathnames.  It corresponds to a sequence of -pr command-line options, as well
+ * as the -pp option.  This can also go the next step, which is to convert a
+ * known file into a suitable form for storing in a model file.  In this
+ * capacity, it corresponds to the -ps and -pd options.
+ */
 class PathReplace : public ReferenceCount {
 public:
   PathReplace();
@@ -53,13 +48,13 @@ public:
 
   INLINE bool is_empty() const;
 
-  Filename match_path(const Filename &orig_filename, 
+  Filename match_path(const Filename &orig_filename,
                       const DSearchPath &additional_path = DSearchPath());
   Filename store_path(const Filename &orig_filename);
 
   INLINE Filename convert_path(const Filename &orig_filename,
                                const DSearchPath &additional_path = DSearchPath());
-  
+
   void full_convert_path(const Filename &orig_filename,
                          const DSearchPath &additional_path,
                          Filename &resolved_path,
@@ -129,6 +124,3 @@ private:
 #include "pathReplace.I"
 
 #endif
-
-  
-  

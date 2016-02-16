@@ -16,12 +16,10 @@
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//        Enum : PathStore
-// Description : This enumerated type lists the methods by which
-//               a filename path might be mangled before storing in a
-//               destination file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This enumerated type lists the methods by which a filename path might be
+ * mangled before storing in a destination file.
+ */
 enum PathStore {
   PS_invalid,    // Never use this.
   PS_relative,   // Make relative to a user-specified directory.

@@ -15,12 +15,9 @@
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<GraphicsWindow>::add_custom_event_handler
-//       Access: Published
-//  Description: Adds a python event handler to be called
-//               when a window event occurs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a python event handler to be called when a window event occurs.
+ */
 void Extension<GraphicsWindow>::
 add_python_event_handler(PyObject* handler, PyObject* name){
   PythonGraphicsWindowProc* pgwp = new PythonGraphicsWindowProc(handler, name);
@@ -28,11 +25,9 @@ add_python_event_handler(PyObject* handler, PyObject* name){
   _this->add_window_proc(pgwp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<GraphicsWindow>::remove_custom_event_handler
-//       Access: Published
-//  Description: Removes the specified python event handler.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the specified python event handler.
+ */
 void Extension<GraphicsWindow>::
 remove_python_event_handler(PyObject* name){
   list<PythonGraphicsWindowProc*> toRemove;

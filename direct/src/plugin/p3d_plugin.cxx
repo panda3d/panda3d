@@ -32,7 +32,7 @@
 bool initialized_lock = false;
 LOCK _api_lock;
 
-bool 
+bool
 P3D_initialize(int api_version, const char *contents_filename,
                const char *host_url, P3D_verify_contents verify_contents,
                const char *platform, const char *log_directory,
@@ -61,11 +61,11 @@ P3D_initialize(int api_version, const char *contents_filename,
   }
   ACQUIRE_LOCK(_api_lock);
 
-  if (contents_filename == NULL){ 
+  if (contents_filename == NULL){
     contents_filename = "";
   }
 
-  if (host_url == NULL){ 
+  if (host_url == NULL){
     host_url = "";
   }
 
@@ -103,7 +103,7 @@ P3D_initialize(int api_version, const char *contents_filename,
   return result;
 }
 
-void 
+void
 P3D_finalize() {
   nout << "P3D_finalize called\n";
   P3DInstanceManager::delete_global_ptr();
@@ -128,7 +128,7 @@ P3D_set_plugin_version(int major, int minor, int sequence,
 
   time_t coreapi_timestamp = 0;
   if (inst_mgr->get_api_version() < 15) {
-    // Before version 15, this was passed as a time_t.  
+    // Before version 15, this was passed as a time_t.
     coreapi_timestamp = (time_t)coreapi_timestamp_str;
   } else {
     // Passing a time_t causes problems with disagreements about word
@@ -161,20 +161,20 @@ P3D_set_super_mirror(const char *super_mirror_url) {
 }
 
 P3D_instance *
-P3D_new_instance(P3D_request_ready_func *func, 
+P3D_new_instance(P3D_request_ready_func *func,
                  const P3D_token tokens[], size_t num_tokens,
                  int argc, const char *argv[], void *user_data) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  P3DInstance *result = inst_mgr->create_instance(func, tokens, num_tokens, 
+  P3DInstance *result = inst_mgr->create_instance(func, tokens, num_tokens,
                                                   argc, argv, user_data);
   RELEASE_LOCK(_api_lock);
   return result;
 }
 
 bool
-P3D_instance_start(P3D_instance *instance, bool is_local, 
+P3D_instance_start(P3D_instance *instance, bool is_local,
                    const char *p3d_filename, int p3d_offset) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (p3d_filename == NULL) {
@@ -313,7 +313,7 @@ P3D_object_get_property(P3D_object *object, const char *property) {
 }
 
 bool
-P3D_object_set_property(P3D_object *object, const char *property, 
+P3D_object_set_property(P3D_object *object, const char *property,
                         bool needs_response, P3D_object *value) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
@@ -332,7 +332,7 @@ P3D_object_has_method(P3D_object *object, const char *method_name) {
 }
 
 P3D_object *
-P3D_object_call(P3D_object *object, const char *method_name, 
+P3D_object_call(P3D_object *object, const char *method_name,
                 bool needs_response,
                 P3D_object *params[], int num_params) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
@@ -353,7 +353,7 @@ P3D_object_eval(P3D_object *object, const char *expression) {
 }
 
 
-void 
+void
 P3D_object_incref(P3D_object *object) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (object != NULL) {
@@ -363,7 +363,7 @@ P3D_object_incref(P3D_object *object) {
   }
 }
 
-void 
+void
 P3D_object_decref(P3D_object *object) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (object != NULL) {
@@ -380,7 +380,7 @@ P3D_make_class_definition() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_class_definition *result = inst_mgr->make_class_definition();
-  
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -392,7 +392,7 @@ P3D_new_undefined_object() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_object *result = inst_mgr->new_undefined_object();
-  
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -404,7 +404,7 @@ P3D_new_none_object() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_object *result = inst_mgr->new_none_object();
-  
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -416,7 +416,7 @@ P3D_new_bool_object(bool value) {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_object *result = inst_mgr->new_bool_object(value);
-  
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -427,7 +427,7 @@ P3D_new_int_object(int value) {
   ACQUIRE_LOCK(_api_lock);
 
   P3D_object *result = new P3DIntObject(value);
-  
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -438,7 +438,7 @@ P3D_new_float_object(double value) {
   ACQUIRE_LOCK(_api_lock);
 
   P3D_object *result = new P3DFloatObject(value);
-  
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -449,7 +449,7 @@ P3D_new_string_object(const char *str, int length) {
   ACQUIRE_LOCK(_api_lock);
 
   P3D_object *result = new P3DStringObject(string(str, length));
-  
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -465,13 +465,13 @@ P3D_instance_get_panda_script_object(P3D_instance *instance) {
   if (inst != NULL) {
     result = inst->get_panda_script_object();
   }
-  
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
 
 void
-P3D_instance_set_browser_script_object(P3D_instance *instance, 
+P3D_instance_set_browser_script_object(P3D_instance *instance,
                                        P3D_object *object) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
@@ -481,7 +481,7 @@ P3D_instance_set_browser_script_object(P3D_instance *instance,
   if (inst != NULL) {
     inst->set_browser_script_object(object);
   }
-  
+
   RELEASE_LOCK(_api_lock);
 }
 
@@ -583,9 +583,9 @@ P3D_request_finish(P3D_request *request, bool handled) {
 bool
 P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
                              P3D_result_code result_code,
-                             int http_status_code, 
+                             int http_status_code,
                              size_t total_expected_data,
-                             const void *this_data, 
+                             const void *this_data,
                              size_t this_data_size) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
@@ -596,7 +596,7 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
   if (inst != NULL) {
     result = inst->
       feed_url_stream(unique_id, result_code, http_status_code,
-                      total_expected_data, 
+                      total_expected_data,
                       (const unsigned char *)this_data, this_data_size);
   }
 
@@ -605,7 +605,7 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
 }
 
 bool
-P3D_instance_handle_event(P3D_instance *instance, 
+P3D_instance_handle_event(P3D_instance *instance,
                           const P3D_event_data *event) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);

@@ -16,32 +16,25 @@
 #include "forceNode.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseIntegrator
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 BaseIntegrator::
 BaseIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~BaseIntegrator
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 BaseIntegrator::
 ~BaseIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: precompute_linear_matrices
-//       Access: Protected
-//  Description: effectively caches the xform matrices between
-//               the physical's node and every force acting on it
-//               so that each PhysicsObject in the set held by the
-//               Physical doesn't have to wrt.
-////////////////////////////////////////////////////////////////////
+/**
+ * effectively caches the xform matrices between the physical's node and every
+ * force acting on it so that each PhysicsObject in the set held by the Physical
+ * doesn't have to wrt.
+ */
 void BaseIntegrator::
 precompute_linear_matrices(Physical *physical,
                            const LinearForceVector &forces) {
@@ -90,14 +83,11 @@ precompute_linear_matrices(Physical *physical,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: precompute_angular_matrices
-//       Access: Protected
-//  Description: effectively caches the xform matrices between
-//               the physical's node and every force acting on it
-//               so that each PhysicsObject in the set held by the
-//               Physical doesn't have to wrt.
-////////////////////////////////////////////////////////////////////
+/**
+ * effectively caches the xform matrices between the physical's node and every
+ * force acting on it so that each PhysicsObject in the set held by the Physical
+ * doesn't have to wrt.
+ */
 void BaseIntegrator::
 precompute_angular_matrices(Physical *physical,
                             const AngularForceVector &forces) {
@@ -145,12 +135,9 @@ precompute_angular_matrices(Physical *physical,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -158,12 +145,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_precomputed_linear_matrices
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseIntegrator::
 write_precomputed_linear_matrices(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -177,12 +161,9 @@ write_precomputed_linear_matrices(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_precomputed_angular_matrices
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseIntegrator::
 write_precomputed_angular_matrices(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -196,12 +177,9 @@ write_precomputed_angular_matrices(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

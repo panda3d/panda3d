@@ -26,4 +26,3 @@
 typedef BitMask32 DrawMask;
 
 #endif
-

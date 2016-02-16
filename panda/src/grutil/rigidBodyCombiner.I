@@ -11,11 +11,9 @@
  * @date 2007-02-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: RigidBodyCombiner::VDUnifier::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE RigidBodyCombiner::VDUnifier::
 VDUnifier(const VertexTransform *transform, const GeomVertexData *orig) :
   _transform(transform),
@@ -23,11 +21,9 @@ VDUnifier(const VertexTransform *transform, const GeomVertexData *orig) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RigidBodyCombiner::VDUnifier::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool RigidBodyCombiner::VDUnifier::
 operator < (const RigidBodyCombiner::VDUnifier &other) const {
   if (_transform != other._transform) {

@@ -9,13 +9,13 @@
  * @file maxEggImport.cxx
  * @author jyelon
  * @date 2005-07-15
- * 
+ *
  * This is the wrapper code for the max importer plugin.
  * It includes:
- * 
+ *
  *   - user interface dialogs and popups
  *   - plugin initialization/registration
- * 
+ *
  * It does not include the actual code to traverse the EggData.
  */
 
@@ -198,15 +198,11 @@ int MaxEggImporter::DoImport(const TCHAR *name,ImpInterface *ii,Interface *i, BO
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//
-// Plugin Initialization
-//
-// The following code enables Max to load this DLL, get a list
-// of the classes defined in this DLL, and provides a means for
-// Max to create instances of those classes.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Plugin Initialization The following code enables Max to load this DLL, get a
+ * list of the classes defined in this DLL, and provides a means for Max to
+ * create instances of those classes.
+ */
 
 HINSTANCE hInstance;
 
@@ -265,4 +261,3 @@ __declspec( dllexport ) ULONG LibVersion()
 {
   return VERSION_3DSMAX;
 }
-

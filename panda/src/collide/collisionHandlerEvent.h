@@ -23,15 +23,12 @@
 #include "vector_string.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandlerEvent
-// Description : A specialized kind of CollisionHandler that throws an
-//               event for each collision detected.  The event thrown
-//               may be based on the name of the moving object or the
-//               struck object, or both.  The first parameter of the
-//               event will be a pointer to the CollisionEntry that
-//               triggered it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialized kind of CollisionHandler that throws an event for each
+ * collision detected.  The event thrown may be based on the name of the moving
+ * object or the struck object, or both.  The first parameter of the event will
+ * be a pointer to the CollisionEntry that triggered it.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandlerEvent : public CollisionHandler {
 PUBLISHED:
   CollisionHandlerEvent();
@@ -109,6 +106,3 @@ private:
 #include "collisionHandlerEvent.I"
 
 #endif
-
-
-

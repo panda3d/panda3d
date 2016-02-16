@@ -27,17 +27,13 @@
 
 class PStatView;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatStripChart
-// Description : This is an abstract class that presents the interface
-//               for drawing a basic strip-chart, showing the relative
-//               value over an interval of time for several different
-//               collectors, differentiated by bands of color.
-//
-//               This class just manages all the strip-chart logic;
-//               the actual nuts and bolts of drawing pixels is left
-//               to a user-derived class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract class that presents the interface for drawing a basic
+ * strip-chart, showing the relative value over an interval of time for several
+ * different collectors, differentiated by bands of color.  This class just
+ * manages all the strip-chart logic; the actual nuts and bolts of drawing
+ * pixels is left to a user-derived class.
+ */
 class PStatStripChart : public PStatGraph {
 public:
   PStatStripChart(PStatMonitor *monitor, PStatView &view,
@@ -89,7 +85,7 @@ protected:
   static void scale_frame_data(FrameData &fdata, double factor);
 
   const FrameData &get_frame_data(int frame_number);
-  void compute_average_pixel_data(PStatStripChart::FrameData &result, 
+  void compute_average_pixel_data(PStatStripChart::FrameData &result,
                                   int &then_i, int &now_i, double now);
   double get_net_value(int frame_number) const;
   double get_average_net_value() const;

@@ -22,15 +22,12 @@
 
 #include <stdio.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : MultiplexStream
-// Description : This is a special ostream that forwards the data that
-//               is written to it to any number of other sources, for
-//               instance other ostreams, or explicitly to a disk file
-//               or to system logging utilities.  It's a very handy
-//               thing to set Notify to refer to when running in batch
-//               mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special ostream that forwards the data that is written to it to any
+ * number of other sources, for instance other ostreams, or explicitly to a disk
+ * file or to system logging utilities.  It's a very handy thing to set Notify
+ * to refer to when running in batch mode.
+ */
 class EXPCL_PANDAEXPRESS MultiplexStream : public ostream {
 PUBLISHED:
   INLINE MultiplexStream();

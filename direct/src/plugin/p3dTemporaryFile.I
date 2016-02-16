@@ -11,11 +11,9 @@
  * @date 2009-08-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DTemporaryFile::get_filename
-//       Access: Public
-//  Description: Returns the temporary filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the temporary filename.
+ */
 inline const string &P3DTemporaryFile::
 get_filename() const {
   return _filename;

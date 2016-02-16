@@ -11,24 +11,19 @@
  * @date 2001-04-24
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoHeader::is_valid
-//       Access: Public
-//  Description: Returns true if the header represents a valid and
-//               recognized Lightwave header, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the header represents a valid and recognized Lightwave
+ * header, false otherwise.
+ */
 INLINE bool LwoHeader::
 is_valid() const {
   return _valid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoHeader::get_version
-//       Access: Public
-//  Description: Returns the version of the Lightwave file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the version of the Lightwave file.
+ */
 INLINE double LwoHeader::
 get_version() const {
   return _version;
 }
-

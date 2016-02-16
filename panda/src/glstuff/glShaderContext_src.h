@@ -23,10 +23,9 @@
 
 class CLP(GraphicsStateGuardian);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLShaderContext
-// Description : xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 class EXPCL_GL CLP(ShaderContext) : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);

@@ -20,16 +20,13 @@
 #include "partBundle.h"
 #include "animChannelBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovingPartBase
-// Description : This is the base class for a single animatable piece
-//               that may be bound to one channel (or more, if
-//               blending is in effect).  It corresponds to, for
-//               instance, a single joint or slider of a character.
-//
-//               MovingPartBase does not have a particular value type.
-//               See the derived template class, MovingPart, for this.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a single animatable piece that may be bound to one
+ * channel (or more, if blending is in effect).  It corresponds to, for
+ * instance, a single joint or slider of a character.  MovingPartBase does not
+ * have a particular value type.  See the derived template class, MovingPart,
+ * for this.
+ */
 class EXPCL_PANDA_CHAN MovingPartBase : public PartGroup {
 protected:
   INLINE MovingPartBase(const MovingPartBase &copy);
@@ -55,12 +52,12 @@ PUBLISHED:
 
 public:
   virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
-                         PartGroup *parent, bool parent_changed, 
+                         PartGroup *parent, bool parent_changed,
                          bool anim_changed, Thread *current_thread);
 
   virtual void get_blend_value(const PartBundle *root)=0;
-  virtual bool update_internals(PartBundle *root, PartGroup *parent, 
-                                bool self_changed, bool parent_changed, 
+  virtual bool update_internals(PartBundle *root, PartGroup *parent,
+                                bool self_changed, bool parent_changed,
                                 Thread *current_thread);
 
 protected:
@@ -68,10 +65,10 @@ protected:
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index,
-                              int &joint_index, bool is_included, 
+                              int &joint_index, bool is_included,
                               BitArray &bound_joints,
                               const PartSubset &subset);
-  virtual void find_bound_joints(int &joint_index, bool is_included, 
+  virtual void find_bound_joints(int &joint_index, bool is_included,
                                  BitArray &bound_joints,
                                  const PartSubset &subset);
   virtual void determine_effective_channels(const CycleData *root_cdata);
@@ -126,7 +123,3 @@ private:
 #include "movingPartBase.I"
 
 #endif
-
-
-
-

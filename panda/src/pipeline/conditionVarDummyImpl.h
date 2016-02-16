@@ -22,12 +22,10 @@
 
 class MutexDummyImpl;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarDummyImpl
-// Description : A fake condition variable implementation for
-//               single-threaded applications that don't need any
-//               synchronization control.
-////////////////////////////////////////////////////////////////////
+/**
+ * A fake condition variable implementation for single-threaded applications
+ * that don't need any synchronization control.
+ */
 class EXPCL_PANDA_PIPELINE ConditionVarDummyImpl {
 public:
   INLINE ConditionVarDummyImpl(MutexDummyImpl &mutex);

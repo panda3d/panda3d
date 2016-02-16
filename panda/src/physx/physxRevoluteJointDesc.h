@@ -23,11 +23,9 @@ class PhysxSpringDesc;
 class PhysxMotorDesc;
 class PhysxJointLimitDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxRevoluteJointDesc
-// Description : Descriptor class for distance joint. See
-//               PhysxRevoluteJoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for distance joint.  See PhysxRevoluteJoint.
+ */
 class EXPCL_PANDAPHYSX PhysxRevoluteJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

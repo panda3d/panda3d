@@ -19,11 +19,9 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoClip::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLwoClip::
 CLwoClip(LwoToEggConverter *converter, const LwoClip *clip) :
   _converter(converter),

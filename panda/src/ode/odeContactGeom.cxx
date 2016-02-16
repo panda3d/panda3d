@@ -17,18 +17,18 @@
 TypeHandle OdeContactGeom::_type_handle;
 
 OdeContactGeom::
-OdeContactGeom() : 
+OdeContactGeom() :
   _contact_geom() {
 }
 
 OdeContactGeom::
-OdeContactGeom(const OdeContactGeom &copy) : 
+OdeContactGeom(const OdeContactGeom &copy) :
   _contact_geom() {
   *this = copy._contact_geom;
 }
 
 OdeContactGeom::
-OdeContactGeom(const dContactGeom &copy) : 
+OdeContactGeom(const dContactGeom &copy) :
   _contact_geom() {
   *this = copy;
 }
@@ -61,4 +61,3 @@ operator = (const dContactGeom &contact_geom) {
   _contact_geom.side1 = contact_geom.side1;
   _contact_geom.side2 = contact_geom.side2;
 }
-

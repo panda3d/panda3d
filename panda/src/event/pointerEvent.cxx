@@ -15,32 +15,26 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEvent::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PointerEvent::
 output(ostream &out) const {
   out << (_in_window ? "In@" : "Out@")
       << _xpos << "," << _ypos << " ";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEvent::write_datagram
-//       Access: Public
-//  Description: Writes the event into a datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the event into a datagram.
+ */
 void PointerEvent::
 write_datagram(Datagram &dg) const {
   nassertv(false && "This function not implemented yet.");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEvent::read_datagram
-//       Access: Public
-//  Description: Restores the event from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Restores the event from the datagram.
+ */
 void PointerEvent::
 read_datagram(DatagramIterator &scan) {
   nassertv(false && "This function not implemented yet.");

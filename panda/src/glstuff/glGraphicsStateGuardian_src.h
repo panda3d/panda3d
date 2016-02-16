@@ -227,12 +227,10 @@ typedef GLboolean (APIENTRYP PFNGLUNMAPBUFFERPROC) (GLenum target);
 #endif  // OPENGLES
 #endif  // __EDG__
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLGraphicsStateGuardian
-// Description : A GraphicsStateGuardian specialized for rendering
-//               into OpenGL contexts.  There should be no GL calls
-//               outside of this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A GraphicsStateGuardian specialized for rendering into OpenGL contexts.
+ * There should be no GL calls outside of this object.
+ */
 class EXPCL_GL CLP(GraphicsStateGuardian) : public GraphicsStateGuardian {
 public:
   CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe);

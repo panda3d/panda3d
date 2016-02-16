@@ -45,4 +45,3 @@
 #endif  // HAVE_ZLIB
 
 #endif  // CPPPARSER
-

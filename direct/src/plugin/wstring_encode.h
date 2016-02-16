@@ -37,5 +37,3 @@ inline ostream &operator << (ostream &out, const wstring &str) {
 #endif // _WIN32
 
 #endif
-
-

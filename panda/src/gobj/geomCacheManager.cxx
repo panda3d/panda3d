@@ -24,11 +24,9 @@ PStatCollector GeomCacheManager::_geom_cache_record_pcollector("Geom cache opera
 PStatCollector GeomCacheManager::_geom_cache_erase_pcollector("Geom cache operations:erase");
 PStatCollector GeomCacheManager::_geom_cache_evict_pcollector("Geom cache operations:evict");
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheManager::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomCacheManager::
 GeomCacheManager() :
   _lock("GeomCacheManager"),
@@ -41,33 +39,27 @@ GeomCacheManager() :
   _list->_prev = _list;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheManager::Destructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomCacheManager::
 ~GeomCacheManager() {
   // Shouldn't be deleting this global object.
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheManager::flush
-//       Access: Published
-//  Description: Immediately empties all elements in the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Immediately empties all elements in the cache.
+ */
 void GeomCacheManager::
 flush() {
   LightMutexHolder holder(_lock);
   evict_old_entries(0, false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheManager::get_global_ptr
-//       Access: Published, Static
-//  Description: Returns the global cache manager pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the global cache manager pointer.
+ */
 GeomCacheManager *GeomCacheManager::
 get_global_ptr() {
   if (_global_ptr == (GeomCacheManager *)NULL) {
@@ -76,14 +68,11 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheManager::evict_old_entries
-//       Access: Public
-//  Description: Trims the cache size down to the specified size by
-//               evicting old cache entries as needed.  It is assumed
-//               that you already hold the lock before calling this
-//               method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Trims the cache size down to the specified size by evicting old cache entries
+ * as needed.  It is assumed that you already hold the lock before calling this
+ * method.
+ */
 void GeomCacheManager::
 evict_old_entries(int max_size, bool keep_current) {
   int current_frame = ClockObject::get_global_clock()->get_frame_count();

@@ -17,13 +17,10 @@
 
 TypeHandle ReferenceCount::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::do_test_ref_count_integrity
-//       Access: Protected
-//  Description: Does some easy checks to make sure that the reference
-//               count isn't completely bogus.  Returns true if ok,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does some easy checks to make sure that the reference count isn't completely
+ * bogus.  Returns true if ok, false otherwise.
+ */
 bool ReferenceCount::
 do_test_ref_count_integrity() const {
   nassertr(this != NULL, false);
@@ -45,12 +42,9 @@ do_test_ref_count_integrity() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::do_test_ref_count_nonzero
-//       Access: Protected
-//  Description: Returns true if the reference count is nonzero, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the reference count is nonzero, false otherwise.
+ */
 bool ReferenceCount::
 do_test_ref_count_nonzero() const {
   nassertr(do_test_ref_count_integrity(), false);
@@ -59,20 +53,16 @@ do_test_ref_count_nonzero() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::create_weak_list
-//       Access: Private
-//  Description: Allocates a new WeakReferenceList structure and
-//               stores it on the object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a new WeakReferenceList structure and stores it on the object.
+ */
 void ReferenceCount::
 create_weak_list() {
   WeakReferenceList *weak_list = new WeakReferenceList;
-  void *orig = 
+  void *orig =
     AtomicAdjust::compare_and_exchange_ptr(_weak_list, NULL, weak_list);
   if (orig != (void *)NULL) {
     // Someone else created it first.
     delete weak_list;
   }
 }
-

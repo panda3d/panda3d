@@ -18,14 +18,11 @@
 
 #include "eggGroup.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggBin
-// Description : A type of group node that holds related subnodes.
-//               This is a special kind of node that will never be
-//               read in from an egg file, but can only exist in the
-//               egg scene graph if it is created via the use of an
-//               EggBinMaker.
-////////////////////////////////////////////////////////////////////
+/**
+ * A type of group node that holds related subnodes.  This is a special kind of
+ * node that will never be read in from an egg file, but can only exist in the
+ * egg scene graph if it is created via the use of an EggBinMaker.
+ */
 class EXPCL_PANDAEGG EggBin : public EggGroup {
 PUBLISHED:
   EggBin(const string &name = "");

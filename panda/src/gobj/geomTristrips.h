@@ -17,10 +17,9 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomTristrips
-// Description : Defines a series of triangle strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of triangle strips.
+ */
 class EXPCL_PANDA_GOBJ GeomTristrips : public GeomPrimitive {
 PUBLISHED:
   GeomTristrips(UsageHint usage_hint);
@@ -46,7 +45,7 @@ protected:
   virtual CPT(GeomPrimitive) reverse_impl() const;
   virtual CPT(GeomVertexArrayData) rotate_impl() const;
   virtual bool requires_unused_vertices() const;
-  virtual void append_unused_vertices(GeomVertexArrayData *vertices, 
+  virtual void append_unused_vertices(GeomVertexArrayData *vertices,
                                       int vertex);
 
 public:

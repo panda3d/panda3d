@@ -341,4 +341,3 @@ get_param_suspension_CFM(int axis) const {
   }
   return 0;
 }
-

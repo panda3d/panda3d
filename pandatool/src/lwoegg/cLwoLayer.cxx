@@ -17,12 +17,9 @@
 #include "eggData.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoLayer::make_egg
-//       Access: Public
-//  Description: Creates the egg structures associated with this
-//               Lightwave object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the egg structures associated with this Lightwave object.
+ */
 void CLwoLayer::
 make_egg() {
   _egg_group = new EggGroup(_layer->_name);
@@ -36,11 +33,9 @@ make_egg() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoLayer::connect_egg
-//       Access: Public
-//  Description: Connects all the egg structures together.
-////////////////////////////////////////////////////////////////////
+/**
+ * Connects all the egg structures together.
+ */
 void CLwoLayer::
 connect_egg() {
   if (_layer->_parent != -1) {
@@ -56,4 +51,3 @@ connect_egg() {
 
   _converter->get_egg_data()->add_child(_egg_group.p());
 }
-

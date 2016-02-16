@@ -20,10 +20,9 @@
 
 class CPPIdentifier;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPClassTemplateParameter
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPClassTemplateParameter : public CPPType {
 public:
   CPPClassTemplateParameter(CPPIdentifier *ident,
@@ -45,4 +44,3 @@ protected:
 };
 
 #endif
-

@@ -19,12 +19,10 @@
 #include "programBase.h"
 #include "withOutputFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VRMLTrans
-// Description : A program to read a VRML file and output an
-//               essentially similar VRML file.  This is mainly useful
-//               to test the VRML parser used in Panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a VRML file and output an essentially similar VRML file.
+ * This is mainly useful to test the VRML parser used in Panda.
+ */
 class VRMLTrans : public ProgramBase, public WithOutputFile {
 public:
   VRMLTrans();
@@ -38,4 +36,3 @@ protected:
 };
 
 #endif
-

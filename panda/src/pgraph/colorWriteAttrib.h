@@ -20,13 +20,11 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorWriteAttrib
-// Description : Enables or disables writing to the color buffer.
-//               This is primarily useful for certain special effects
-//               in which it is important to write to the depth buffer
-//               without affecting the color buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables writing to the color buffer.  This is primarily useful
+ * for certain special effects in which it is important to write to the depth
+ * buffer without affecting the color buffer.
+ */
 class EXPCL_PANDA_PGRAPH ColorWriteAttrib : public RenderAttrib {
 PUBLISHED:
   enum Channels {
@@ -75,7 +73,7 @@ PUBLISHED:
   virtual int get_slot() const {
     return get_class_slot();
   }
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -99,4 +97,3 @@ private:
 #include "colorWriteAttrib.I"
 
 #endif
-

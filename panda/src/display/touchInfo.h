@@ -16,10 +16,9 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TouchInfo
-// Description : Stores information for a single touch event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores information for a single touch event.
+ */
 class EXPCL_PANDA_DISPLAY TouchInfo {
 
 PUBLISHED:
@@ -47,7 +46,7 @@ PUBLISHED:
   int get_flags();
 
 private:
-  
+
   int _x;
   int _y;
   int _id;

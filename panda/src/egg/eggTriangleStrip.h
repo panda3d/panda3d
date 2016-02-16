@@ -18,12 +18,10 @@
 
 #include "eggCompositePrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTriangleStrip
-// Description : A connected strip of triangles.  This does not
-//               normally appear in an egg file; it is typically
-//               generated as a result of meshing.
-////////////////////////////////////////////////////////////////////
+/**
+ * A connected strip of triangles.  This does not normally appear in an egg
+ * file; it is typically generated as a result of meshing.
+ */
 class EXPCL_PANDAEGG EggTriangleStrip : public EggCompositePrimitive {
 PUBLISHED:
   INLINE EggTriangleStrip(const string &name = "");

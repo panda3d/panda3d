@@ -11,24 +11,19 @@
  * @date 2009-03-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionDrawCallbackData::get_cull_result
-//       Access: Published
-//  Description: Returns a pointer to the CullResult, the list of
-//               CullableObjects that should be drawn in this
-//               DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the CullResult, the list of CullableObjects that should
+ * be drawn in this DisplayRegion.
+ */
 INLINE CullResult *DisplayRegionDrawCallbackData::
 get_cull_result() const {
   return _cull_result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionDrawCallbackData::get_scene_setup
-//       Access: Published
-//  Description: Returns a pointer to the SceneSetup object, which
-//               contains information about the camera and such.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the SceneSetup object, which contains information about
+ * the camera and such.
+ */
 INLINE SceneSetup *DisplayRegionDrawCallbackData::
 get_scene_setup() const {
   return _scene_setup;

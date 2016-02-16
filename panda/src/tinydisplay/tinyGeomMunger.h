@@ -19,13 +19,11 @@
 #include "graphicsStateGuardian.h"
 #include "renderState.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyGeomMunger
-// Description : This specialization on GeomMunger finesses vertices
-//               for TinyPanda rendering.  This actually doesn't have
-//               to do very much, since TinyPanda is not that
-//               particular.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on GeomMunger finesses vertices for TinyPanda rendering.
+ * This actually doesn't have to do very much, since TinyPanda is not that
+ * particular.
+ */
 class EXPCL_TINYDISPLAY TinyGeomMunger : public StandardMunger {
 public:
   TinyGeomMunger(GraphicsStateGuardian *gsg, const RenderState *state);

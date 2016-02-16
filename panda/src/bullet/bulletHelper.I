@@ -11,11 +11,9 @@
  * @date 2011-01-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletHelper::get_sb_index
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PT(InternalName) BulletHelper::
 get_sb_index() {
 
@@ -25,11 +23,9 @@ get_sb_index() {
   return _sb_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletHelper::get_sb_flip
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PT(InternalName) BulletHelper::
 get_sb_flip() {
 

@@ -11,22 +11,17 @@
  * @date 2005-03-24
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: JointVertexTransform::get_joint
-//       Access: Published
-//  Description: Returns the joint for which this object returns the
-//               transform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the joint for which this object returns the transform.
+ */
 INLINE const CharacterJoint *JointVertexTransform::
 get_joint() const {
   return _joint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: JointVertexTransform::check_matrix
-//       Access: Private
-//  Description: Recomputes _matrix if it needs it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes _matrix if it needs it.
+ */
 INLINE void JointVertexTransform::
 check_matrix() const {
   if (_matrix_stale) {

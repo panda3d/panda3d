@@ -13,11 +13,9 @@
 
 #include "p3dPatchFinder.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::PackageVersion::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DPatchFinder::PackageVersion::
 PackageVersion(const PackageVersionKey &key) :
   _package_name(key._package_name),
@@ -30,14 +28,11 @@ PackageVersion(const PackageVersionKey &key) :
   _package_base = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::PackageVersion::get_patch_chain
-//       Access: Public
-//  Description: Fills chain with the list of patches that, when
-//               applied in sequence to the indicated PackageVersion
-//               object, produces this PackageVersion object.  Returns
-//               false if no chain can be found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills chain with the list of patches that, when applied in sequence to the
+ * indicated PackageVersion object, produces this PackageVersion object.
+ * Returns false if no chain can be found.
+ */
 bool P3DPatchFinder::PackageVersion::
 get_patch_chain(Patchfiles &chain, PackageVersion *start_pv,
                 const PackageVersionsList &already_visited_in) {
@@ -83,11 +78,9 @@ get_patch_chain(Patchfiles &chain, PackageVersion *start_pv,
   return found_any;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::PackageVersionKey::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DPatchFinder::PackageVersionKey::
 PackageVersionKey(const string &package_name,
                   const string &platform,
@@ -102,11 +95,9 @@ PackageVersionKey(const string &package_name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::PackageVersionKey::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool P3DPatchFinder::PackageVersionKey::
 operator < (const PackageVersionKey &other) const {
   if (_package_name != other._package_name) {
@@ -124,11 +115,9 @@ operator < (const PackageVersionKey &other) const {
   return _file.compare_hash(other._file) < 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::PackageVersionKey::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void P3DPatchFinder::PackageVersionKey::
 output(ostream &out) const {
   out << "(" << _package_name << ", " << _platform << ", " << _version
@@ -137,11 +126,9 @@ output(ostream &out) const {
   out << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Patchfile::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DPatchFinder::Patchfile::
 Patchfile(Package *package) :
   _package(package),
@@ -154,33 +141,26 @@ Patchfile(Package *package) :
   _host_url = package->_host_url;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Patchfile::get_source_key
-//       Access: Public
-//  Description: Returns the key for locating the package that this
-//               patchfile can be applied to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key for locating the package that this patchfile can be applied
+ * to.
+ */
 P3DPatchFinder::PackageVersionKey P3DPatchFinder::Patchfile::
 get_source_key() const {
   return PackageVersionKey(_package_name, _platform, _version, _host_url, _source_file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Patchfile::get_target_key
-//       Access: Public
-//  Description: Returns the key for locating the package that this
-//               patchfile will generate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key for locating the package that this patchfile will generate.
+ */
 P3DPatchFinder::PackageVersionKey P3DPatchFinder::Patchfile::
 get_target_key() const {
   return PackageVersionKey(_package_name, _platform, _version, _host_url, _target_file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Patchfile::load_xml
-//       Access: Public
-//  Description: Reads the data structures from an xml file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data structures from an xml file.
+ */
 void P3DPatchFinder::Patchfile::
 load_xml(TiXmlElement *xpatch) {
   const char *package_name_cstr = xpatch->Attribute("name");
@@ -212,11 +192,9 @@ load_xml(TiXmlElement *xpatch) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Package::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DPatchFinder::Package::
 Package() {
   _current_pv = NULL;
@@ -224,45 +202,34 @@ Package() {
   _got_base_file = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Package::get_current_key
-//       Access: Public
-//  Description: Returns the key to locate the current version of this
-//               package.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key to locate the current version of this package.
+ */
 P3DPatchFinder::PackageVersionKey P3DPatchFinder::Package::
 get_current_key() const {
   return PackageVersionKey(_package_name, _platform, _version, _host_url, _current_file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Package::get_base_key
-//       Access: Public
-//  Description: Returns the key to locate the "base" or oldest
-//               version of this package.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key to locate the "base" or oldest version of this package.
+ */
 P3DPatchFinder::PackageVersionKey P3DPatchFinder::Package::
 get_base_key() const {
   return PackageVersionKey(_package_name, _platform, _version, _host_url, _base_file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Package::get_generic_key
-//       Access: Public
-//  Description: Returns the key that has the indicated hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key that has the indicated hash.
+ */
 P3DPatchFinder::PackageVersionKey P3DPatchFinder::Package::
 get_generic_key(const FileSpec &file) const {
   return PackageVersionKey(_package_name, _platform, _version, _host_url, file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Package::read_desc_file
-//       Access: Public
-//  Description: Reads the package's desc file for the package
-//               information.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the package's desc file for the package information.  Returns true on
+ * success, false on failure.
+ */
 bool P3DPatchFinder::Package::
 read_desc_file(TiXmlDocument *doc) {
   TiXmlElement *xpackage = doc->FirstChildElement("package");
@@ -312,34 +279,26 @@ read_desc_file(TiXmlDocument *doc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DPatchFinder::
 P3DPatchFinder() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DPatchFinder::
 ~P3DPatchFinder() {
   // TODO.  Cleanup nicely.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::get_patch_chain_to_current
-//       Access: Public
-//  Description: Loads the package defined in the indicated desc file,
-//               and constructs a patch chain from the version
-//               represented by file to the current version of this
-//               package, if possible. Returns true if successful,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the package defined in the indicated desc file, and constructs a patch
+ * chain from the version represented by file to the current version of this
+ * package, if possible.  Returns true if successful, false otherwise.
+ */
 bool P3DPatchFinder::
 get_patch_chain_to_current(Patchfiles &chain, TiXmlDocument *doc,
                            const FileSpec &file) {
@@ -361,14 +320,10 @@ get_patch_chain_to_current(Patchfiles &chain, TiXmlDocument *doc,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::read_package_desc_file
-//       Access: Public
-//  Description: Reads a desc file associated with a particular
-//               package, and adds the package to
-//               _packages.  Returns the Package object, or
-//               NULL on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a desc file associated with a particular package, and adds the package
+ * to _packages.  Returns the Package object, or NULL on failure.
+ */
 P3DPatchFinder::Package *P3DPatchFinder::
 read_package_desc_file(TiXmlDocument *doc) {
   Package *package = new Package;
@@ -381,12 +336,9 @@ read_package_desc_file(TiXmlDocument *doc) {
   return package;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::build_patch_chains
-//       Access: Public
-//  Description: Builds up the chains of PackageVersions and the
-//               patchfiles that connect them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up the chains of PackageVersions and the patchfiles that connect them.
+ */
 void P3DPatchFinder::
 build_patch_chains() {
   Packages::iterator pi;
@@ -414,12 +366,9 @@ build_patch_chains() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::get_package_version
-//       Access: Public
-//  Description: Returns a shared PackageVersion object for the
-//               indicated key.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a shared PackageVersion object for the indicated key.
+ */
 P3DPatchFinder::PackageVersion *P3DPatchFinder::
 get_package_version(const PackageVersionKey &key) {
   assert(!key._package_name.empty());
@@ -434,11 +383,9 @@ get_package_version(const PackageVersionKey &key) {
   return pv;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPatchFinder::record_patchfile
-//       Access: Public
-//  Description: Adds the indicated patchfile to the patch chains.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated patchfile to the patch chains.
+ */
 void P3DPatchFinder::
 record_patchfile(Patchfile *patchfile) {
   PackageVersion *from_pv = get_package_version(patchfile->get_source_key());

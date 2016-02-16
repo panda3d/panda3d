@@ -28,10 +28,9 @@ enum SparkleParticleLifeScale {
   SP_SCALE
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : SparkleParticleRenderer
-// Description : pretty sparkly things.
-////////////////////////////////////////////////////////////////////
+/**
+ * pretty sparkly things.
+ */
 class EXPCL_PANDAPHYSICS SparkleParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   enum SparkleParticleLifeScale {

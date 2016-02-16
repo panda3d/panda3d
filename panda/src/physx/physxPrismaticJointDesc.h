@@ -19,11 +19,9 @@
 #include "physxJointDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPrismaticJointDesc
-// Description : Descriptor class for prismatic joint. See
-//               PhysxPrismaticJoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for prismatic joint.  See PhysxPrismaticJoint.
+ */
 class EXPCL_PANDAPHYSX PhysxPrismaticJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

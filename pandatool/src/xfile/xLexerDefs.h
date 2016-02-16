@@ -21,7 +21,7 @@ int x_error_count();
 int x_warning_count();
 
 void xyyerror(const string &msg);
-void xyyerror(const string &msg, int line_number, int col_number, 
+void xyyerror(const string &msg, int line_number, int col_number,
               const string &current_line);
 void xyywarning(const string &msg);
 

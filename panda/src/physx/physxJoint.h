@@ -25,12 +25,10 @@
 class PhysxActor;
 class PhysxScene;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxJoint
-// Description : Abstract base class for the different types of
-//               joints. All joints are used to connect two dynamic
-//               actors, or an actor and the environment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for the different types of joints.  All joints are used
+ * to connect two dynamic actors, or an actor and the environment.
+ */
 class EXPCL_PANDAPHYSX PhysxJoint : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -79,7 +77,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxJoint", 
+    register_type(_type_handle, "PhysxJoint",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

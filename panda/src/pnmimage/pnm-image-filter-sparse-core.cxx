@@ -66,14 +66,14 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
                       temp_source, temp_source_weight, source.ASIZE(),
                       scale,
                       filter, filter_width);
-    
+
     for (a = 0; a < dest.ASIZE(); a++) {
       matrix[a][b] = temp_dest[a];
       matrix_weight[a][b] = temp_dest_weight[a];
     }
   }
 
-  PANDA_FREE_ARRAY(temp_source); 
+  PANDA_FREE_ARRAY(temp_source);
   PANDA_FREE_ARRAY(temp_source_weight);
   PANDA_FREE_ARRAY(temp_dest);
   PANDA_FREE_ARRAY(temp_dest_weight);
@@ -112,4 +112,3 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   PANDA_FREE_ARRAY(matrix);
   PANDA_FREE_ARRAY(matrix_weight);
 }
-

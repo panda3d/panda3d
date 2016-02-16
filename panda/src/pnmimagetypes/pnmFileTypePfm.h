@@ -21,11 +21,10 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypePfm
-// Description : For reading and writing PFM files using the basic
-//               PNMImage interface, as if they were basic RGB files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing PFM files using the basic PNMImage interface, as if
+ * they were basic RGB files.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMFileTypePfm : public PNMFileType {
 public:
   PNMFileTypePfm();
@@ -47,7 +46,7 @@ public:
   class Reader : public PNMReader {
   public:
     Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
-    
+
     virtual bool is_floating_point();
     virtual bool read_pfm(PfmFile &pfm);
 
@@ -91,5 +90,3 @@ private:
 };
 
 #endif
-
-

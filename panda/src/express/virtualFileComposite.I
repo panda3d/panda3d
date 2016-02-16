@@ -11,11 +11,9 @@
  * @date 2002-08-03
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileComposite::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VirtualFileComposite::
 VirtualFileComposite(VirtualFileSystem *file_system, const Filename &filename) :
   _file_system(file_system),
@@ -23,18 +21,15 @@ VirtualFileComposite(VirtualFileSystem *file_system, const Filename &filename) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileComposite::add_component
-//       Access: Public
-//  Description: Adds one more component to the composite directory.
-//                The component should be a directory and the file
-//                system and filename should match the composite.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds one more component to the composite directory.  The component should be
+ * a directory and the file system and filename should match the composite.
+ */
 INLINE void VirtualFileComposite::
 add_component(VirtualFile *file) {
   nassertv(file->is_directory());
   nassertv(file->get_file_system() == _file_system);
   nassertv(file->get_filename() == _filename);
-  
+
   _components.push_back(file);
 }

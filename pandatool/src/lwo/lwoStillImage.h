@@ -20,10 +20,9 @@
 
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoStillImage
-// Description : A single still image associated with a LwoClip chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single still image associated with a LwoClip chunk.
+ */
 class LwoStillImage : public LwoChunk {
 public:
   Filename _filename;
@@ -51,5 +50,3 @@ private:
 };
 
 #endif
-
-

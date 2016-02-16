@@ -18,11 +18,9 @@
 
 TypeHandle WavAudio::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudio::Constructor
-//       Access: Protected
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 WavAudio::
 WavAudio(const Filename &name) :
   MovieAudio(name)
@@ -30,20 +28,16 @@ WavAudio(const Filename &name) :
   _filename = name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudio::Destructor
-//       Access: Protected, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 WavAudio::
 ~WavAudio() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudio::open
-//       Access: Published, Virtual
-//  Description: Open this audio, returning a MovieAudioCursor
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this audio, returning a MovieAudioCursor
+ */
 PT(MovieAudioCursor) WavAudio::
 open() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -61,11 +55,9 @@ open() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WavAudio::make
-//       Access: Published, Static
-//  Description: Obtains a MovieAudio that references a file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains a MovieAudio that references a file.
+ */
 PT(MovieAudio) WavAudio::
 make(const Filename &name) {
   return DCAST(MovieAudio, new WavAudio(name));

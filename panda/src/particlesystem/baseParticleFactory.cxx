@@ -13,11 +13,9 @@
 
 #include "baseParticleFactory.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticleFactory
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 BaseParticleFactory::
 BaseParticleFactory() :
   _lifespan_base(1.0),
@@ -29,11 +27,9 @@ BaseParticleFactory() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticleFactory
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 BaseParticleFactory::
 BaseParticleFactory(const BaseParticleFactory &copy) :
   _lifespan_base(copy._lifespan_base),
@@ -45,19 +41,16 @@ BaseParticleFactory(const BaseParticleFactory &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~BaseParticleFactory
-//       Access: Public Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 BaseParticleFactory::
 ~BaseParticleFactory() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_particle
-//  Description: public
-////////////////////////////////////////////////////////////////////
+/**
+ * public
+ */
 void BaseParticleFactory::
 populate_particle(BaseParticle *bp) {
   bp->set_lifespan(_lifespan_base + SPREAD(_lifespan_spread));
@@ -72,12 +65,9 @@ populate_particle(BaseParticle *bp) {
   populate_child_particle(bp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseParticleFactory::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -85,12 +75,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseParticleFactory::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

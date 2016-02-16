@@ -21,12 +21,10 @@
 
 class PhysxPrismaticJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPrismaticJoint
-// Description : A prismatic joint permits relative translational
-//               movement between two bodies along an axis, but no
-//               relative rotational movement. 
-////////////////////////////////////////////////////////////////////
+/**
+ * A prismatic joint permits relative translational movement between two bodies
+ * along an axis, but no relative rotational movement.
+ */
 class EXPCL_PANDAPHYSX PhysxPrismaticJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -51,7 +49,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxPrismaticJoint", 
+    register_type(_type_handle, "PhysxPrismaticJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -29,26 +29,20 @@
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::ParseAndSetShaderUniformVars
-//       Access: Public
-//  Description: The Panda CG shader syntax defines a useful set of shorthand notations for setting nodepath
-//               properties as shaderinputs. For example, float4 mspos_XXX refers to nodepath XXX's position
-//               in model space. This function is a rough attempt to reimplement some of the shorthand
-//               notations for GLSL. The code is ~99% composed of excerpts dealing with matrix shaderinputs
-//               from Shader::compile_parameter.
-//
-//               Given a uniform variable name queried from the compiled shader passed in via arg_id,
-//                  1) parse the name
-//                  2a) if the name refers to a Panda shorthand notation
-//                        push the appropriate matrix into shader._mat_spec
-//                        returns True
-//                  2b) If the name doesn't refer to a Panda shorthand notation
-//                        returns False
-//
-//               The boolean return is used to notify down-river processing whether the shader var/parm was
-//               actually picked up and the appropriate ShaderMatSpec pushed onto _mat_spec.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Panda CG shader syntax defines a useful set of shorthand notations for
+ * setting nodepath properties as shaderinputs.  For example, float4 mspos_XXX
+ * refers to nodepath XXX's position in model space.  This function is a rough
+ * attempt to reimplement some of the shorthand notations for GLSL. The code is
+ * ~99% composed of excerpts dealing with matrix shaderinputs from
+ * Shader::compile_parameter.  Given a uniform variable name queried from the
+ * compiled shader passed in via arg_id, 1) parse the name 2a) if the name
+ * refers to a Panda shorthand notation push the appropriate matrix into
+ * shader._mat_spec returns True 2b) If the name doesn't refer to a Panda
+ * shorthand notation returns False  The boolean return is used to notify down-
+ * river processing whether the shader var/parm was actually picked up and the
+ * appropriate ShaderMatSpec pushed onto _mat_spec.
+ */
 bool CLP(ShaderContext)::
 parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_type, GLint param_size, Shader *objShader) {
   Shader::ShaderArgInfo p;
@@ -252,11 +246,9 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, GLenum param_t
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::Constructor
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 CLP(ShaderContext)::
 CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
@@ -355,12 +347,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::reflect_attribute
-//       Access: Public
-//  Description: Analyzes the vertex attribute and stores the
-//               information it needs to remember.
-////////////////////////////////////////////////////////////////////
+/**
+ * Analyzes the vertex attribute and stores the information it needs to
+ * remember.
+ */
 void CLP(ShaderContext)::
 reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
   GLint param_size;
@@ -513,11 +503,9 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
 }
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::reflect_uniform_block
-//       Access: Public
-//  Description: Analyzes the uniform block and stores its format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Analyzes the uniform block and stores its format.
+ */
 void CLP(ShaderContext)::
 reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_buflen) {
  //GLint offset = 0;
@@ -671,12 +659,10 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
 }
 #endif  // !OPENGLES
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::reflect_uniform
-//       Access: Public
-//  Description: Analyzes a single uniform variable and considers
-//               how it should be handled and bound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Analyzes a single uniform variable and considers how it should be handled and
+ * bound.
+ */
 void CLP(ShaderContext)::
 reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
   GLint param_size;
@@ -688,7 +674,7 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
   GLint p = _glgsg->_glGetUniformLocation(_glsl_program, name_buffer);
 
 
-  // Some NVidia drivers (361.43 for example) (incorrectly) include "internal" uniforms in 
+  // Some NVidia drivers (361.43 for example) (incorrectly) include "internal" uniforms in
   // the list starting with "_main_" (for example, "_main_0_gp5fp[0]")
   // we need to skip those, because we don't know anything about them
   if (strncmp(name_buffer, "_main_", 6) == 0) {
@@ -1587,12 +1573,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::get_sampler_texture_type
-//       Access: Public
-//  Description: Returns the texture type required for the given
-//               GL sampler type.  Returns false if unsupported.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the texture type required for the given GL sampler type.  Returns
+ * false if unsupported.
+ */
 bool CLP(ShaderContext)::
 get_sampler_texture_type(int &out, GLenum param_type) {
   switch (param_type) {
@@ -1720,22 +1704,18 @@ get_sampler_texture_type(int &out, GLenum param_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::Destructor
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
   // Don't call release_resources; we may not have an active context.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::release_resources
-//       Access: Public
-//  Description: Should deallocate all system resources (such as
-//               vertex program handles or Cg contexts).
-////////////////////////////////////////////////////////////////////
+/**
+ * Should deallocate all system resources (such as vertex program handles or Cg
+ * contexts).
+ */
 void CLP(ShaderContext)::
 release_resources() {
   if (!_glgsg) {
@@ -1760,13 +1740,10 @@ release_resources() {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::bind
-//       Access: Public
-//  Description: This function is to be called to enable a new
-//               shader.  It also initializes all of the shader's
-//               input parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is to be called to enable a new shader.  It also initializes
+ * all of the shader's input parameters.
+ */
 void CLP(ShaderContext)::
 bind() {
   if (!_validated) {
@@ -1787,11 +1764,9 @@ bind() {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::unbind
-//       Access: Public
-//  Description: This function disables a currently-bound shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function disables a currently-bound shader.
+ */
 void CLP(ShaderContext)::
 unbind() {
   if (GLCAT.is_spam()) {
@@ -1802,14 +1777,11 @@ unbind() {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::set_state_and_transform
-//       Access: Public
-//  Description: This function gets called whenever the RenderState
-//               or TransformState has changed, but the Shader
-//               itself has not changed.  It loads new values into the
-//               shader's parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function gets called whenever the RenderState or TransformState has
+ * changed, but the Shader itself has not changed.  It loads new values into the
+ * shader's parameters.
+ */
 void CLP(ShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
@@ -1885,14 +1857,11 @@ set_state_and_transform(const RenderState *target_rs,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::issue_parameters
-//       Access: Public
-//  Description: This function gets called whenever the RenderState
-//               or TransformState has changed, but the Shader
-//               itself has not changed.  It loads new values into the
-//               shader's parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function gets called whenever the RenderState or TransformState has
+ * changed, but the Shader itself has not changed.  It loads new values into the
+ * shader's parameters.
+ */
 void CLP(ShaderContext)::
 issue_parameters(int altered) {
   PStatGPUTimer timer(_glgsg, _glgsg->_draw_set_state_shader_parameters_pcollector);
@@ -2069,12 +2038,9 @@ issue_parameters(int altered) {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::update_transform_table
-//       Access: Public
-//  Description: Changes the active transform table, used for hardware
-//               skinning.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the active transform table, used for hardware skinning.
+ */
 void CLP(ShaderContext)::
 update_transform_table(const TransformTable *table) {
   LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
@@ -2100,12 +2066,9 @@ update_transform_table(const TransformTable *table) {
                               GL_FALSE, (float *)matrices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::update_slider_table
-//       Access: Public
-//  Description: Changes the active slider table, used for hardware
-//               skinning.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the active slider table, used for hardware skinning.
+ */
 void CLP(ShaderContext)::
 update_slider_table(const SliderTable *table) {
   float *sliders = (float *)alloca(_slider_table_size * 4);
@@ -2121,11 +2084,9 @@ update_slider_table(const SliderTable *table) {
   _glgsg->_glUniform1fv(_slider_table_index, _slider_table_size, sliders);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::disable_shader_vertex_arrays
-//       Access: Public
-//  Description: Disable all the vertex arrays used by this shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable all the vertex arrays used by this shader.
+ */
 void CLP(ShaderContext)::
 disable_shader_vertex_arrays() {
   if (!valid()) {
@@ -2144,14 +2105,11 @@ disable_shader_vertex_arrays() {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::update_shader_vertex_arrays
-//       Access: Public
-//  Description: Disables all vertex arrays used by the previous
-//               shader, then enables all the vertex arrays needed
-//               by this shader.  Extracts the relevant vertex array
-//               data from the gsg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables all vertex arrays used by the previous shader, then enables all the
+ * vertex arrays needed by this shader.  Extracts the relevant vertex array data
+ * from the gsg.
+ */
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
   if (!valid()) {
@@ -2327,11 +2285,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::disable_shader_texture_bindings
-//       Access: Public
-//  Description: Disable all the texture bindings used by this shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable all the texture bindings used by this shader.
+ */
 void CLP(ShaderContext)::
 disable_shader_texture_bindings() {
   if (!valid()) {
@@ -2425,17 +2381,13 @@ disable_shader_texture_bindings() {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::update_shader_texture_bindings
-//       Access: Public
-//  Description: Disables all texture bindings used by the previous
-//               shader, then enables all the texture bindings needed
-//               by this shader.  Extracts the relevant vertex array
-//               data from the gsg.
-//               The current implementation is inefficient, because
-//               it may unnecessarily disable textures then immediately
-//               reenable them.  We may optimize this someday.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables all texture bindings used by the previous shader, then enables all
+ * the texture bindings needed by this shader.  Extracts the relevant vertex
+ * array data from the gsg.  The current implementation is inefficient, because
+ * it may unnecessarily disable textures then immediately reenable them.  We may
+ * optimize this someday.
+ */
 void CLP(ShaderContext)::
 update_shader_texture_bindings(ShaderContext *prev) {
   //if (prev) {
@@ -2692,11 +2644,9 @@ update_shader_texture_bindings(ShaderContext *prev) {
   _glgsg->report_my_gl_errors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::glsl_report_shader_errors
-//       Access: Private
-//  Description: This subroutine prints the infolog for a shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This subroutine prints the infolog for a shader.
+ */
 void CLP(ShaderContext)::
 glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
   char *info_log;
@@ -2756,11 +2706,9 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::glsl_report_program_errors
-//       Access: Private
-//  Description: This subroutine prints the infolog for a program.
-////////////////////////////////////////////////////////////////////
+/**
+ * This subroutine prints the infolog for a program.
+ */
 void CLP(ShaderContext)::
 glsl_report_program_errors(GLuint program, bool fatal) {
   char *info_log;
@@ -2787,11 +2735,9 @@ glsl_report_program_errors(GLuint program, bool fatal) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::glsl_compile_shader
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CLP(ShaderContext)::
 glsl_compile_shader(Shader::ShaderType type) {
   static const char *types[] = {"", "vertex ", "fragment ", "geometry ",
@@ -2874,11 +2820,9 @@ glsl_compile_shader(Shader::ShaderType type) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::glsl_compile_and_link
-//       Access: Private
-//  Description: This subroutine compiles a GLSL shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This subroutine compiles a GLSL shader.
+ */
 bool CLP(ShaderContext)::
 glsl_compile_and_link() {
   _glsl_shaders.clear();

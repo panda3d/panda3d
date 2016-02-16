@@ -27,4 +27,3 @@ enum CPPVisibility {
 ostream &operator << (ostream &out, CPPVisibility vis);
 
 #endif
-

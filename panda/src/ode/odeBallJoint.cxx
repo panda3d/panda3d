@@ -17,17 +17,17 @@
 TypeHandle OdeBallJoint::_type_handle;
 
 OdeBallJoint::
-OdeBallJoint(dJointID id) : 
+OdeBallJoint(dJointID id) :
   OdeJoint(id) {
 }
 
 OdeBallJoint::
-OdeBallJoint(OdeWorld &world) : 
+OdeBallJoint(OdeWorld &world) :
   OdeJoint(dJointCreateBall(world.get_id(), 0)) {
 }
 
 OdeBallJoint::
-OdeBallJoint(OdeWorld &world, OdeJointGroup &joint_group) : 
+OdeBallJoint(OdeWorld &world, OdeJointGroup &joint_group) :
   OdeJoint(dJointCreateBall(world.get_id(), joint_group.get_id())) {
 }
 

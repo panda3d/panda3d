@@ -49,12 +49,12 @@ parse_unquoted_arg(char *&p) {
   return strdup(result.c_str());
 }
 
-int WINAPI 
+int WINAPI
 WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   char *command_line = GetCommandLine();
 
   vector<char *> argv;
-  
+
   char *p = command_line;
   while (*p != '\0') {
     if (*p == '"') {

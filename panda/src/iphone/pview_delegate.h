@@ -11,13 +11,13 @@
  * @date 2009-04-10
  */
 
-#import <UIKit/UIKit.h> 
+#import <UIKit/UIKit.h>
 
-@class PviewViewController; 
-@interface PviewAppDelegate : NSObject <UIApplicationDelegate> { 
+@class PviewViewController;
+@interface PviewAppDelegate : NSObject <UIApplicationDelegate> {
   NSTimer *animationTimer;
   NSTimeInterval animationInterval;
-} 
+}
 @property (nonatomic, assign) NSTimer *animationTimer;
 @property NSTimeInterval animationInterval;
 
@@ -25,4 +25,4 @@
 - (void)stopAnimation;
 - (void)drawView;
 
-@end 
+@end

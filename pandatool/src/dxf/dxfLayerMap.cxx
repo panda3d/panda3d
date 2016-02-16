@@ -14,17 +14,13 @@
 #include "dxfLayerMap.h"
 #include "dxfFile.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFLayerMap::get_layer
-//       Access: Public
-//  Description: Looks up the layer name in the map, and returns a
-//               pointer to the associated DXFLayer.  If this is the
-//               first time this layer name has been used, creates a
-//               new DXFLayer by the given name.  In this case, it
-//               calls dxffile->new_layer() to create the layer,
-//               allowing user code to override this function to
-//               create a specialized time, if desired.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the layer name in the map, and returns a pointer to the associated
+ * DXFLayer.  If this is the first time this layer name has been used, creates a
+ * new DXFLayer by the given name.  In this case, it calls dxffile->new_layer()
+ * to create the layer, allowing user code to override this function to create a
+ * specialized time, if desired.
+ */
 DXFLayer *DXFLayerMap::
 get_layer(const string &name, DXFFile *dxffile) {
   iterator lmi;
@@ -40,4 +36,3 @@ get_layer(const string &name, DXFFile *dxffile) {
 
   return layer;
 }
-

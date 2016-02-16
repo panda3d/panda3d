@@ -19,12 +19,10 @@
 #include "collisionSolid.h"
 #include "collisionHandlerPusher.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandlerFluidPusher
-// Description : A CollisionHandlerPusher that makes use of timing
-//               and spatial information from fluid collisions to improve
-//               collision response
-////////////////////////////////////////////////////////////////////
+/**
+ * A CollisionHandlerPusher that makes use of timing and spatial information
+ * from fluid collisions to improve collision response
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandlerFluidPusher : public CollisionHandlerPusher {
 PUBLISHED:
   CollisionHandlerFluidPusher();
@@ -56,6 +54,3 @@ private:
 #include "collisionHandlerFluidPusher.I"
 
 #endif
-
-
-

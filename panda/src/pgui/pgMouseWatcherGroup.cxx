@@ -16,11 +16,9 @@
 
 TypeHandle PGMouseWatcherGroup::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherGroup::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGMouseWatcherGroup::
 ~PGMouseWatcherGroup() {
   // When the MouseWatcherGroup destructs for whatever reason, the

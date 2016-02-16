@@ -20,31 +20,24 @@
 #include "eggXfmSAnim.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileAnimationSet::
 XFileAnimationSet() {
   _frame_rate = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileAnimationSet::
 ~XFileAnimationSet() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::create_hierarchy
-//       Access: Public
-//  Description: Sets up the hierarchy of EggTables corresponding to
-//               this AnimationSet.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the hierarchy of EggTables corresponding to this AnimationSet.
+ */
 bool XFileAnimationSet::
 create_hierarchy(XFileToEggConverter *converter) {
   // Egg animation tables start off with one Table entry, enclosing a
@@ -101,12 +94,9 @@ create_hierarchy(XFileToEggConverter *converter) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::get_table
-//       Access: Public
-//  Description: Returns the table associated with the indicated joint
-//               name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the table associated with the indicated joint name.
+ */
 EggXfmSAnim *XFileAnimationSet::
 get_table(const string &joint_name) const {
   Tables::const_iterator ti;
@@ -117,27 +107,21 @@ get_table(const string &joint_name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::create_frame_data
-//       Access: Public
-//  Description: Returns a reference to a new FrameData table
-//               corresponding to the indicated joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a reference to a new FrameData table corresponding to the indicated
+ * joint.
+ */
 XFileAnimationSet::FrameData &XFileAnimationSet::
 create_frame_data(const string &joint_name) {
   return _joint_data[joint_name];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileAnimationSet::mirror_table
-//       Access: Private
-//  Description: Builds up a new set of EggTable nodes, as a
-//               mirror of the existing set of EggGroup (joint)
-//               nodes, and saves each new table in the _tables
-//               record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Builds up a new set of EggTable nodes, as a mirror of the existing set of
+ * EggGroup (joint) nodes, and saves each new table in the _tables record.
+ */
 void XFileAnimationSet::
-mirror_table(XFileToEggConverter *converter, 
+mirror_table(XFileToEggConverter *converter,
              EggGroup *model_node, EggTable *anim_node) {
   EggGroupNode::iterator gi;
   for (gi = model_node->begin(); gi != model_node->end(); ++gi) {
@@ -148,7 +132,7 @@ mirror_table(XFileToEggConverter *converter,
         // When we come to a <Joint>, create a new Table for it.
         EggTable *new_table = new EggTable(group->get_name());
         anim_node->add_child(new_table);
-        CoordinateSystem cs = 
+        CoordinateSystem cs =
           converter->get_egg_data()->get_coordinate_system();
         EggXfmSAnim *xform = new EggXfmSAnim("xform", cs);
         new_table->add_child(xform);

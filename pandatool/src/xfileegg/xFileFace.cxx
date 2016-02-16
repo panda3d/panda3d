@@ -15,21 +15,17 @@
 #include "xFileMesh.h"
 #include "eggPolygon.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileFace::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileFace::
 XFileFace() {
   _material_index = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileFace::set_from_egg
-//       Access: Public
-//  Description: Sets the structure up from the indicated egg data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the structure up from the indicated egg data.
+ */
 void XFileFace::
 set_from_egg(XFileMesh *mesh, EggPolygon *egg_poly) {
   // Walk through the polygon's vertices in reverse order, to change

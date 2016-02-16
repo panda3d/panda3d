@@ -28,14 +28,11 @@ class FltRecordReader;
 class FltRecordWriter;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltRecord
-// Description : The base class for all kinds of records in a MultiGen
-//               OpenFlight file.  A flt file consists of a hierarchy
-//               of "beads" of various kinds, each of which may be
-//               followed by n ancillary records, written sequentially
-//               to the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for all kinds of records in a MultiGen OpenFlight file.  A flt
+ * file consists of a hierarchy of "beads" of various kinds, each of which may
+ * be followed by n ancillary records, written sequentially to the file.
+ */
 class FltRecord : public TypedReferenceCount {
 public:
   FltRecord(FltHeader *header);
@@ -66,7 +63,7 @@ public:
   void clear_comment();
   void set_comment(const string &comment);
 
-  void check_remaining_size(const DatagramIterator &di, 
+  void check_remaining_size(const DatagramIterator &di,
                             const string &name = string()) const;
 
   virtual void apply_converted_filenames();
@@ -124,5 +121,3 @@ INLINE ostream &operator << (ostream &out, const FltRecord &record);
 #include "fltRecord.I"
 
 #endif
-
-

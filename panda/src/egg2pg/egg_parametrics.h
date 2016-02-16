@@ -23,27 +23,21 @@
 
 BEGIN_PUBLISH
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_nurbs_surface
-//  Description: Returns a new NurbsSurfaceEvaluator that's filled in
-//               with the values from the given EggSurface (and
-//               transformed by the indicated matrix), or NULL if the
-//               object is invalid.  If there is vertex color, it will
-//               be applied to values 0 - 3 of the extended vertex
-//               values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new NurbsSurfaceEvaluator that's filled in with the values from the
+ * given EggSurface (and transformed by the indicated matrix), or NULL if the
+ * object is invalid.  If there is vertex color, it will be applied to values 0
+ * - 3 of the extended vertex values.
+ */
 EXPCL_PANDAEGG PT(NurbsSurfaceEvaluator)
 make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat);
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_nurbs_curve
-//  Description: Returns a new NurbsCurveEvaluator that's filled in
-//               with the values from the given EggCurve (and
-//               transformed by the indicated matrix), or NULL if the
-//               object is invalid.  If there is vertex color, it will
-//               be applied to values 0 - 3 of the extended vertex
-//               values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new NurbsCurveEvaluator that's filled in with the values from the
+ * given EggCurve (and transformed by the indicated matrix), or NULL if the
+ * object is invalid.  If there is vertex color, it will be applied to values 0
+ * - 3 of the extended vertex values.
+ */
 EXPCL_PANDAEGG PT(NurbsCurveEvaluator)
 make_nurbs_curve(EggNurbsCurve *egg_curve, const LMatrix4d &mat);
 

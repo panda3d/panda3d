@@ -11,42 +11,34 @@
  * @date 2001-05-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::set_name
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void Event::
 set_name(const string &name) {
   _name = name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::clear_name
-//       Access: Public
-//  Description: Resets the Event's name to empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the Event's name to empty.
+ */
 INLINE void Event::
 clear_name() {
   _name = "";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::has_name
-//       Access: Public
-//  Description: Returns true if the Event has a nonempty name set,
-//               false if the name is empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the Event has a nonempty name set, false if the name is
+ * empty.
+ */
 INLINE bool Event::
 has_name() const {
   return !_name.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Event::get_name
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE const string &Event::
 get_name() const {
   return _name;

@@ -18,11 +18,10 @@
 #include "virtualFileSystem.h"
 #include "config_util.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: save_egg_file
-//  Description: A convenience function; converts the indicated scene
-//               graph to an egg file and writes it to disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function; converts the indicated scene graph to an egg file and
+ * writes it to disk.
+ */
 bool
 save_egg_file(const Filename &filename, PandaNode *node, CoordinateSystem cs) {
   PT(EggData) data = new EggData;
@@ -37,12 +36,10 @@ save_egg_file(const Filename &filename, PandaNode *node, CoordinateSystem cs) {
   return data->write_egg(filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: save_egg_data
-//  Description: Another convenience function; works like
-//               save_egg_file() but populates an EggData instead of
-//               writing the results to disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another convenience function; works like save_egg_file() but populates an
+ * EggData instead of writing the results to disk.
+ */
 bool
 save_egg_data(EggData *data, PandaNode *node) {
   EggSaver saver(data);

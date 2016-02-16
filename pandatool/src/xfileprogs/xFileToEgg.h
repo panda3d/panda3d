@@ -20,11 +20,9 @@
 
 #include "dSearchPath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileToEgg
-// Description : A program to read a DirectX "x" file and generate an
-//               egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a DirectX "x" file and generate an egg file.
+ */
 class XFileToEgg : public SomethingToEgg {
 public:
   XFileToEgg();
@@ -40,4 +38,3 @@ public:
 };
 
 #endif
-

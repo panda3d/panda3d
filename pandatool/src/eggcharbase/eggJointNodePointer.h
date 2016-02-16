@@ -21,10 +21,9 @@
 #include "eggGroup.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggJointNodePointer
-// Description : This stores a pointer back to a <Joint> node.
-////////////////////////////////////////////////////////////////////
+/**
+ * This stores a pointer back to a <Joint> node.
+ */
 class EggJointNodePointer : public EggJointPointer {
 public:
   EggJointNodePointer(EggObject *object);
@@ -68,5 +67,3 @@ private:
 };
 
 #endif
-
-

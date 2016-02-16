@@ -23,11 +23,9 @@ TypeHandle wdxGraphicsPipe9::_type_handle;
 #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000  // if # is > 1MB, card is lying and I cant tell what it is
 #define UNKNOWN_VIDMEM_SIZE 0xFFFFFFFF
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 wdxGraphicsPipe9::
 wdxGraphicsPipe9() {
   _hDDrawDLL = NULL;
@@ -36,11 +34,9 @@ wdxGraphicsPipe9() {
   _is_valid = init();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 wdxGraphicsPipe9::
 ~wdxGraphicsPipe9() {
   RELEASE(__d3d9, wdxdisplay9, "ID3D9", RELEASE_DOWN_TO_ZERO);
@@ -48,38 +44,29 @@ wdxGraphicsPipe9::
   SAFE_FREELIB(_hDDrawDLL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to choose
+ * between several possible GraphicsPipes available on a particular platform, so
+ * the name should be meaningful and unique for a given platform.
+ */
 string wdxGraphicsPipe9::
 get_interface_name() const {
   return "DirectX9";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               wdxGraphicsPipe9.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the user
+ * to make a default wdxGraphicsPipe9.
+ */
 PT(GraphicsPipe) wdxGraphicsPipe9::
 pipe_constructor() {
   return new wdxGraphicsPipe9;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) wdxGraphicsPipe9::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -161,15 +148,11 @@ make_output(const string &name,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::init
-//       Access: Private
-//  Description: Performs some initialization steps to load up
-//               function pointers from the relevant DLL's, and
-//               determine the number and type of available graphics
-//               adapters, etc.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs some initialization steps to load up function pointers from the
+ * relevant DLL's, and determine the number and type of available graphics
+ * adapters, etc.  Returns true on success, false on failure.
+ */
 bool wdxGraphicsPipe9::
 init() {
   if (!MyLoadLib(_hDDrawDLL, "ddraw.dll")) {
@@ -234,13 +217,10 @@ init() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::find_all_card_memavails
-//       Access: Private
-//  Description: Uses DX7 calls to determine how much video memory is
-//               available for each video adapter in the system.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses DX7 calls to determine how much video memory is available for each video
+ * adapter in the system.  Returns true on success, false on failure.
+ */
 bool wdxGraphicsPipe9::
 find_all_card_memavails() {
   HRESULT hr;
@@ -399,11 +379,9 @@ find_all_card_memavails() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipe9::dx7_driver_enum_callback
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BOOL WINAPI wdxGraphicsPipe9::
 dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
                          VOID *argptr, HMONITOR hm) {
@@ -430,11 +408,9 @@ dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
   return DDENUMRET_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::find_best_depth_format
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool wdxGraphicsPipe9::
 find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
                        D3DFORMAT *pBestFmt, bool bWantStencil,
@@ -530,12 +506,9 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::special_check_fullscreen_resolution
-//       Access: Private
-//  Description: overrides of the general estimator for known working
-//               cases
-////////////////////////////////////////////////////////////////////
+/**
+ * overrides of the general estimator for known working cases
+ */
 bool wdxGraphicsPipe9::
 special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size, UINT y_size) {
   DWORD VendorId = scrn._dx_device_id.VendorId;
@@ -558,12 +531,10 @@ special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size, UINT y_size
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow9::search_for_valid_displaymode
-//       Access: Private
-//  Description: All ptr args are output parameters.  If no valid mode
-//               found, returns *pSuggestedPixFmt = D3DFMT_UNKNOWN;
-////////////////////////////////////////////////////////////////////
+/**
+ * All ptr args are output parameters.  If no valid mode found, returns
+ * *pSuggestedPixFmt = D3DFMT_UNKNOWN;
+ */
 void wdxGraphicsPipe9::
 search_for_valid_displaymode(DXScreenData &scrn,
                              UINT RequestedX_Size, UINT RequestedY_Size,
@@ -845,12 +816,10 @@ search_for_valid_displaymode(DXScreenData &scrn,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsPipew9::make_device
-//       Access: Public, Virtual
-//  Description: Creates a new reference to a particular hardware
-//               device and associates it with the pipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new reference to a particular hardware device and associates it
+ * with the pipe.
+ */
 PT(GraphicsDevice) wdxGraphicsPipe9::
 make_device(void *scrn) {
   PT(DXGraphicsDevice9) device = new DXGraphicsDevice9(this);

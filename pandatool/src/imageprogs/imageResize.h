@@ -18,11 +18,10 @@
 
 #include "imageFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ImageResize
-// Description : A program to read an image file and resize it to a
-//               larger or smaller image file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an image file and resize it to a larger or smaller image
+ * file.
+ */
 class ImageResize : public ImageFilter {
 public:
   ImageResize();
@@ -67,4 +66,3 @@ private:
 #include "imageResize.I"
 
 #endif
-

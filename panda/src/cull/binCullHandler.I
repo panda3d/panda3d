@@ -11,11 +11,9 @@
  * @date 2002-02-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BinCullHandler::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BinCullHandler::
 BinCullHandler(CullResult *cull_result) :
   _cull_result(cull_result)

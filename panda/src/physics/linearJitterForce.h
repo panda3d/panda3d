@@ -16,17 +16,16 @@
 
 #include "linearRandomForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearJitterForce
-// Description : Completely random noise force vector.  Not
-//               repeatable, reliable, or predictable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely random noise force vector.  Not repeatable, reliable, or
+ * predictable.
+ */
 class EXPCL_PANDAPHYSICS LinearJitterForce : public LinearRandomForce {
 PUBLISHED:
   LinearJitterForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearJitterForce(const LinearJitterForce &copy);
   virtual ~LinearJitterForce();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

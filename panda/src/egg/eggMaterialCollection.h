@@ -22,14 +22,11 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMaterialCollection
-// Description : This is a collection of materials by MRef name.  It
-//               can extract the materials from an egg file and sort
-//               them all together; it can also manage the creation of
-//               unique materials and the assignment of unique MRef
-//               names.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a collection of materials by MRef name.  It can extract the materials
+ * from an egg file and sort them all together; it can also manage the creation
+ * of unique materials and the assignment of unique MRef names.
+ */
 class EXPCL_PANDAEGG EggMaterialCollection {
 
   // This is a bit of private interface stuff that must be here as a

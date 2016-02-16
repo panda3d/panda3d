@@ -24,14 +24,12 @@ class PhysxSpringDesc;
 class PhysxMotorDesc;
 class PhysxJointLimitDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxRevoluteJoint
-// Description : A joint which behaves in a similar way to a hinge
-//               or axel. A hinge joint removes all but a single
-//               rotational degree of freedom from two objects. The
-//               axis along which the two bodies may rotate is
-//               specified with a point and a direction vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * A joint which behaves in a similar way to a hinge or axel.  A hinge joint
+ * removes all but a single rotational degree of freedom from two objects.  The
+ * axis along which the two bodies may rotate is specified with a point and a
+ * direction vector.
+ */
 class EXPCL_PANDAPHYSX PhysxRevoluteJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -69,7 +67,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxRevoluteJoint", 
+    register_type(_type_handle, "PhysxRevoluteJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

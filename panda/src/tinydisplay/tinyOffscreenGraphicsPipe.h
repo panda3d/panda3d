@@ -22,11 +22,10 @@
 
 class FrameBufferProperties;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyOffscreenGraphicsPipe
-// Description : This graphics pipe creates offscreen buffers only,
-//               but is completely platform-independent.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe creates offscreen buffers only, but is completely
+ * platform-independent.
+ */
 class EXPCL_TINYDISPLAY TinyOffscreenGraphicsPipe : public GraphicsPipe {
 public:
   TinyOffscreenGraphicsPipe();

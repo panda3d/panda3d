@@ -18,13 +18,11 @@
 
 #include "lightNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AmbientLight
-// Description : A light source that seems to illuminate all points in
-//               space at once.  This kind of light need not actually
-//               be part of the scene graph, since it has no meaningful
-//               position.
-////////////////////////////////////////////////////////////////////
+/**
+ * A light source that seems to illuminate all points in space at once.  This
+ * kind of light need not actually be part of the scene graph, since it has no
+ * meaningful position.
+ */
 class EXPCL_PANDA_PGRAPHNODES AmbientLight : public LightNode {
 PUBLISHED:
   AmbientLight(const string &name);
@@ -39,7 +37,7 @@ public:
 
 PUBLISHED:
   virtual int get_class_priority() const;
-  
+
 public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
                     int light_id);

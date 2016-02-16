@@ -21,10 +21,9 @@
 
 class PhysxConvexMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxConvexForceFieldShapeDesc
-// Description : A descriptor for a convex force field shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * A descriptor for a convex force field shape.
+ */
 class EXPCL_PANDAPHYSX PhysxConvexForceFieldShapeDesc : public PhysxForceFieldShapeDesc {
 
 PUBLISHED:

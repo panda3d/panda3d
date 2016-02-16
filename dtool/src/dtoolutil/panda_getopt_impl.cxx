@@ -29,13 +29,11 @@ int optind = 0;
 int opterr = 1;
 int optopt = 0;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaGetopt
-// Description : The implementation within this file of the various
-//               getopt() functions.  This class is not visible
-//               outside of this file; instead, the interface is via
-//               the getopt() functions themselves.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation within this file of the various getopt() functions.  This
+ * class is not visible outside of this file; instead, the interface is via the
+ * getopt() functions themselves.
+ */
 class PandaGetopt {
 public:
   PandaGetopt(int argc, char *const argv[], const char *optstring,
@@ -76,7 +74,7 @@ private:
   // list is populated by scan_args().
   class Param {
   public:
-    Param(size_t opt_index, size_t argv_index, 
+    Param(size_t opt_index, size_t argv_index,
           char short_option, char *argument = NULL);
 
     size_t _opt_index;
@@ -131,11 +129,9 @@ private:
 // called the first time, vs. subsequent times.
 static PandaGetopt *pgetopt = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PandaGetopt::
 PandaGetopt(int argc, char *const argv[], const char *optstring,
             const struct option *longopts, bool allow_one_hyphen_long) {
@@ -180,14 +176,10 @@ PandaGetopt(int argc, char *const argv[], const char *optstring,
   scan_args(argc, argv);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::permute
-//       Access: Public
-//  Description: Permutes the argv array so that the non-option
-//               arguments are at the end of the list (if
-//               POSIXLY_CORRECT is not set), as the gnu
-//               implementation does.
-////////////////////////////////////////////////////////////////////
+/**
+ * Permutes the argv array so that the non-option arguments are at the end of
+ * the list (if POSIXLY_CORRECT is not set), as the gnu implementation does.
+ */
 void PandaGetopt::
 permute(int argc, char **mutable_argv) {
   if (!_require_order && !_return_in_order) {
@@ -209,14 +201,11 @@ permute(int argc, char **mutable_argv) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::process
-//       Access: Public
-//  Description: Can be called repeatedly to extract out the option
-//               arguments scanned from the argv list, one at a time.
-//               Sets *longindex, optarg, optind, optopt.
-//               Returns EOF when finished.
-////////////////////////////////////////////////////////////////////
+/**
+ * Can be called repeatedly to extract out the option arguments scanned from the
+ * argv list, one at a time.  Sets *longindex, optarg, optind, optopt.  Returns
+ * EOF when finished.
+ */
 int PandaGetopt::
 process(int opterr, int *longindex, char *&optarg, int &optind, int &optopt) {
   if (_next_param >= _params.size()) {
@@ -255,13 +244,10 @@ process(int opterr, int *longindex, char *&optarg, int &optind, int &optopt) {
   return param._short_option;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::find_short_option
-//       Access: Private
-//  Description: Returns the index within the _options array of the
-//               option with the indicated short_option letter, or 0
-//               if the option is not found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index within the _options array of the option with the indicated
+ * short_option letter, or 0 if the option is not found.
+ */
 size_t PandaGetopt::
 find_short_option(char short_option) {
   size_t opt_index = 1;
@@ -275,15 +261,11 @@ find_short_option(char short_option) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::find_long_option
-//       Access: Private
-//  Description: Returns the index within the _options array of the
-//               option with the indicated long_option word, or 0
-//               if the option is not found.  If the word contains an
-//               '=' sign, only the text before this sign is
-//               considered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index within the _options array of the option with the indicated
+ * long_option word, or 0 if the option is not found.  If the word contains an
+ * '=' sign, only the text before this sign is considered.
+ */
 size_t PandaGetopt::
 find_long_option(const string &long_option) {
   string search = long_option;
@@ -303,13 +285,10 @@ find_long_option(const string &long_option) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::scan_options
-//       Access: Private
-//  Description: Parses the optstring and longopts list to understand
-//               the options we should be searching for, and populate
-//               the internal _options array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the optstring and longopts list to understand the options we should be
+ * searching for, and populate the internal _options array.
+ */
 void PandaGetopt::
 scan_options(const char *optstring, const struct option *longopts) {
   const char *p = optstring;
@@ -325,7 +304,7 @@ scan_options(const char *optstring, const struct option *longopts) {
         ++p;
       }
     }
-    
+
     _options.push_back(Option(short_option, has_arg));
   }
 
@@ -338,13 +317,10 @@ scan_options(const char *optstring, const struct option *longopts) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::scan_args
-//       Access: Private
-//  Description: Parses the argv list to understand the arguments
-//               passed by the user, and populates the _params and
-//               _arguments arrays.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the argv list to understand the arguments passed by the user, and
+ * populates the _params and _arguments arrays.
+ */
 void PandaGetopt::
 scan_args(int argc, char *const argv[]) {
   size_t ai = 1;
@@ -400,8 +376,8 @@ scan_args(int argc, char *const argv[]) {
         }
         if (!is_long_option) {
           opt_index = find_short_option(option[0]);
-          while (opt_index != 0 && 
-                 _options[opt_index]._has_arg == no_argument && 
+          while (opt_index != 0 &&
+                 _options[opt_index]._has_arg == no_argument &&
                  option[1] != '\0') {
             // There are multiple short options jammed into a single word.
             _params.push_back(Param(opt_index, ai, option[0]));
@@ -429,7 +405,7 @@ scan_args(int argc, char *const argv[]) {
 
       size_t argv_index = ai;
 
-      if (opt_index != 0 && _options[opt_index]._has_arg == required_argument && 
+      if (opt_index != 0 && _options[opt_index]._has_arg == required_argument &&
           !has_argument) {
         // Check the next word for an argument.
         _output_argv.push_back(argv[ai]);
@@ -456,13 +432,10 @@ scan_args(int argc, char *const argv[]) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::Option::Constructor
-//       Access: Public
-//  Description: The constructor for a short_option.  Receives the
-//               letter that is the short option, and one of
-//               no_argument, required_argument, or optional_argument.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor for a short_option.  Receives the letter that is the short
+ * option, and one of no_argument, required_argument, or optional_argument.
+ */
 PandaGetopt::Option::
 Option(char short_option, int has_arg) :
   _short_option(short_option),
@@ -472,13 +445,10 @@ Option(char short_option, int has_arg) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::Option::Constructor
-//       Access: Public
-//  Description: The constructor for a long_option.  Receives the
-//               longopts array and the index within the array for
-//               this particular option.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor for a long_option.  Receives the longopts array and the index
+ * within the array for this particular option.
+ */
 PandaGetopt::Option::
 Option(const struct option *longopts, int longopts_index) :
   _short_option(0),
@@ -489,11 +459,9 @@ Option(const struct option *longopts, int longopts_index) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaGetopt::Param::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PandaGetopt::Param::
 Param(size_t opt_index, size_t argv_index, char short_option, char *argument) :
   _opt_index(opt_index),
@@ -513,7 +481,7 @@ getopt(int argc, char *const argv[], const char *optstring) {
 }
 
 int
-getopt_long(int argc, char *const argv[], const char *optstring, 
+getopt_long(int argc, char *const argv[], const char *optstring,
             const struct option *longopts, int *longindex) {
   if (pgetopt == NULL) {
     pgetopt = new PandaGetopt(argc, argv, optstring, longopts, false);
@@ -523,7 +491,7 @@ getopt_long(int argc, char *const argv[], const char *optstring,
 }
 
 int
-getopt_long_only(int argc, char *const argv[], const char *optstring, 
+getopt_long_only(int argc, char *const argv[], const char *optstring,
                  const struct option *longopts, int *longindex) {
   if (pgetopt == NULL) {
     pgetopt = new PandaGetopt(argc, argv, optstring, longopts, true);

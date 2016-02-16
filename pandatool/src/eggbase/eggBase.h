@@ -19,15 +19,12 @@
 #include "programBase.h"
 #include "eggData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggBase
-// Description : This is a base class for both EggSingleBase and
-//               EggMultiBase.  Don't inherit directly from this; use
-//               one of those two classes instead.
-//
-//               This is just a base class; see EggReader, EggWriter,
-//               or EggFilter according to your particular I/O needs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for both EggSingleBase and EggMultiBase.  Don't inherit
+ * directly from this; use one of those two classes instead.  This is just a
+ * base class; see EggReader, EggWriter, or EggFilter according to your
+ * particular I/O needs.
+ */
 class EggBase : public ProgramBase {
 public:
   EggBase();
@@ -65,7 +62,7 @@ protected:
   vector_string _tbn_names;
   bool _got_tbnall;
   bool _got_tbnauto;
-  
+
   bool _make_points;
 
   bool _got_transform;
@@ -78,5 +75,3 @@ protected:
 };
 
 #endif
-
-

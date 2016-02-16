@@ -18,10 +18,9 @@
 
 #include "loaderFileType.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypeBam
-// Description : This defines the Loader interface to read Bam files.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the Loader interface to read Bam files.
+ */
 class EXPCL_PANDA_PGRAPH LoaderFileTypeBam : public LoaderFileType {
 public:
   LoaderFileTypeBam();
@@ -57,4 +56,3 @@ private:
 };
 
 #endif
-

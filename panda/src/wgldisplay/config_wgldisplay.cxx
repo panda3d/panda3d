@@ -41,14 +41,12 @@ ConfigVariableBool gl_do_vidmemsize_check
           "fullscreen windows, no matter what resolution of window was "
           "requested.  It only affects fullscreen windows."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libwgldisplay
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libwgldisplay() {
   static bool initialized = false;

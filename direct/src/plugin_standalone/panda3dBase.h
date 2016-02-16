@@ -30,11 +30,10 @@
 #include "pset.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Panda3DBase
-// Description : Base for creating a standalone application that
-//               invokes the panda3d plugin to launch .p3d files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Base for creating a standalone application that invokes the panda3d plugin to
+ * launch .p3d files.
+ */
 class Panda3DBase {
 public:
   Panda3DBase(bool console_environment);
@@ -104,21 +103,21 @@ protected:
   public:
     URLGetter(P3D_instance *instance, int unique_id,
               const URLSpec &url, const string &post_data);
-    
+
     bool run();
     inline P3D_instance *get_instance();
-    
+
   private:
     P3D_instance *_instance;
     int _unique_id;
     URLSpec _url;
     string _post_data;
-    
+
     PT(HTTPChannel) _channel;
     Ramfile _rf;
     size_t _bytes_sent;
   };
-  
+
   typedef pset<URLGetter *> URLGetters;
   URLGetters _url_getters;
 };
@@ -126,4 +125,3 @@ protected:
 #include "panda3dBase.I"
 
 #endif
-

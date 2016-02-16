@@ -18,16 +18,12 @@
 
 class PPInstance;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PPBrowserObject
-// Description : This is the interface layer between an NPObject and a
-//               P3D_object.  It maps calls from P3D_object into the
-//               NPObject system, thus allowing Panda to view and
-//               operate on a browser object.
-//
-//               Also see PPPandaObject, which maps calls the other
-//               way.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the interface layer between an NPObject and a P3D_object.  It maps
+ * calls from P3D_object into the NPObject system, thus allowing Panda to view
+ * and operate on a browser object.  Also see PPPandaObject, which maps calls
+ * the other way.
+ */
 class PPBrowserObject : public P3D_object {
 public:
   PPBrowserObject(PPInstance *inst, NPObject *npobj);
@@ -39,7 +35,7 @@ public:
   bool set_property(const string &property, bool needs_response,
                     P3D_object *value);
 
-  P3D_object *call(const string &method_name, 
+  P3D_object *call(const string &method_name,
                    P3D_object *params[], int num_params) const;
   P3D_object *eval(const string &expression) const;
 
@@ -57,4 +53,3 @@ private:
 #include "ppBrowserObject.I"
 
 #endif
-

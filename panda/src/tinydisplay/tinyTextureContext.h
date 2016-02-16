@@ -19,10 +19,9 @@
 #include "deletedChain.h"
 #include "zgl.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyTextureContext
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_TINYDISPLAY TinyTextureContext : public TextureContext {
 public:
   INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view);

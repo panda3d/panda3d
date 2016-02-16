@@ -26,19 +26,16 @@
 #endif
 #include <windows.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsBuffer
-// Description : An offscreen render buffer.  In OpenGL under Windows,
-//               this simply renders into a window that is never made
-//               visible.  There's a Windows interface for rendering
-//               into a DIB, but this puts restrictions on the kind of
-//               pixelformat we can use, and thus makes it difficult
-//               to support one GSG rendering into an offscreen buffer
-//               and also into a window.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen render buffer.  In OpenGL under Windows, this simply renders
+ * into a window that is never made visible.  There's a Windows interface for
+ * rendering into a DIB, but this puts restrictions on the kind of pixelformat
+ * we can use, and thus makes it difficult to support one GSG rendering into an
+ * offscreen buffer and also into a window.
+ */
 class EXPCL_PANDAGL wglGraphicsBuffer : public GraphicsBuffer {
 public:
-  wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -74,7 +71,7 @@ private:
   int _pbuffer_sizex;
   int _pbuffer_sizey;
   PT(Texture) _pbuffer_bound;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -21,18 +21,13 @@
 
 class AsyncTaskManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTaskSequence
-// Description : A special kind of task that serves as a list of tasks
-//               internally.  Each task on the list is executed in
-//               sequence, one per epoch.
-//
-//               This is similar to a Sequence interval, though it has
-//               some slightly different abilities.  For instance,
-//               although you can't start at any arbitrary point in
-//               the sequence, you can construct a task sequence whose
-//               duration changes during playback.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special kind of task that serves as a list of tasks internally.  Each task
+ * on the list is executed in sequence, one per epoch.  This is similar to a
+ * Sequence interval, though it has some slightly different abilities.  For
+ * instance, although you can't start at any arbitrary point in the sequence,
+ * you can construct a task sequence whose duration changes during playback.
+ */
 class EXPCL_PANDA_EVENT AsyncTaskSequence : public AsyncTask, public AsyncTaskCollection {
 PUBLISHED:
   AsyncTaskSequence(const string &name);
@@ -78,4 +73,3 @@ private:
 #include "asyncTaskSequence.I"
 
 #endif
-

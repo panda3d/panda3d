@@ -23,12 +23,10 @@
 #include "extension.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<OdeJoint>
-// Description : This class defines the extension methods for
-//               NodePathCollection, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for NodePathCollection, which are
+ * called instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<OdeJoint> : public ExtensionBase<OdeJoint> {
 public:

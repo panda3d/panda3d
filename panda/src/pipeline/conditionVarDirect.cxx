@@ -15,12 +15,10 @@
 
 #ifndef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDirect::output
-//       Access: Public
-//  Description: This method is declared virtual in ConditionVarDebug,
-//               but non-virtual in ConditionVarDirect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is declared virtual in ConditionVarDebug, but non-virtual in
+ * ConditionVarDirect.
+ */
 void ConditionVarDirect::
 output(ostream &out) const {
   out << "ConditionVar " << (void *)this << " on " << _mutex;

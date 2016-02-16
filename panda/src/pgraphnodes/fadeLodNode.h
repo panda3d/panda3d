@@ -18,10 +18,9 @@
 
 #include "lodNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FadeLODNode
-// Description : A Level-of-Detail node with alpha based switching.
-////////////////////////////////////////////////////////////////////
+/**
+ * A Level-of-Detail node with alpha based switching.
+ */
 class EXPCL_PANDA_PGRAPHNODES FadeLODNode : public LODNode {
 PUBLISHED:
   FadeLODNode(const string &name);
@@ -65,7 +64,7 @@ private:
   CPT(RenderState) _fade_1_old_state;
   CPT(RenderState) _fade_2_new_state;
   CPT(RenderState) _fade_2_old_state;
-  
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

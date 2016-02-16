@@ -11,12 +11,10 @@
  * @date 2000-07-18
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::set_horizontal_scale
-//       Access: Public
-//  Description: Changes the amount of time the width of the
-//               horizontal axis represents.  This may force a redraw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the amount of time the width of the horizontal axis represents.  This
+ * may force a redraw.
+ */
 INLINE void PStatPianoRoll::
 set_horizontal_scale(double time_width) {
   if (_time_width != time_width) {
@@ -26,54 +24,43 @@ set_horizontal_scale(double time_width) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::get_horizontal_scale
-//       Access: Public
-//  Description: Returns the amount of total time the width of the
-//               horizontal axis represents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the amount of total time the width of the horizontal axis represents.
+ */
 INLINE double PStatPianoRoll::
 get_horizontal_scale() const {
   return _time_width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::timestamp_to_pixel
-//       Access: Public
-//  Description: Converts a timestamp to a horizontal pixel offset.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a timestamp to a horizontal pixel offset.
+ */
 INLINE int PStatPianoRoll::
 timestamp_to_pixel(double time) const {
   return (int)((double)_xsize * (time - _start_time) / _time_width);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::pixel_to_timestamp
-//       Access: Public
-//  Description: Converts a horizontal pixel offset to a timestamp.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a horizontal pixel offset to a timestamp.
+ */
 INLINE double PStatPianoRoll::
 pixel_to_timestamp(int x) const {
   return _time_width * (double)x / (double)_xsize + _start_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::height_to_pixel
-//       Access: Public
-//  Description: Converts a value (i.e. a "height" in the strip chart)
-//               to a horizontal pixel offset.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a value (i.e.  a "height" in the strip chart) to a horizontal pixel
+ * offset.
+ */
 INLINE int PStatPianoRoll::
 height_to_pixel(double value) const {
   return (int)((double)_xsize * value / _time_width);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatPianoRoll::pixel_to_height
-//       Access: Public
-//  Description: Converts a horizontal pixel offset to a value (a
-//               "height" in the strip chart).
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a horizontal pixel offset to a value (a "height" in the strip
+ * chart).
+ */
 INLINE double PStatPianoRoll::
 pixel_to_height(int x) const {
   return _time_width * (double)x / (double)_xsize;

@@ -23,11 +23,9 @@ class EggToDXF;
 class EggPolygon;
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToDXFLayer
-// Description : A single layer in the DXF file to be written by
-//               EggToDXF.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single layer in the DXF file to be written by EggToDXF.
+ */
 class EggToDXFLayer {
 public:
   EggToDXFLayer(EggToDXF *egg2dxf, EggGroupNode *group);

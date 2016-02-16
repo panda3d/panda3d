@@ -22,11 +22,10 @@
 class FltRecordReader;
 class FltRecordWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltPackedColor
-// Description : A packed color record, A, B, G, R.  This appears, for
-//               instance, within a face bead.
-////////////////////////////////////////////////////////////////////
+/**
+ * A packed color record, A, B, G, R.  This appears, for instance, within a face
+ * bead.
+ */
 class FltPackedColor {
 public:
   INLINE FltPackedColor();
@@ -52,6 +51,3 @@ INLINE ostream &operator << (ostream &out, const FltPackedColor &color);
 #include "fltPackedColor.I"
 
 #endif
-
-
-

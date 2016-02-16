@@ -20,11 +20,9 @@
 
 TypeHandle VorbisAudio::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VorbisAudio::Constructor
-//       Access: Protected
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 VorbisAudio::
 VorbisAudio(const Filename &name) :
   MovieAudio(name)
@@ -32,20 +30,16 @@ VorbisAudio(const Filename &name) :
   _filename = name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VorbisAudio::Destructor
-//       Access: Protected, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 VorbisAudio::
 ~VorbisAudio() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VorbisAudio::open
-//       Access: Published, Virtual
-//  Description: Open this audio, returning a MovieAudioCursor
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this audio, returning a MovieAudioCursor
+ */
 PT(MovieAudioCursor) VorbisAudio::
 open() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -63,11 +57,9 @@ open() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VorbisAudio::make
-//       Access: Published, Static
-//  Description: Obtains a MovieAudio that references a file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Obtains a MovieAudio that references a file.
+ */
 PT(MovieAudio) VorbisAudio::
 make(const Filename &name) {
   return DCAST(MovieAudio, new VorbisAudio(name));

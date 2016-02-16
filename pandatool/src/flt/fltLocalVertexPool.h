@@ -22,11 +22,10 @@
 
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltLocalVertexPool
-// Description : A local vertex pool, as might appear in the middle of
-//               the hierarchy, for instance for a mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * A local vertex pool, as might appear in the middle of the hierarchy, for
+ * instance for a mesh.
+ */
 class FltLocalVertexPool : public FltRecord {
 public:
   FltLocalVertexPool(FltHeader *header);
@@ -76,5 +75,3 @@ private:
 #include "fltLocalVertexPool.I"
 
 #endif
-
-

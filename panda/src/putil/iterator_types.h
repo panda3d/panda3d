@@ -15,13 +15,11 @@
 #define ITERATOR_TYPES_H
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : first_of_pair_iterator
-// Description : This is an iterator adaptor that converts any
-//               iterator that returns a pair (e.g. a map iterator)
-//               into one that returns just the first component of
-//               that pair.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an iterator adaptor that converts any iterator that returns a pair
+ * (e.g.  a map iterator) into one that returns just the first component of that
+ * pair.
+ */
 template<class pair_iterator>
 class first_of_pair_iterator : public pair_iterator {
 public:
@@ -36,13 +34,11 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : second_of_pair_iterator
-// Description : This is an iterator adaptor that converts any
-//               iterator that returns a pair (e.g. a map iterator)
-//               into one that returns just the second component of
-//               that pair.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an iterator adaptor that converts any iterator that returns a pair
+ * (e.g.  a map iterator) into one that returns just the second component of
+ * that pair.
+ */
 template<class pair_iterator>
 class second_of_pair_iterator : public pair_iterator {
 public:
@@ -57,12 +53,10 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : typecast_iterator
-// Description : This is an iterator adaptor that explicitly typecasts
-//               each value returned by the base iterator to the
-//               indicated type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an iterator adaptor that explicitly typecasts each value returned by
+ * the base iterator to the indicated type.
+ */
 template<class base_iterator, class new_type>
 class typecast_iterator : public base_iterator {
 public:

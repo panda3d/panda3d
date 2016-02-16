@@ -18,16 +18,13 @@
 #include "pvector.h"
 #include "config_util.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SimpleHashMap
-// Description : This template class implements an unordered map of
-//               keys to data, implemented as a hashtable.  It is
-//               similar to STL's hash_map, but (a) it has a simpler
-//               interface (we don't mess around with iterators), (b)
-//               it wants an additional method on the Compare object,
-//               Compare::is_equal(a, b), and (c) it doesn't depend on
-//               the system STL providing hash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class implements an unordered map of keys to data, implemented
+ * as a hashtable.  It is similar to STL's hash_map, but (a) it has a simpler
+ * interface (we don't mess around with iterators), (b) it wants an additional
+ * method on the Compare object, Compare::is_equal(a, b), and (c) it doesn't
+ * depend on the system STL providing hash_map.
+ */
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class SimpleHashMap {
 public:

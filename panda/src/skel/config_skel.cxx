@@ -26,14 +26,12 @@ ConfigureFn(config_skel) {
 ConfigVariableInt skel_sample_config_variable
 ("skel-sample-config-variable", 3);
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libskel
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libskel() {
   static bool initialized = false;
@@ -44,4 +42,3 @@ init_libskel() {
 
   TypedSkel::init_type();
 }
-

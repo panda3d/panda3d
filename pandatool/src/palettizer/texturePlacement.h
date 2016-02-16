@@ -33,14 +33,11 @@ class TextureProperties;
 class TextureReference;
 class PNMImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TexturePlacement
-// Description : This corresponds to a particular assignment of a
-//               TextureImage with a PaletteGroup, and specifically
-//               describes which PaletteImage (if any), and where on
-//               the PaletteImage, the TextureImage has been assigned
-//               to.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to a particular assignment of a TextureImage with a
+ * PaletteGroup, and specifically describes which PaletteImage (if any), and
+ * where on the PaletteImage, the TextureImage has been assigned to.
+ */
 class TexturePlacement : public TypedWritable {
 private:
   TexturePlacement();
@@ -159,4 +156,3 @@ public:
 };
 
 #endif
-

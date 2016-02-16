@@ -19,14 +19,11 @@
 #include "geometricBoundingVolume.h"
 #include "plane.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingPlane
-// Description : This funny bounding volume is an infinite plane that
-//               divides space into two regions: the part behind the
-//               normal, which is "inside" the bounding volume, and
-//               the part in front of the normal, which is "outside"
-//               the bounding volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * This funny bounding volume is an infinite plane that divides space into two
+ * regions: the part behind the normal, which is "inside" the bounding volume,
+ * and the part in front of the normal, which is "outside" the bounding volume.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingPlane : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingPlane();

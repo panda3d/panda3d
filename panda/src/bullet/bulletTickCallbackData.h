@@ -20,10 +20,9 @@
 
 #include "bullet_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletTickCallbackData
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletTickCallbackData : public CallbackData {
 
 PUBLISHED:
@@ -40,7 +39,7 @@ public:
   }
   static void init_type() {
     CallbackData::init_type();
-    register_type(_type_handle, "BulletTickCallbackData", 
+    register_type(_type_handle, "BulletTickCallbackData",
                   CallbackData::get_class_type());
   }
   virtual TypeHandle get_type() const {

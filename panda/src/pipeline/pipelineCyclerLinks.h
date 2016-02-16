@@ -18,19 +18,14 @@
 #include "selectThreadImpl.h"  // for THREADED_PIPELINE definition
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PipelineCyclerLinks
-// Description : This just stores the pointers to implement a
-//               doubly-linked list of PipelineCyclers for a
-//               particular Pipeline object.  We use a hand-rolled
-//               linked list rather than any STL container, because we
-//               want PipelineCyclers to be able to add and remove
-//               themselves from this list very quickly.
-//
-//               These pointers are inherited from this separate class
-//               so the Pipeline object itself can be the root of the
-//               linked list.
-////////////////////////////////////////////////////////////////////
+/**
+ * This just stores the pointers to implement a doubly-linked list of
+ * PipelineCyclers for a particular Pipeline object.  We use a hand-rolled
+ * linked list rather than any STL container, because we want PipelineCyclers to
+ * be able to add and remove themselves from this list very quickly.  These
+ * pointers are inherited from this separate class so the Pipeline object itself
+ * can be the root of the linked list.
+ */
 class EXPCL_PANDA_PIPELINE PipelineCyclerLinks {
 protected:
 #ifdef THREADED_PIPELINE

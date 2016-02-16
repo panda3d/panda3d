@@ -11,46 +11,37 @@
  * @date 2009-09-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleControllerDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxCapsuleControllerDesc::
 PhysxCapsuleControllerDesc() : PhysxControllerDesc() {
 
   _desc.upDirection = (NxHeightFieldAxis)physx_up_axis.get_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleControllerDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxCapsuleControllerDesc::
 ~PhysxCapsuleControllerDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleControllerDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxCapsuleControllerDesc::
 set_to_default() {
 
   _desc.setToDefault();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCapsuleControllerDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxCapsuleControllerDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

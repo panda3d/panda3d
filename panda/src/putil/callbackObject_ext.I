@@ -11,14 +11,11 @@
  * @date 2015-02-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: Extension<CallbackObject>::make
-//       Access: Published
-//  Description: This static constructor is merely provided so that
-//               interrogate can automatically coerce Python
-//               functions when passing them to a C++ function that
-//               accepts a CallbackObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * This static constructor is merely provided so that interrogate can
+ * automatically coerce Python functions when passing them to a C++ function
+ * that accepts a CallbackObject.
+ */
 INLINE PT(CallbackObject) Extension<CallbackObject>::
 make(PyObject *function) {
   if (function != Py_None && !PyCallable_Check(function)) {

@@ -16,4 +16,3 @@
 #include "string_utils.h"
 
 TypeHandle ShaderContext::_type_handle;
-

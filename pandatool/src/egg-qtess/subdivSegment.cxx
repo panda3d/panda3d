@@ -16,11 +16,9 @@
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: binary_search
-//  Description: Performs a standard binary search.  This utility
-//               function is used below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a standard binary search.  This utility function is used below.
+ */
 static int
 binary_search(double val, const double *array, int bot, int top) {
   if (top < bot) {
@@ -36,11 +34,9 @@ binary_search(double val, const double *array, int bot, int top) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubdivSegment::cut
-//       Access: Public
-//  Description: Applies _num_cuts cuts to the segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies _num_cuts cuts to the segment.
+ */
 void SubdivSegment::
 cut() {
   int c;
@@ -81,4 +77,3 @@ cut() {
     }
   }
 }
-

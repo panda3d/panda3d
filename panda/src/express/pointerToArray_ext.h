@@ -20,15 +20,11 @@
 #include "py_panda.h"
 #include "pointerToArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<PointerToArray>
-// Description : This class defines the extension methods for
-//               PointerToArray, which are called instead of
-//               any C++ methods with the same prototype.
-//
-//               This is a little bit awkward because of the nested
-//               templating, but it does the job.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for PointerToArray, which are called
+ * instead of any C++ methods with the same prototype.  This is a little bit
+ * awkward because of the nested templating, but it does the job.
+ */
 template<class Element>
 class Extension<PointerToArray<Element> > : public ExtensionBase<PointerToArray<Element> > {
 public:
@@ -43,15 +39,11 @@ public:
 #endif
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<ConstPointerToArray>
-// Description : This class defines the extension methods for
-//               ConstPointerToArray, which are called instead of
-//               any C++ methods with the same prototype.
-//
-//               This is a little bit awkward because of the nested
-//               templating, but it does the job.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for ConstPointerToArray, which are
+ * called instead of any C++ methods with the same prototype.  This is a little
+ * bit awkward because of the nested templating, but it does the job.
+ */
 template<class Element>
 class Extension<ConstPointerToArray<Element> > : public ExtensionBase<ConstPointerToArray<Element> > {
 public:

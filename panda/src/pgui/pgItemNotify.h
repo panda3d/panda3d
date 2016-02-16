@@ -20,12 +20,10 @@
 class PGItem;
 class MouseWatcherParameter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGItemNotify
-// Description : Objects that inherit from this class can receive
-//               specialized messages when PGItems change in certain
-//               ways.
-////////////////////////////////////////////////////////////////////
+/**
+ * Objects that inherit from this class can receive specialized messages when
+ * PGItems change in certain ways.
+ */
 class EXPCL_PANDA_PGUI PGItemNotify {
 public:
   INLINE PGItemNotify();

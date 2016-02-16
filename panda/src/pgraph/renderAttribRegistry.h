@@ -23,13 +23,11 @@
 class RenderAttrib;
 class DeletedBufferChain;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderAttribRegistry
-// Description : This class is used to associate each RenderAttrib
-//               with a different slot index at runtime, so we can
-//               store a list of RenderAttribs in the RenderState
-//               object, and very quickly look them up by type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to associate each RenderAttrib with a different slot index
+ * at runtime, so we can store a list of RenderAttribs in the RenderState
+ * object, and very quickly look them up by type.
+ */
 class EXPCL_PANDA_PGRAPH RenderAttribRegistry {
 private:
   RenderAttribRegistry();

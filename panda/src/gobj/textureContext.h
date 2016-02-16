@@ -21,19 +21,14 @@
 #include "preparedGraphicsObjects.h"
 #include "adaptiveLru.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureContext
-// Description : This is a special class object that holds all the
-//               information returned by a particular GSG to indicate
-//               the texture's internal context identifier.
-//
-//               Textures typically have an immediate-mode and a
-//               retained-mode operation.  When using textures in
-//               retained-mode (in response to Texture::prepare()),
-//               the GSG will create some internal handle for the
-//               texture and store it here.  The texture stores all of
-//               these handles internally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special class object that holds all the information returned by a
+ * particular GSG to indicate the texture's internal context identifier.
+ * Textures typically have an immediate-mode and a retained-mode operation.
+ * When using textures in retained-mode (in response to Texture::prepare()), the
+ * GSG will create some internal handle for the texture and store it here.  The
+ * texture stores all of these handles internally.
+ */
 class EXPCL_PANDA_GOBJ TextureContext : public BufferContext, public AdaptiveLruPage {
 public:
   INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view);
@@ -70,7 +65,7 @@ private:
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
   UpdateSeq _simple_image_modified;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -99,4 +94,3 @@ inline ostream &operator << (ostream &out, const TextureContext &context) {
 #include "textureContext.I"
 
 #endif
-

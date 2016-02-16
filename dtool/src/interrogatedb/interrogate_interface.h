@@ -90,11 +90,9 @@ EXPCL_INTERROGATEDB void interrogate_add_search_directory(const char *dirname);
 EXPCL_INTERROGATEDB void interrogate_add_search_path(const char *pathstring);
 EXPCL_INTERROGATEDB bool interrogate_error_flag();
 
-////////////////////////////////////////////////////////////////////
-//
-// Manifest Symbols
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Manifest Symbols
+ */
 
 // These correspond to #define constants that appear in the C code.
 // (These are only the manifest constants--those #define's that take
@@ -125,11 +123,9 @@ EXPCL_INTERROGATEDB bool interrogate_manifest_has_int_value(ManifestIndex manife
 EXPCL_INTERROGATEDB int interrogate_manifest_get_int_value(ManifestIndex manifest);
 
 
-////////////////////////////////////////////////////////////////////
-//
-// Data Elements
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Data Elements
+ */
 
 // These correspond to data members of a class, or global data
 // elements.  Interrogate automatically generates a getter function
@@ -157,22 +153,18 @@ EXPCL_INTERROGATEDB FunctionIndex interrogate_element_getter(ElementIndex elemen
 EXPCL_INTERROGATEDB bool interrogate_element_has_setter(ElementIndex element);
 EXPCL_INTERROGATEDB FunctionIndex interrogate_element_setter(ElementIndex element);
 
-////////////////////////////////////////////////////////////////////
-//
-// Global Data
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Global Data
+ */
 
 // This is the list of global data elements.
 
 EXPCL_INTERROGATEDB int interrogate_number_of_globals();
 EXPCL_INTERROGATEDB ElementIndex interrogate_get_global(int n);
 
-////////////////////////////////////////////////////////////////////
-//
-// Functions
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Functions
+ */
 
 // There is a unique FunctionIndex associated with each of the
 // functions that interrogate knows about.  This includes member
@@ -251,11 +243,9 @@ EXPCL_INTERROGATEDB FunctionWrapperIndex interrogate_function_c_wrapper(Function
 EXPCL_INTERROGATEDB int interrogate_function_number_of_python_wrappers(FunctionIndex function);
 EXPCL_INTERROGATEDB FunctionWrapperIndex interrogate_function_python_wrapper(FunctionIndex function, int n);
 
-////////////////////////////////////////////////////////////////////
-//
-// Function wrappers
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Function wrappers
+ */
 
 // These define the way to call a given function.  Depending on the
 // parameters supplied to interrogate, a function wrapper may be able
@@ -350,11 +340,9 @@ EXPCL_INTERROGATEDB const char *interrogate_wrapper_unique_name(FunctionWrapperI
 // interrogate database.
 EXPCL_INTERROGATEDB FunctionWrapperIndex interrogate_get_wrapper_by_unique_name(const char *unique_name);
 
-////////////////////////////////////////////////////////////////////
-//
-// MakeSeqs
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * MakeSeqs
+ */
 
 // These are special synthesized methods that iterate through a list.
 // They are generated in C++ code via the MAKE_SEQ macro.  The normal
@@ -372,11 +360,9 @@ EXPCL_INTERROGATEDB const char *interrogate_make_seq_num_name(MakeSeqIndex make_
 EXPCL_INTERROGATEDB const char *interrogate_make_seq_element_name(MakeSeqIndex make_seq);
 
 
-////////////////////////////////////////////////////////////////////
-//
-// Types
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * Types
+ */
 
 // These are all the types that interrogate knows about.  This
 // includes atomic types like ints and floats, type wrappers like

@@ -34,7 +34,7 @@
 
 #include <ctype.h>
 #include <stdio.h>  // for sprintf
-  
+
 // This is the factor by which CT_small scales the character down.
 static const PN_stdfloat small_accent_scale = 0.6f;
 
@@ -54,37 +54,32 @@ static const PN_stdfloat small_squash_accent_scale_y = 0.3;
 static const PN_stdfloat ligature_advance_scale = 0.6f;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: isspacew
-//  Description: An internal function that works like isspace() but is
-//               safe to call for a wide character.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function that works like isspace() but is safe to call for a wide
+ * character.
+ */
 static INLINE bool
 isspacew(unsigned int ch) {
   return isascii(ch) && isspace(ch);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: isbreakpoint
-//  Description: An internal function, similar to isspace(), except it
-//               does not consider newlines to be whitespace.  It also
-//               includes the soft-hyphen character.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function, similar to isspace(), except it does not consider
+ * newlines to be whitespace.  It also includes the soft-hyphen character.
+ */
 static INLINE bool
 isbreakpoint(unsigned int ch) {
-  return (ch == ' ' || ch == '\t' || 
+  return (ch == ' ' || ch == '\t' ||
           ch == (unsigned int)text_soft_hyphen_key ||
           ch == (unsigned int)text_soft_break_key);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextAssembler::
-TextAssembler(TextEncoder *encoder) : 
+TextAssembler(TextEncoder *encoder) :
   _encoder(encoder),
   _usage_hint(Geom::UH_static),
   _max_rows(0),
@@ -95,11 +90,9 @@ TextAssembler(TextEncoder *encoder) :
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::Copy Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextAssembler::
 TextAssembler(const TextAssembler &copy) :
   _initial_cprops(copy._initial_cprops),
@@ -116,11 +109,9 @@ TextAssembler(const TextAssembler &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::Copy Assignment Operator
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextAssembler::
 operator = (const TextAssembler &copy) {
   _initial_cprops = copy._initial_cprops;
@@ -136,20 +127,16 @@ operator = (const TextAssembler &copy) {
   _multiline_mode = copy._multiline_mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextAssembler::
 ~TextAssembler() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::clear
-//       Access: Published
-//  Description: Reinitializes the contents of the TextAssembler.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reinitializes the contents of the TextAssembler.
+ */
 void TextAssembler::
 clear() {
   _ul.set(0.0f, 0.0f);
@@ -160,18 +147,13 @@ clear() {
   _text_block.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::set_wtext
-//       Access: Published
-//  Description: Accepts a new text string and associated properties
-//               structure, and precomputes the wordwrapping layout
-//               appropriately.  After this call,
-//               get_wordwrapped_wtext() and get_num_rows() can be
-//               called.
-//
-//               The return value is true if all the text is accepted,
-//               or false if some was truncated (see set_max_rows()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts a new text string and associated properties structure, and
+ * precomputes the wordwrapping layout appropriately.  After this call,
+ * get_wordwrapped_wtext() and get_num_rows() can be called.  The return value
+ * is true if all the text is accepted, or false if some was truncated (see
+ * set_max_rows()).
+ */
 bool TextAssembler::
 set_wtext(const wstring &wtext) {
   clear();
@@ -195,23 +177,16 @@ set_wtext(const wstring &wtext) {
   return wordwrap_text();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::set_wsubstr
-//       Access: Published
-//  Description: Replaces the 'count' characters from 'start' of the
-//               current text with the indicated replacement text.  If
-//               the replacement text does not have count characters,
-//               the length of the string will be changed accordingly.
-//
-//               The substring may include nested formatting
-//               characters, but they must be self-contained and
-//               self-closed.  The formatting characters are not
-//               literally saved in the internal string; they are
-//               parsed at the time of the set_wsubstr() call.
-//
-//               The return value is true if all the text is accepted,
-//               or false if some was truncated (see set_max_rows()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the 'count' characters from 'start' of the current text with the
+ * indicated replacement text.  If the replacement text does not have count
+ * characters, the length of the string will be changed accordingly.  The
+ * substring may include nested formatting characters, but they must be self-
+ * contained and self-closed.  The formatting characters are not literally saved
+ * in the internal string; they are parsed at the time of the set_wsubstr()
+ * call.  The return value is true if all the text is accepted, or false if some
+ * was truncated (see set_max_rows()).
+ */
 bool TextAssembler::
 set_wsubstr(const wstring &wtext, int start, int count) {
   nassertr(start >= 0 && start <= (int)_text_string.size(), false);
@@ -234,19 +209,13 @@ set_wsubstr(const wstring &wtext, int start, int count) {
   return wordwrap_text();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::get_plain_wtext
-//       Access: Published
-//  Description: Returns a wstring that represents the contents of the
-//               text, without any embedded properties characters.  If
-//               there is an embedded graphic object, a zero value is
-//               inserted in that position.
-//
-//               This string has the same length as
-//               get_num_characters(), and the characters in this
-//               string correspond one-to-one with the characters
-//               returned by get_character(n).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a wstring that represents the contents of the text, without any
+ * embedded properties characters.  If there is an embedded graphic object, a
+ * zero value is inserted in that position.  This string has the same length as
+ * get_num_characters(), and the characters in this string correspond one-to-one
+ * with the characters returned by get_character(n).
+ */
 wstring TextAssembler::
 get_plain_wtext() const {
   wstring wtext;
@@ -260,25 +229,18 @@ get_plain_wtext() const {
       wtext.push_back(0);
     }
   }
-  
+
   return wtext;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::get_wordwrapped_plain_wtext
-//       Access: Published
-//  Description: Returns a wstring that represents the contents of the
-//               text, with newlines inserted according to the
-//               wordwrapping.  The string will contain no embedded
-//               properties characters.  If there is an embedded
-//               graphic object, a zero value is inserted in that
-//               position.
-//
-//               This string has the same number of newline characters
-//               as get_num_rows(), and the characters in this string
-//               correspond one-to-one with the characters returned by
-//               get_character(r, c).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a wstring that represents the contents of the text, with newlines
+ * inserted according to the wordwrapping.  The string will contain no embedded
+ * properties characters.  If there is an embedded graphic object, a zero value
+ * is inserted in that position.  This string has the same number of newline
+ * characters as get_num_rows(), and the characters in this string correspond
+ * one-to-one with the characters returned by get_character(r, c).
+ */
 wstring TextAssembler::
 get_wordwrapped_plain_wtext() const {
   wstring wtext;
@@ -289,7 +251,7 @@ get_wordwrapped_plain_wtext() const {
     if (bi != _text_block.begin()) {
       wtext += '\n';
     }
-      
+
     TextString::const_iterator si;
     for (si = row._string.begin(); si != row._string.end(); ++si) {
       const TextCharacter &tch = (*si);
@@ -304,17 +266,12 @@ get_wordwrapped_plain_wtext() const {
   return wtext;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::get_wtext
-//       Access: Published
-//  Description: Returns a wstring that represents the contents of the
-//               text.
-//
-//               The string will contain embedded properties
-//               characters, which may not exactly match the embedded
-//               properties characters of the original string, but it
-//               will encode the same way.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a wstring that represents the contents of the text.  The string will
+ * contain embedded properties characters, which may not exactly match the
+ * embedded properties characters of the original string, but it will encode the
+ * same way.
+ */
 wstring TextAssembler::
 get_wtext() const {
   wstring wtext;
@@ -338,31 +295,22 @@ get_wtext() const {
   return wtext;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::get_wordwrapped_wtext
-//       Access: Published
-//  Description: Returns a wstring that represents the contents of the
-//               text, with newlines inserted according to the
-//               wordwrapping.
-//
-//               The string will contain embedded properties
-//               characters, which may not exactly match the embedded
-//               properties characters of the original string, but it
-//               will encode the same way.
-//
-//               Embedded properties characters will be closed before
-//               every newline, then reopened (if necessary) on the
-//               subsequent character following the newline.  This
-//               means it will be safe to divide the text up at the
-//               newline characters and treat each line as an
-//               independent piece.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a wstring that represents the contents of the text, with newlines
+ * inserted according to the wordwrapping.  The string will contain embedded
+ * properties characters, which may not exactly match the embedded properties
+ * characters of the original string, but it will encode the same way.  Embedded
+ * properties characters will be closed before every newline, then reopened (if
+ * necessary) on the subsequent character following the newline.  This means it
+ * will be safe to divide the text up at the newline characters and treat each
+ * line as an independent piece.
+ */
 wstring TextAssembler::
 get_wordwrapped_wtext() const {
   wstring wtext;
 
   PT(ComputedProperties) current_cprops = _initial_cprops;
-  
+
   TextBlock::const_iterator bi;
   for (bi = _text_block.begin(); bi != _text_block.end(); ++bi) {
     const TextRow &row = (*bi);
@@ -371,7 +319,7 @@ get_wordwrapped_wtext() const {
       current_cprops = _initial_cprops;
       wtext += '\n';
     }
-    
+
     TextString::const_iterator si;
     for (si = row._string.begin(); si != row._string.end(); ++si) {
       const TextCharacter &tch = (*si);
@@ -391,19 +339,13 @@ get_wordwrapped_wtext() const {
   return wtext;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::calc_r_c
-//       Access: Published
-//  Description: Computes the row and column index of the nth
-//               character or graphic object in the text.  Fills r and
-//               c accordingly.
-//
-//               Returns true if the nth character is valid and has a
-//               corresponding r and c position, false otherwise (for
-//               instance, a soft-hyphen character, or a newline
-//               character, may not have a corresponding position).
-//               In either case, r and c will be filled in sensibly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the row and column index of the nth character or graphic object in
+ * the text.  Fills r and c accordingly.  Returns true if the nth character is
+ * valid and has a corresponding r and c position, false otherwise (for
+ * instance, a soft-hyphen character, or a newline character, may not have a
+ * corresponding position). In either case, r and c will be filled in sensibly.
+ */
 bool TextAssembler::
 calc_r_c(int &r, int &c, int n) const {
   nassertr(n >= 0 && n <= (int)_text_string.size(), false);
@@ -442,13 +384,13 @@ calc_r_c(int &r, int &c, int n) const {
     c = 0;
     int i = row._row_start;
     while (i < n - 1) {
-      if (_text_string[i]._character != text_soft_hyphen_key && 
+      if (_text_string[i]._character != text_soft_hyphen_key &&
           _text_string[i]._character != text_soft_break_key) {
         ++c;
       }
       ++i;
     }
-    if (_text_string[n - 1]._character != text_soft_hyphen_key && 
+    if (_text_string[n - 1]._character != text_soft_hyphen_key &&
         _text_string[n - 1]._character != text_soft_break_key) {
       ++c;
       if (_text_string[n - 1]._character == '\n') {
@@ -470,17 +412,12 @@ calc_r_c(int &r, int &c, int n) const {
   return is_real_char;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::calc_index
-//       Access: Published
-//  Description: Computes the character index of the character at the
-//               rth row and cth column position.  This is the inverse
-//               of calc_r_c().
-//
-//               It is legal for c to exceed the index number of the
-//               last column by 1, and it is legal for r to exceed the
-//               index number of the last row by 1, if c is 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the character index of the character at the rth row and cth column
+ * position.  This is the inverse of calc_r_c().  It is legal for c to exceed
+ * the index number of the last column by 1, and it is legal for r to exceed the
+ * index number of the last row by 1, if c is 0.
+ */
 int TextAssembler::
 calc_index(int r, int c) const {
   nassertr(r >= 0 && r <= (int)_text_block.size(), 0);
@@ -497,7 +434,7 @@ calc_index(int r, int c) const {
       // text, we have to scan past them to get n precisely.
       int n = row._row_start;
       while (c > 0) {
-        if (_text_string[n]._character != text_soft_hyphen_key && 
+        if (_text_string[n]._character != text_soft_hyphen_key &&
             _text_string[n]._character != text_soft_break_key) {
           --c;
         }
@@ -513,17 +450,12 @@ calc_index(int r, int c) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::get_xpos
-//       Access: Published
-//  Description: Returns the x position of the origin of the character
-//               or graphic object at the indicated position in the
-//               indicated row.
-//
-//               It is legal for c to exceed the index number of the
-//               last column by 1, and it is legal for r to exceed the
-//               index number of the last row by 1, if c is 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the x position of the origin of the character or graphic object at
+ * the indicated position in the indicated row.  It is legal for c to exceed the
+ * index number of the last column by 1, and it is legal for r to exceed the
+ * index number of the last row by 1, if c is 0.
+ */
 PN_stdfloat TextAssembler::
 get_xpos(int r, int c) const {
   nassertr(r >= 0 && r <= (int)_text_block.size(), 0.0f);
@@ -542,15 +474,11 @@ get_xpos(int r, int c) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::assemble_text
-//       Access: Published
-//  Description: Actually assembles all of the text into a GeomNode,
-//               and returns the node (or possibly a parent of the
-//               node, to keep the shadow separate).  Once this has
-//               been called, you may query the extents of the text
-//               via get_ul(), get_lr().
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually assembles all of the text into a GeomNode, and returns the node (or
+ * possibly a parent of the node, to keep the shadow separate).  Once this has
+ * been called, you may query the extents of the text via get_ul(), get_lr().
+ */
 PT(PandaNode) TextAssembler::
 assemble_text() {
   // Now assemble the text into glyphs.
@@ -644,7 +572,7 @@ assemble_text() {
   generate_quads(text_geom_node, quad_map);
 
   if (any_shadow) {
-    for (gc = geom_shadow_collector_map.begin(); 
+    for (gc = geom_shadow_collector_map.begin();
          gc != geom_shadow_collector_map.end();
          ++gc) {
       (*gc).second.append_geom(shadow_geom_node, (*gc).first._state);
@@ -658,14 +586,11 @@ assemble_text() {
   return parent_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::calc_width
-//       Access: Published, Static
-//  Description: Returns the width of a single character, according to
-//               its associated font.  This also correctly calculates
-//               the width of cheesy ligatures and accented
-//               characters, which may not exist in the font as such.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the width of a single character, according to its associated font.
+ * This also correctly calculates the width of cheesy ligatures and accented
+ * characters, which may not exist in the font as such.
+ */
 PN_stdfloat TextAssembler::
 calc_width(wchar_t character, const TextProperties &properties) {
   if (character == ' ') {
@@ -682,12 +607,12 @@ calc_width(wchar_t character, const TextProperties &properties) {
   int additional_flags;
   PN_stdfloat glyph_scale;
   PN_stdfloat advance_scale;
-  get_character_glyphs(character, &properties, 
+  get_character_glyphs(character, &properties,
                        got_glyph, first_glyph, second_glyph, accent_type,
                        additional_flags, glyph_scale, advance_scale);
 
   PN_stdfloat advance = 0.0f;
-  
+
   if (first_glyph != (TextGlyph *)NULL) {
     advance = first_glyph->get_advance() * advance_scale;
   }
@@ -700,35 +625,26 @@ calc_width(wchar_t character, const TextProperties &properties) {
   return advance * glyph_scale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::calc_width
-//       Access: Published, Static
-//  Description: Returns the width of a single TextGraphic image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the width of a single TextGraphic image.
+ */
 PN_stdfloat TextAssembler::
 calc_width(const TextGraphic *graphic, const TextProperties &properties) {
   LVecBase4 frame = graphic->get_frame();
   return (frame[1] - frame[0]) * properties.get_glyph_scale() * properties.get_text_scale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::has_exact_character
-//       Access: Published, Static
-//  Description: Returns true if the named character exists in the
-//               font exactly as named, false otherwise.  Note that
-//               because Panda can assemble glyphs together
-//               automatically using cheesy accent marks, this is not
-//               a reliable indicator of whether a suitable glyph can
-//               be rendered for the character.  For that, use
-//               has_character() instead.
-//
-//               This returns true for whitespace and Unicode
-//               whitespace characters (if they exist in the font),
-//               but returns false for characters that would render
-//               with the "invalid glyph".  It also returns false for
-//               characters that would be synthesized within Panda,
-//               but see has_character().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named character exists in the font exactly as named,
+ * false otherwise.  Note that because Panda can assemble glyphs together
+ * automatically using cheesy accent marks, this is not a reliable indicator of
+ * whether a suitable glyph can be rendered for the character.  For that, use
+ * has_character() instead.  This returns true for whitespace and Unicode
+ * whitespace characters (if they exist in the font), but returns false for
+ * characters that would render with the "invalid glyph".  It also returns false
+ * for characters that would be synthesized within Panda, but see
+ * has_character().
+ */
 bool TextAssembler::
 has_exact_character(wchar_t character, const TextProperties &properties) {
   if (character == ' ' || character == '\n') {
@@ -744,19 +660,13 @@ has_exact_character(wchar_t character, const TextProperties &properties) {
   return font->get_glyph(character, glyph);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::has_character
-//       Access: Published, Static
-//  Description: Returns true if the named character exists in the
-//               font or can be synthesized by Panda, false otherwise.
-//               (Panda can synthesize some accented characters by
-//               combining similar-looking glyphs from the font.)
-//
-//               This returns true for whitespace and Unicode
-//               whitespace characters (if they exist in the font),
-//               but returns false for characters that would render
-//               with the "invalid glyph".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the named character exists in the font or can be synthesized
+ * by Panda, false otherwise.  (Panda can synthesize some accented characters by
+ * combining similar-looking glyphs from the font.)  This returns true for
+ * whitespace and Unicode whitespace characters (if they exist in the font), but
+ * returns false for characters that would render with the "invalid glyph".
+ */
 bool TextAssembler::
 has_character(wchar_t character, const TextProperties &properties) {
   if (character == ' ' || character == '\n') {
@@ -772,33 +682,23 @@ has_character(wchar_t character, const TextProperties &properties) {
   int additional_flags;
   PN_stdfloat glyph_scale;
   PN_stdfloat advance_scale;
-  get_character_glyphs(character, &properties, 
+  get_character_glyphs(character, &properties,
                        got_glyph, first_glyph, second_glyph, accent_type,
                        additional_flags, glyph_scale, advance_scale);
   return got_glyph;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::is_whitespace
-//       Access: Published, Static
-//  Description: Returns true if the indicated character represents
-//               whitespace in the font, or false if anything visible
-//               will be rendered for it.
-//
-//               This returns true for whitespace and Unicode
-//               whitespace characters (if they exist in the font),
-//               and returns false for any other characters, including
-//               characters that do not exist in the font (these would
-//               be rendered with the "invalid glyph", which is
-//               visible).
-//
-//               Note that this function can be reliably used to
-//               identify Unicode whitespace characters only if the
-//               font has all of the whitespace characters defined.
-//               It will return false for any character not in the
-//               font, even if it is an official Unicode whitespace
-//               character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated character represents whitespace in the font, or
+ * false if anything visible will be rendered for it.  This returns true for
+ * whitespace and Unicode whitespace characters (if they exist in the font), and
+ * returns false for any other characters, including characters that do not
+ * exist in the font (these would be rendered with the "invalid glyph", which is
+ * visible).  Note that this function can be reliably used to identify Unicode
+ * whitespace characters only if the font has all of the whitespace characters
+ * defined.  It will return false for any character not in the font, even if it
+ * is an official Unicode whitespace character.
+ */
 bool TextAssembler::
 is_whitespace(wchar_t character, const TextProperties &properties) {
   if (character == ' ' || character == '\n') {
@@ -818,16 +718,14 @@ is_whitespace(wchar_t character, const TextProperties &properties) {
   return glyph->is_whitespace();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::scan_wtext
-//       Access: Private
-//  Description: Scans through the text string, decoding embedded
-//               references to TextProperties.  The decoded string is
-//               copied character-by-character into _text_string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans through the text string, decoding embedded references to
+ * TextProperties.  The decoded string is copied character-by-character into
+ * _text_string.
+ */
 void TextAssembler::
 scan_wtext(TextAssembler::TextString &output_string,
-           wstring::const_iterator &si, 
+           wstring::const_iterator &si,
            const wstring::const_iterator &send,
            TextAssembler::ComputedProperties *current_cprops) {
   while (si != send) {
@@ -851,11 +749,11 @@ scan_wtext(TextAssembler::TextString &output_string,
       }
 
       ++si;
-      
+
       // Define the new properties by extending the current properties.
-      PT(ComputedProperties) new_cprops = 
+      PT(ComputedProperties) new_cprops =
         new ComputedProperties(current_cprops, wname, _encoder);
-      
+
       // And recursively scan with the nested properties.
       scan_wtext(output_string, si, send, new_cprops);
 
@@ -900,8 +798,8 @@ scan_wtext(TextAssembler::TextString &output_string,
       // Now we have to encode the wstring into a string, for lookup
       // in the TextPropertiesManager.
       string graphic_name = _encoder->encode_wtext(graphic_wname);
-      
-      TextPropertiesManager *manager = 
+
+      TextPropertiesManager *manager =
         TextPropertiesManager::get_global_ptr();
 
       // Get the graphic image.
@@ -922,22 +820,14 @@ scan_wtext(TextAssembler::TextString &output_string,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::wordwrap_text
-//       Access: Private
-//  Description: Inserts newlines into the _text_string at the
-//               appropriate places in order to make each line be the
-//               longest possible line that is not longer than
-//               wordwrap_width (and does not break any words, if
-//               possible).  Stores the result in _text_block.
-//
-//               If _max_rows is greater than zero, no more than
-//               _max_rows will be accepted.  Text beyond that will be
-//               truncated.
-//
-//               The return value is true if all the text is accepted,
-//               or false if some was truncated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts newlines into the _text_string at the appropriate places in order to
+ * make each line be the longest possible line that is not longer than
+ * wordwrap_width (and does not break any words, if possible).  Stores the
+ * result in _text_block.  If _max_rows is greater than zero, no more than
+ * _max_rows will be accepted.  Text beyond that will be truncated.  The return
+ * value is true if all the text is accepted, or false if some was truncated.
+ */
 bool TextAssembler::
 wordwrap_text() {
   _text_block.clear();
@@ -997,7 +887,7 @@ wordwrap_text() {
         wordwrap_width = -1.0f;
       }
 
-      if (isspacew(_text_string[q]._character) || 
+      if (isspacew(_text_string[q]._character) ||
           _text_string[q]._character == text_soft_break_key) {
         if (!last_was_space) {
           any_spaces = true;
@@ -1032,7 +922,7 @@ wordwrap_text() {
       }
 
       q++;
-        
+
       if (wordwrap_width > 0.0f && width > wordwrap_width) {
         // Oops, too many.
         q--;
@@ -1067,7 +957,7 @@ wordwrap_text() {
         // we can that does not leave the next line beginning with one
         // of our forbidden characters.
         size_t i = 0;
-        while ((int)i < text_max_never_break && q - i > p && 
+        while ((int)i < text_max_never_break && q - i > p &&
                get_text_never_break_before().find(_text_string[q - i]._character) != wstring::npos) {
           i++;
         }
@@ -1079,7 +969,7 @@ wordwrap_text() {
 
     // Skip additional whitespace between the lines.
     size_t next_start = q;
-    while (next_start < _text_string.size() && 
+    while (next_start < _text_string.size() &&
            isbreakpoint(_text_string[next_start]._character)) {
       next_start++;
     }
@@ -1100,13 +990,13 @@ wordwrap_text() {
         // anyway; what else can we do?
         q++;
         next_start++;
-        while (next_start < _text_string.size() && 
+        while (next_start < _text_string.size() &&
                isbreakpoint(_text_string[next_start]._character)) {
           next_start++;
         }
       }
     }
-    
+
     if (needs_newline) {
       if (_max_rows > 0 && (int)_text_block.size() >= _max_rows) {
         // Truncate.
@@ -1123,7 +1013,7 @@ wordwrap_text() {
     }
 
     for (size_t pi = p; pi < q; pi++) {
-      if (_text_string[pi]._character != text_soft_hyphen_key && 
+      if (_text_string[pi]._character != text_soft_hyphen_key &&
           _text_string[pi]._character != text_soft_break_key) {
         _text_block.back()._string.push_back(_text_string[pi]);
       } else {
@@ -1177,13 +1067,10 @@ wordwrap_text() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::calc_hyphen_width
-//       Access: Private, Static
-//  Description: Returns the width of the soft-hyphen replacement
-//               string, according to the indicated character's
-//               associated font.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the width of the soft-hyphen replacement string, according to the
+ * indicated character's associated font.
+ */
 PN_stdfloat TextAssembler::
 calc_hyphen_width(const TextCharacter &tch) {
   TextFont *font = tch._cprops->_properties.get_font();
@@ -1197,16 +1084,13 @@ calc_hyphen_width(const TextCharacter &tch) {
        ++wi) {
     hyphen_width += calc_width(*wi, tch._cprops->_properties);
   }
-  
+
   return hyphen_width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::generate_quads
-//       Access: Private
-//  Description: Generates Geoms for the given quads and adds them
-//               to the GeomNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates Geoms for the given quads and adds them to the GeomNode.
+ */
 void TextAssembler::
 generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
   QuadMap::const_iterator qmi;
@@ -1376,13 +1260,10 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::assemble_paragraph
-//       Access: Private
-//  Description: Fills up placed_glyphs, _ul, _lr with
-//               the contents of _text_block.  Also updates _xpos and
-//               _ypos within the _text_block structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up placed_glyphs, _ul, _lr with the contents of _text_block.  Also
+ * updates _xpos and _ypos within the _text_block structure.
+ */
 void TextAssembler::
 assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
   _ul.set(0.0f, 0.0f);
@@ -1474,20 +1355,16 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
   // trailing newlines on the string.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::assemble_row
-//       Access: Private
-//  Description: Assembles the letters in the source string, up until
-//               the first newline or the end of the string into a
-//               single row (which is parented to _geom_node), and
-//               computes the length of the row and the maximum
-//               line_height of all the fonts used in the row.  The
-//               source pointer is moved to the terminating character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assembles the letters in the source string, up until the first newline or the
+ * end of the string into a single row (which is parented to _geom_node), and
+ * computes the length of the row and the maximum line_height of all the fonts
+ * used in the row.  The source pointer is moved to the terminating character.
+ */
 void TextAssembler::
 assemble_row(TextAssembler::TextRow &row,
              TextAssembler::PlacedGlyphs &placed_glyphs,
-             PN_stdfloat &row_width, PN_stdfloat &line_height, 
+             PN_stdfloat &row_width, PN_stdfloat &line_height,
              TextProperties::Alignment &align, PN_stdfloat &wordwrap) {
   Thread *current_thread = Thread::get_current_thread();
 
@@ -1599,7 +1476,7 @@ assemble_row(TextAssembler::TextRow &row,
       int additional_flags;
       PN_stdfloat glyph_scale;
       PN_stdfloat advance_scale;
-      get_character_glyphs(character, properties, 
+      get_character_glyphs(character, properties,
                            got_glyph, first_glyph, second_glyph, accent_type,
                            additional_flags, glyph_scale, advance_scale);
 
@@ -1607,7 +1484,7 @@ assemble_row(TextAssembler::TextRow &row,
         char buffer[512];
         sprintf(buffer, "U+%04x", character);
         text_cat.warning()
-          << "No definition in " << font->get_name() 
+          << "No definition in " << font->get_name()
           << " for character " << buffer;
         if (character < 128 && isprint((unsigned int)character)) {
           text_cat.warning(false)
@@ -1721,19 +1598,17 @@ assemble_row(TextAssembler::TextRow &row,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::draw_underscore
-//       Access: Private, Static
-//  Description: Creates the geometry to render the underscore line
-//               for the indicated range of glyphs in this row.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the geometry to render the underscore line for the indicated range of
+ * glyphs in this row.
+ */
 void TextAssembler::
 draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
                 PN_stdfloat underscore_start, PN_stdfloat underscore_end,
                 const TextProperties *underscore_properties) {
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
-  PT(GeomVertexData) vdata = 
+  PT(GeomVertexData) vdata =
     new GeomVertexData("underscore", format, Geom::UH_static);
   vdata->unclean_set_num_rows(2);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
@@ -1768,25 +1643,17 @@ draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
   placed_glyphs.push_back(placement);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::get_character_glyphs
-//       Access: Private, Static
-//  Description: Looks up the glyph(s) from the font for the
-//               appropriate character.  If the desired glyph isn't
-//               available (especially in the case of an accented
-//               letter), tries to find a suitable replacement.
-//               Normally, only one glyph is returned per character,
-//               but in the case in which we have to simulate a
-//               missing ligature in the font, two glyphs might be
-//               returned.
-//
-//               All parameters except the first two are output
-//               parameters.  got_glyph is set true if the glyph (or
-//               an acceptable substitute) is successfully found,
-//               false otherwise; but even if it is false, glyph might
-//               still be non-NULL, indicating a stand-in glyph for a
-//               missing character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Looks up the glyph(s) from the font for the appropriate character.  If the
+ * desired glyph isn't available (especially in the case of an accented letter),
+ * tries to find a suitable replacement.  Normally, only one glyph is returned
+ * per character, but in the case in which we have to simulate a missing
+ * ligature in the font, two glyphs might be returned.  All parameters except
+ * the first two are output parameters.  got_glyph is set true if the glyph (or
+ * an acceptable substitute) is successfully found, false otherwise; but even if
+ * it is false, glyph might still be non-NULL, indicating a stand-in glyph for a
+ * missing character.
+ */
 void TextAssembler::
 get_character_glyphs(int character, const TextProperties *properties,
                      bool &got_glyph, CPT(TextGlyph) &glyph,
@@ -1807,17 +1674,17 @@ get_character_glyphs(int character, const TextProperties *properties,
 
   // Maybe we should remap the character to something else--e.g. a
   // small capital.
-  const UnicodeLatinMap::Entry *map_entry = 
+  const UnicodeLatinMap::Entry *map_entry =
     UnicodeLatinMap::look_up(character);
   if (map_entry != NULL) {
-    if (properties->get_small_caps() && 
+    if (properties->get_small_caps() &&
         map_entry->_toupper_character != character) {
       character = map_entry->_toupper_character;
       map_entry = UnicodeLatinMap::look_up(character);
       glyph_scale = properties->get_small_caps_scale();
     }
   }
-  
+
   got_glyph = font->get_glyph(character, glyph);
   if (!got_glyph && map_entry != NULL && map_entry->_ascii_equiv != 0) {
     // If we couldn't find the Unicode glyph, try the ASCII
@@ -1835,7 +1702,7 @@ get_character_glyphs(int character, const TextProperties *properties,
     } else {
       got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
     }
-    
+
     if (!got_glyph && map_entry->_toupper_character != character) {
       // If we still couldn't find it, try the uppercase
       // equivalent.
@@ -1845,15 +1712,15 @@ get_character_glyphs(int character, const TextProperties *properties,
         got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
       }
     }
-    
+
     if (got_glyph) {
       accent_type = map_entry->_accent_type;
       additional_flags = map_entry->_additional_flags;
-      
+
       bool got_second_glyph = false;
       if (map_entry->_ascii_additional != 0) {
         // There's another character, too--probably a ligature.
-        got_second_glyph = 
+        got_second_glyph =
           font->get_glyph(map_entry->_ascii_additional, second_glyph);
       }
 
@@ -1864,7 +1731,7 @@ get_character_glyphs(int character, const TextProperties *properties,
         additional_flags &= ~UnicodeLatinMap::AF_ligature;
         advance_scale = ligature_advance_scale;
       }
-      
+
       if ((additional_flags & UnicodeLatinMap::AF_smallcap) != 0) {
         additional_flags &= ~UnicodeLatinMap::AF_smallcap;
         glyph_scale = properties->get_small_caps_scale();
@@ -1873,18 +1740,15 @@ get_character_glyphs(int character, const TextProperties *properties,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::tack_on_accent
-//       Access: Private
-//  Description: This is a cheesy attempt to tack on an accent to an
-//               ASCII letter for which we don't have the appropriate
-//               already-accented glyph in the font.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a cheesy attempt to tack on an accent to an ASCII letter for which we
+ * don't have the appropriate already-accented glyph in the font.
+ */
 void TextAssembler::
 tack_on_accent(UnicodeLatinMap::AccentType accent_type,
                const LPoint3 &min_vert, const LPoint3 &max_vert,
                const LPoint3 &centroid,
-               const TextProperties *properties, 
+               const TextProperties *properties,
                TextAssembler::GlyphPlacement &placement) const {
 
   // Look for a combining accent mark character.
@@ -2028,14 +1892,11 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::tack_on_accent
-//       Access: Private
-//  Description: Generates a cheesy accent mark above (or below, etc.)
-//               the character.  Returns true if successful, or false
-//               if the named accent character doesn't exist in the
-//               font.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a cheesy accent mark above (or below, etc.) the character.  Returns
+ * true if successful, or false if the named accent character doesn't exist in
+ * the font.
+ */
 bool TextAssembler::
 tack_on_accent(wchar_t accent_mark, TextAssembler::CheesyPosition position,
                TextAssembler::CheesyTransform transform,
@@ -2287,13 +2148,10 @@ tack_on_accent(wchar_t accent_mark, TextAssembler::CheesyPosition position,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::ComputedProperties::append_delta
-//       Access: Public
-//  Description: Appends to wtext the control sequences necessary to
-//               change from this ComputedProperties to the indicated
-//               ComputedProperties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends to wtext the control sequences necessary to change from this
+ * ComputedProperties to the indicated ComputedProperties.
+ */
 void TextAssembler::ComputedProperties::
 append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
   if (this != other) {
@@ -2303,7 +2161,7 @@ append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
 
       wtext.push_back(text_pop_properties_key);
       _based_on->append_delta(wtext, other);
-      
+
     } else if (other->_depth > _depth) {
       // Back up a level from the other properties.
       nassertv(other->_based_on != NULL);
@@ -2312,11 +2170,11 @@ append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
       wtext.push_back(text_push_properties_key);
       wtext += other->_wname;
       wtext.push_back(text_push_properties_key);
-      
+
     } else if (_depth != 0) {
       // Back up a level from both properties.
       nassertv(_based_on != NULL && other->_based_on != NULL);
-      
+
       wtext.push_back(text_pop_properties_key);
       _based_on->append_delta(wtext, other->_based_on);
       wtext.push_back(text_push_properties_key);
@@ -2326,13 +2184,10 @@ append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GlyphPlacement::assign_to
-//       Access: Private
-//  Description: Puts the pieces of the GlyphPlacement in the
-//               indicated GeomNode.  The vertices of the Geoms are
-//               modified by this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Puts the pieces of the GlyphPlacement in the indicated GeomNode.  The
+ * vertices of the Geoms are modified by this operation.
+ */
 void TextAssembler::GlyphPlacement::
 assign_to(GeomNode *geom_node, const RenderState *state,
           const LVector2 &offset) const {
@@ -2347,14 +2202,10 @@ assign_to(GeomNode *geom_node, const RenderState *state,
   geom_node->add_geom(geom, state->compose(_glyph->get_state()));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GlyphPlacement::assign_append_to
-//       Access: Private
-//  Description: Puts the pieces of the GlyphPlacement in the
-//               indicated GeomNode.  This flavor will append the
-//               Geoms with the additional transform applied to the
-//               vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Puts the pieces of the GlyphPlacement in the indicated GeomNode.  This flavor
+ * will append the Geoms with the additional transform applied to the vertices.
+ */
 void TextAssembler::GlyphPlacement::
 assign_append_to(GeomCollectorMap &geom_collector_map,
                  const RenderState *state,
@@ -2425,12 +2276,10 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GlyphPlacement::assign_quad_to
-//       Access: Private
-//  Description: If this glyph is representable as a single quad,
-//               assigns it to the appropriate position in the map.
-////////////////////////////////////////////////////////////////////
+/**
+ * If this glyph is representable as a single quad, assigns it to the
+ * appropriate position in the map.
+ */
 void TextAssembler::GlyphPlacement::
 assign_quad_to(QuadMap &quad_map, const RenderState *state,
                const LVector2 &offset) const {
@@ -2448,12 +2297,10 @@ assign_quad_to(QuadMap &quad_map, const RenderState *state,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GlyphPlacement::copy_graphic_to
-//       Access: Private
-//  Description: If the GlyphPlacement includes a special graphic,
-//               copies it to the indicated node.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the GlyphPlacement includes a special graphic, copies it to the indicated
+ * node.
+ */
 void TextAssembler::GlyphPlacement::
 copy_graphic_to(PandaNode *node, const RenderState *state) const {
   if (_graphic_model != (PandaNode *)NULL) {
@@ -2474,12 +2321,10 @@ copy_graphic_to(PandaNode *node, const RenderState *state) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GeomCollector Constructor
-//       Access: Public
-//  Description: constructs the GeomCollector class 
-//               (Geom, GeomTriangles, vertexWriter, texcoordWriter..)
-////////////////////////////////////////////////////////////////////
+/**
+ * constructs the GeomCollector class (Geom, GeomTriangles, vertexWriter,
+ * texcoordWriter..)
+ */
 TextAssembler::GeomCollector::
 GeomCollector(const GeomVertexFormat *format) :
   _vdata(new GeomVertexData("merged_geom", format, Geom::UH_static)),
@@ -2487,11 +2332,9 @@ GeomCollector(const GeomVertexFormat *format) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GeomCollector Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextAssembler::GeomCollector::
 GeomCollector(const TextAssembler::GeomCollector &copy) :
   _vdata(copy._vdata),
@@ -2499,14 +2342,11 @@ GeomCollector(const TextAssembler::GeomCollector &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GeomCollector::get_primitive
-//       Access: Public
-//  Description: Returns a GeomPrimitive of the appropriate type.  If
-//               one has not yet been created, returns a newly-created
-//               one; if one has previously been created of this type,
-//               returns the previously-created one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a GeomPrimitive of the appropriate type.  If one has not yet been
+ * created, returns a newly-created one; if one has previously been created of
+ * this type, returns the previously-created one.
+ */
 GeomPrimitive *TextAssembler::GeomCollector::
 get_primitive(TypeHandle prim_type) {
   if (prim_type == GeomTriangles::get_class_type()) {
@@ -2535,12 +2375,10 @@ get_primitive(TypeHandle prim_type) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GeomCollector::append_vertex
-//       Access: Public
-//  Description: Adds one vertex to the GeomVertexData.
-//               Returns the row number of the added vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds one vertex to the GeomVertexData.  Returns the row number of the added
+ * vertex.
+ */
 int TextAssembler::GeomCollector::
 append_vertex(const GeomVertexData *orig_vdata, int orig_row,
               const LMatrix4 &xform) {
@@ -2556,16 +2394,12 @@ append_vertex(const GeomVertexData *orig_vdata, int orig_row,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::GeomCollector::append_geom
-//       Access: Public
-//  Description: closes the geomTriangles and appends the geom to 
-//               the given GeomNode
-////////////////////////////////////////////////////////////////////
+/**
+ * closes the geomTriangles and appends the geom to the given GeomNode
+ */
 void TextAssembler::GeomCollector::
 append_geom(GeomNode *geom_node, const RenderState *state) {
   if (_geom->get_num_primitives() > 0) {
     geom_node->add_geom(_geom, state);
   }
 }
-

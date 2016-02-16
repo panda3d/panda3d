@@ -20,15 +20,12 @@
 
 TypeHandle SocketStreamRecorder::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SocketStreamRecorder::receive_datagram
-//       Access: Public
-//  Description: Receives a datagram over the socket by expecting a
-//               little-endian 16-bit byte count as a prefix.  If the
-//               socket stream is non-blocking, may return false if
-//               the data is not available; otherwise, returns false
-//               only if the socket closes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives a datagram over the socket by expecting a little-endian 16-bit byte
+ * count as a prefix.  If the socket stream is non-blocking, may return false if
+ * the data is not available; otherwise, returns false only if the socket
+ * closes.
+ */
 bool SocketStreamRecorder::
 receive_datagram(Datagram &dg) {
   if (is_playing()) {
@@ -59,14 +56,11 @@ receive_datagram(Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SocketStreamRecorder::record_frame
-//       Access: Public, Virtual
-//  Description: Records the most recent data collected into the
-//               indicated datagram, and returns true if there is any
-//               interesting data worth recording, or false if the
-//               datagram is meaningless.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the most recent data collected into the indicated datagram, and
+ * returns true if there is any interesting data worth recording, or false if
+ * the datagram is meaningless.
+ */
 void SocketStreamRecorder::
 record_frame(BamWriter *manager, Datagram &dg) {
   nassertv(is_recording());
@@ -79,12 +73,9 @@ record_frame(BamWriter *manager, Datagram &dg) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SocketStreamRecorder::play_frame
-//       Access: Public, Virtual
-//  Description: Reloads the most recent data collected from the
-//               indicated datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reloads the most recent data collected from the indicated datagram.
+ */
 void SocketStreamRecorder::
 play_frame(DatagramIterator &scan, BamReader *manager) {
   nassertv(is_playing());
@@ -97,39 +88,30 @@ play_frame(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SocketStreamRecorder::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type Lens.
+ */
 void SocketStreamRecorder::
 register_with_read_factory() {
   RecorderController::get_factory()->register_factory(get_class_type(), make_recorder);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SocketStreamRecorder::write_recorder
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for encoding in the session file.  This is very
-//               similar to write_datagram() for TypedWritable
-//               objects, but it is used specifically to write the
-//               Recorder object when generating the session file.  In
-//               many cases, it will be the same as write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for encoding in the
+ * session file.  This is very similar to write_datagram() for TypedWritable
+ * objects, but it is used specifically to write the Recorder object when
+ * generating the session file.  In many cases, it will be the same as
+ * write_datagram().
+ */
 void SocketStreamRecorder::
 write_recorder(BamWriter *manager, Datagram &dg) {
   RecorderBase::write_recorder(manager, dg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SocketStreamRecorder::make_recorder
-//       Access: Protected, Static
-//  Description: This is similar to make_from_bam(), but it is
-//               designed for loading the RecorderBase object from the
-//               session log created by a RecorderController.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to make_from_bam(), but it is designed for loading the
+ * RecorderBase object from the session log created by a RecorderController.
+ */
 RecorderBase *SocketStreamRecorder::
 make_recorder(const FactoryParams &params) {
   SocketStreamRecorder *node = new SocketStreamRecorder;
@@ -142,13 +124,10 @@ make_recorder(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SocketStreamRecorder::fillin_recorder
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new SocketStreamRecorder.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new SocketStreamRecorder.
+ */
 void SocketStreamRecorder::
 fillin_recorder(DatagramIterator &scan, BamReader *manager) {
   RecorderBase::fillin_recorder(scan, manager);

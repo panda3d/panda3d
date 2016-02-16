@@ -22,22 +22,17 @@
 
 class NurbsVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsCurveResult
-// Description : The result of a NurbsCurveEvaluator.  This object
-//               represents a curve in a particular coordinate space.
-//               It can return the point and/or tangent to the curve
-//               at any point.
-//
-//               This is not related to NurbsCurve, CubicCurveseg or
-//               any of the ParametricCurve-derived objects in this
-//               module.  It is a completely parallel implementation
-//               of NURBS curves, and will probably eventually replace
-//               the whole ParametricCurve class hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * The result of a NurbsCurveEvaluator.  This object represents a curve in a
+ * particular coordinate space.  It can return the point and/or tangent to the
+ * curve at any point.  This is not related to NurbsCurve, CubicCurveseg or any
+ * of the ParametricCurve-derived objects in this module.  It is a completely
+ * parallel implementation of NURBS curves, and will probably eventually replace
+ * the whole ParametricCurve class hierarchy.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsCurveResult : public ReferenceCount {
 public:
-  NurbsCurveResult(const NurbsBasisVector &basis, 
+  NurbsCurveResult(const NurbsBasisVector &basis,
                    const LVecBase4 vecs[], const NurbsVertex *verts,
                    int num_vertices);
 
@@ -50,7 +45,7 @@ PUBLISHED:
   INLINE bool eval_point(PN_stdfloat t, LVecBase3 &point);
   INLINE bool eval_tangent(PN_stdfloat t, LVecBase3 &tangent);
   INLINE PN_stdfloat eval_extended_point(PN_stdfloat t, int d);
-  INLINE bool eval_extended_points(PN_stdfloat t, int d, 
+  INLINE bool eval_extended_points(PN_stdfloat t, int d,
                                    PN_stdfloat result[], int num_values);
 
   INLINE int get_num_segments() const;
@@ -103,4 +98,3 @@ private:
 #include "nurbsCurveResult.I"
 
 #endif
-

@@ -21,13 +21,11 @@
 class WinStatsMonitor;
 class WinStatsGraph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsLabel
-// Description : A text label that will draw in color appropriate for
-//               a particular collector.  It also responds when the
-//               user double-clicks on it.  This is handy for putting
-//               colored labels on strip charts.
-////////////////////////////////////////////////////////////////////
+/**
+ * A text label that will draw in color appropriate for a particular collector.
+ * It also responds when the user double-clicks on it.  This is handy for
+ * putting colored labels on strip charts.
+ */
 class WinStatsLabel {
 public:
   WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
@@ -84,4 +82,3 @@ private:
 };
 
 #endif
-

@@ -20,16 +20,12 @@
 
 class EggLoader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggBinner
-// Description : A special binner used only within this package to
-//               pre-process the egg tree for the loader and group
-//               things together as appropriate.
-//
-//               It is used to collect similar polygons together for a
-//               Geom, as well as to group related LOD children
-//               together under a single LOD node.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special binner used only within this package to pre-process the egg tree
+ * for the loader and group things together as appropriate.  It is used to
+ * collect similar polygons together for a Geom, as well as to group related LOD
+ * children together under a single LOD node.
+ */
 class EggBinner : public EggBinMaker {
 public:
   // The BinNumber serves to identify why a particular EggBin was

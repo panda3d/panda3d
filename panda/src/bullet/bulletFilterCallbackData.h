@@ -21,14 +21,13 @@
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletFilterCallbackData
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletFilterCallbackData : public CallbackData {
 
 PUBLISHED:
-  INLINE BulletFilterCallbackData(PandaNode *node0, 
+  INLINE BulletFilterCallbackData(PandaNode *node0,
                                   PandaNode *node1);
 
   INLINE PandaNode *get_node_0() const;
@@ -49,7 +48,7 @@ public:
   }
   static void init_type() {
     CallbackData::init_type();
-    register_type(_type_handle, "BulletFilterCallbackData", 
+    register_type(_type_handle, "BulletFilterCallbackData",
                   CallbackData::get_class_type());
   }
   virtual TypeHandle get_type() const {

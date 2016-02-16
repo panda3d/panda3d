@@ -22,12 +22,10 @@
 #include "virtualFileSystem.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<VirtualFileSystem>
-// Description : This class defines the extension methods for
-//               VirtualFileSystem, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for VirtualFileSystem, which are
+ * called instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<VirtualFileSystem> : public ExtensionBase<VirtualFileSystem> {
 public:
@@ -38,4 +36,3 @@ public:
 #endif  // HAVE_PYTHON
 
 #endif  // VIRTUALFILESYSTEM_EXT_H
-

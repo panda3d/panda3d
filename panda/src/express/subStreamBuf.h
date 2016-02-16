@@ -17,10 +17,9 @@
 #include "pandabase.h"
 #include "streamWrapper.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SubStreamBuf
-// Description : The streambuf object that implements ISubStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements ISubStream.
+ */
 class EXPCL_PANDAEXPRESS SubStreamBuf : public streambuf {
 public:
   SubStreamBuf();

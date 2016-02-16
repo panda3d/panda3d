@@ -22,19 +22,14 @@
 
 class CVSSourceDirectory;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CVSSourceTree
-// Description : This represents the root of the tree of source
-//               directory files.
-//
-//               The tree is maintained in a case-insensitive manner,
-//               even on a non-Windows system, since you might want to
-//               eventually check out the CVS tree onto a Windows
-//               system--and if you do, you'll be sad if there are
-//               case conflicts within the tree.  So we make an effort
-//               to ensure this doesn't happen by treating two files
-//               with a different case as the same file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents the root of the tree of source directory files.  The tree is
+ * maintained in a case-insensitive manner, even on a non-Windows system, since
+ * you might want to eventually check out the CVS tree onto a Windows system--
+ * and if you do, you'll be sad if there are case conflicts within the tree.  So
+ * we make an effort to ensure this doesn't happen by treating two files with a
+ * different case as the same file.
+ */
 class CVSSourceTree {
 public:
   CVSSourceTree();

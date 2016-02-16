@@ -20,11 +20,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullFaceAttrib
-// Description : Indicates which faces should be culled based on their
-//               vertex ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates which faces should be culled based on their vertex ordering.
+ */
 class EXPCL_PANDA_PGRAPH CullFaceAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -74,7 +72,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -99,4 +97,3 @@ private:
 #include "cullFaceAttrib.I"
 
 #endif
-

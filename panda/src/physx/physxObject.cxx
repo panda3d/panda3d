@@ -14,4 +14,3 @@
 #include "physxObject.h"
 
 TypeHandle PhysxObject::_type_handle;
-

@@ -16,13 +16,11 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakPointerCallback
-// Description : Derive from this class and override the callback()
-//               method if you want to get an immediate callback from
-//               a WeakPointerTo object when its referenced pointer is
-//               deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Derive from this class and override the callback() method if you want to get
+ * an immediate callback from a WeakPointerTo object when its referenced pointer
+ * is deleted.
+ */
 class EXPCL_PANDAEXPRESS WeakPointerCallback {
 public:
   virtual ~WeakPointerCallback();

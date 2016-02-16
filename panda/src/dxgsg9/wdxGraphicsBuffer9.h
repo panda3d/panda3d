@@ -19,16 +19,13 @@
 #include "dxgsg9base.h"
 #include "dxTextureContext9.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : wdxGraphicsBuffer9
-// Description : An offscreen render buffer.  In OpenGL under Windows,
-//               this simply renders into a window that is never made
-//               visible.  There's a Windows interface for rendering
-//               into a DIB, but this puts restrictions on the kind of
-//               pixelformat we can use, and thus makes it difficult
-//               to support one GSG rendering into an offscreen buffer
-//               and also into a window.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen render buffer.  In OpenGL under Windows, this simply renders
+ * into a window that is never made visible.  There's a Windows interface for
+ * rendering into a DIB, but this puts restrictions on the kind of pixelformat
+ * we can use, and thus makes it difficult to support one GSG rendering into an
+ * offscreen buffer and also into a window.
+ */
 class EXPCL_PANDADX wdxGraphicsBuffer9 : public GraphicsBuffer {
 public:
   wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -40,8 +37,8 @@ public:
                      GraphicsOutput *host);
   virtual ~wdxGraphicsBuffer9();
 
-  virtual INLINE bool get_supports_render_texture() const;  
-  
+  virtual INLINE bool get_supports_render_texture() const;
+
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 

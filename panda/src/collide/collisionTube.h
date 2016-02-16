@@ -18,14 +18,11 @@
 #include "collisionSolid.h"
 #include "parabola.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionTube
-// Description : This implements a solid roughly in cylindrical shape.
-//               It's not called a CollisionCylinder because it's not
-//               a true cylinder; specifically, it has rounded ends
-//               instead of flat ends.  It looks more like a Contac
-//               pill.
-////////////////////////////////////////////////////////////////////
+/**
+ * This implements a solid roughly in cylindrical shape.  It's not called a
+ * CollisionCylinder because it's not a true cylinder; specifically, it has
+ * rounded ends instead of flat ends.  It looks more like a Contac pill.
+ */
 class EXPCL_PANDA_COLLIDE CollisionTube : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionTube(const LPoint3 &a, const LPoint3 &db,
@@ -106,8 +103,8 @@ private:
                                           double extra_radius,
                                           LPoint3 &result_point,
                                           LVector3 &result_normal) const;
-  void set_intersection_point(CollisionEntry *new_entry, 
-                              const LPoint3 &into_intersection_point, 
+  void set_intersection_point(CollisionEntry *new_entry,
+                              const LPoint3 &into_intersection_point,
                               double extra_radius) const;
 
 private:
@@ -151,5 +148,3 @@ private:
 #include "collisionTube.I"
 
 #endif
-
-

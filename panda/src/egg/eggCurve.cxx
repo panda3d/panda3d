@@ -19,13 +19,10 @@
 TypeHandle EggCurve::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCurve::string_curve_type
-//       Access: Public, Static
-//  Description: Returns the CurveType value associated with the given
-//               string representation, or CT_invalid if the string
-//               does not match any known CurveType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CurveType value associated with the given string representation,
+ * or CT_invalid if the string does not match any known CurveType value.
+ */
 EggCurve::CurveType EggCurve::
 string_curve_type(const string &string) {
   if (cmp_nocase_uh(string, "xyz") == 0) {
@@ -39,10 +36,9 @@ string_curve_type(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CurveType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &operator << (ostream &out, EggCurve::CurveType t) {
   switch (t) {
   case EggCurve::CT_none:
@@ -58,4 +54,3 @@ ostream &operator << (ostream &out, EggCurve::CurveType t) {
   nassertr(false, out);
   return out << "(**invalid**)";
 }
-

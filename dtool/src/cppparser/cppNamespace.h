@@ -21,10 +21,9 @@
 class CPPIdentifier;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPNamespace
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPNamespace : public CPPDeclaration {
 public:
   CPPNamespace(CPPIdentifier *ident, CPPScope *scope,

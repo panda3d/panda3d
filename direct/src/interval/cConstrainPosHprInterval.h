@@ -20,12 +20,10 @@
 #include "lvecBase3.h"
 #include "lquaternion.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConstrainPosHprInterval
-// Description : A constraint interval that will constrain the
-//               position and orientation of one node to the
-//               position and orientation of another.
-////////////////////////////////////////////////////////////////////
+/**
+ * A constraint interval that will constrain the position and orientation of one
+ * node to the position and orientation of another.
+ */
 class EXPCL_DIRECT CConstrainPosHprInterval : public CConstraintInterval {
 PUBLISHED:
   CConstrainPosHprInterval(const string &name, double duration,
@@ -67,4 +65,3 @@ private:
 #include "cConstrainPosHprInterval.I"
 
 #endif
-

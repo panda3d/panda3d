@@ -20,16 +20,12 @@
 
 class P3DInstance;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DSplashWindow
-// Description : This window is displayed temporarily, in place of an
-//               instance's actual window, during the initial launch
-//               of an applet, and also during the initial download of
-//               Panda3D code if necessary.
-//
-//               This is the base implementation; it contains no
-//               specific code to open a window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This window is displayed temporarily, in place of an instance's actual
+ * window, during the initial launch of an applet, and also during the initial
+ * download of Panda3D code if necessary.  This is the base implementation; it
+ * contains no specific code to open a window.
+ */
 class P3DSplashWindow {
 public:
   P3DSplashWindow(P3DInstance *inst, bool make_visible);

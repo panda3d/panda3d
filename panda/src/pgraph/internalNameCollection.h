@@ -18,10 +18,9 @@
 #include "pointerToArray.h"
 #include "internalName.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : InternalNameCollection
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_PGRAPH InternalNameCollection {
 PUBLISHED:
   InternalNameCollection();
@@ -61,5 +60,3 @@ INLINE ostream &operator << (ostream &out, const InternalNameCollection &col) {
 #include "internalNameCollection.I"
 
 #endif
-
-

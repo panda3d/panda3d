@@ -18,25 +18,24 @@
 
 #include "collisionHandlerPusher.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysicsCollisionHandler
-// Description : A specialized kind of CollisionHandler that simply
-//               pushes back on things that attempt to move into solid
-//               walls.  This also puts forces onto the physics objects
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAPHYSICS PhysicsCollisionHandler : 
+/**
+ * A specialized kind of CollisionHandler that simply pushes back on things that
+ * attempt to move into solid walls.  This also puts forces onto the physics
+ * objects
+ */
+class EXPCL_PANDAPHYSICS PhysicsCollisionHandler :
     public CollisionHandlerPusher {
 PUBLISHED:
   PhysicsCollisionHandler();
   virtual ~PhysicsCollisionHandler();
-  
+
   // These setters and getter are a bit of a hack:
   INLINE void set_almost_stationary_speed(PN_stdfloat speed);
   INLINE PN_stdfloat get_almost_stationary_speed();
-  
+
   INLINE void set_static_friction_coef(PN_stdfloat coef);
   INLINE PN_stdfloat get_static_friction_coef();
-  
+
   INLINE void set_dynamic_friction_coef(PN_stdfloat coef);
   INLINE PN_stdfloat get_dynamic_friction_coef();
 
@@ -75,6 +74,3 @@ private:
 #include "physicsCollisionHandler.I"
 
 #endif
-
-
-

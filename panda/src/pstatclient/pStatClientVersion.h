@@ -19,12 +19,10 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatClientVersion
-// Description : Records the version number of a particular client.
-//               Normally this will be the same as
-//               get_current_pstat_major/minor_version().
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the version number of a particular client.  Normally this will be the
+ * same as get_current_pstat_major/minor_version().
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatClientVersion : public ReferenceCount {
 public:
   PStatClientVersion();
@@ -44,4 +42,3 @@ private:
 #include "pStatClientVersion.I"
 
 #endif
-

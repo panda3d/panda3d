@@ -16,10 +16,9 @@
 
 #include "linearDistanceForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearSinkForce
-// Description : Attractor force.  Think black hole.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attractor force.  Think black hole.
+ */
 class EXPCL_PANDAPHYSICS LinearSinkForce : public LinearDistanceForce {
 PUBLISHED:
   LinearSinkForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a = 1.0f,
@@ -27,7 +26,7 @@ PUBLISHED:
   LinearSinkForce();
   LinearSinkForce(const LinearSinkForce &copy);
   virtual ~LinearSinkForce();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

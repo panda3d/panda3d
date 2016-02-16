@@ -28,7 +28,7 @@ class CP3DActiveXCtrl : public COleControl,
                         public PPInterface
 {
     DECLARE_DYNCREATE(CP3DActiveXCtrl)
-    
+
 // Constructor
 public:
     CP3DActiveXCtrl();
@@ -81,7 +81,7 @@ public:
     virtual IOleClientSite* GetClientSte();
 
     // ActiveX properties <PARAM NAME="name" VALUE="value">
-    std::vector< std::pair < CString, CString > > m_parameters; 
+    std::vector< std::pair < CString, CString > > m_parameters;
 
     CString m_hostingPageUrl;
 
@@ -113,4 +113,3 @@ protected:
     DWORD _init_time;
     CEvent _init_not_running;  // set when the init thread has finished, or before it has started.
 };
-

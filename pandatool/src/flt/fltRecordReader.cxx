@@ -18,11 +18,9 @@
 
 #include <assert.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltRecordReader::
 FltRecordReader(istream &in) :
   _in(in)
@@ -39,11 +37,9 @@ FltRecordReader(istream &in) :
   read_next_header();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltRecordReader::
 ~FltRecordReader() {
   if (_iterator != (DatagramIterator *)NULL) {
@@ -52,36 +48,28 @@ FltRecordReader::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::get_opcode
-//       Access: Public
-//  Description: Returns the opcode associated with the current
-//               record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the opcode associated with the current record.
+ */
 FltOpcode FltRecordReader::
 get_opcode() const {
   nassertr(_state == S_normal, FO_none);
   return _opcode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::get_iterator
-//       Access: Public
-//  Description: Returns an iterator suitable for extracting data from
-//               the current record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator suitable for extracting data from the current record.
+ */
 DatagramIterator &FltRecordReader::
 get_iterator() {
   nassertr(_state == S_normal, *_iterator);
   return *_iterator;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::get_datagram
-//       Access: Public
-//  Description: Returns the datagram representing the entire record,
-//               less the four-byte header.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the datagram representing the entire record, less the four-byte
+ * header.
+ */
 const Datagram &FltRecordReader::
 get_datagram() {
 #ifndef NDEBUG
@@ -91,24 +79,18 @@ get_datagram() {
   return _iterator->get_datagram();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::get_record_length
-//       Access: Public
-//  Description: Returns the entire length of the record, including
-//               the four-byte header.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the entire length of the record, including the four-byte header.
+ */
 int FltRecordReader::
 get_record_length() const {
   return _record_length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::advance
-//       Access: Public
-//  Description: Extracts the next record from the file.  Returns true
-//               if there is another record, or false if the end of
-//               file has been reached.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the next record from the file.  Returns true if there is another
+ * record, or false if the end of file has been reached.
+ */
 FltError FltRecordReader::
 advance(bool ok_eof) {
   if (_state == S_eof) {
@@ -209,39 +191,29 @@ advance(bool ok_eof) {
   return FE_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::eof
-//       Access: Public
-//  Description: Returns true if end-of-file has been reached without
-//               error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if end-of-file has been reached without error.
+ */
 bool FltRecordReader::
 eof() const {
   return _state == S_eof;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::error
-//       Access: Public
-//  Description: Returns true if some error has been encountered while
-//               reading (for instance, a truncated file).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if some error has been encountered while reading (for instance,
+ * a truncated file).
+ */
 bool FltRecordReader::
 error() const {
   return _state == S_error;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltRecordReader::read_next_header
-//       Access: Private
-//  Description: Reads the four-byte header for the next record, which
-//               contains the next opcode and record length.
-//
-//               We need read the next header in advance so we can
-//               check to see if it happens to be a continuation
-//               record.  If it is, we will need to concatenate the
-//               records together before returning.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the four-byte header for the next record, which contains the next
+ * opcode and record length.  We need read the next header in advance so we can
+ * check to see if it happens to be a continuation record.  If it is, we will
+ * need to concatenate the records together before returning.
+ */
 void FltRecordReader::
 read_next_header() {
   char bytes[header_size];

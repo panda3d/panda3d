@@ -19,15 +19,12 @@
 #include "filename.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DSearchPath
-// Description : This class stores a list of directories that can be
-//               searched, in order, to locate a particular file.  It
-//               is normally constructed by passing it a traditional
-//               searchpath-style string, e.g. a list of directory
-//               names delimited by spaces or colons, but it can also
-//               be built up explicitly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class stores a list of directories that can be searched, in order, to
+ * locate a particular file.  It is normally constructed by passing it a
+ * traditional searchpath-style string, e.g.  a list of directory names
+ * delimited by spaces or colons, but it can also be built up explicitly.
+ */
 class EXPCL_DTOOL DSearchPath {
 PUBLISHED:
   class EXPCL_DTOOL Results {

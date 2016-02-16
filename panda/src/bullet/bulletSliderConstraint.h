@@ -24,14 +24,13 @@
 
 class BulletRigidBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletSliderConstraint
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletSliderConstraint : public BulletConstraint {
 
 PUBLISHED:
-  BulletSliderConstraint(const BulletRigidBodyNode *node_a, 
+  BulletSliderConstraint(const BulletRigidBodyNode *node_a,
                          const TransformState *frame_a,
                          bool useFrame_a);
   BulletSliderConstraint(const BulletRigidBodyNode *node_a,
@@ -87,7 +86,7 @@ public:
   }
   static void init_type() {
     BulletConstraint::init_type();
-    register_type(_type_handle, "BulletSliderConstraint", 
+    register_type(_type_handle, "BulletSliderConstraint",
                   BulletConstraint::get_class_type());
   }
   virtual TypeHandle get_type() const {

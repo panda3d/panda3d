@@ -13,22 +13,18 @@
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggAnimData::
 EggAnimData(const string &name) : EggNode(name) {
   _has_fps = false;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::Copy constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggAnimData::
 EggAnimData(const EggAnimData &copy) :
   EggNode(copy), _data(copy._data),
@@ -36,11 +32,9 @@ EggAnimData(const EggAnimData &copy) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggAnimData &EggAnimData::
 operator = (const EggAnimData &copy) {
   EggNode::operator = (copy);
@@ -52,11 +46,9 @@ operator = (const EggAnimData &copy) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::set_fps
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggAnimData::
 set_fps(double fps) {
   _fps = fps;
@@ -64,31 +56,25 @@ set_fps(double fps) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::clear_fps
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggAnimData::
 clear_fps() {
   _has_fps = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::has_fps
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggAnimData::
 has_fps() const {
   return _has_fps;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::get_fps
-//       Access: Public
-//  Description: This is only valid if has_fps() returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is only valid if has_fps() returns true.
+ */
 INLINE double EggAnimData::
 get_fps() const {
   nassertr(has_fps(), 0.0);
@@ -96,21 +82,17 @@ get_fps() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::clear_data
-//       Access: Public
-//  Description: Removes all data and empties the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all data and empties the table.
+ */
 INLINE void EggAnimData::
 clear_data() {
   _data.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::add_data
-//       Access: Public
-//  Description: Adds a single element to the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a single element to the table.
+ */
 INLINE void EggAnimData::
 add_data(double value) {
   _data.push_back(value);
@@ -118,35 +100,28 @@ add_data(double value) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::get_size
-//       Access: Public
-//  Description: Returns the number of elements in the table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of elements in the table.
+ */
 INLINE int EggAnimData::
 get_size() const {
   return _data.size();
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::get_data
-//       Access: Public
-//  Description: Returns the entire table of data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the entire table of data.
+ */
 INLINE PTA_double EggAnimData::
 get_data() const {
   return _data;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::set_data
-//       Access: Public
-//  Description: Replaces the entire table of data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the entire table of data.
+ */
 INLINE void EggAnimData::
 set_data(const PTA_double &data) {
   _data = data;
 }
-

@@ -55,12 +55,11 @@ class AccumulatedAttribs;
 class GeomTransformer;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaNode
-// Description : A basic node of the scene graph or data graph.  This
-//               is the base class of all specialized nodes, and also
-//               serves as a generic node with no special properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * A basic node of the scene graph or data graph.  This is the base class of all
+ * specialized nodes, and also serves as a generic node with no special
+ * properties.
+ */
 class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
                                      public Namable, public LinkedListNode {
 PUBLISHED:
@@ -813,11 +812,10 @@ private:
   friend class Extension<PandaNode>;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaNodePipelineReader
-// Description : Encapsulates the data from a PandaNode,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a PandaNode, pre-fetched for one stage of the
+ * pipeline.
+ */
 class EXPCL_PANDA_PGRAPH PandaNodePipelineReader {
 public:
   INLINE PandaNodePipelineReader(const PandaNode *object, Thread *current_thread);
@@ -899,4 +897,3 @@ INLINE ostream &operator << (ostream &out, const PandaNode &node) {
 #include "pandaNode.I"
 
 #endif
-

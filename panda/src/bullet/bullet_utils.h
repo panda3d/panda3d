@@ -38,7 +38,7 @@ EXPCL_PANDABULLET LMatrix4 btTrans_to_LMatrix4(const btTransform &tf);
 EXPCL_PANDABULLET LQuaternion btQuat_to_LQuaternion(const btQuaternion &q);
 
 EXPCL_PANDABULLET CPT(TransformState) btTrans_to_TransformState(
-  const btTransform &tf, 
+  const btTransform &tf,
   const LVecBase3 &scale=LVecBase3(1.0f, 1.0f, 1.0f));
 
 EXPCL_PANDABULLET btTransform TransformState_to_btTrans(

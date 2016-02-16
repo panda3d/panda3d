@@ -24,14 +24,12 @@
 #include "buttonHandle.h"
 #include "tinyGraphicsStateGuardian.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyOsxGraphicsWindow
-// Description : Opens a window on OS X to display the TinyPanda
-//               software rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a window on OS X to display the TinyPanda software rendering.
+ */
 class TinyOsxGraphicsWindow : public GraphicsWindow {
 public:
-  TinyOsxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  TinyOsxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                         const string &name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,
@@ -47,10 +45,10 @@ public:
   virtual void begin_flip();
   virtual void process_events();
   virtual bool supports_pixel_zoom() const;
-  
+
   virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
-  
+
   virtual void mouse_mode_absolute();
   virtual void mouse_mode_relative();
 
@@ -110,10 +108,10 @@ private:
 
   CGImageRef _pending_icon;
   CGImageRef _current_icon;
-  
+
   int _ID;
-  static TinyOsxGraphicsWindow  *FullScreenWindow; 
-  
+  static TinyOsxGraphicsWindow  *FullScreenWindow;
+
   CFDictionaryRef _originalMode;
 
   // True if _properties.get_cursor_hidden() is true.
@@ -147,4 +145,3 @@ private:
 #endif  // IS_OSX
 
 #endif
-

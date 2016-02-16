@@ -19,12 +19,10 @@
 #include "clientDevice.h"
 #include "trackerData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientTrackerDevice
-// Description : A device, attached to the ClientBase by a
-//               TrackerNode, that records the data from a single
-//               tracker device.
-////////////////////////////////////////////////////////////////////
+/**
+ * A device, attached to the ClientBase by a TrackerNode, that records the data
+ * from a single tracker device.
+ */
 class EXPCL_PANDA_DEVICE ClientTrackerDevice : public ClientDevice {
 protected:
   INLINE ClientTrackerDevice(ClientBase *client, const string &device_name);

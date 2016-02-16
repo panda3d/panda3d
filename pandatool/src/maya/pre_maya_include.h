@@ -68,4 +68,3 @@ typedef istream maya_istream;
 #endif
 
 #endif  // MAYA_PRE_5_0
-

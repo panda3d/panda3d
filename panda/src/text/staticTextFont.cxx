@@ -27,18 +27,13 @@
 
 TypeHandle StaticTextFont::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::Constructor
-//       Access: Published
-//  Description: The constructor expects the root node to a model
-//               generated via egg-mkfont, which consists of a set of
-//               models, one per each character in the font.
-//
-//               If a CoordinateSystem value is specified, it informs
-//               the font of the coordinate system in which this model
-//               was generated.  "up" in this coordinate system will
-//               be the direction of the top of the letters.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor expects the root node to a model generated via egg-mkfont,
+ * which consists of a set of models, one per each character in the font.  If a
+ * CoordinateSystem value is specified, it informs the font of the coordinate
+ * system in which this model was generated.  "up" in this coordinate system
+ * will be the direction of the top of the letters.
+ */
 StaticTextFont::
 StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
   nassertv(font_def != (PandaNode *)NULL);
@@ -74,7 +69,7 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
   int num_textures = tc.get_num_textures();
   for (int i = 0; i < num_textures; ++i) {
     Texture *tex = tc.get_texture(i);
-    
+
     // Don't compress font textures.  Though there's a relatively high
     // bang-for-the-buck in compressing them, there's an increased
     // risk that broken graphics drivers will fail to render the text
@@ -95,7 +90,7 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
 
   find_characters(_font, RenderState::make_empty());
   _is_valid = !_glyphs.empty();
-  
+
   // Check for an explicit space width.
   int character = 32;
   Glyphs::iterator gi = _glyphs.find(character);
@@ -107,28 +102,24 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
   set_name(font_def->get_name());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::make_copy
-//       Access: Published
-//  Description: Returns a new copy of the same font.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new copy of the same font.
+ */
 PT(TextFont) StaticTextFont::
 make_copy() const {
   return new StaticTextFont(_font);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void StaticTextFont::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "StaticTextFont " << get_name() << "; "
     << _glyphs.size() << " characters available in font:\n";
   Glyphs::const_iterator gi;
-  
+
   // Figure out which symbols we have.  We collect lowercase letters,
   // uppercase letters, and digits together for the user's
   // convenience.
@@ -152,11 +143,11 @@ write(ostream &out, int indent_level) const {
       if (islower(ch)) {
         count_lowercase++;
         lowercase[ch - 'a'] = true;
-        
+
       } else if (isupper(ch)) {
         count_uppercase++;
         uppercase[ch - 'A'] = true;
-        
+
       } else if (isdigit(ch)) {
         count_digits++;
         digits[ch - '0'] = true;
@@ -221,17 +212,13 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::get_glyph
-//       Access: Public, Virtual
-//  Description: Gets the glyph associated with the given character
-//               code, as well as an optional scaling parameter that
-//               should be applied to the glyph's geometry and advance
-//               parameters.  Returns true if the glyph exists, false
-//               if it does not.  Even if the return value is false,
-//               the value for glyph might be filled in with a
-//               printable glyph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the glyph associated with the given character code, as well as an
+ * optional scaling parameter that should be applied to the glyph's geometry and
+ * advance parameters.  Returns true if the glyph exists, false if it does not.
+ * Even if the return value is false, the value for glyph might be filled in
+ * with a printable glyph.
+ */
 bool StaticTextFont::
 get_glyph(int character, CPT(TextGlyph) &glyph) {
   Glyphs::const_iterator gi = _glyphs.find(character);
@@ -245,15 +232,11 @@ get_glyph(int character, CPT(TextGlyph) &glyph) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::find_character_gsets
-//       Access: Private
-//  Description: Given that 'root' is a PandaNode containing at least
-//               a polygon and a point which define the character's
-//               appearance and kern position, respectively,
-//               recursively walk the hierarchy and root and locate
-//               those two Geoms.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given that 'root' is a PandaNode containing at least a polygon and a point
+ * which define the character's appearance and kern position, respectively,
+ * recursively walk the hierarchy and root and locate those two Geoms.
+ */
 void StaticTextFont::
 find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
                      const RenderState *&state, const RenderState *net_state) {
@@ -291,14 +274,11 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StaticTextFont::find_characters
-//       Access: Private
-//  Description: Walk the hierarchy beginning at the indicated root
-//               and locate any nodes whose names are just integers.
-//               These are taken to be characters, and their
-//               definitions and kern informations are retrieved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walk the hierarchy beginning at the indicated root and locate any nodes whose
+ * names are just integers.  These are taken to be characters, and their
+ * definitions and kern informations are retrieved.
+ */
 void StaticTextFont::
 find_characters(PandaNode *root, const RenderState *net_state) {
   CPT(RenderState) next_net_state = net_state->compose(root->get_state());

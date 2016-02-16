@@ -15,12 +15,9 @@
 
 TypeHandle EggAnimData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimData::quantize
-//       Access: Public
-//  Description: Rounds each element of the table to the nearest
-//               multiple of quantum.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rounds each element of the table to the nearest multiple of quantum.
+ */
 void EggAnimData::
 quantize(double quantum) {
   for (size_t i = 0; i < _data.size(); i++) {

@@ -18,10 +18,9 @@
 #include "typedef.h"
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Buffer
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAEXPRESS Buffer : public ReferenceCount {
 public:
   Buffer(int size);

@@ -20,11 +20,9 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnTracker::
 VrpnTracker(const string &tracker_name, vrpn_Connection *connection) :
   _tracker_name(tracker_name)
@@ -36,22 +34,18 @@ VrpnTracker(const string &tracker_name, vrpn_Connection *connection) :
   _tracker->register_change_handler((void*)this, &vrpn_acceleration_callback);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnTracker::
 ~VrpnTracker() {
   delete _tracker;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::mark
-//       Access: Public
-//  Description: Adds the indicated VrpnTrackerDevice to the list of
-//               devices that are sharing this VrpnTracker.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated VrpnTrackerDevice to the list of devices that are sharing
+ * this VrpnTracker.
+ */
 void VrpnTracker::
 mark(VrpnTrackerDevice *device) {
   if (vrpn_cat.is_debug()) {
@@ -60,12 +54,10 @@ mark(VrpnTrackerDevice *device) {
   _devices.push_back(device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::unmark
-//       Access: Public
-//  Description: Removes the indicated VrpnTrackerDevice from the list
-//               of devices that are sharing this VrpnTracker.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated VrpnTrackerDevice from the list of devices that are
+ * sharing this VrpnTracker.
+ */
 void VrpnTracker::
 unmark(VrpnTrackerDevice *device) {
   if (vrpn_cat.is_debug()) {
@@ -80,21 +72,17 @@ unmark(VrpnTrackerDevice *device) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VrpnTracker::
 output(ostream &out) const {
   out << _tracker_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VrpnTracker::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -102,13 +90,10 @@ write(ostream &out, int indent_level) const {
     << _devices.size() << " devices)\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::vrpn_position_callback
-//       Access: Private, Static
-//  Description: Receives the tracker positional data from the VRPN
-//               code and sends it to any interested
-//               VrpnTrackerDevices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives the tracker positional data from the VRPN code and sends it to any
+ * interested VrpnTrackerDevices.
+ */
 void VRPN_CALLBACK VrpnTracker::
 vrpn_position_callback(void *userdata, const vrpn_TRACKERCB info) {
   VrpnTracker *self = (VrpnTracker *)userdata;
@@ -131,13 +116,10 @@ vrpn_position_callback(void *userdata, const vrpn_TRACKERCB info) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::vrpn_velocity_callback
-//       Access: Private, Static
-//  Description: Receives the tracker velocity data from the VRPN
-//               code and sends it to any interested
-//               VrpnTrackerDevices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives the tracker velocity data from the VRPN code and sends it to any
+ * interested VrpnTrackerDevices.
+ */
 void VRPN_CALLBACK VrpnTracker::
 vrpn_velocity_callback(void *userdata, const vrpn_TRACKERVELCB info) {
   VrpnTracker *self = (VrpnTracker *)userdata;
@@ -162,13 +144,10 @@ vrpn_velocity_callback(void *userdata, const vrpn_TRACKERVELCB info) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTracker::vrpn_acceleration_callback
-//       Access: Private, Static
-//  Description: Receives the tracker acceleration data from the VRPN
-//               code and sends it to any interested
-//               VrpnTrackerDevices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives the tracker acceleration data from the VRPN code and sends it to any
+ * interested VrpnTrackerDevices.
+ */
 void VRPN_CALLBACK VrpnTracker::
 vrpn_acceleration_callback(void *userdata, const vrpn_TRACKERACCCB info) {
   VrpnTracker *self = (VrpnTracker *)userdata;

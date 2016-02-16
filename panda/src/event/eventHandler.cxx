@@ -20,23 +20,18 @@ TypeHandle EventHandler::_type_handle;
 EventHandler *EventHandler::_global_event_handler = NULL;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EventHandler::
 EventHandler(EventQueue *ev_queue) : _queue(*ev_queue) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::process_events
-//       Access: Public
-//  Description: The main processing loop of the EventHandler.  This
-//               function must be called periodically to service
-//               events.  Walks through each pending event and calls
-//               its assigned hooks.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main processing loop of the EventHandler.  This function must be called
+ * periodically to service events.  Walks through each pending event and calls
+ * its assigned hooks.
+ */
 void EventHandler::
 process_events() {
   while (!_queue.is_queue_empty()) {
@@ -44,12 +39,9 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::dispatch_event
-//       Access: Public, Virtual
-//  Description: Calls the hooks assigned to the indicated single
-//               event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the hooks assigned to the indicated single event.
+ */
 void EventHandler::
 dispatch_event(const Event *event) {
   nassertv(event != (Event *)NULL);
@@ -92,11 +84,9 @@ dispatch_event(const Event *event) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EventHandler::
 write(ostream &out) const {
   Hooks::const_iterator hi;
@@ -133,15 +123,11 @@ write(ostream &out) const {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::add_hook
-//       Access: Public
-//  Description: Adds the indicated function to the list of those that
-//               will be called when the named event is thrown.
-//               Returns true if the function was successfully added,
-//               false if it was already defined on the indicated
-//               event name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated function to the list of those that will be called when the
+ * named event is thrown.  Returns true if the function was successfully added,
+ * false if it was already defined on the indicated event name.
+ */
 bool EventHandler::
 add_hook(const string &event_name, EventFunction *function) {
   if (event_cat.is_debug()) {
@@ -155,16 +141,12 @@ add_hook(const string &event_name, EventFunction *function) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::add_hook
-//       Access: Public
-//  Description: Adds the indicated function to the list of those that
-//               will be called when the named event is thrown.
-//               Returns true if the function was successfully added,
-//               false if it was already defined on the indicated
-//               event name.  This version records an untyped pointer
-//               to user callback data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated function to the list of those that will be called when the
+ * named event is thrown.  Returns true if the function was successfully added,
+ * false if it was already defined on the indicated event name.  This version
+ * records an untyped pointer to user callback data.
+ */
 bool EventHandler::
 add_hook(const string &event_name, EventCallbackFunction *function,
          void *data) {
@@ -173,12 +155,10 @@ add_hook(const string &event_name, EventCallbackFunction *function,
   return _cbhooks[event_name].insert(CallbackFunction(function, data)).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::has_hook
-//       Access: Public
-//  Description: Returns true if there is any hook added on the
-//               indicated event name, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is any hook added on the indicated event name, false
+ * otherwise.
+ */
 bool EventHandler::
 has_hook(const string &event_name) const {
   assert(!event_name.empty());
@@ -202,13 +182,10 @@ has_hook(const string &event_name) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::remove_hook
-//       Access: Public
-//  Description: Removes the indicated function from the named event
-//               hook.  Returns true if the hook was removed, false if
-//               it wasn't there in the first place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated function from the named event hook.  Returns true if
+ * the hook was removed, false if it wasn't there in the first place.
+ */
 bool EventHandler::
 remove_hook(const string &event_name, EventFunction *function) {
   assert(!event_name.empty());
@@ -217,14 +194,11 @@ remove_hook(const string &event_name, EventFunction *function) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::remove_hook
-//       Access: Public
-//  Description: Removes the indicated function from the named event
-//               hook.  Returns true if the hook was removed, false if
-//               it wasn't there in the first place.  This version
-//               takes an untyped pointer to user callback data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated function from the named event hook.  Returns true if
+ * the hook was removed, false if it wasn't there in the first place.  This
+ * version takes an untyped pointer to user callback data.
+ */
 bool EventHandler::
 remove_hook(const string &event_name, EventCallbackFunction *function,
             void *data) {
@@ -233,13 +207,10 @@ remove_hook(const string &event_name, EventCallbackFunction *function,
   return _cbhooks[event_name].erase(CallbackFunction(function, data)) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::remove_hooks
-//       Access: Public
-//  Description: Removes all functions from the named event hook.
-//               Returns true if any functions were removed, false if
-//               there were no functions added to the hook.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all functions from the named event hook.  Returns true if any
+ * functions were removed, false if there were no functions added to the hook.
+ */
 bool EventHandler::
 remove_hooks(const string &event_name) {
   assert(!event_name.empty());
@@ -264,12 +235,10 @@ remove_hooks(const string &event_name) {
   return any_removed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::remove_hooks_with
-//       Access: Public
-//  Description: Removes all CallbackFunction hooks that have the
-//               indicated pointer as the associated data pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all CallbackFunction hooks that have the indicated pointer as the
+ * associated data pointer.
+ */
 bool EventHandler::
 remove_hooks_with(void *data) {
   bool any_removed = false;
@@ -294,33 +263,27 @@ remove_hooks_with(void *data) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::remove_all_hooks
-//       Access: Public
-//  Description: Removes all hooks assigned to all events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all hooks assigned to all events.
+ */
 void EventHandler::
 remove_all_hooks() {
   _hooks.clear();
   _cbhooks.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::make_global_event_handler
-//       Access: Protected, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EventHandler::
 make_global_event_handler() {
   _global_event_handler = new EventHandler(EventQueue::get_global_event_queue());
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::write_hook
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EventHandler::
 write_hook(ostream &out, const EventHandler::Hooks::value_type &hook) const {
   if (!hook.second.empty()) {
@@ -328,11 +291,9 @@ write_hook(ostream &out, const EventHandler::Hooks::value_type &hook) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventHandler::write_cbhook
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EventHandler::
 write_cbhook(ostream &out, const EventHandler::CallbackHooks::value_type &hook) const {
   if (!hook.second.empty()) {

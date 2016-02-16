@@ -21,15 +21,11 @@
 #include "pgButtonNotify.h"
 #include "pgButton.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGSliderBar
-// Description : This is a particular kind of PGItem that draws a
-//               little bar with a slider that moves from left to 
-//               right indicating a value between the ranges.
-//
-//               This is used as an implementation for both
-//               DirectSlider and for DirectScrollBar.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of PGItem that draws a little bar with a slider
+ * that moves from left to right indicating a value between the ranges.  This is
+ * used as an implementation for both DirectSlider and for DirectScrollBar.
+ */
 class EXPCL_PANDA_PGUI PGSliderBar : public PGItem, public PGButtonNotify {
 PUBLISHED:
   PGSliderBar(const string &name = "");

@@ -21,15 +21,12 @@
 #define strncasecmp _strnicmp
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: pstrtod
-//  Description: This function re-implements strtod, to avoid the
-//               problems that occur when the LC_NUMERIC locale gets
-//               set to anything other than "C".  Regardless of the
-//               user's locale, we need to be able to parse
-//               floating-point numbers internally understanding a "."
-//               as the decimal point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function re-implements strtod, to avoid the problems that occur when the
+ * LC_NUMERIC locale gets set to anything other than "C".  Regardless of the
+ * user's locale, we need to be able to parse floating-point numbers internally
+ * understanding a "." as the decimal point.
+ */
 double
 pstrtod(const char *nptr, char **endptr) {
   // First, skip whitespace.
@@ -149,15 +146,12 @@ pstrtod(const char *nptr, char **endptr) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: patof
-//  Description: This function re-implements atof, to avoid the
-//               problems that occur when the LC_NUMERIC locale gets
-//               set to anything other than "C".  Regardless of the
-//               user's locale, we need to be able to parse
-//               floating-point numbers internally understanding a "."
-//               as the decimal point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function re-implements atof, to avoid the problems that occur when the
+ * LC_NUMERIC locale gets set to anything other than "C".  Regardless of the
+ * user's locale, we need to be able to parse floating-point numbers internally
+ * understanding a "." as the decimal point.
+ */
 double
 patof(const char *str) {
   return pstrtod(str, (char **)NULL);

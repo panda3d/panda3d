@@ -18,12 +18,10 @@
 
 #include "finiteBoundingVolume.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingSphere
-// Description : This defines a bounding sphere, consisting of a
-//               center and a radius.  It is always a sphere, and
-//               never an ellipsoid or other quadric.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a bounding sphere, consisting of a center and a radius.  It is
+ * always a sphere, and never an ellipsoid or other quadric.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingSphere : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingSphere();

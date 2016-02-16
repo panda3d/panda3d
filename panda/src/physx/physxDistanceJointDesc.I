@@ -11,32 +11,26 @@
  * @date 2009-09-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxDistanceJointDesc::
 PhysxDistanceJointDesc() : PhysxJointDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxDistanceJointDesc::
 ~PhysxDistanceJointDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxDistanceJointDesc::
 set_to_default() {
 
@@ -44,14 +38,11 @@ set_to_default() {
   set_name("");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxDistanceJointDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

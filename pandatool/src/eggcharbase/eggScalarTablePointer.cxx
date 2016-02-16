@@ -17,22 +17,18 @@
 
 TypeHandle EggScalarTablePointer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggScalarTablePointer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggScalarTablePointer::
 EggScalarTablePointer(EggObject *object) {
   _data = DCAST(EggSAnimData, object);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggScalarTablePointer::get_frame_rate
-//       Access: Public, Virtual
-//  Description: Returns the stated frame rate of this particular
-//               joint, or 0.0 if it doesn't state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the stated frame rate of this particular joint, or 0.0 if it doesn't
+ * state.
+ */
 double EggScalarTablePointer::
 get_frame_rate() const {
   if (_data == (EggSAnimData *)NULL || !_data->has_fps()) {
@@ -42,12 +38,9 @@ get_frame_rate() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggScalarTablePointer::get_num_frames
-//       Access: Public, Virtual
-//  Description: Returns the number of frames of animation for this
-//               particular slider.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames of animation for this particular slider.
+ */
 int EggScalarTablePointer::
 get_num_frames() const {
   if (_data == (EggSAnimData *)NULL) {
@@ -57,11 +50,9 @@ get_num_frames() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggScalarTablePointer::extend_to
-//       Access: Public, Virtual
-//  Description: Extends the table to the indicated number of frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extends the table to the indicated number of frames.
+ */
 void EggScalarTablePointer::
 extend_to(int num_frames) {
   nassertv(_data != (EggSAnimData *)NULL);
@@ -79,12 +70,9 @@ extend_to(int num_frames) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggScalarTablePointer::get_frame
-//       Access: Public, Virtual
-//  Description: Returns the value corresponding to this
-//               slider position in the nth frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value corresponding to this slider position in the nth frame.
+ */
 double EggScalarTablePointer::
 get_frame(int n) const {
   if (get_num_frames() == 1) {
@@ -97,11 +85,9 @@ get_frame(int n) const {
   return _data->get_value(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggScalarTablePointer::set_name
-//       Access: Public, Virtual
-//  Description: Applies the indicated name change to the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated name change to the egg file.
+ */
 void EggScalarTablePointer::
 set_name(const string &name) {
   // Actually, let's not rename the slider table (yet), because we

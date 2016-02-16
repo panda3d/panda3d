@@ -13,11 +13,9 @@
 
 TypeHandle FLOATNAME(LRotation)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LRotation::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LRotation)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -27,4 +25,3 @@ init_type() {
                   FLOATNAME(LQuaternion)::get_class_type());
   }
 }
-

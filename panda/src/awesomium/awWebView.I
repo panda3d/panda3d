@@ -80,4 +80,3 @@ INLINE void AwWebView::
 injectKeyEvent(bool press, int modifiers, int windowsCode, int nativeCode) {
   _myWebView->injectKeyEvent(press, modifiers, windowsCode, nativeCode);
 }
-

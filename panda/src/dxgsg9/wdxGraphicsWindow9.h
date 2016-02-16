@@ -22,11 +22,9 @@
 
 class wdxGraphicsPipe9;
 
-////////////////////////////////////////////////////////////////////
-//       Class : wdxGraphicsWindow9
-// Description : A single graphics window for rendering DirectX under
-//               Microsoft Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single graphics window for rendering DirectX under Microsoft Windows.
+ */
 class EXPCL_PANDADX wdxGraphicsWindow9 : public WinGraphicsWindow {
 public:
   wdxGraphicsWindow9(GraphicsEngine *engine, GraphicsPipe *pipe,

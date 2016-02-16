@@ -11,11 +11,9 @@
  * @date 2001-04-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPolygons::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLwoPolygons::
 CLwoPolygons(LwoToEggConverter *converter, const LwoPolygons *polygons,
              CLwoPoints *points) :

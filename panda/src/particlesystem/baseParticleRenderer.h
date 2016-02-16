@@ -26,10 +26,9 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BaseParticleRenderer
-// Description : Pure virtual particle renderer base class
-////////////////////////////////////////////////////////////////////
+/**
+ * Pure virtual particle renderer base class
+ */
 class EXPCL_PANDAPHYSICS BaseParticleRenderer : public ReferenceCount {
 PUBLISHED:
   enum ParticleRendererAlphaMode {
@@ -114,4 +113,3 @@ private:
 #include "baseParticleRenderer.I"
 
 #endif // BASEPARTICLERENDERER_H
-

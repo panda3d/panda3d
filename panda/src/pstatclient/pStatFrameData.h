@@ -25,13 +25,11 @@ class DatagramIterator;
 class PStatClientVersion;
 class PStatClient;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatFrameData
-// Description : Contains the raw timing and level data for a single
-//               frame.  This is a sequence of start/stop events, as
-//               well as a table of level values, associated with a
-//               number of collectors within a single frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Contains the raw timing and level data for a single frame.  This is a
+ * sequence of start/stop events, as well as a table of level values, associated
+ * with a number of collectors within a single frame.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatFrameData {
 public:
   INLINE bool is_time_empty() const;
@@ -78,4 +76,3 @@ private:
 #include "pStatFrameData.I"
 
 #endif
-

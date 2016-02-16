@@ -14,11 +14,9 @@
 #include "eggRename.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRename::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggRename::
 EggRename() {
   set_program_brief("rename nodes in .egg files");
@@ -32,11 +30,9 @@ EggRename() {
      &EggRename::dispatch_vector_string, NULL, &_strip_prefix);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRename::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggRename::
 run() {
   if (!_strip_prefix.empty()) {

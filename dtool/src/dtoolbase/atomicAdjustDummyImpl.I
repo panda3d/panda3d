@@ -11,45 +11,34 @@
  * @date 2002-08-09
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::inc
-//       Access: Public, Static
-//  Description: Atomically increments the indicated variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically increments the indicated variable.
+ */
 ALWAYS_INLINE void AtomicAdjustDummyImpl::
 inc(TVOLATILE AtomicAdjustDummyImpl::Integer &var) {
   ++var;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::dec
-//       Access: Public, Static
-//  Description: Atomically decrements the indicated variable and
-//               returns true if the new value is nonzero, false if it
-//               is zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically decrements the indicated variable and returns true if the new
+ * value is nonzero, false if it is zero.
+ */
 ALWAYS_INLINE bool AtomicAdjustDummyImpl::
 dec(TVOLATILE AtomicAdjustDummyImpl::Integer &var) {
   return (--var) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::add
-//       Access: Public, Static
-//  Description: Atomically computes var += delta.  It is legal for
-//               delta to be negative.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically computes var += delta.  It is legal for delta to be negative.
+ */
 ALWAYS_INLINE void AtomicAdjustDummyImpl::
 add(TVOLATILE AtomicAdjustDummyImpl::Integer &var, AtomicAdjustDummyImpl::Integer delta) {
   var += delta;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::set
-//       Access: Public, Static
-//  Description: Atomically changes the indicated variable and
-//               returns the original value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically changes the indicated variable and returns the original value.
+ */
 ALWAYS_INLINE AtomicAdjustDummyImpl::Integer AtomicAdjustDummyImpl::
 set(TVOLATILE AtomicAdjustDummyImpl::Integer &var, AtomicAdjustDummyImpl::Integer new_value) {
   Integer orig_value = var;
@@ -57,26 +46,20 @@ set(TVOLATILE AtomicAdjustDummyImpl::Integer &var, AtomicAdjustDummyImpl::Intege
   return orig_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::get
-//       Access: Public, Static
-//  Description: Atomically retrieves the snapshot value of the
-//               indicated variable.  This is the only guaranteed safe
-//               way to retrieve the value that other threads might be
-//               asynchronously setting, incrementing, or decrementing
-//               (via other AtomicAjust methods).
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically retrieves the snapshot value of the indicated variable.  This is
+ * the only guaranteed safe way to retrieve the value that other threads might
+ * be asynchronously setting, incrementing, or decrementing (via other
+ * AtomicAjust methods).
+ */
 ALWAYS_INLINE AtomicAdjustDummyImpl::Integer AtomicAdjustDummyImpl::
 get(const TVOLATILE AtomicAdjustDummyImpl::Integer &var) {
   return var;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::set_ptr
-//       Access: Public, Static
-//  Description: Atomically changes the indicated variable and
-//               returns the original value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically changes the indicated variable and returns the original value.
+ */
 ALWAYS_INLINE AtomicAdjustDummyImpl::Pointer AtomicAdjustDummyImpl::
 set_ptr(TVOLATILE AtomicAdjustDummyImpl::Pointer &var,
         AtomicAdjustDummyImpl::Pointer new_value) {
@@ -85,30 +68,22 @@ set_ptr(TVOLATILE AtomicAdjustDummyImpl::Pointer &var,
   return orig_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::get_ptr
-//       Access: Public, Static
-//  Description: Atomically retrieves the snapshot value of the
-//               indicated variable.  This is the only guaranteed safe
-//               way to retrieve the value that other threads might be
-//               asynchronously setting, incrementing, or decrementing
-//               (via other AtomicAjust methods).
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically retrieves the snapshot value of the indicated variable.  This is
+ * the only guaranteed safe way to retrieve the value that other threads might
+ * be asynchronously setting, incrementing, or decrementing (via other
+ * AtomicAjust methods).
+ */
 ALWAYS_INLINE AtomicAdjustDummyImpl::Pointer AtomicAdjustDummyImpl::
 get_ptr(const TVOLATILE AtomicAdjustDummyImpl::Pointer &var) {
   return var;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::compare_and_exchange
-//       Access: Public, Static
-//  Description: Atomic compare and exchange.
-//
-//               If mem is equal to old_value, store new_value in mem.
-//               In either case, return the original value of mem.
-//               The caller can test for success by comparing
-//               return_value == old_value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomic compare and exchange.  If mem is equal to old_value, store new_value
+ * in mem.  In either case, return the original value of mem.  The caller can
+ * test for success by comparing return_value == old_value.
+ */
 ALWAYS_INLINE AtomicAdjustDummyImpl::Integer AtomicAdjustDummyImpl::
 compare_and_exchange(TVOLATILE AtomicAdjustDummyImpl::Integer &mem,
                      AtomicAdjustDummyImpl::Integer old_value,
@@ -120,13 +95,10 @@ compare_and_exchange(TVOLATILE AtomicAdjustDummyImpl::Integer &mem,
   return orig_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustDummyImpl::compare_and_exchange_ptr
-//       Access: Public, Static
-//  Description: Atomic compare and exchange.
-//
-//               As above, but works on pointers instead of integers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomic compare and exchange.  As above, but works on pointers instead of
+ * integers.
+ */
 ALWAYS_INLINE AtomicAdjustDummyImpl::Pointer AtomicAdjustDummyImpl::
 compare_and_exchange_ptr(TVOLATILE AtomicAdjustDummyImpl::Pointer &mem,
                          AtomicAdjustDummyImpl::Pointer old_value,

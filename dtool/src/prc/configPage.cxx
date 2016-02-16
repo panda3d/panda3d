@@ -28,13 +28,10 @@
 ConfigPage *ConfigPage::_default_page = NULL;
 ConfigPage *ConfigPage::_local_page = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::Constructor
-//       Access: Private
-//  Description: The constructor is private because a ConfigPage
-//               should be constructed via the ConfigPageManager
-//               make_page() interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor is private because a ConfigPage should be constructed via the
+ * ConfigPageManager make_page() interface.
+ */
 ConfigPage::
 ConfigPage(const string &name, bool implicit_load, int page_seq) :
   _name(name),
@@ -46,25 +43,19 @@ ConfigPage(const string &name, bool implicit_load, int page_seq) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::Destructor
-//       Access: Private
-//  Description: The destructor is private because a ConfigPage
-//               should be deleted via the ConfigPageManager
-//               delete_page() interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * The destructor is private because a ConfigPage should be deleted via the
+ * ConfigPageManager delete_page() interface.
+ */
 ConfigPage::
 ~ConfigPage() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::get_default_page
-//       Access: Published, Static
-//  Description: Returns a pointer to the global "default page".  This
-//               is the ConfigPage that lists all variables' original
-//               default values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global "default page".  This is the ConfigPage that
+ * lists all variables' original default values.
+ */
 ConfigPage *ConfigPage::
 get_default_page() {
   if (_default_page == (ConfigPage *)NULL) {
@@ -73,14 +64,11 @@ get_default_page() {
   return _default_page;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::get_local_page
-//       Access: Published, Static
-//  Description: Returns a pointer to the global "local page".  This
-//               is the ConfigPage that lists the locally-assigned
-//               values for any variables in the world that have such
-//               a local assignment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global "local page".  This is the ConfigPage that
+ * lists the locally-assigned values for any variables in the world that have
+ * such a local assignment.
+ */
 ConfigPage *ConfigPage::
 get_local_page() {
   if (_local_page == (ConfigPage *)NULL) {
@@ -89,18 +77,13 @@ get_local_page() {
   return _local_page;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::set_sort
-//       Access: Published
-//  Description: Changes the explicit sort order of this particular
-//               ConfigPage.  Lower-numbered pages supercede
-//               higher-numbered pages.  Initially, all
-//               explicitly-loaded pages have sort value 0, and
-//               implicitly-loaded pages (found on disk) have sort
-//               value 10; you may set an individual page higher or
-//               lower to influence its priority relative to other
-//               pages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the explicit sort order of this particular ConfigPage.  Lower-
+ * numbered pages supercede higher-numbered pages.  Initially, all explicitly-
+ * loaded pages have sort value 0, and implicitly-loaded pages (found on disk)
+ * have sort value 10; you may set an individual page higher or lower to
+ * influence its priority relative to other pages.
+ */
 void ConfigPage::
 set_sort(int sort) {
   if (_sort != sort) {
@@ -109,11 +92,9 @@ set_sort(int sort) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::clear
-//       Access: Published
-//  Description: Removes all of the declarations from the page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the declarations from the page.
+ */
 void ConfigPage::
 clear() {
   Declarations::iterator di;
@@ -126,19 +107,13 @@ clear() {
   _signature = string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::read_prc
-//       Access: Published
-//  Description: Reads the contents of a complete prc file, as
-//               returned by the indicated istream, into the current
-//               page file.  Returns true on success, or false on some
-//               I/O error.
-//
-//               This is a low-level interface.  Normally you do not
-//               need to call it directly.  See the global functions
-//               load_prc_file() and unload_prc_file(), defined in
-//               panda/src/putil, for a higher-level interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the contents of a complete prc file, as returned by the indicated
+ * istream, into the current page file.  Returns true on success, or false on
+ * some I/O error.  This is a low-level interface.  Normally you do not need to
+ * call it directly.  See the global functions load_prc_file() and
+ * unload_prc_file(), defined in panda/src/putil, for a higher-level interface.
+ */
 bool ConfigPage::
 read_prc(istream &in) {
   // We must empty the page before we start to read it; otherwise
@@ -219,9 +194,9 @@ read_prc(istream &in) {
     for (int i = 1; i < num_keys && _trust_level == 0; i++) {
       EVP_PKEY *pkey = pkr->get_key(i);
       if (pkey != (EVP_PKEY *)NULL) {
-        int verify_result = 
-          EVP_VerifyFinal((EVP_MD_CTX *)_md_ctx, 
-                          (unsigned char *)_signature.data(), 
+        int verify_result =
+          EVP_VerifyFinal((EVP_MD_CTX *)_md_ctx,
+                          (unsigned char *)_signature.data(),
                           _signature.size(), pkey);
         if (verify_result == 1) {
           _trust_level = i;
@@ -229,7 +204,7 @@ read_prc(istream &in) {
       }
     }
     if (_trust_level == 0) {
-      prc_cat->info() 
+      prc_cat->info()
         << "invalid signature found in " << get_name() << "\n";
     }
   }
@@ -245,13 +220,10 @@ read_prc(istream &in) {
   return !failed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::read_encrypted_prc
-//       Access: Published
-//  Description: Automatically decrypts and reads the stream, given
-//               the indicated password.  Note that if the password is
-//               incorrect, the result may be garbage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Automatically decrypts and reads the stream, given the indicated password.
+ * Note that if the password is incorrect, the result may be garbage.
+ */
 bool ConfigPage::
 read_encrypted_prc(istream &in, const string &password) {
 #ifdef HAVE_OPENSSL
@@ -262,24 +234,18 @@ read_encrypted_prc(istream &in, const string &password) {
 #endif  // HAVE_OPENSSL
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::make_declaration
-//       Access: Published
-//  Description: Adds the indicated variable/value pair as a new
-//               declaration on the page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated variable/value pair as a new declaration on the page.
+ */
 ConfigDeclaration *ConfigPage::
 make_declaration(const string &variable, const string &value) {
   ConfigVariableManager *variable_mgr = ConfigVariableManager::get_global_ptr();
   return make_declaration(variable_mgr->make_variable(variable), value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::make_declaration
-//       Access: Published
-//  Description: Adds the indicated variable/value pair as a new
-//               declaration on the page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated variable/value pair as a new declaration on the page.
+ */
 ConfigDeclaration *ConfigPage::
 make_declaration(ConfigVariableCore *variable, const string &value) {
   ConfigDeclaration *decl = new ConfigDeclaration
@@ -292,14 +258,10 @@ make_declaration(ConfigVariableCore *variable, const string &value) {
   return decl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::delete_declaration
-//       Access: Published
-//  Description: Removes the indicated declaration from the page and
-//               deletes it.  Returns true if the declaration is
-//               successfully removed, false if it was not on the
-//               page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated declaration from the page and deletes it.  Returns true
+ * if the declaration is successfully removed, false if it was not on the page.
+ */
 bool ConfigPage::
 delete_declaration(ConfigDeclaration *decl) {
   Declarations::iterator di;
@@ -315,93 +277,74 @@ delete_declaration(ConfigDeclaration *decl) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::get_num_declarations
-//       Access: Published
-//  Description: Returns the number of declarations on the page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of declarations on the page.
+ */
 size_t ConfigPage::
 get_num_declarations() const {
   return _declarations.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::get_declaration
-//       Access: Published
-//  Description: Returns the nth declaration on the page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth declaration on the page.
+ */
 const ConfigDeclaration *ConfigPage::
 get_declaration(size_t n) const {
   nassertr(n < _declarations.size(), (ConfigDeclaration *)NULL);
   return _declarations[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::modify_declaration
-//       Access: Published
-//  Description: Returns a modifiable pointer to the nth declaration
-//               on the page.  Any modifications will appear in the
-//               output, if the page is written out with
-//               ConfigPage::write().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable pointer to the nth declaration on the page.  Any
+ * modifications will appear in the output, if the page is written out with
+ * ConfigPage::write().
+ */
 ConfigDeclaration *ConfigPage::
 modify_declaration(size_t n) {
   nassertr(n < _declarations.size(), (ConfigDeclaration *)NULL);
   return _declarations[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::get_variable_name
-//       Access: Published
-//  Description: Returns the variable named by the nth declaration on
-//               the page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the variable named by the nth declaration on the page.
+ */
 string ConfigPage::
 get_variable_name(size_t n) const {
   nassertr(n < _declarations.size(), string());
   return _declarations[n]->get_variable()->get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::get_string_value
-//       Access: Published
-//  Description: Returns the value assigned by the nth declaration on
-//               the page.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value assigned by the nth declaration on the page.
+ */
 string ConfigPage::
 get_string_value(size_t n) const {
   nassertr(n < _declarations.size(), string());
   return _declarations[n]->get_string_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::is_variable_used
-//       Access: Published
-//  Description: Returns true if the nth active variable on
-//               the page has been used by code, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the nth active variable on the page has been used by code,
+ * false otherwise.
+ */
 bool ConfigPage::
 is_variable_used(size_t n) const {
   nassertr(n < _declarations.size(), false);
   return _declarations[n]->get_variable()->is_used();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigPage::
 output(ostream &out) const {
   out << "ConfigPage " << get_name() << ", " << get_num_declarations()
       << " declarations.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::output_brief_signature
-//       Access: Published
-//  Description: Outputs the first few hex digits of the signature.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the first few hex digits of the signature.
+ */
 void ConfigPage::
 output_brief_signature(ostream &out) const {
   size_t num_bytes = min(_signature.size(), (size_t)8);
@@ -424,11 +367,9 @@ output_brief_signature(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigPage::
 write(ostream &out) const {
   Declarations::const_iterator di;
@@ -437,13 +378,10 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::read_prc_line
-//       Access: Private
-//  Description: Handles reading in a single line from a .prc file.
-//               This is called internally by read_prc() for each
-//               line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles reading in a single line from a .prc file.  This is called internally
+ * by read_prc() for each line.
+ */
 void ConfigPage::
 read_prc_line(const string &line) {
   if (line.substr(0, 7) == "##!sig ") {
@@ -505,11 +443,9 @@ read_prc_line(const string &line) {
   make_declaration(variable, value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigPage::hex_digit
-//       Access: Private, Static
-//  Description: Decodes a hex digit into its numeric value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes a hex digit into its numeric value.
+ */
 unsigned int ConfigPage::
 hex_digit(unsigned char digit) {
   if (isalpha(digit)) {

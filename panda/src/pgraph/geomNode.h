@@ -26,13 +26,11 @@
 
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomNode
-// Description : A node that holds Geom objects, renderable pieces of
-//               geometry.  This is the primary kind of leaf node in
-//               the scene graph; almost all visible objects will be
-//               contained in a GeomNode somewhere.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that holds Geom objects, renderable pieces of geometry.  This is the
+ * primary kind of leaf node in the scene graph; almost all visible objects will
+ * be contained in a GeomNode somewhere.
+ */
 class EXPCL_PANDA_PGRAPH GeomNode : public PandaNode {
 PUBLISHED:
   explicit GeomNode(const string &name);
@@ -46,7 +44,7 @@ public:
                                          int attrib_types,
                                          GeomTransformer &transformer);
   virtual void xform(const LMatrix4 &mat);
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
   virtual CPT(TransformState)
     calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                       bool &found_any,
@@ -200,7 +198,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

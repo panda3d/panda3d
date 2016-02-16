@@ -19,10 +19,9 @@
 #include "physxEnums.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxMaterialDesc
-// Description : Descriptor class for materials. See PhysxMaterial.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for materials.  See PhysxMaterial.
+ */
 class EXPCL_PANDAPHYSX PhysxMaterialDesc : public PhysxEnums {
 
 PUBLISHED:

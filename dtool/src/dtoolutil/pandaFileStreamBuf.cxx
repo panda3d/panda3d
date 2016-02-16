@@ -29,18 +29,16 @@ PandaFileStreamBuf::NewlineMode PandaFileStreamBuf::_newline_mode = NM_native;
 
 static const size_t file_buffer_size = 4096;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PandaFileStreamBuf::
 PandaFileStreamBuf() {
   _is_open = false;
   _open_mode = (ios::openmode)0;
 
   _last_read_nl = 0;
-  
+
 #ifdef _WIN32
   // Windows case.
   _handle = NULL;
@@ -70,11 +68,9 @@ PandaFileStreamBuf() {
   _ppos = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PandaFileStreamBuf::
 ~PandaFileStreamBuf() {
   close();
@@ -83,11 +79,9 @@ PandaFileStreamBuf::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::open
-//       Access: Public
-//  Description: Attempts to open the file for input and/or output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the file for input and/or output.
+ */
 void PandaFileStreamBuf::
 open(const char *filename, ios::openmode mode) {
   close();
@@ -143,7 +137,7 @@ open(const char *filename, ios::openmode mode) {
     // The file was successfully opened and locked.
     _is_open = true;
   }
-  
+
 #else
   // Posix case.
   int flags = 0;
@@ -183,17 +177,12 @@ open(const char *filename, ios::openmode mode) {
 }
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::attach
-//       Access: Public
-//  Description: Connects the file stream to the existing OS-defined
-//               stream, presumably opened via a low-level OS call.
-//               The filename is for reporting only.  When the file
-//               stream is closed, it will also close the underlying
-//               OS handle.
-//
-//               This function is the Windows-specific variant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Connects the file stream to the existing OS-defined stream, presumably opened
+ * via a low-level OS call.  The filename is for reporting only.  When the file
+ * stream is closed, it will also close the underlying OS handle.  This function
+ * is the Windows-specific variant.
+ */
 void PandaFileStreamBuf::
 attach(const char *filename, HANDLE handle, ios::openmode mode) {
   close();
@@ -216,17 +205,12 @@ attach(const char *filename, HANDLE handle, ios::openmode mode) {
 #endif  // _WIN32
 
 #ifndef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::attach
-//       Access: Public
-//  Description: Connects the file stream to the existing OS-defined
-//               stream, presumably opened via a low-level OS call.
-//               The filename is for reporting only.  When the file
-//               stream is closed, it will also close the underlying
-//               OS handle.
-//
-//               This function is the Posix-specific variant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Connects the file stream to the existing OS-defined stream, presumably opened
+ * via a low-level OS call.  The filename is for reporting only.  When the file
+ * stream is closed, it will also close the underlying OS handle.  This function
+ * is the Posix-specific variant.
+ */
 void PandaFileStreamBuf::
 attach(const char *filename, int fd, ios::openmode mode) {
   close();
@@ -248,21 +232,17 @@ attach(const char *filename, int fd, ios::openmode mode) {
 }
 #endif  // _WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::is_open
-//       Access: Public
-//  Description: Returns true if the file is open, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file is open, false otherwise.
+ */
 bool PandaFileStreamBuf::
 is_open() const {
   return _is_open;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::close
-//       Access: Public
-//  Description: Empties the buffer and closes the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the buffer and closes the file.
+ */
 void PandaFileStreamBuf::
 close() {
   // Make sure the write buffer is flushed.
@@ -290,11 +270,9 @@ close() {
   gbump(egptr() - gptr());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::seekoff
-//       Access: Public, Virtual
-//  Description: Implements seeking within the stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements seeking within the stream.
+ */
 streampos PandaFileStreamBuf::
 seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   streampos result = -1;
@@ -320,17 +298,17 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     assert(_gpos >= 0);
     streampos cur_pos = _gpos;
     streampos new_pos = cur_pos;
-    
+
     // Now adjust the data pointer appropriately.
     switch (dir) {
     case ios::beg:
       new_pos = (streampos)off;
       break;
-      
+
     case ios::cur:
       new_pos = (streampos)(cur_pos + off);
       break;
-      
+
     case ios::end:
 #ifdef _WIN32
       // Windows case.
@@ -366,17 +344,17 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     size_t n = pptr() - pbase();
     streampos cur_pos = _ppos + (streamoff)n;
     streampos new_pos = cur_pos;
-    
+
     // Now adjust the data pointer appropriately.
     switch (dir) {
     case ios::beg:
       new_pos = (streampos)off;
       break;
-      
+
     case ios::cur:
       new_pos = (streampos)(cur_pos + off);
       break;
-      
+
     case ios::end:
 #ifdef _WIN32
       // Windows case.
@@ -407,31 +385,23 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::seekpos
-//       Access: Public, Virtual
-//  Description: A variant on seekoff() to implement seeking within a
-//               stream.
-//
-//               The MSDN Library claims that it is only necessary to
-//               redefine seekoff(), and not seekpos() as well, as the
-//               default implementation of seekpos() is supposed to
-//               map to seekoff() exactly as I am doing here; but in
-//               fact it must do something else, because seeking
-//               didn't work on Windows until I redefined this
-//               function as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * A variant on seekoff() to implement seeking within a stream.  The MSDN
+ * Library claims that it is only necessary to redefine seekoff(), and not
+ * seekpos() as well, as the default implementation of seekpos() is supposed to
+ * map to seekoff() exactly as I am doing here; but in fact it must do something
+ * else, because seeking didn't work on Windows until I redefined this function
+ * as well.
+ */
 streampos PandaFileStreamBuf::
 seekpos(streampos pos, ios_openmode which) {
   return seekoff(pos, ios::beg, which);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::overflow
-//       Access: Protected, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int PandaFileStreamBuf::
 overflow(int ch) {
   bool okflag = true;
@@ -462,12 +432,9 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::sync
-//       Access: Protected, Virtual
-//  Description: Called by the system iostream implementation to
-//               implement a flush operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system iostream implementation to implement a flush operation.
+ */
 int PandaFileStreamBuf::
 sync() {
   size_t n = pptr() - pbase();
@@ -481,12 +448,10 @@ sync() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int PandaFileStreamBuf::
 underflow() {
   // Sometimes underflow() is called even if the buffer is not empty.
@@ -518,13 +483,10 @@ underflow() {
   return (unsigned char)*gptr();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::read_chars
-//       Access: Private
-//  Description: Attempts to extract the indicated number of
-//               characters from the current file position.  Returns
-//               the number of characters extracted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to extract the indicated number of characters from the current file
+ * position.  Returns the number of characters extracted.
+ */
 size_t PandaFileStreamBuf::
 read_chars(char *start, size_t length) {
   if (length == 0 || !_is_open) {
@@ -572,12 +534,9 @@ read_chars(char *start, size_t length) {
   return final_length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::write_chars
-//       Access: Private
-//  Description: Outputs the indicated stream of characters to the
-//               current file position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the indicated stream of characters to the current file position.
+ */
 size_t PandaFileStreamBuf::
 write_chars(const char *start, size_t length) {
   if (length == 0) {
@@ -608,7 +567,7 @@ write_chars(const char *start, size_t length) {
 #else
     // Even the Mac uses Unix-style EOL characters these days.
     this_newline_mode = NM_unix;
-#endif 
+#endif
   }
 
   if (this_newline_mode == NM_binary) {
@@ -647,19 +606,16 @@ write_chars(const char *start, size_t length) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::read_chars_raw
-//       Access: Private
-//  Description: Reads raw data from the file directly into the
-//               indicated buffer.  Returns the number of characters
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads raw data from the file directly into the indicated buffer.  Returns the
+ * number of characters read.
+ */
 size_t PandaFileStreamBuf::
 read_chars_raw(char *start, size_t length) {
   if (length == 0) {
     return 0;
   }
-  
+
 #ifdef _WIN32
   // Windows case.
   OVERLAPPED overlapped;
@@ -668,7 +624,7 @@ read_chars_raw(char *start, size_t length) {
   gpos.QuadPart = _gpos;
   overlapped.Offset = gpos.LowPart;
   overlapped.OffsetHigh = gpos.HighPart;
-  
+
   DWORD bytes_read = 0;
   BOOL success = ReadFile(_handle, start, length, &bytes_read, &overlapped);
   int pass = 0;
@@ -697,7 +653,7 @@ read_chars_raw(char *start, size_t length) {
   }
 
   length = bytes_read;
-  
+
 #else
   // Posix case.
   if (lseek(_fd, _gpos, SEEK_SET) == -1) {
@@ -705,7 +661,7 @@ read_chars_raw(char *start, size_t length) {
       << "Error seeking to position " << _gpos << " in " << _filename << "\n";
     return 0;
   }
-  
+
   int result = ::read(_fd, start, length);
   while (result < 0) {
     if (errno == EAGAIN) {
@@ -726,18 +682,16 @@ read_chars_raw(char *start, size_t length) {
   return length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::write_chars_raw
-//       Access: Private
-//  Description: Writes the indicated buffer directly to the file
-//               stream.  Returns the number of characters written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated buffer directly to the file stream.  Returns the number
+ * of characters written.
+ */
 size_t PandaFileStreamBuf::
 write_chars_raw(const char *start, size_t length) {
   if (length == 0 || !_is_open) {
     return 0;
   }
-  
+
 #ifdef _WIN32
   // Windows case.
   OVERLAPPED overlapped;
@@ -751,7 +705,7 @@ write_chars_raw(const char *start, size_t length) {
     overlapped.Offset = -1;
     overlapped.OffsetHigh = -1;
   }
-  
+
   DWORD bytes_written = 0;
   BOOL success = WriteFile(_handle, start, length, &bytes_written, &overlapped);
   int pass = 0;
@@ -782,7 +736,7 @@ write_chars_raw(const char *start, size_t length) {
   assert(bytes_written == length);
   _ppos += bytes_written;
   assert(_ppos >= 0);
-  
+
 #else
   // Posix case.
   if (!(_open_mode & ios::app)) {
@@ -806,7 +760,7 @@ write_chars_raw(const char *start, size_t length) {
       }
       continue;
     }
-    
+
     start += result;
     remaining -= result;
     _ppos += result;
@@ -817,17 +771,12 @@ write_chars_raw(const char *start, size_t length) {
   return length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::decode_newlines
-//       Access: Private
-//  Description: Converts a buffer from universal newlines to \n.
-//
-//               Returns the number of characters placed in dest.
-//               This may also set (or read) the value of
-//               _last_read_nl, which is preserved from call-to-call
-//               to deal with newline combinations that straddle a
-//               read operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a buffer from universal newlines to \n.  Returns the number of
+ * characters placed in dest.  This may also set (or read) the value of
+ * _last_read_nl, which is preserved from call-to-call to deal with newline
+ * combinations that straddle a read operation.
+ */
 size_t PandaFileStreamBuf::
 decode_newlines(char *dest, size_t dest_length,
                 const char *source, size_t source_length) {
@@ -911,16 +860,11 @@ decode_newlines(char *dest, size_t dest_length,
   return q - dest;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::encode_newlines_msdos
-//       Access: Private
-//  Description: Windows case: Converts a buffer from \n to \n\r.
-//
-//               To allow for full buffer expansion, dest_length
-//               should be at least 2*source_length.
-//
-//               Returns the number of characters placed in dest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Windows case: Converts a buffer from \n to \n\r.  To allow for full buffer
+ * expansion, dest_length should be at least 2*source_length.  Returns the
+ * number of characters placed in dest.
+ */
 size_t PandaFileStreamBuf::
 encode_newlines_msdos(char *dest, size_t dest_length,
                       const char *source, size_t source_length) {
@@ -951,19 +895,13 @@ encode_newlines_msdos(char *dest, size_t dest_length,
   return q - dest;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::encode_newlines_unix
-//       Access: Private
-//  Description: Unix case: Converts a buffer from \n to \n.
-//
-//               This is, of course, no conversion at all; but we do
-//               strip out \r characters if they appear in the buffer;
-//               this will help programmers to realize when they have
-//               incorrectly tagged a binary file with text mode, even
-//               on a Posix environment.
-//
-//               Returns the number of characters placed in dest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unix case: Converts a buffer from \n to \n.  This is, of course, no
+ * conversion at all; but we do strip out \r characters if they appear in the
+ * buffer; this will help programmers to realize when they have incorrectly
+ * tagged a binary file with text mode, even on a Posix environment.  Returns
+ * the number of characters placed in dest.
+ */
 size_t PandaFileStreamBuf::
 encode_newlines_unix(char *dest, size_t dest_length,
                      const char *source, size_t source_length) {
@@ -987,13 +925,10 @@ encode_newlines_unix(char *dest, size_t dest_length,
   return q - dest;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::encode_newlines_mac
-//       Access: Private
-//  Description: Classic Mac case: Converts a buffer from \n to \r.
-//
-//               Returns the number of characters placed in dest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Classic Mac case: Converts a buffer from \n to \r.  Returns the number of
+ * characters placed in dest.
+ */
 size_t PandaFileStreamBuf::
 encode_newlines_mac(char *dest, size_t dest_length,
                     const char *source, size_t source_length) {

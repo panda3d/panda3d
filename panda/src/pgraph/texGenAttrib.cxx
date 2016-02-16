@@ -24,21 +24,16 @@ CPT(RenderAttrib) TexGenAttrib::_empty_attrib;
 TypeHandle TexGenAttrib::_type_handle;
 int TexGenAttrib::_attrib_slot;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TexGenAttrib::
 ~TexGenAttrib() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a TexGenAttrib that generates no stages at
-//               all.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a TexGenAttrib that generates no stages at all.
+ */
 CPT(RenderAttrib) TexGenAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib
@@ -50,37 +45,28 @@ make() {
   return _empty_attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::make
-//       Access: Published, Static
-//  Description: Constructs a TexGenAttrib that generates just the
-//               indicated stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a TexGenAttrib that generates just the indicated stage.
+ */
 CPT(RenderAttrib) TexGenAttrib::
 make(TextureStage *stage, TexGenAttrib::Mode mode) {
   return DCAST(TexGenAttrib, make())->add_stage(stage, mode);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::make_default
-//       Access: Published, Static
-//  Description: Returns a RenderAttrib that corresponds to whatever
-//               the standard default properties for render attributes
-//               of this type ought to be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderAttrib that corresponds to whatever the standard default
+ * properties for render attributes of this type ought to be.
+ */
 CPT(RenderAttrib) TexGenAttrib::
 make_default() {
   return return_new(new TexGenAttrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::add_stage
-//       Access: Published, Static
-//  Description: Returns a new TexGenAttrib just like this one,
-//               with the indicated generation mode for the given
-//               stage.  If this stage already exists, its mode is
-//               replaced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TexGenAttrib just like this one, with the indicated generation
+ * mode for the given stage.  If this stage already exists, its mode is
+ * replaced.
+ */
 CPT(RenderAttrib) TexGenAttrib::
 add_stage(TextureStage *stage, TexGenAttrib::Mode mode) const {
   nassertr(mode != M_constant, this);
@@ -95,17 +81,12 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::add_stage
-//       Access: Published, Static
-//  Description: Returns a new TexGenAttrib just like this one,
-//               with the indicated generation mode for the given
-//               stage.  If this stage already exists, its mode is
-//               replaced.
-//
-//               This variant also accepts constant_value, which is
-//               only meaningful if mode is M_constant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TexGenAttrib just like this one, with the indicated generation
+ * mode for the given stage.  If this stage already exists, its mode is
+ * replaced.  This variant also accepts constant_value, which is only meaningful
+ * if mode is M_constant.
+ */
 CPT(RenderAttrib) TexGenAttrib::
 add_stage(TextureStage *stage, TexGenAttrib::Mode mode,
           const LTexCoord3 &constant_value) const {
@@ -122,12 +103,10 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode,
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::remove_stage
-//       Access: Published, Static
-//  Description: Returns a new TexGenAttrib just like this one,
-//               with the indicated stage removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new TexGenAttrib just like this one, with the indicated stage
+ * removed.
+ */
 CPT(RenderAttrib) TexGenAttrib::
 remove_stage(TextureStage *stage) const {
   Stages::const_iterator si;
@@ -149,37 +128,29 @@ remove_stage(TextureStage *stage) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::is_empty
-//       Access: Published
-//  Description: Returns true if no stages are defined in the
-//               TexGenAttrib, false if at least one is.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if no stages are defined in the TexGenAttrib, false if at least
+ * one is.
+ */
 bool TexGenAttrib::
 is_empty() const {
   return _stages.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::has_stage
-//       Access: Published
-//  Description: Returns true if there is a mode associated with
-//               the indicated stage, or false otherwise (in which
-//               case get_transform(stage) will return M_off).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a mode associated with the indicated stage, or false
+ * otherwise (in which case get_transform(stage) will return M_off).
+ */
 bool TexGenAttrib::
 has_stage(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
   return (mi != _stages.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::get_mode
-//       Access: Published
-//  Description: Returns the generation mode associated with
-//               the named texture stage, or M_off if
-//               nothing is associated with the indicated stage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the generation mode associated with the named texture stage, or M_off
+ * if nothing is associated with the indicated stage.
+ */
 TexGenAttrib::Mode TexGenAttrib::
 get_mode(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
@@ -189,27 +160,21 @@ get_mode(TextureStage *stage) const {
   return M_off;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::has_gen_texcoord_stage
-//       Access: Published
-//  Description: Returns true if the indicated TextureStage will have
-//               texture coordinates generated for it automatically
-//               (and thus there is no need to upload the texture
-//               coordinates encoded in the vertices).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated TextureStage will have texture coordinates
+ * generated for it automatically (and thus there is no need to upload the
+ * texture coordinates encoded in the vertices).
+ */
 bool TexGenAttrib::
 has_gen_texcoord_stage(TextureStage *stage) const {
   NoTexCoordStages::const_iterator mi = _no_texcoords.find(stage);
   return (mi != _no_texcoords.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::get_constant_value
-//       Access: Published
-//  Description: Returns the constant value associated with the named
-//               texture stage.  This is only meaningful if the mode
-//               is M_constant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the constant value associated with the named texture stage.  This is
+ * only meaningful if the mode is M_constant.
+ */
 const LTexCoord3 &TexGenAttrib::
 get_constant_value(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
@@ -219,11 +184,9 @@ get_constant_value(TextureStage *stage) const {
   return LTexCoord3::zero();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TexGenAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
@@ -279,21 +242,14 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TexGenAttrib
-//               types to return a unique number indicating whether
-//               this TexGenAttrib is equivalent to the other one.
-//
-//               This should return 0 if the two TexGenAttrib objects
-//               are equivalent, a number less than zero if this one
-//               should be sorted before the other one, and a number
-//               greater than zero otherwise.
-//
-//               This will only be called with two TexGenAttrib
-//               objects whose get_type() functions return the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived TexGenAttrib types to return a unique
+ * number indicating whether this TexGenAttrib is equivalent to the other one.
+ * This should return 0 if the two TexGenAttrib objects are equivalent, a number
+ * less than zero if this one should be sorted before the other one, and a
+ * number greater than zero otherwise.  This will only be called with two
+ * TexGenAttrib objects whose get_type() functions return the same.
+ */
 int TexGenAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const TexGenAttrib *ta = (const TexGenAttrib *)other;
@@ -334,16 +290,12 @@ compare_to_impl(const RenderAttrib *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::get_hash_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to return a unique hash for these particular
-//               properties.  RenderAttribs that compare the same with
-//               compare_to_impl(), above, should return the same
-//               hash; RenderAttribs that compare differently should
-//               return a different hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to return a unique
+ * hash for these particular properties.  RenderAttribs that compare the same
+ * with compare_to_impl(), above, should return the same hash; RenderAttribs
+ * that compare differently should return a different hash.
+ */
 size_t TexGenAttrib::
 get_hash_impl() const {
   size_t hash = 0;
@@ -362,23 +314,16 @@ get_hash_impl() const {
   return hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               This should return the result of applying the other
-//               RenderAttrib to a node in the scene graph below this
-//               RenderAttrib, which was already applied.  In most
-//               cases, the result is the same as the other
-//               RenderAttrib (that is, a subsequent RenderAttrib
-//               completely replaces the preceding one).  On the other
-//               hand, some kinds of RenderAttrib (for instance,
-//               ColorTransformAttrib) might combine in meaningful
-//               ways.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.  This should
+ * return the result of applying the other RenderAttrib to a node in the scene
+ * graph below this RenderAttrib, which was already applied.  In most cases, the
+ * result is the same as the other RenderAttrib (that is, a subsequent
+ * RenderAttrib completely replaces the preceding one).  On the other hand, some
+ * kinds of RenderAttrib (for instance, ColorTransformAttrib) might combine in
+ * meaningful ways.
+ */
 CPT(RenderAttrib) TexGenAttrib::
 compose_impl(const RenderAttrib *other) const {
   const TexGenAttrib *ta = (const TexGenAttrib *)other;
@@ -427,15 +372,11 @@ compose_impl(const RenderAttrib *other) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::invert_compose_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify how two consecutive RenderAttrib
-//               objects of the same type interact.
-//
-//               See invert_compose() and compose_impl().
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overridden by derived RenderAttrib types to specify how two
+ * consecutive RenderAttrib objects of the same type interact.  See
+ * invert_compose() and compose_impl().
+ */
 CPT(RenderAttrib) TexGenAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
   const TexGenAttrib *ta = (const TexGenAttrib *)other;
@@ -484,25 +425,19 @@ invert_compose_impl(const RenderAttrib *other) const {
   return return_new(attrib);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::get_auto_shader_attrib_impl
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPT(RenderAttrib) TexGenAttrib::
 get_auto_shader_attrib_impl(const RenderState *state) const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::filled_stages
-//       Access: Private
-//  Description: This method is to be called after the _stages map has
-//               been built up internally through some artificial
-//               means; it copies the appropriate settings to
-//               _no_texcoords and updates other internal cache values
-//               appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is to be called after the _stages map has been built up
+ * internally through some artificial means; it copies the appropriate settings
+ * to _no_texcoords and updates other internal cache values appropriately.
+ */
 void TexGenAttrib::
 filled_stages() {
   Stages::iterator ri;
@@ -513,13 +448,10 @@ filled_stages() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::record_stage
-//       Access: Private
-//  Description: Updates the appropriate internal caches before adding
-//               the indicated stage with the given mode to the
-//               _stages map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the appropriate internal caches before adding the indicated stage
+ * with the given mode to the _stages map.
+ */
 void TexGenAttrib::
 record_stage(TextureStage *stage, TexGenAttrib::ModeDef &mode_def) {
   switch (mode_def._mode) {
@@ -537,23 +469,18 @@ record_stage(TextureStage *stage, TexGenAttrib::ModeDef &mode_def) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               TexGenAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type TexGenAttrib.
+ */
 void TexGenAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void TexGenAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
@@ -570,13 +497,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int TexGenAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
@@ -594,14 +518,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type TexGenAttrib is encountered
-//               in the Bam file.  It should create the TexGenAttrib
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * TexGenAttrib is encountered in the Bam file.  It should create the
+ * TexGenAttrib and extract its information from the file.
+ */
 TypedWritable *TexGenAttrib::
 make_from_bam(const FactoryParams &params) {
   TexGenAttrib *attrib = new TexGenAttrib;
@@ -614,13 +535,10 @@ make_from_bam(const FactoryParams &params) {
   return attrib;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new TexGenAttrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new TexGenAttrib.
+ */
 void TexGenAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);

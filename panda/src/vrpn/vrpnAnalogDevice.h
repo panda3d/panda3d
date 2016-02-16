@@ -21,14 +21,11 @@
 class VrpnClient;
 class VrpnAnalog;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnAnalogDevice
-// Description : The Panda interface to a VRPN analog device.  This
-//               object will be returned by VrpnClient::make_device(),
-//               for attaching to a AnalogNode.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Panda interface to a VRPN analog device.  This object will be returned by
+ * VrpnClient::make_device(), for attaching to a AnalogNode.  This class does
+ * not need to be exported from the DLL.
+ */
 class VrpnAnalogDevice : public ClientAnalogDevice {
 public:
   VrpnAnalogDevice(VrpnClient *client, const string &device_name,

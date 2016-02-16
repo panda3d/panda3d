@@ -21,10 +21,9 @@
 
 class PhysxTriangleMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxTriangleMeshShapeDesc
-// Description : Descriptor class for PhysxTriangleMeshShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxTriangleMeshShape.
+ */
 class EXPCL_PANDAPHYSX PhysxTriangleMeshShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

@@ -18,12 +18,11 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceParameter
-// Description : Records some parameter value of a surface material,
-//               as an entry within a LwoSurface chunk.  The meaning
-//               of the value is determined by the id of this chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records some parameter value of a surface material, as an entry within a
+ * LwoSurface chunk.  The meaning of the value is determined by the id of this
+ * chunk.
+ */
 class LwoSurfaceParameter : public LwoChunk {
 public:
   PN_stdfloat _value;
@@ -52,5 +51,3 @@ private:
 };
 
 #endif
-
-

@@ -11,32 +11,25 @@
  * @date 2009-06-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline HandleStream::
 HandleStream() : iostream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStream::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline HandleStream::
 ~HandleStream() {
   close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStream::open_read
-//       Access: Public
-//  Description: Attempts to open the given handle for input.  The
-//               stream may not be simultaneously open for input and
-//               output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the given handle for input.  The stream may not be
+ * simultaneously open for input and output.
+ */
 inline void HandleStream::
 open_read(FHandle handle) {
   clear((ios::iostate)0);
@@ -46,13 +39,10 @@ open_read(FHandle handle) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStream::open_write
-//       Access: Public
-//  Description: Attempts to open the given handle for output.  The
-//               stream may not be simultaneously open for input and
-//               output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the given handle for output.  The stream may not be
+ * simultaneously open for input and output.
+ */
 inline void HandleStream::
 open_write(FHandle handle) {
   clear((ios::iostate)0);
@@ -62,47 +52,36 @@ open_write(FHandle handle) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStream::close
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline void HandleStream::
 close() {
   _buf.close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStream::close_handle
-//       Access: Public
-//  Description: Closes the underlying handle, *without* attempting to
-//               flush the stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the underlying handle, *without* attempting to flush the stream.
+ */
 inline void HandleStream::
 close_handle() {
   _buf.close_handle();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStream::get_handle
-//       Access: Public
-//  Description: Returns the handle that was passed to open_read() or
-//               open_write().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the handle that was passed to open_read() or open_write().
+ */
 inline FHandle HandleStream::
 get_handle() const {
   return _buf.get_handle();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStream::has_gdata
-//       Access: Public
-//  Description: Returns true if there is data in the stream's "get"
-//               buffer, meaning that at least one character can be
-//               extracted from the stream without making an OS read()
-//               call.  Returns false if the get buffer is empty,
-//               meaning the next read call will hit the OS.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is data in the stream's "get" buffer, meaning that at
+ * least one character can be extracted from the stream without making an OS
+ * read() call.  Returns false if the get buffer is empty, meaning the next read
+ * call will hit the OS.
+ */
 inline bool HandleStream::
 has_gdata() const {
   return _buf.has_gdata();

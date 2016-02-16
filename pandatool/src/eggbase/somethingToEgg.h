@@ -22,12 +22,10 @@
 
 class SomethingToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SomethingToEgg
-// Description : This is the general base class for a file-converter
-//               program that reads some model file format and
-//               generates an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the general base class for a file-converter program that reads some
+ * model file format and generates an egg file.
+ */
 class SomethingToEgg : public EggConverter {
 public:
   SomethingToEgg(const string &format_name,
@@ -76,5 +74,3 @@ protected:
 };
 
 #endif
-
-

@@ -14,52 +14,37 @@
 template<class Base>
 TypeHandle NodeRefCountObj<Base>::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::Constructor
-//       Access: Protected
-//  Description: The ReferenceCount constructor is protected because
-//               you almost never want to create just a ReferenceCount
-//               object by itself, and it's probably a mistake if you
-//               try.
-//
-//               ReferenceCount doesn't store any useful information
-//               in its own right; its only purpose is to add
-//               reference-counting to some other class via
-//               inheritance.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ReferenceCount constructor is protected because you almost never want to
+ * create just a ReferenceCount object by itself, and it's probably a mistake if
+ * you try.  ReferenceCount doesn't store any useful information in its own
+ * right; its only purpose is to add reference-counting to some other class via
+ * inheritance.
+ */
 INLINE NodeReferenceCount::
 NodeReferenceCount() {
   _node_ref_count = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::Copy Constructor
-//       Access: Protected
-//  Description: The copies of reference-counted objects do not
-//               themselves inherit the reference count!
-//
-//               This copy constructor is protected because you almost
-//               never want to create just a ReferenceCount object by
-//               itself, and it's probably a mistake if you try.
-////////////////////////////////////////////////////////////////////
+/**
+ * The copies of reference-counted objects do not themselves inherit the
+ * reference count!  This copy constructor is protected because you almost never
+ * want to create just a ReferenceCount object by itself, and it's probably a
+ * mistake if you try.
+ */
 INLINE NodeReferenceCount::
 NodeReferenceCount(const NodeReferenceCount &copy) : ReferenceCount(copy) {
   _node_ref_count = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::Copy Assignment Operator
-//       Access: Protected
-//  Description: The copies of reference-counted objects do not
-//               themselves inherit the reference count!
-//
-//               This copy assignment operator is protected because
-//               you almost never want to copy just a ReferenceCount
-//               object by itself, and it's probably a mistake if you
-//               try.  Instead, this should only be called from a
-//               derived class that implements this operator and then
-//               calls up the inheritance chain.
-////////////////////////////////////////////////////////////////////
+/**
+ * The copies of reference-counted objects do not themselves inherit the
+ * reference count!  This copy assignment operator is protected because you
+ * almost never want to copy just a ReferenceCount object by itself, and it's
+ * probably a mistake if you try.  Instead, this should only be called from a
+ * derived class that implements this operator and then calls up the inheritance
+ * chain.
+ */
 INLINE void NodeReferenceCount::
 operator = (const NodeReferenceCount &copy) {
   nassertv(this != NULL);
@@ -76,17 +61,13 @@ operator = (const NodeReferenceCount &copy) {
   ReferenceCount::operator = (copy);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::Destructor
-//       Access: Protected
-//  Description: The ReferenceCount destructor is protected to
-//               discourage users from accidentally trying to delete a
-//               ReferenceCount pointer directly.  This is almost
-//               always a bad idea, since the destructor is not
-//               virtual, and you've almost certainly got some pointer
-//               to something that inherits from ReferenceCount, not
-//               just a plain old ReferenceCount object.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ReferenceCount destructor is protected to discourage users from
+ * accidentally trying to delete a ReferenceCount pointer directly.  This is
+ * almost always a bad idea, since the destructor is not virtual, and you've
+ * almost certainly got some pointer to something that inherits from
+ * ReferenceCount, not just a plain old ReferenceCount object.
+ */
 INLINE NodeReferenceCount::
 ~NodeReferenceCount() {
   nassertv(this != NULL);
@@ -125,11 +106,9 @@ INLINE NodeReferenceCount::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::get_node_ref_count
-//       Access: Published
-//  Description: Returns the current reference count.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current reference count.
+ */
 INLINE int NodeReferenceCount::
 get_node_ref_count() const {
 #ifdef _DEBUG
@@ -138,12 +117,10 @@ get_node_ref_count() const {
   return (int)AtomicAdjust::get(_node_ref_count);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::node_ref
-//       Access: Published
-//  Description: Explicitly increments the node reference count and
-//               the normal reference count simultaneously.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly increments the node reference count and the normal reference count
+ * simultaneously.
+ */
 INLINE void NodeReferenceCount::
 node_ref() const {
 #ifdef _DEBUG
@@ -154,27 +131,21 @@ node_ref() const {
   AtomicAdjust::inc(((NodeReferenceCount *)this)->_node_ref_count);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::node_unref
-//       Access: Published
-//  Description: Explicitly decrements the node reference count and
-//               the normal reference count simultaneously.
-//
-//               The return value is true if the new reference count
-//               is nonzero, false if it is zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly decrements the node reference count and the normal reference count
+ * simultaneously.  The return value is true if the new reference count is
+ * nonzero, false if it is zero.
+ */
 INLINE bool NodeReferenceCount::
 node_unref() const {
   node_unref_only();
   return unref();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::test_ref_count_integrity
-//       Access: Published
-//  Description: Does some easy checks to make sure that the reference
-//               count isn't completely bogus.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does some easy checks to make sure that the reference count isn't completely
+ * bogus.
+ */
 INLINE bool NodeReferenceCount::
 test_ref_count_integrity() const {
 #ifndef NDEBUG
@@ -184,14 +155,11 @@ test_ref_count_integrity() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeReferenceCount::node_unref_only
-//       Access: Protected
-//  Description: Decrements the node reference count without affecting
-//               the normal reference count.  Intended to be called by
-//               derived classes only, presumably to reimplement
-//               node_unref().
-////////////////////////////////////////////////////////////////////
+/**
+ * Decrements the node reference count without affecting the normal reference
+ * count.  Intended to be called by derived classes only, presumably to
+ * reimplement node_unref().
+ */
 INLINE void NodeReferenceCount::
 node_unref_only() const {
 #ifdef _DEBUG
@@ -206,16 +174,13 @@ node_unref_only() const {
   AtomicAdjust::dec(((NodeReferenceCount *)this)->_node_ref_count);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: node_unref_delete
-//  Description: This global helper function will unref the given
-//               ReferenceCount object, and if the reference count
-//               reaches zero, automatically delete it.  It can't be a
-//               member function because it's usually a bad idea to
-//               delete an object from within its own member function.
-//               It's a template function so the destructor doesn't
-//               have to be virtual.
-////////////////////////////////////////////////////////////////////
+/**
+ * This global helper function will unref the given ReferenceCount object, and
+ * if the reference count reaches zero, automatically delete it.  It can't be a
+ * member function because it's usually a bad idea to delete an object from
+ * within its own member function.  It's a template function so the destructor
+ * doesn't have to be virtual.
+ */
 template<class RefCountType>
 INLINE void
 node_unref_delete(RefCountType *ptr) {
@@ -226,32 +191,26 @@ node_unref_delete(RefCountType *ptr) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeRefCountObj::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class Base>
 INLINE NodeRefCountObj<Base>::
 NodeRefCountObj() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeRefCountObj::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class Base>
 INLINE NodeRefCountObj<Base>::
 NodeRefCountObj(const Base &copy) : Base(copy) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeRefCountObj::init_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class Base>
 void NodeRefCountObj<Base>::
 init_type() {

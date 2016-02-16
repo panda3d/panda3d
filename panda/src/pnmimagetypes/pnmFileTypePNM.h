@@ -22,11 +22,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypePNM
-// Description : For reading and writing basic PNM files--*.pbm,
-//               *.ppm, *.pnm.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing basic PNM files--*.pbm, *.ppm, *.pnm.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypePNM : public PNMFileType {
 public:
   PNMFileTypePNM();
@@ -97,5 +95,3 @@ private:
 #endif  // HAVE_PNM
 
 #endif
-
-

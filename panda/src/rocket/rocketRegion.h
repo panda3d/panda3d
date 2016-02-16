@@ -21,11 +21,10 @@
 
 class OrthographicLens;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RocketRegion
-// Description : Represents a region in a window or buffer where
-//               the libRocket UI will be rendered to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a region in a window or buffer where the libRocket UI will be
+ * rendered to.
+ */
 class EXPCL_ROCKET RocketRegion : public DisplayRegion {
 protected:
   RocketRegion(GraphicsOutput *window, const LVecBase4 &dimensions,

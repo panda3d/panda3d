@@ -18,12 +18,10 @@
 #include "perlinNoise2.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StackedPerlinNoise2
-// Description : Implements a multi-layer PerlinNoise, with one or
-//               more high-frequency noise functions added to a
-//               lower-frequency base noise function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a multi-layer PerlinNoise, with one or more high-frequency noise
+ * functions added to a lower-frequency base noise function.
+ */
 class EXPCL_PANDA_MATHUTIL StackedPerlinNoise2 {
 PUBLISHED:
   INLINE StackedPerlinNoise2();
@@ -58,4 +56,3 @@ private:
 #include "stackedPerlinNoise2.I"
 
 #endif
-

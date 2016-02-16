@@ -23,21 +23,19 @@
 class MayaShader;
 class MObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaShaders
-// Description : Collects the set of MayaShaders that have been
-//               encountered so far.
-////////////////////////////////////////////////////////////////////
+/**
+ * Collects the set of MayaShaders that have been encountered so far.
+ */
 class MayaShaders {
 public:
   MayaShaders();
   ~MayaShaders();
   MayaShader *find_shader_for_node(MObject node, bool legacy_shader);
   MayaShader *find_shader_for_shading_engine(MObject engine, bool legacy_shader);
-  
+
   int get_num_shaders() const;
   MayaShader *get_shader(int n) const;
-  
+
   MayaFileToUVSetMap _file_to_uvset;
   pvector<string> _uvset_names;
   void clear();
@@ -52,4 +50,3 @@ private:
 };
 
 #endif
-

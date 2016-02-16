@@ -23,20 +23,14 @@
 class Thread;
 class GraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatGPUTimer
-// Description : This is a special type of PStatTimer that also
-//               uses a timer query on the GSG to measure how long
-//               a task actually takes to execute on the GPU, rather
-//               than how long it took for the API commands to be
-//               queued up.
-//
-//               This class may only be used on the draw thread.
-//
-//               At present, it tracks both the CPU time (like a
-//               regular PStatTimer does) and the GPU time, which
-//               is recorded using a special PStatThread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special type of PStatTimer that also uses a timer query on the GSG
+ * to measure how long a task actually takes to execute on the GPU, rather than
+ * how long it took for the API commands to be queued up.  This class may only
+ * be used on the draw thread.  At present, it tracks both the CPU time (like a
+ * regular PStatTimer does) and the GPU time, which is recorded using a special
+ * PStatThread.
+ */
 class EXPCL_PANDA_DISPLAY PStatGPUTimer : public PStatTimer {
 public:
 #ifdef DO_PSTATS

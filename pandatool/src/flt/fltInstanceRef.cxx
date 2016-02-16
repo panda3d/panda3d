@@ -19,35 +19,28 @@
 
 TypeHandle FltInstanceRef::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInstanceRef::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltInstanceRef::
 FltInstanceRef(FltHeader *header) : FltBead(header) {
   _instance_index = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInstanceRef::get_instance
-//       Access: Public
-//  Description: Returns the instance subtree referenced by this node,
-//               or NULL if the reference is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the instance subtree referenced by this node, or NULL if the
+ * reference is invalid.
+ */
 FltInstanceDefinition *FltInstanceRef::
 get_instance() const {
   return _header->get_instance(_instance_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInstanceRef::write
-//       Access: Public
-//  Description: Writes a multiple-line description of the record and
-//               all of its children.  This is a human-readable
-//               description, primarily for debugging; to write a flt
-//               file, use FltHeader::write_flt().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a multiple-line description of the record and all of its children.
+ * This is a human-readable description, primarily for debugging; to write a flt
+ * file, use FltHeader::write_flt().
+ */
 void FltInstanceRef::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "instance";
@@ -60,14 +53,11 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInstanceRef::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltInstanceRef::
 extract_record(FltRecordReader &reader) {
   if (!FltBead::extract_record(reader)) {
@@ -84,13 +74,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInstanceRef::write_record_and_children
-//       Access: Protected, Virtual
-//  Description: Writes this record out to the flt file, along with all
-//               of its ancillary records and children records.  Returns
-//               FE_ok on success, or something else on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes this record out to the flt file, along with all of its ancillary
+ * records and children records.  Returns FE_ok on success, or something else on
+ * error.
+ */
 FltError FltInstanceRef::
 write_record_and_children(FltRecordWriter &writer) const {
   // First, make sure our instance definition has already been written.
@@ -103,14 +91,11 @@ write_record_and_children(FltRecordWriter &writer) const {
   return FltBead::write_record_and_children(writer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInstanceRef::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltInstanceRef::
 build_record(FltRecordWriter &writer) const {
   if (!FltBead::build_record(writer)) {

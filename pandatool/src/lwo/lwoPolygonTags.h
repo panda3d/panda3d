@@ -18,13 +18,11 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoPolygonTags
-// Description : An association of polygons defined in the most recent
-//               LwoPolygons chunk to tag ids defined in the most
-//               recent LwoTags chunk.  This associated properties
-//               with the polygons, depending on the tag_type.
-////////////////////////////////////////////////////////////////////
+/**
+ * An association of polygons defined in the most recent LwoPolygons chunk to
+ * tag ids defined in the most recent LwoTags chunk.  This associated properties
+ * with the polygons, depending on the tag_type.
+ */
 class LwoPolygonTags : public LwoChunk {
 public:
   bool has_tag(int polygon_index) const;
@@ -59,5 +57,3 @@ private:
 };
 
 #endif
-
-

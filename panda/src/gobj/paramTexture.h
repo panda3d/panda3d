@@ -19,12 +19,10 @@
 #include "samplerState.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParamTextureSampler
-// Description : A class object for storing a pointer to a Texture
-//               along with a sampler state that indicates how to
-//               to sample the given texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class object for storing a pointer to a Texture along with a sampler state
+ * that indicates how to to sample the given texture.
+ */
 class EXPCL_PANDA_GOBJ ParamTextureSampler : public ParamValueBase {
 protected:
   INLINE ParamTextureSampler() {};
@@ -73,15 +71,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParamTextureImage
-// Description : A class object for storing a pointer to a Texture
-//               along with a set of properties that indicates which
-//               image to bind to a shader input.
-//
-//               This class is useful for binding texture images
-//               to a shader, which is a fairly esoteric feature.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class object for storing a pointer to a Texture along with a set of
+ * properties that indicates which image to bind to a shader input.  This class
+ * is useful for binding texture images to a shader, which is a fairly esoteric
+ * feature.
+ */
 class EXPCL_PANDA_GOBJ ParamTextureImage : public ParamValueBase {
 protected:
   INLINE ParamTextureImage() {};

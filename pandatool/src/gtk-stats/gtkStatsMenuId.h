@@ -16,11 +16,10 @@
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//        Enum : GtkStatsMenuId
-// Description : The enumerated values here are used for menu ID's for
-//               the various pulldown menus in the application.
-////////////////////////////////////////////////////////////////////
+/**
+ * The enumerated values here are used for menu ID's for the various pulldown
+ * menus in the application.
+ */
 enum GtkStatsMenuId {
   MI_none,
   MI_time_ms,
@@ -39,4 +38,3 @@ enum GtkStatsMenuId {
 };
 
 #endif
-

@@ -17,11 +17,9 @@
 
 #include "memoryInfo.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointerCounts::add_info
-//       Access: Public
-//  Description: Adds a pointer definition to the counter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a pointer definition to the counter.
+ */
 void MemoryUsagePointerCounts::
 add_info(MemoryInfo *info) {
   _count++;
@@ -33,11 +31,9 @@ add_info(MemoryInfo *info) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointerCounts::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MemoryUsagePointerCounts::
 output(ostream &out) const {
   out << _count << " pointers";
@@ -47,31 +43,28 @@ output(ostream &out) const {
     out << ", avg ";
     output_bytes(out, _size / (_count - _unknown_size_count));
     out << " each";
-      
+
     if (_unknown_size_count != 0) {
       out << " (" << _unknown_size_count << " of unknown size)";
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointerCounts::output_bytes
-//       Access: Private, Static
-//  Description: Formats a size in bytes in a meaningful and concise
-//               way for output, with units.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats a size in bytes in a meaningful and concise way for output, with
+ * units.
+ */
 void MemoryUsagePointerCounts::
 output_bytes(ostream &out, size_t size) {
   if (size < 4 * 1024) {
     out << size << " bytes";
-    
+
   } else if (size < 4 * 1024 * 1024) {
     out << size / 1024 << " Kb";
-    
+
   } else {
     out << size / (1024 * 1024) << " Mb";
   }
 }
 
 #endif  // DO_MEMORY_USAGE
-

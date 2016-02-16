@@ -23,13 +23,11 @@
 #include "transformState.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : DriveInterface
-// Description : This is a TFormer, similar to Trackball, that moves
-//               around a transform matrix in response to mouse input.
-//               The basic motion is on a horizontal plane, as if
-//               driving a vehicle.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a TFormer, similar to Trackball, that moves around a transform matrix
+ * in response to mouse input.  The basic motion is on a horizontal plane, as if
+ * driving a vehicle.
+ */
 class EXPCL_PANDA_TFORM DriveInterface : public MouseInterfaceNode {
 PUBLISHED:
   DriveInterface(const string &name = "");

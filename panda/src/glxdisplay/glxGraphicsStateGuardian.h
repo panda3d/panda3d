@@ -69,11 +69,10 @@ typedef void (* PFNGLXDESTROYPBUFFERPROC) (X11_Display *dpy, GLXPbuffer pbuf);
 typedef GLXContext ( *PFNGLXCREATECONTEXTATTRIBSARBPROC) (X11_Display *dpy, GLXFBConfig config, GLXContext share_context, Bool direct, const int *attrib_list);
 #endif  // __EDG__
 
-////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsStateGuardian
-// Description : A tiny specialization on GLGraphicsStateGuardian to
-//               add some glx-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLGraphicsStateGuardian to add some glx-specific
+ * information.
+ */
 class glxGraphicsStateGuardian : public PosixGraphicsStateGuardian {
 public:
   INLINE const FrameBufferProperties &get_fb_properties() const;
@@ -81,11 +80,11 @@ public:
   void get_properties_advanced(FrameBufferProperties &properties,
                                bool &context_has_pbuffer, bool &pixmap_supported,
                                bool &slow, GLXFBConfig config);
-  void choose_pixel_format(const FrameBufferProperties &properties, 
+  void choose_pixel_format(const FrameBufferProperties &properties,
                            X11_Display *_display,
                            int _screen,
                            bool need_pbuffer, bool need_pixmap);
-  
+
   glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            glxGraphicsStateGuardian *share_with);
 

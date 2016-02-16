@@ -18,21 +18,13 @@
 #include "luse.h"
 #include "vector_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Triangulator
-// Description : This class can triangulate a convex or concave
-//               polygon, even one with holes.  It is adapted from an
-//               algorithm published as:
-//
-//               Narkhede A. and Manocha D., Fast polygon
-//               triangulation algorithm based on Seidel's Algorithm,
-//               UNC-CH, 1994.
-//
-//               http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
-//
-//               It works strictly on 2-d points.  See Triangulator3
-//               for 3-d points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class can triangulate a convex or concave polygon, even one with holes.
+ * It is adapted from an algorithm published as:  Narkhede A. and Manocha D.,
+ * Fast polygon triangulation algorithm based on Seidel's Algorithm, UNC-CH,
+ * 1994.  http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html  It works strictly on
+ * 2-d points.  See Triangulator3 for 3-d points.
+ */
 class EXPCL_PANDA_MATHUTIL Triangulator {
 PUBLISHED:
   Triangulator();
@@ -79,11 +71,11 @@ protected:
   typedef pvector<Triangle> Result;
   Result _result;
 
-  
+
   typedef struct {
     double x, y;
   } point_t, vector_t;
-  
+
 
   struct segment_t {
     INLINE segment_t();
@@ -113,10 +105,10 @@ protected:
     int usave, uside;           /* I forgot what this means */
     int state;
   } trap_t;
-  
-  
+
+
   /* Node attributes for every node in the query structure */
-  
+
   typedef struct {
     int nodetype;                       /* Y-node or S-node */
     int segnum;
@@ -133,8 +125,8 @@ protected:
     int prev;                   /* describing the monotone */
     int marked;                 /* polygon */
   } monchain_t;
-  
-  
+
+
   typedef struct {
     point_t pt;
     int vnext[4];                       /* next vertices for the 4 chains */
@@ -142,13 +134,13 @@ protected:
     int nextfree;
     int user_i;  // index to user's vertex number
   } vertexchain_t;
-  
-  
+
+
   typedef pvector<node_t> QueryStructure;
   QueryStructure qs;
   typedef pvector<trap_t> TrapezoidStructure;
   TrapezoidStructure tr;
-  
+
   /* Table to hold all the monotone */
   /* polygons . Each monotone polygon */
   /* is a circularly linked list */
@@ -211,4 +203,3 @@ protected:
 #include "triangulator.I"
 
 #endif
-

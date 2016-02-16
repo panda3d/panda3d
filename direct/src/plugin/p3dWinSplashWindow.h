@@ -23,11 +23,9 @@
 
 #include <windows.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DWinSplashWindow
-// Description : This is the Windows implementation of the
-//               initial-download window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the Windows implementation of the initial-download window.
+ */
 class P3DWinSplashWindow : public P3DSplashWindow {
 public:
   P3DWinSplashWindow(P3DInstance *inst, bool make_visible);

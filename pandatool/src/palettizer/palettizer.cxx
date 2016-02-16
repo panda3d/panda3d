@@ -96,11 +96,9 @@ public:
   }
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Palettizer::
 Palettizer() {
   _is_valid = true;
@@ -133,55 +131,39 @@ Palettizer() {
   get_palette_group("null");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::get_noabs
-//       Access: Public
-//  Description: Returns the current setting of the noabs flag.  See
-//               set_noabs().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current setting of the noabs flag.  See set_noabs().
+ */
 bool Palettizer::
 get_noabs() const {
   return _noabs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::set_noabs
-//       Access: Public
-//  Description: Changes the current setting of the noabs flag.
-//
-//               If this flag is true, then it is an error to process
-//               an egg file that contains absolute pathname
-//               references.  This flag is intended to help detect egg
-//               files that are incorrectly built within a model tree
-//               (which should use entirely relative pathnames).
-//
-//               This flag must be set before any egg files are
-//               processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the current setting of the noabs flag.  If this flag is true, then it
+ * is an error to process an egg file that contains absolute pathname
+ * references.  This flag is intended to help detect egg files that are
+ * incorrectly built within a model tree (which should use entirely relative
+ * pathnames).  This flag must be set before any egg files are processed.
+ */
 void Palettizer::
 set_noabs(bool noabs) {
   _noabs = noabs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::is_valid
-//       Access: Public
-//  Description: Returns true if the palette information file was read
-//               correctly, or false if there was some error and the
-//               palettization can't continue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the palette information file was read correctly, or false if
+ * there was some error and the palettization can't continue.
+ */
 bool Palettizer::
 is_valid() const {
   return _is_valid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::report_pi
-//       Access: Public
-//  Description: Output a verbose description of all the palettization
-//               information to standard output, for the user's
-//               perusal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Output a verbose description of all the palettization information to standard
+ * output, for the user's perusal.
+ */
 void Palettizer::
 report_pi() const {
   // Start out with the cross links and back counts; some of these are
@@ -298,12 +280,10 @@ report_pi() const {
   cout << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::report_statistics
-//       Access: Public
-//  Description: Output a report of the palettization effectiveness,
-//               texture memory utilization, and so on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Output a report of the palettization effectiveness, texture memory
+ * utilization, and so on.
+ */
 void Palettizer::
 report_statistics() const {
   // Sort the groups into order by dependency order, for the user's
@@ -356,12 +336,10 @@ report_statistics() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::read_txa_file
-//       Access: Public
-//  Description: Reads in the .txa file and keeps it ready for
-//               matching textures and egg files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in the .txa file and keeps it ready for matching textures and egg
+ * files.
+ */
 void Palettizer::
 read_txa_file(istream &txa_file, const string &txa_filename) {
   // Clear out the group dependencies, in preparation for reading them
@@ -411,13 +389,10 @@ read_txa_file(istream &txa_file, const string &txa_filename) {
   } while (any_changed);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::all_params_set
-//       Access: Public
-//  Description: Called after all command line parameters have been
-//               set up, this is a hook to do whatever initialization
-//               is necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after all command line parameters have been set up, this is a hook to
+ * do whatever initialization is necessary.
+ */
 void Palettizer::
 all_params_set() {
   // Make sure the palettes have their shadow images set up properly.
@@ -428,17 +403,12 @@ all_params_set() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::process_command_line_eggs
-//       Access: Public
-//  Description: Processes all the textures named in the
-//               _command_line_eggs, placing them on the appropriate
-//               palettes or whatever needs to be done with them.
-//
-//               If force_texture_read is true, it forces each texture
-//               image file to be read (and thus legitimately checked
-//               for grayscaleness etc.) before placing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Processes all the textures named in the _command_line_eggs, placing them on
+ * the appropriate palettes or whatever needs to be done with them.  If
+ * force_texture_read is true, it forces each texture image file to be read (and
+ * thus legitimately checked for grayscaleness etc.) before placing.
+ */
 void Palettizer::
 process_command_line_eggs(bool force_texture_read, const Filename &state_filename) {
   _command_line_textures.clear();
@@ -453,7 +423,7 @@ process_command_line_eggs(bool force_texture_read, const Filename &state_filenam
 
     egg_file->scan_textures();
     egg_file->get_textures(_command_line_textures);
-    
+
     egg_file->pre_txa_file();
     _txa_file.match_egg(egg_file);
     egg_file->post_txa_file();
@@ -525,15 +495,11 @@ process_command_line_eggs(bool force_texture_read, const Filename &state_filenam
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::process_all
-//       Access: Public
-//  Description: Reprocesses all textures known.
-//
-//               If force_texture_read is true, it forces each texture
-//               image file to be read (and thus legitimately checked
-//               for grayscaleness etc.) before placing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reprocesses all textures known.  If force_texture_read is true, it forces
+ * each texture image file to be read (and thus legitimately checked for
+ * grayscaleness etc.) before placing.
+ */
 void Palettizer::
 process_all(bool force_texture_read, const Filename &state_filename) {
   // First, clear all the basic properties on the source texture
@@ -625,12 +591,9 @@ process_all(bool force_texture_read, const Filename &state_filename) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::optimal_resize
-//       Access: Public
-//  Description: Attempts to resize each PalettteImage down to its
-//               smallest possible size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to resize each PalettteImage down to its smallest possible size.
+ */
 void Palettizer::
 optimal_resize() {
   Groups::iterator gi;
@@ -640,13 +603,10 @@ optimal_resize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::reset_images
-//       Access: Public
-//  Description: Throws away all of the current PaletteImages, so that
-//               new ones may be created (and the packing made more
-//               optimal).
-////////////////////////////////////////////////////////////////////
+/**
+ * Throws away all of the current PaletteImages, so that new ones may be created
+ * (and the packing made more optimal).
+ */
 void Palettizer::
 reset_images() {
   Groups::iterator gi;
@@ -656,14 +616,11 @@ reset_images() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::generate_images
-//       Access: Public
-//  Description: Actually generates the appropriate palette and
-//               unplaced texture images into the map directories.  If
-//               redo_all is true, this forces a regeneration of each
-//               image file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually generates the appropriate palette and unplaced texture images into
+ * the map directories.  If redo_all is true, this forces a regeneration of each
+ * image file.
+ */
 void Palettizer::
 generate_images(bool redo_all) {
   Groups::iterator gi;
@@ -679,18 +636,13 @@ generate_images(bool redo_all) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::read_stale_eggs
-//       Access: Public
-//  Description: Reads in any egg file that is known to be stale, even
-//               if it was not listed on the command line, so that it
-//               may be updated and written out when write_eggs() is
-//               called.  If redo_all is true, this even reads egg
-//               files that were not flagged as stale.
-//
-//               Returns true if successful, or false if there was
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in any egg file that is known to be stale, even if it was not listed on
+ * the command line, so that it may be updated and written out when write_eggs()
+ * is called.  If redo_all is true, this even reads egg files that were not
+ * flagged as stale.  Returns true if successful, or false if there was some
+ * error.
+ */
 bool Palettizer::
 read_stale_eggs(bool redo_all) {
   bool okflag = true;
@@ -721,7 +673,7 @@ read_stale_eggs(bool redo_all) {
     if (egg_file->get_source_filename().exists()) {
       // If there is an invalid egg file, remove it; hopefully it will
       // get rebuilt properly next time.
-      nout << "Removing invalid egg file: " 
+      nout << "Removing invalid egg file: "
            << FilenameUnifier::make_user_filename(egg_file->get_source_filename())
            << "\n";
 
@@ -745,13 +697,10 @@ read_stale_eggs(bool redo_all) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::write_eggs
-//       Access: Public
-//  Description: Adjusts the egg files to reference the newly
-//               generated textures, and writes them out.  Returns
-//               true if successful, or false if there was some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts the egg files to reference the newly generated textures, and writes
+ * them out.  Returns true if successful, or false if there was some error.
+ */
 bool Palettizer::
 write_eggs() {
   bool okflag = true;
@@ -782,14 +731,11 @@ write_eggs() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::get_egg_file
-//       Access: Public
-//  Description: Returns the EggFile with the given name.  If there is
-//               no EggFile with the indicated name, creates one.
-//               This is the key name used to sort the egg files,
-//               which is typically the basename of the filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggFile with the given name.  If there is no EggFile with the
+ * indicated name, creates one.  This is the key name used to sort the egg
+ * files, which is typically the basename of the filename.
+ */
 EggFile *Palettizer::
 get_egg_file(const string &name) {
   EggFiles::iterator ei = _egg_files.find(name);
@@ -803,13 +749,10 @@ get_egg_file(const string &name) {
   return file;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::remove_egg_file
-//       Access: Public
-//  Description: Removes the named egg file from the database, if it
-//               exists.  Returns true if the egg file was found,
-//               false if it was not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the named egg file from the database, if it exists.  Returns true if
+ * the egg file was found, false if it was not.
+ */
 bool Palettizer::
 remove_egg_file(const string &name) {
   EggFiles::iterator ei = _egg_files.find(name);
@@ -823,26 +766,20 @@ remove_egg_file(const string &name) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::add_command_line_egg
-//       Access: Public
-//  Description: Adds the indicated EggFile to the list of eggs that
-//               are considered to have been read on the command line.
-//               These will be processed by
-//               process_command_line_eggs().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated EggFile to the list of eggs that are considered to have
+ * been read on the command line.  These will be processed by
+ * process_command_line_eggs().
+ */
 void Palettizer::
 add_command_line_egg(EggFile *egg_file) {
   _command_line_eggs.push_back(egg_file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::get_palette_group
-//       Access: Public
-//  Description: Returns the PaletteGroup with the given name.  If
-//               there is no PaletteGroup with the indicated name,
-//               creates one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the PaletteGroup with the given name.  If there is no PaletteGroup
+ * with the indicated name, creates one.
+ */
 PaletteGroup *Palettizer::
 get_palette_group(const string &name) {
   Groups::iterator gi = _groups.find(name);
@@ -856,13 +793,10 @@ get_palette_group(const string &name) {
   return group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::test_palette_group
-//       Access: Public
-//  Description: Returns the PaletteGroup with the given name.  If
-//               there is no PaletteGroup with the indicated name,
-//               returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the PaletteGroup with the given name.  If there is no PaletteGroup
+ * with the indicated name, returns NULL.
+ */
 PaletteGroup *Palettizer::
 test_palette_group(const string &name) const {
   Groups::const_iterator gi = _groups.find(name);
@@ -873,12 +807,10 @@ test_palette_group(const string &name) const {
   return (PaletteGroup *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::get_default_group
-//       Access: Public
-//  Description: Returns the default group to which an egg file should
-//               be assigned if it is not mentioned in the .txa file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default group to which an egg file should be assigned if it is
+ * not mentioned in the .txa file.
+ */
 PaletteGroup *Palettizer::
 get_default_group() {
   PaletteGroup *default_group = get_palette_group(_default_groupname);
@@ -888,15 +820,11 @@ get_default_group() {
   return default_group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::get_texture
-//       Access: Public
-//  Description: Returns the TextureImage with the given name.  If
-//               there is no TextureImage with the indicated name,
-//               creates one.  This is the key name used to sort the
-//               textures, which is typically the basename of the
-//               primary filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TextureImage with the given name.  If there is no TextureImage
+ * with the indicated name, creates one.  This is the key name used to sort the
+ * textures, which is typically the basename of the primary filename.
+ */
 TextureImage *Palettizer::
 get_texture(const string &name) {
   // Look first in the same-case name, just in case it happens to be
@@ -922,24 +850,19 @@ get_texture(const string &name) {
   return image;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::yesno
-//       Access: Private, Static
-//  Description: A silly function to return "yes" or "no" based on a
-//               bool flag for nicely formatted output.
-////////////////////////////////////////////////////////////////////
+/**
+ * A silly function to return "yes" or "no" based on a bool flag for nicely
+ * formatted output.
+ */
 const char *Palettizer::
 yesno(bool flag) {
   return flag ? "yes" : "no";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::string_remap
-//       Access: Public, Static
-//  Description: Returns the RemapUV code corresponding to the
-//               indicated string, or RU_invalid if the string is
-//               invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the RemapUV code corresponding to the indicated string, or RU_invalid
+ * if the string is invalid.
+ */
 Palettizer::RemapUV Palettizer::
 string_remap(const string &str) {
   if (str == "never") {
@@ -956,13 +879,10 @@ string_remap(const string &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::compute_statistics
-//       Access: Private
-//  Description: Determines how much memory, etc. is required by the
-//               indicated set of texture placements, and reports this
-//               to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines how much memory, etc.  is required by the indicated set of texture
+ * placements, and reports this to the indicated output stream.
+ */
 void Palettizer::
 compute_statistics(ostream &out, int indent_level,
                    const Palettizer::Placements &placements) const {
@@ -977,25 +897,19 @@ compute_statistics(ostream &out, int indent_level,
   counter.report(out, indent_level);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void Palettizer::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_Palettizer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void Palettizer::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
@@ -1052,15 +966,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam file
+ * for each pointer object written.  The return value is the number of pointers
+ * processed from the list.
+ */
 int Palettizer::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = TypedWritable::complete_pointers(p_list, manager);
@@ -1117,13 +1028,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::finalize
-//       Access: Public, Virtual
-//  Description: Called by the BamReader to perform any final actions
-//               needed for setting up the object after all objects
-//               have been read and all pointers have been completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
 void Palettizer::
 finalize(BamReader *manager) {
   // Walk through the list of texture names that were in conflict.
@@ -1131,8 +1040,8 @@ finalize(BamReader *manager) {
   // different only in case, which means the textures.boo file was
   // created before we introduced the rule that case is insignificant.
   TextureConflicts::iterator ci;
-  for (ci = _texture_conflicts.begin(); 
-       ci != _texture_conflicts.end(); 
+  for (ci = _texture_conflicts.begin();
+       ci != _texture_conflicts.end();
        ++ci) {
     TextureImage *texture_b = (*ci);
     string downcase_name = downcase(texture_b->get_name());
@@ -1176,14 +1085,11 @@ finalize(BamReader *manager) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::make_Palettizer
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable* Palettizer::
 make_Palettizer(const FactoryParams &params) {
   Palettizer *me = new Palettizer;
@@ -1197,13 +1103,10 @@ make_Palettizer(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Palettizer::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written by
+ * a previous call to write_datagram().
+ */
 void Palettizer::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

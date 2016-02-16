@@ -24,10 +24,9 @@
 class IndexRemapper;
 class CPPInstance;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateFunction
-// Description : An internal representation of a function.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a function.
+ */
 class EXPCL_INTERROGATEDB InterrogateFunction : public InterrogateComponent {
 public:
   InterrogateFunction(InterrogateModuleDef *def = NULL);

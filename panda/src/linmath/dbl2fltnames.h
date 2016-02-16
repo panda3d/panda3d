@@ -11,12 +11,10 @@
  * @date 2001-04-04
  */
 
-////////////////////////////////////////////////////////////////////
-//
-// This file is used particularly by lcast_to.h and lcast_to.cxx to
-// define functions that convert from type double to type float.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * This file is used particularly by lcast_to.h and lcast_to.cxx to define
+ * functions that convert from type double to type float.
+ */
 
 #include "fltnames.h"
 

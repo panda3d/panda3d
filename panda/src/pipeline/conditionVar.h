@@ -18,28 +18,18 @@
 #include "conditionVarDebug.h"
 #include "conditionVarDirect.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConditionVar
-// Description : A condition variable, usually used to communicate
-//               information about changing state to a thread that is
-//               waiting for something to happen.  A condition
-//               variable can be used to "wake up" a thread when some
-//               arbitrary condition has changed.
-//
-//               The ConditionVar class does not support the full
-//               semantics of POSIX condition variables.  In
-//               particular, it does not support the broadcast or
-//               notify_all function.  See ConditionVarFull for a more
-//               complete (but possibly more expensive) API.
-//
-//               A condition variable is associated with a single
-//               mutex, and several condition variables may share the
-//               same mutex.
-//
-//               This class inherits its implementation either from
-//               ConditionVarDebug or ConditionVarDirect, depending on
-//               the definition of DEBUG_THREADS.
-////////////////////////////////////////////////////////////////////
+/**
+ * A condition variable, usually used to communicate information about changing
+ * state to a thread that is waiting for something to happen.  A condition
+ * variable can be used to "wake up" a thread when some arbitrary condition has
+ * changed.  The ConditionVar class does not support the full semantics of POSIX
+ * condition variables.  In particular, it does not support the broadcast or
+ * notify_all function.  See ConditionVarFull for a more complete (but possibly
+ * more expensive) API.  A condition variable is associated with a single mutex,
+ * and several condition variables may share the same mutex.  This class
+ * inherits its implementation either from ConditionVarDebug or
+ * ConditionVarDirect, depending on the definition of DEBUG_THREADS.
+ */
 #ifdef DEBUG_THREADS
 class EXPCL_PANDA_PIPELINE ConditionVar : public ConditionVarDebug
 #else

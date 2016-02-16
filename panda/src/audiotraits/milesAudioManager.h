@@ -34,14 +34,14 @@ class MilesAudioSound;
 class EXPCL_MILES_AUDIO MilesAudioManager: public AudioManager {
 public:
   // See AudioManager.h for documentation.
-  
+
   MilesAudioManager();
   virtual ~MilesAudioManager();
-  
+
   virtual void shutdown();
 
   virtual bool is_valid();
-  
+
   virtual PT(AudioSound) get_sound(const string &file_name, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *sound, bool positional = false, int mode=SM_heuristic);
   virtual void uncache_sound(const string &file_name);
@@ -54,7 +54,7 @@ public:
 
   void set_play_rate(PN_stdfloat play_rate);
   PN_stdfloat get_play_rate() const;
-  
+
   virtual void set_active(bool active);
   virtual bool get_active() const;
 
@@ -94,7 +94,7 @@ private:
 
   void start_service_stream(HSTREAM stream);
   void stop_service_stream(HSTREAM stream);
-  
+
   void most_recently_used(const string &path);
   void uncache_a_sound();
 
@@ -152,7 +152,7 @@ private:
   int _cache_limit;
   bool _cleanup_required;
   unsigned int _concurrent_sound_limit;
-  
+
   bool _is_valid;
   bool _hasMidiSounds;
 
@@ -195,5 +195,3 @@ EXPCL_MILES_AUDIO AudioManager *Create_MilesAudioManager();
 #endif //]
 
 #endif //]
-
-

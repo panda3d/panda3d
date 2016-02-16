@@ -12,4 +12,3 @@
  */
 
 #include "nativeNumericData.h"
-

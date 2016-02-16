@@ -18,15 +18,13 @@
 #include "weakPointerToBase.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakPointerTo
-// Description : WeakPointerTo is similar to PointerTo, except that it
-//               does not actually prevent the referenced pointer from
-//               deleting.  Instead, the referenced pointer is allowed
-//               to delete, but if this happens then was_deleted()
-//               will return true, and it will be an assertion error to
-//               dereference the pointer thereafter.
-////////////////////////////////////////////////////////////////////
+/**
+ * WeakPointerTo is similar to PointerTo, except that it does not actually
+ * prevent the referenced pointer from deleting.  Instead, the referenced
+ * pointer is allowed to delete, but if this happens then was_deleted() will
+ * return true, and it will be an assertion error to dereference the pointer
+ * thereafter.
+ */
 template <class T>
 class WeakPointerTo : public WeakPointerToBase<T> {
 public:
@@ -58,12 +56,10 @@ PUBLISHED:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakConstPointerTo
-// Description : A WeakConstPointerTo is similar to a WeakPointerTo,
-//               except it keeps a const pointer to the thing, that
-//               will be cleared to NULL when the thing deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * A WeakConstPointerTo is similar to a WeakPointerTo, except it keeps a const
+ * pointer to the thing, that will be cleared to NULL when the thing deleted.
+ */
 template <class T>
 class WeakConstPointerTo : public WeakPointerToBase<T> {
 public:

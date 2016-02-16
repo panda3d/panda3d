@@ -19,13 +19,11 @@
 #include "cppScope.h"
 #include "cppTemplateParameterList.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPTemplateScope
-// Description : This is an implicit scope that is created following
-//               the appearance of a "template<class x, class y>" or
-//               some such line in a C++ file.  It simply defines the
-//               template parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an implicit scope that is created following the appearance of a
+ * "template<class x, class y>" or some such line in a C++ file.  It simply
+ * defines the template parameters.
+ */
 class CPPTemplateScope : public CPPScope {
 public:
   CPPTemplateScope(CPPScope *parent_scope);

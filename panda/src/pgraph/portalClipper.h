@@ -40,14 +40,12 @@ class CullTraverserData;
 class CullableObject;
 class NodePath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PortalClipper
-// Description : This object performs a depth-first traversal of the
-//               scene graph, with optional view-frustum culling,
-//               collecting CullState and searching for GeomNodes.
-//               Each renderable Geom encountered is passed along with
-//               its associated RenderState to the CullHandler object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object performs a depth-first traversal of the scene graph, with
+ * optional view-frustum culling, collecting CullState and searching for
+ * GeomNodes.  Each renderable Geom encountered is passed along with its
+ * associated RenderState to the CullHandler object.
+ */
 class EXPCL_PANDA_PGRAPH PortalClipper : public TypedObject {
 public:
   PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup);
@@ -58,7 +56,7 @@ public:
   INLINE bool is_whole_portal_in_view(const LMatrix4 &cmat);
 
   bool prepare_portal(const NodePath &node_path);
-  
+
   void draw_lines();
   INLINE void draw_camera_frustum();
   void draw_hexahedron(BoundingHexahedron *frustum);
@@ -73,9 +71,9 @@ public:
 
   INLINE BoundingHexahedron *get_reduced_frustum() const;
   INLINE void set_reduced_frustum(BoundingHexahedron *bh);
-  INLINE void get_reduced_viewport(LPoint2& min, LPoint2& max) const; 
+  INLINE void get_reduced_viewport(LPoint2& min, LPoint2& max) const;
   INLINE void set_reduced_viewport(const LPoint2& min, const LPoint2& max);
-  INLINE const RenderState* get_clip_state() const; 
+  INLINE const RenderState* get_clip_state() const;
   INLINE void set_clip_state(const RenderState* clip_state);
 
 public:
@@ -134,6 +132,3 @@ public:
 #include "portalClipper.I"
 
 #endif
-
-
-  

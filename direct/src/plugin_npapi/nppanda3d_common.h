@@ -122,4 +122,3 @@ struct UC_NPString {
 extern NPNetscapeFuncs *browser;
 
 #endif
-

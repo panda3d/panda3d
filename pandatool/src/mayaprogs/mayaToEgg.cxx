@@ -9,7 +9,7 @@
  * @file mayaToEgg.cxx
  * @author drose
  * @date 2000-02-15
- * 
+ *
  * Additional Maintenance by the PandaSE team
  * Carnegie Mellon Entertainment Technology Center
  * Spring '10
@@ -47,11 +47,9 @@
   #include "pystub.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaToEgg::
 MayaToEgg() :
   SomethingToEgg("Maya", ".mb")
@@ -205,11 +203,9 @@ MayaToEgg() :
   _got_tbnauto = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MayaToEgg::
 run() {
   // Set the verbose level by using Notify.
@@ -322,12 +318,10 @@ run() {
   nout << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::dispatch_transform_type
-//       Access: Protected, Static
-//  Description: Dispatches a parameter that expects a
-//               MayaToEggConverter::TransformType option.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dispatches a parameter that expects a MayaToEggConverter::TransformType
+ * option.
+ */
 bool MayaToEgg::
 dispatch_transform_type(const string &opt, const string &arg, void *var) {
   MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
@@ -354,4 +348,3 @@ int main(int argc, char *argv[]) {
   prog.run();
   return 0;
 }
-

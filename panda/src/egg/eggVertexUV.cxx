@@ -18,11 +18,9 @@
 
 TypeHandle EggVertexUV::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggVertexUV::
 EggVertexUV(const string &name, const LTexCoordd &uv) :
   EggNamedObject(name),
@@ -34,11 +32,9 @@ EggVertexUV(const string &name, const LTexCoordd &uv) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggVertexUV::
 EggVertexUV(const string &name, const LTexCoord3d &uvw) :
   EggNamedObject(name),
@@ -50,11 +46,9 @@ EggVertexUV(const string &name, const LTexCoord3d &uvw) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggVertexUV::
 EggVertexUV(const EggVertexUV &copy) :
   EggNamedObject(copy),
@@ -66,11 +60,9 @@ EggVertexUV(const EggVertexUV &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggVertexUV &EggVertexUV::
 operator = (const EggVertexUV &copy) {
   EggNamedObject::operator = (copy);
@@ -83,22 +75,17 @@ operator = (const EggVertexUV &copy) {
   return (*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggVertexUV::
 ~EggVertexUV() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::make_average
-//       Access: Published, Static
-//  Description: Creates a new EggVertexUV that contains the
-//               averaged values of the two given objects.  It is
-//               an error if they don't have the same name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new EggVertexUV that contains the averaged values of the two given
+ * objects.  It is an error if they don't have the same name.
+ */
 PT(EggVertexUV) EggVertexUV::
 make_average(const EggVertexUV *first, const EggVertexUV *second) {
   nassertr(first->get_name() == second->get_name(), NULL);
@@ -117,13 +104,10 @@ make_average(const EggVertexUV *first, const EggVertexUV *second) {
   return new_obj;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::transform
-//       Access: Published, Virtual
-//  Description: Applies the indicated transformation matrix to the
-//               UV's tangent and/or binormal.  This does nothing if
-//               there is no tangent or binormal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transformation matrix to the UV's tangent and/or
+ * binormal.  This does nothing if there is no tangent or binormal.
+ */
 void EggVertexUV::
 transform(const LMatrix4d &mat) {
   if (has_tangent()) {
@@ -136,11 +120,9 @@ transform(const LMatrix4d &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggVertexUV::
 write(ostream &out, int indent_level) const {
   string inline_name = get_name();
@@ -176,13 +158,10 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexUV::compare_to
-//       Access: Public
-//  Description: An ordering operator to compare two vertices for
-//               sorting order.  This imposes an arbitrary ordering
-//               useful to identify unique vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordering operator to compare two vertices for sorting order.  This imposes
+ * an arbitrary ordering useful to identify unique vertices.
+ */
 int EggVertexUV::
 compare_to(const EggVertexUV &other) const {
   if (_flags != other._flags) {

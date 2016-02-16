@@ -21,16 +21,12 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltVertex
-// Description : Represents a single vertex in the vertex palette.
-//               Flt files index vertices by their byte offset in the
-//               vertex palette; within this library, we map those
-//               byte offsets to pointers automatically.
-//
-//               This may represent a vertex with or without a normal
-//               or texture coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single vertex in the vertex palette.  Flt files index vertices
+ * by their byte offset in the vertex palette; within this library, we map those
+ * byte offsets to pointers automatically.  This may represent a vertex with or
+ * without a normal or texture coordinates.
+ */
 class FltVertex : public FltRecord {
 public:
   FltVertex(FltHeader *header);
@@ -91,5 +87,3 @@ private:
 #include "fltVertex.I"
 
 #endif
-
-

@@ -24,13 +24,11 @@ class BamWriter;
 class BamReader;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RecorderTable
-// Description : This object is used by the RecorderController to
-//               write (and read) a record of the set of recorders in
-//               use to the bam file.  Do not attempt to use it
-//               directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object is used by the RecorderController to write (and read) a record of
+ * the set of recorders in use to the bam file.  Do not attempt to use it
+ * directly.
+ */
 class EXPCL_PANDA_RECORDER RecorderTable : public TypedWritable {
 public:
   INLINE RecorderTable();
@@ -88,4 +86,3 @@ private:
 #include "recorderTable.I"
 
 #endif
-

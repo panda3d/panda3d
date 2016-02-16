@@ -21,11 +21,9 @@
 
 #include "openssl/evp.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EncryptStreamBuf
-// Description : The streambuf object that implements
-//               IDecompressStream and OCompressStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements IDecompressStream and OCompressStream.
+ */
 class EXPCL_DTOOLCONFIG EncryptStreamBuf : public streambuf {
 public:
   EncryptStreamBuf();
@@ -65,7 +63,7 @@ private:
   string _algorithm;
   int _key_length;
   int _iteration_count;
-  
+
   bool _read_valid;
   EVP_CIPHER_CTX _read_ctx;
   size_t _read_block_size;

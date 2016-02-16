@@ -22,11 +22,9 @@
 #include "string_utils.h"
 #include "pandaFileStream.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PfmTrans::
 PfmTrans() {
   _no_data_nan_num_channels = 0;
@@ -132,11 +130,9 @@ PfmTrans() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PfmTrans::
 run() {
   if ((int)(_rotate / 90) * 90 != _rotate) {
@@ -165,11 +161,9 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::process_pfm
-//       Access: Public
-//  Description: Handles a single pfm file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles a single pfm file.
+ */
 bool PfmTrans::
 process_pfm(const Filename &input_filename, PfmFile &file) {
   PfmVizzer vizzer(file);
@@ -187,7 +181,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
 
   if (_got_crop) {
     file.apply_crop(_crop[0], _crop[1], _crop[2], _crop[3]);
-  }    
+  }
 
   if (_got_resize) {
     file.resize(_resize[0], _resize[1]);
@@ -285,14 +279,11 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::add_transform_options
-//       Access: Public
-//  Description: Adds -TS, -TT, etc. as valid options for this
-//               program.  If the user specifies one of the options on
-//               the command line, the data will be transformed when
-//               the egg file is written out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds -TS, -TT, etc.  as valid options for this program.  If the user
+ * specifies one of the options on the command line, the data will be
+ * transformed when the egg file is written out.
+ */
 void PfmTrans::
 add_transform_options() {
   add_option
@@ -321,14 +312,11 @@ add_transform_options() {
      &PfmTrans::dispatch_translate, &_got_transform, &_transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool PfmTrans::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {
@@ -341,7 +329,7 @@ handle_args(ProgramBase::Args &args) {
       nout << "Cannot specify both -o and -d.\n";
       return false;
     }
-    
+
   } else {
     if (_got_output_filename) {
       nout << "Cannot use -o when multiple pfm files are specified.\n";
@@ -357,12 +345,9 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::dispatch_scale
-//       Access: Protected, Static
-//  Description: Handles -TS, which specifies a scale transform.  Var
-//               is an LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TS, which specifies a scale transform.  Var is an LMatrix4.
+ */
 bool PfmTrans::
 dispatch_scale(const string &opt, const string &arg, void *var) {
   LMatrix4 *transform = (LMatrix4 *)var;
@@ -396,24 +381,20 @@ dispatch_scale(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::dispatch_rotate_xyz
-//       Access: Protected, Static
-//  Description: Handles -TR, which specifies a rotate transform about
-//               the three cardinal axes.  Var is an LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TR, which specifies a rotate transform about the three cardinal
+ * axes.  Var is an LMatrix4.
+ */
 bool PfmTrans::
 dispatch_rotate_xyz(ProgramBase *self, const string &opt, const string &arg, void *var) {
   PfmTrans *base = (PfmTrans *)self;
   return base->ns_dispatch_rotate_xyz(opt, arg, var);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::ns_dispatch_rotate_xyz
-//       Access: Protected
-//  Description: Handles -TR, which specifies a rotate transform about
-//               the three cardinal axes.  Var is an LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TR, which specifies a rotate transform about the three cardinal
+ * axes.  Var is an LMatrix4.
+ */
 bool PfmTrans::
 ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
   LMatrix4 *transform = (LMatrix4 *)var;
@@ -447,24 +428,20 @@ ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::dispatch_rotate_axis
-//       Access: Protected, Static
-//  Description: Handles -TA, which specifies a rotate transform about
-//               an arbitrary axis.  Var is an LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TA, which specifies a rotate transform about an arbitrary axis.  Var
+ * is an LMatrix4.
+ */
 bool PfmTrans::
 dispatch_rotate_axis(ProgramBase *self, const string &opt, const string &arg, void *var) {
   PfmTrans *base = (PfmTrans *)self;
   return base->ns_dispatch_rotate_axis(opt, arg, var);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::ns_dispatch_rotate_axis
-//       Access: Protected
-//  Description: Handles -TA, which specifies a rotate transform about
-//               an arbitrary axis.  Var is an LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TA, which specifies a rotate transform about an arbitrary axis.  Var
+ * is an LMatrix4.
+ */
 bool PfmTrans::
 ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
   LMatrix4 *transform = (LMatrix4 *)var;
@@ -495,12 +472,9 @@ ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmTrans::dispatch_translate
-//       Access: Protected, Static
-//  Description: Handles -TT, which specifies a translate transform.
-//               Var is an LMatrix4.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles -TT, which specifies a translate transform.  Var is an LMatrix4.
+ */
 bool PfmTrans::
 dispatch_translate(const string &opt, const string &arg, void *var) {
   LMatrix4 *transform = (LMatrix4 *)var;

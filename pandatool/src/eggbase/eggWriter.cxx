@@ -17,25 +17,18 @@
 #include "compose_matrix.h"
 #include "globPattern.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::Constructor
-//       Access: Public
-//  Description: Egg-writing type programs may specify their output
-//               file using either the last-filename convention, the
-//               -o convention, and/or implicitly writing the result
-//               to standard output.  Not all interfaces are
-//               appropriate for all applications; some may be
-//               confusing or dangerous.
-//
-//               The calling application should pass allow_last_param
-//               true to allow the user to specify the output filename
-//               as the last parameter on the command line (the most
-//               dangerous, but convenient, method), and allow_stdout
-//               true to allow the user to omit the output filename
-//               altogether and have the output implicitly go to
-//               standard output (not terribly dangerous, but
-//               inappropriate when writing binary file formats).
-////////////////////////////////////////////////////////////////////
+/**
+ * Egg-writing type programs may specify their output file using either the
+ * last-filename convention, the -o convention, and/or implicitly writing the
+ * result to standard output.  Not all interfaces are appropriate for all
+ * applications; some may be confusing or dangerous.  The calling application
+ * should pass allow_last_param true to allow the user to specify the output
+ * filename as the last parameter on the command line (the most dangerous, but
+ * convenient, method), and allow_stdout true to allow the user to omit the
+ * output filename altogether and have the output implicitly go to standard
+ * output (not terribly dangerous, but inappropriate when writing binary file
+ * formats).
+ */
 EggWriter::
 EggWriter(bool allow_last_param, bool allow_stdout) :
   WithOutputFile(allow_last_param, allow_stdout, false)
@@ -91,35 +84,25 @@ EggWriter(bool allow_last_param, bool allow_stdout) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::as_writer
-//       Access: Public, Virtual
-//  Description: Returns this object as an EggWriter pointer, if it is
-//               in fact an EggWriter, or NULL if it is not.
-//
-//               This is intended to work around the C++ limitation
-//               that prevents downcasts past virtual inheritance.
-//               Since both EggReader and EggWriter inherit virtually
-//               from EggSingleBase, we need functions like this to downcast
-//               to the appropriate pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns this object as an EggWriter pointer, if it is in fact an EggWriter,
+ * or NULL if it is not.  This is intended to work around the C++ limitation
+ * that prevents downcasts past virtual inheritance.  Since both EggReader and
+ * EggWriter inherit virtually from EggSingleBase, we need functions like this
+ * to downcast to the appropriate pointer.
+ */
 EggWriter *EggWriter::
 as_writer() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::post_process_egg_file
-//       Access: Public, Virtual
-//  Description: Performs any processing of the egg file that is
-//               appropriate before writing it out.  This includes any
-//               normal adjustments the user requested via -np, etc.
-//
-//               Normally, you should not need to call this function
-//               directly; write_egg_file() calls it for you.  You
-//               should call this only if you do not use
-//               write_egg_file() to write out the resulting egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs any processing of the egg file that is appropriate before writing it
+ * out.  This includes any normal adjustments the user requested via -np, etc.
+ * Normally, you should not need to call this function directly;
+ * write_egg_file() calls it for you.  You should call this only if you do not
+ * use write_egg_file() to write out the resulting egg file.
+ */
 void EggWriter::
 post_process_egg_file() {
   if (_got_transform) {
@@ -179,29 +162,23 @@ post_process_egg_file() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::write_egg_file
-//       Access: Public
-//  Description: Writes out the egg file as the normal result of the
-//               program.  This calls post_process_egg_file() to
-//               perform any last minute processing (like normal
-//               computation) and then writes out the file to the
-//               output stream returned by get_output().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the egg file as the normal result of the program.  This calls
+ * post_process_egg_file() to perform any last minute processing (like normal
+ * computation) and then writes out the file to the output stream returned by
+ * get_output().
+ */
 void EggWriter::
 write_egg_file() {
   post_process_egg_file();
   _data->write_egg(get_output());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggWriter::
 handle_args(ProgramBase::Args &args) {
   if (!check_last_arg(args, 0)) {
@@ -226,11 +203,9 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggWriter::post_command_line
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggWriter::
 post_command_line() {
   if (!_allow_stdout && !_got_output_filename) {

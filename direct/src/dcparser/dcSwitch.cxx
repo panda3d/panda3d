@@ -18,13 +18,10 @@
 #include "dcindent.h"
 #include "dcPacker.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::Constructor
-//       Access: Public
-//  Description: The key_parameter must be recently allocated via
-//               new; it will be deleted via delete when the switch
-//               destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * The key_parameter must be recently allocated via new; it will be deleted via
+ * delete when the switch destructs.
+ */
 DCSwitch::
 DCSwitch(const string &name, DCField *key_parameter) :
   _name(name),
@@ -34,11 +31,9 @@ DCSwitch(const string &name, DCField *key_parameter) :
   _fields_added = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitch::
 ~DCSwitch() {
   nassertv(_key_parameter != (DCField *)NULL);
@@ -63,68 +58,53 @@ DCSwitch::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::as_switch
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitch *DCSwitch::
 as_switch() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::as_switch
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const DCSwitch *DCSwitch::
 as_switch() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_name
-//       Access: Published
-//  Description: Returns the name of this switch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of this switch.
+ */
 const string &DCSwitch::
 get_name() const {
   return _name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_key_parameter
-//       Access: Published
-//  Description: Returns the key parameter on which the switch is
-//               based.  The value of this parameter in the record
-//               determines which one of the several cases within the
-//               switch will be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the key parameter on which the switch is based.  The value of this
+ * parameter in the record determines which one of the several cases within the
+ * switch will be used.
+ */
 DCField *DCSwitch::
 get_key_parameter() const {
   return _key_parameter;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_num_cases
-//       Access: Published
-//  Description: Returns the number of different cases within the
-//               switch.  The legal values for case_index range from 0
-//               to get_num_cases() - 1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of different cases within the switch.  The legal values
+ * for case_index range from 0 to get_num_cases() - 1.
+ */
 int DCSwitch::
 get_num_cases() const {
   return _cases.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_case_by_value
-//       Access: Published
-//  Description: Returns the index number of the case with the
-//               indicated packed value, or -1 if no case has this
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the case with the indicated packed value, or -1
+ * if no case has this value.
+ */
 int DCSwitch::
 get_case_by_value(const string &case_value) const {
   CasesByValue::const_iterator vi;
@@ -136,56 +116,45 @@ get_case_by_value(const string &case_value) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_case
-//       Access: Published
-//  Description: Returns the DCPackerInterface that packs the nth case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCPackerInterface that packs the nth case.
+ */
 DCPackerInterface *DCSwitch::
 get_case(int n) const {
   nassertr(n >= 0 && n < (int)_cases.size(), NULL);
   return _cases[n]->_fields;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_default_case
-//       Access: Published
-//  Description: Returns the DCPackerInterface that packs the default
-//               case, or NULL if there is no default case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCPackerInterface that packs the default case, or NULL if there
+ * is no default case.
+ */
 DCPackerInterface *DCSwitch::
 get_default_case() const {
   return _default_case;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_value
-//       Access: Published
-//  Description: Returns the packed value associated with the
-//               indicated case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the packed value associated with the indicated case.
+ */
 string DCSwitch::
 get_value(int case_index) const {
   nassertr(case_index >= 0 && case_index < (int)_cases.size(), string());
   return _cases[case_index]->_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_num_fields
-//       Access: Published
-//  Description: Returns the number of fields in the indicated case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of fields in the indicated case.
+ */
 int DCSwitch::
 get_num_fields(int case_index) const {
   nassertr(case_index >= 0 && case_index < (int)_cases.size(), 0);
   return _cases[case_index]->_fields->_fields.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_num_fields
-//       Access: Published
-//  Description: Returns the nth field in the indicated case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth field in the indicated case.
+ */
 DCField *DCSwitch::
 get_field(int case_index, int n) const {
   nassertr(case_index >= 0 && case_index < (int)_cases.size(), NULL);
@@ -193,12 +162,10 @@ get_field(int case_index, int n) const {
   return _cases[case_index]->_fields->_fields[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::get_field_by_name
-//       Access: Published
-//  Description: Returns the field with the given name from the
-//               indicated case, or NULL if no field has this name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the field with the given name from the indicated case, or NULL if no
+ * field has this name.
+ */
 DCField *DCSwitch::
 get_field_by_name(int case_index, const string &name) const {
   nassertr(case_index >= 0 && case_index < (int)_cases.size(), NULL);
@@ -213,26 +180,20 @@ get_field_by_name(int case_index, const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::is_field_valid
-//       Access: Public
-//  Description: Returns true if it is valid to add a new field at
-//               this point (implying that a case or default has been
-//               added already), or false if not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is valid to add a new field at this point (implying that a
+ * case or default has been added already), or false if not.
+ */
 bool DCSwitch::
 is_field_valid() const {
   return !_current_fields.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::add_case
-//       Access: Public
-//  Description: Adds a new case to the switch with the indicated
-//               value, and returns the new case_index.  If the value
-//               has already been used for another case, returns -1.
-//               This is normally called only by the parser.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new case to the switch with the indicated value, and returns the new
+ * case_index.  If the value has already been used for another case, returns -1.
+ * This is normally called only by the parser.
+ */
 int DCSwitch::
 add_case(const string &value) {
   int case_index = (int)_cases.size();
@@ -247,28 +208,22 @@ add_case(const string &value) {
   return case_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::add_invalid_case
-//       Access: Public
-//  Description: Adds a new case to the switch that will never be
-//               matched.  This is only used by the parser, to handle
-//               an error condition more gracefully without bitching
-//               the parsing (which behaves differently according to
-//               whether a case has been encountered or not).
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new case to the switch that will never be matched.  This is only used
+ * by the parser, to handle an error condition more gracefully without bitching
+ * the parsing (which behaves differently according to whether a case has been
+ * encountered or not).
+ */
 void DCSwitch::
 add_invalid_case() {
   start_new_case();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::add_default
-//       Access: Public
-//  Description: Adds a default case to the switch.  Returns true if
-//               the case is successfully added, or false if it had
-//               already been added.  This is normally called only by
-//               the parser.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a default case to the switch.  Returns true if the case is successfully
+ * added, or false if it had already been added.  This is normally called only
+ * by the parser.
+ */
 bool DCSwitch::
 add_default() {
   if (_default_case != (SwitchFields *)NULL) {
@@ -281,17 +236,13 @@ add_default() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::add_field
-//       Access: Public
-//  Description: Adds a field to the currently active cases (those
-//               that have been added via add_case() or add_default(),
-//               since the last call to add_break()).  Returns true if
-//               successful, false if the field duplicates a field
-//               already named within this case.  It is an error to
-//               call this before calling add_case() or add_default().
-//               This is normally called only by the parser.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a field to the currently active cases (those that have been added via
+ * add_case() or add_default(), since the last call to add_break()).  Returns
+ * true if successful, false if the field duplicates a field already named
+ * within this case.  It is an error to call this before calling add_case() or
+ * add_default(). This is normally called only by the parser.
+ */
 bool DCSwitch::
 add_field(DCField *field) {
   nassertr(!_current_fields.empty(), false);
@@ -311,27 +262,21 @@ add_field(DCField *field) {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::add_break
-//       Access: Public
-//  Description: Adds a break statement to the switch.  This closes
-//               the currently open cases and prepares for a new,
-//               unrelated case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a break statement to the switch.  This closes the currently open cases
+ * and prepares for a new, unrelated case.
+ */
 void DCSwitch::
 add_break() {
   _current_fields.clear();
   _fields_added = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::apply_switch
-//       Access: Public
-//  Description: Returns the DCPackerInterface that presents the
-//               alternative fields for the case indicated by the
-//               given packed value string, or NULL if the value
-//               string does not match one of the expected cases.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCPackerInterface that presents the alternative fields for the
+ * case indicated by the given packed value string, or NULL if the value string
+ * does not match one of the expected cases.
+ */
 const DCPackerInterface *DCSwitch::
 apply_switch(const char *value_data, size_t length) const {
   CasesByValue::const_iterator vi;
@@ -349,34 +294,27 @@ apply_switch(const char *value_data, size_t length) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::output
-//       Access: Public, Virtual
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void DCSwitch::
 output(ostream &out, bool brief) const {
   output_instance(out, brief, "", "", "");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::write
-//       Access: Public, Virtual
-//  Description: Generates a parseable description of the object to
-//               the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a parseable description of the object to the indicated output
+ * stream.
+ */
 void DCSwitch::
 write(ostream &out, bool brief, int indent_level) const {
   write_instance(out, brief, indent_level, "", "", "");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::output_instance
-//       Access: Public
-//  Description: Generates a parseable description of the object to
-//               the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a parseable description of the object to the indicated output
+ * stream.
+ */
 void DCSwitch::
 output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
@@ -417,12 +355,10 @@ output_instance(ostream &out, bool brief, const string &prename,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::write_instance
-//       Access: Public, Virtual
-//  Description: Generates a parseable description of the object to
-//               the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a parseable description of the object to the indicated output
+ * stream.
+ */
 void DCSwitch::
 write_instance(ostream &out, bool brief, int indent_level,
                const string &prename, const string &name,
@@ -469,12 +405,9 @@ write_instance(ostream &out, bool brief, int indent_level,
   out << ";\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::generate_hash
-//       Access: Public, Virtual
-//  Description: Accumulates the properties of this switch into the
-//               hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accumulates the properties of this switch into the hash.
+ */
 void DCSwitch::
 generate_hash(HashGenerator &hashgen) const {
   hashgen.add_string(_name);
@@ -505,15 +438,12 @@ generate_hash(HashGenerator &hashgen) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::pack_default_value
-//       Access: Public
-//  Description: Packs the switchParameter's specified default value
-//               (or a sensible default if no value is specified) into
-//               the stream.  Returns true if the default value is
-//               packed, false if the switchParameter doesn't know how
-//               to pack its default value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the switchParameter's specified default value (or a sensible default if
+ * no value is specified) into the stream.  Returns true if the default value is
+ * packed, false if the switchParameter doesn't know how to pack its default
+ * value.
+ */
 bool DCSwitch::
 pack_default_value(DCPackData &pack_data, bool &pack_error) const {
   SwitchFields *fields = NULL;
@@ -556,15 +486,12 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::do_check_match_switch
-//       Access: Public
-//  Description: Returns true if this switch matches the indicated
-//               other switch--that is, the two switches are bitwise
-//               equivalent--false otherwise.  This is only intended
-//               to be called internally from
-//               DCSwitchParameter::do_check_match_switch_parameter().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this switch matches the indicated other switch--that is, the
+ * two switches are bitwise equivalent--false otherwise.  This is only intended
+ * to be called internally from
+ * DCSwitchParameter::do_check_match_switch_parameter().
+ */
 bool DCSwitch::
 do_check_match_switch(const DCSwitch *other) const {
   if (!_key_parameter->check_match(other->_key_parameter)) {
@@ -596,13 +523,10 @@ do_check_match_switch(const DCSwitch *other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::start_new_case
-//       Access: Private
-//  Description: Creates a new field set for the new case, or shares
-//               the field set with the previous case, as appropriate.
-//               Returns the appropriate field set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new field set for the new case, or shares the field set with the
+ * previous case, as appropriate.  Returns the appropriate field set.
+ */
 DCSwitch::SwitchFields *DCSwitch::
 start_new_case() {
   SwitchFields *fields = NULL;
@@ -630,11 +554,9 @@ start_new_case() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchFields::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitch::SwitchFields::
 SwitchFields(const string &name) :
   DCPackerInterface(name)
@@ -650,11 +572,9 @@ SwitchFields(const string &name) :
   _has_default_value = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchFields::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitch::SwitchFields::
 ~SwitchFields() {
   // We don't delete any of the nested fields here, since they might
@@ -662,28 +582,22 @@ DCSwitch::SwitchFields::
   // them in the DCSwitch destructor.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchFields::get_nested_field
-//       Access: Public, Virtual
-//  Description: Returns the DCPackerInterface object that represents
-//               the nth nested field.  This may return NULL if there
-//               is no such field (but it shouldn't do this if n is in
-//               the range 0 <= n < get_num_nested_fields()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCPackerInterface object that represents the nth nested field.
+ * This may return NULL if there is no such field (but it shouldn't do this if n
+ * is in the range 0 <= n < get_num_nested_fields()).
+ */
 DCPackerInterface *DCSwitch::SwitchFields::
 get_nested_field(int n) const {
   nassertr(n >= 0 && n < (int)_fields.size(), NULL);
   return _fields[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchFields::add_field
-//       Access: Public
-//  Description: Adds a field to this case.  Returns true if
-//               successful, false if the field duplicates a field
-//               already named within this case.  This is normally
-//               called only by the parser.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a field to this case.  Returns true if successful, false if the field
+ * duplicates a field already named within this case.  This is normally called
+ * only by the parser.
+ */
 bool DCSwitch::SwitchFields::
 add_field(DCField *field) {
   if (!field->get_name().empty()) {
@@ -716,14 +630,11 @@ add_field(DCField *field) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchFields::do_check_match_switch_case
-//       Access: Public
-//  Description: Returns true if this case matches the indicated
-//               case, false otherwise.  This is only intended to be
-//               called internally from
-//               DCSwitch::do_check_match_switch().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this case matches the indicated case, false otherwise.  This
+ * is only intended to be called internally from
+ * DCSwitch::do_check_match_switch().
+ */
 bool DCSwitch::SwitchFields::
 do_check_match_switch_case(const DCSwitch::SwitchFields *other) const {
   if (_fields.size() != other->_fields.size()) {
@@ -738,11 +649,9 @@ do_check_match_switch_case(const DCSwitch::SwitchFields *other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchFields::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DCSwitch::SwitchFields::
 output(ostream &out, bool brief) const {
   Fields::const_iterator fi;
@@ -758,11 +667,9 @@ output(ostream &out, bool brief) const {
   out << "break; ";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchFields::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DCSwitch::SwitchFields::
 write(ostream &out, bool brief, int indent_level) const {
   Fields::const_iterator fi;
@@ -778,14 +685,11 @@ write(ostream &out, bool brief, int indent_level) const {
     << "break;\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchFields::do_check_match
-//       Access: Protected, Virtual
-//  Description: Returns true if the other interface is bitwise the
-//               same as this one--that is, a uint32 only matches a
-//               uint32, etc. Names of components, and range limits,
-//               are not compared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the other interface is bitwise the same as this one--that is,
+ * a uint32 only matches a uint32, etc.  Names of components, and range limits,
+ * are not compared.
+ */
 bool DCSwitch::SwitchFields::
 do_check_match(const DCPackerInterface *) const {
   // This should never be called on a SwitchFields.
@@ -793,11 +697,9 @@ do_check_match(const DCPackerInterface *) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchCase::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitch::SwitchCase::
 SwitchCase(const string &value, DCSwitch::SwitchFields *fields) :
   _value(value),
@@ -805,23 +707,18 @@ SwitchCase(const string &value, DCSwitch::SwitchFields *fields) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchCase::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSwitch::SwitchCase::
 ~SwitchCase() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSwitch::SwitchCase::do_check_match_switch_case
-//       Access: Public
-//  Description: Returns true if this case matches the indicated
-//               case, false otherwise.  This is only intended to be
-//               called internally from
-//               DCSwitch::do_check_match_switch().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this case matches the indicated case, false otherwise.  This
+ * is only intended to be called internally from
+ * DCSwitch::do_check_match_switch().
+ */
 bool DCSwitch::SwitchCase::
 do_check_match_switch_case(const DCSwitch::SwitchCase *other) const {
   return _fields->do_check_match_switch_case(other->_fields);

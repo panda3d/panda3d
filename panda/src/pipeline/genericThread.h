@@ -17,11 +17,10 @@
 #include "pandabase.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GenericThread
-// Description : A generic thread type that allows calling a C-style thread
-//               function without having to subclass.
-////////////////////////////////////////////////////////////////////
+/**
+ * A generic thread type that allows calling a C-style thread function without
+ * having to subclass.
+ */
 class EXPCL_PANDA_PIPELINE GenericThread : public Thread {
 public:
   typedef void ThreadFunc(void *user_data);
@@ -63,4 +62,3 @@ private:
 #include "genericThread.I"
 
 #endif
-

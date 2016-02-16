@@ -21,22 +21,15 @@
 
 class PhysxHeightFieldShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxHeightFieldShape
-// Description : This class is a shape instance of a height field
-//               object of type PhysxHeightField. Each shape is
-//               owned by an actor that it is attached to.
-//
-//               An instance can be created by calling the
-//               createShape() method of the PhysxActor object that
-//               should own it, with a PhysxHeightFieldShapeDesc
-//               object as the parameter, or by adding the shape
-//               descriptor into the PhysxActorDesc class before
-//               creating the actor.
-//
-//               The shape is deleted by calling release() on the
-//               shape itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a shape instance of a height field object of type
+ * PhysxHeightField.  Each shape is owned by an actor that it is attached to.
+ * An instance can be created by calling the createShape() method of the
+ * PhysxActor object that should own it, with a PhysxHeightFieldShapeDesc object
+ * as the parameter, or by adding the shape descriptor into the PhysxActorDesc
+ * class before creating the actor.  The shape is deleted by calling release()
+ * on the shape itself.
+ */
 class EXPCL_PANDAPHYSX PhysxHeightFieldShape : public PhysxShape {
 
 PUBLISHED:
@@ -60,7 +53,7 @@ public:
   }
   static void init_type() {
     PhysxShape::init_type();
-    register_type(_type_handle, "PhysxHeightFieldShape", 
+    register_type(_type_handle, "PhysxHeightFieldShape",
                   PhysxShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -26,10 +26,9 @@ class CPPParameterList;
 class CPPScope;
 class CPPExpression;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPInstance
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPInstance : public CPPDeclaration {
 public:
   // Some of these flags clearly only make sense in certain contexts,
@@ -128,4 +127,3 @@ private:
 };
 
 #endif
-

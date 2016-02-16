@@ -11,15 +11,10 @@
  * @date 2012-05-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::get_fb_properties
-//       Access: Private
-//  Description: Gets the FrameBufferProperties for all windows and
-//               buffers that use this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties for all windows and buffers that use this GSG.
+ */
 INLINE const FrameBufferProperties &CocoaGraphicsStateGuardian::
 get_fb_properties() const {
   return _fbprops;
 }
-
-

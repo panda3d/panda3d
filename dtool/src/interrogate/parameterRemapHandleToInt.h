@@ -18,16 +18,12 @@
 
 #include "parameterRemap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapHandleToInt
-// Description : A ParameterRemap class that handles remapping a
-//               Handle parameter to an integer.  This makes it
-//               easier to set up a dynamic typing system on the
-//               scripting language side.
-//
-//               It also applies to ButtonHandle or any other class
-//               with the same semantics, because why not.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ParameterRemap class that handles remapping a Handle parameter to an
+ * integer.  This makes it easier to set up a dynamic typing system on the
+ * scripting language side.  It also applies to ButtonHandle or any other class
+ * with the same semantics, because why not.
+ */
 class ParameterRemapHandleToInt : public ParameterRemap {
 public:
   ParameterRemapHandleToInt(CPPType *orig_type);

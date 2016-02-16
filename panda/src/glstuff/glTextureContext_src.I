@@ -11,11 +11,9 @@
  * @date 1999-10-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(TextureContext)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(TextureContext)::
 CLP(TextureContext)(CLP(GraphicsStateGuardian) *glgsg,
   PreparedGraphicsObjects *pgo, Texture *tex, int view) :

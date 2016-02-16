@@ -22,76 +22,61 @@
 
 TypeHandle LoaderFileTypeBam::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LoaderFileTypeBam::
 LoaderFileTypeBam() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::get_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string LoaderFileTypeBam::
 get_name() const {
   return "Bam";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::get_extension
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string LoaderFileTypeBam::
 get_extension() const {
   return "bam";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files (with
+ * a .pz extension), false otherwise.
+ */
 bool LoaderFileTypeBam::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::supports_load
-//       Access: Published, Virtual
-//  Description: Returns true if the file type can be used to load
-//               files, and load_file() is supported.  Returns false
-//               if load_file() is unimplemented and will always fail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file type can be used to load files, and load_file() is
+ * supported.  Returns false if load_file() is unimplemented and will always
+ * fail.
+ */
 bool LoaderFileTypeBam::
 supports_load() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::supports_save
-//       Access: Published, Virtual
-//  Description: Returns true if the file type can be used to save
-//               files, and save_file() is supported.  Returns false
-//               if save_file() is unimplemented and will always fail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file type can be used to save files, and save_file() is
+ * supported.  Returns false if save_file() is unimplemented and will always
+ * fail.
+ */
 bool LoaderFileTypeBam::
 supports_save() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::load_file
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(PandaNode) LoaderFileTypeBam::
 load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
@@ -119,11 +104,9 @@ load_file(const Filename &path, const LoaderOptions &options,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeBam::save_file
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool LoaderFileTypeBam::
 save_file(const Filename &path, const LoaderOptions &options,
           PandaNode *node) const {

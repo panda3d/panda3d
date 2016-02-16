@@ -18,12 +18,10 @@
 
 #include "buttonHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : KeyboardButton
-// Description : This class is just used as a convenient namespace for
-//               grouping all of these handy functions that return
-//               buttons which map to standard keyboard keys.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is just used as a convenient namespace for grouping all of these
+ * handy functions that return buttons which map to standard keyboard keys.
+ */
 class EXPCL_PANDA_PUTIL KeyboardButton {
 PUBLISHED:
   static ButtonHandle ascii_key(char ascii_equivalent);

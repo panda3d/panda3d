@@ -18,12 +18,10 @@
 #include "pointerToVoid.h"
 #include "weakPointerCallback.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakPointerToVoid
-// Description : This is the specialization of PointerToVoid for weak
-//               pointers.  It needs an additional flag to indicate
-//               that the pointer has been deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the specialization of PointerToVoid for weak pointers.  It needs an
+ * additional flag to indicate that the pointer has been deleted.
+ */
 class EXPCL_PANDAEXPRESS WeakPointerToVoid : public PointerToVoid {
 protected:
   INLINE WeakPointerToVoid();

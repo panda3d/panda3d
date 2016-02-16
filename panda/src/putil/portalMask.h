@@ -28,4 +28,3 @@
 typedef BitMask32 PortalMask;
 
 #endif
-

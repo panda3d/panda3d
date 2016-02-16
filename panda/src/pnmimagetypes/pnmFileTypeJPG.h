@@ -43,10 +43,9 @@ extern "C" {
 #include <setjmp.h>
 }
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeJPG
-// Description : For reading and writing Jpeg files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing Jpeg files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeJPG : public PNMFileType {
 public:
   PNMFileTypeJPG();
@@ -132,4 +131,3 @@ private:
 #endif  // HAVE_JPEG
 
 #endif
-

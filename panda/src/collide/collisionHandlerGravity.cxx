@@ -20,11 +20,9 @@
 
 TypeHandle CollisionHandlerGravity::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerGravity::
 CollisionHandlerGravity() {
   _offset = 0.0f;
@@ -38,20 +36,16 @@ CollisionHandlerGravity() {
   _legacy_mode = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerGravity::
 ~CollisionHandlerGravity() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::set_highest_collision
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 #define OLD_COLLISION_HANDLER_GRAVITY 0
 #if OLD_COLLISION_HANDLER_GRAVITY
 PN_stdfloat CollisionHandlerGravity::
@@ -206,17 +200,13 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::handle_entries
-//       Access: Protected, Virtual
-//  Description: Called by the parent class after all collisions have
-//               been detected, this manages the various collisions
-//               and moves around the nodes as necessary.
-//
-//               The return value is normally true, but it may be
-//               false to indicate the CollisionTraverser should
-//               disable this handler from being called in the future.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the parent class after all collisions have been detected, this
+ * manages the various collisions and moves around the nodes as necessary.  The
+ * return value is normally true, but it may be false to indicate the
+ * CollisionTraverser should disable this handler from being called in the
+ * future.
+ */
 bool CollisionHandlerGravity::
 handle_entries() {
   bool okflag = true;
@@ -305,11 +295,9 @@ handle_entries() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::apply_linear_force
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionHandlerGravity::
 apply_linear_force(ColliderDef &def, const LVector3 &force) {
 }

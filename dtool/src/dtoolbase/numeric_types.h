@@ -57,4 +57,3 @@ typedef double PN_stdfloat;
 #endif  // STDFLOAT_DOUBLE
 
 #endif
-

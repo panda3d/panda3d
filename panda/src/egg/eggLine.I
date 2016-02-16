@@ -11,36 +11,30 @@
  * @date 2003-10-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLine::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggLine::
-EggLine(const string &name) : 
+EggLine(const string &name) :
   EggCompositePrimitive(name),
   _has_thick(false)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLine::Copy constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggLine::
-EggLine(const EggLine &copy) : 
+EggLine(const EggLine &copy) :
   EggCompositePrimitive(copy),
   _thick(copy._thick),
   _has_thick(copy._has_thick)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLine::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggLine &EggLine::
 operator = (const EggLine &copy) {
   EggCompositePrimitive::operator = (copy);
@@ -49,22 +43,18 @@ operator = (const EggLine &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLine::has_thick
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggLine::
 has_thick() const {
   return _has_thick;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLine::get_thick
-//       Access: Published
-//  Description: Returns the thickness set on this particular line.
-//               If there is no thickness set, returns 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the thickness set on this particular line.  If there is no thickness
+ * set, returns 1.0.
+ */
 INLINE double EggLine::
 get_thick() const {
   if (has_thick()) {
@@ -74,22 +64,18 @@ get_thick() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLine::set_thick
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggLine::
 set_thick(double thick) {
   _thick = thick;
   _has_thick = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLine::clear_thick
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggLine::
 clear_thick() {
   _has_thick = false;

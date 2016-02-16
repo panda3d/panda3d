@@ -20,11 +20,9 @@
 #include "pandaNode.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : UvScrollNode
-// Description : This node is placed at key points within the scene
-//               graph to animate uvs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This node is placed at key points within the scene graph to animate uvs.
+ */
 class EXPCL_PANDA_PGRAPH UvScrollNode : public PandaNode {
 PUBLISHED:
   INLINE UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat w_speed, PN_stdfloat r_speed);
@@ -92,5 +90,3 @@ private:
 #include "uvScrollNode.I"
 
 #endif
-
-

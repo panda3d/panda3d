@@ -21,10 +21,9 @@
 
 class BulletSoftBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletSoftBodyShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletSoftBodyShape : public BulletShape {
 
 PUBLISHED:
@@ -46,7 +45,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletSoftBodyShape", 
+    register_type(_type_handle, "BulletSoftBodyShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

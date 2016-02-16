@@ -16,11 +16,9 @@
 
 TypeHandle BulletGhostNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletGhostNode::
 BulletGhostNode(const char *name) : BulletBodyNode(name) {
 
@@ -41,22 +39,18 @@ BulletGhostNode(const char *name) : BulletBodyNode(name) {
   _ghost->setCollisionShape(_shape);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::get_object
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionObject *BulletGhostNode::
 get_object() const {
 
   return _ghost;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::parents_changed
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletGhostNode::
 parents_changed() {
 
@@ -78,11 +72,9 @@ parents_changed() {
   _sync_local = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::transform_changed
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletGhostNode::
 transform_changed() {
 
@@ -113,22 +105,18 @@ transform_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::sync_p2b
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletGhostNode::
 sync_p2b() {
 
   transform_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::sync_b2p
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletGhostNode::
 sync_b2p() {
 
@@ -148,4 +136,3 @@ sync_b2p() {
     _sync_disable = false;
   }
 }
-

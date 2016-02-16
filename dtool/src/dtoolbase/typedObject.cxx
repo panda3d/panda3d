@@ -15,21 +15,17 @@
 
 TypeHandle TypedObject::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TypedObject::
 ~TypedObject() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::get_type
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TypeHandle TypedObject::
 get_type() const {
   // Normally, this function should never be called, because it is a
@@ -40,13 +36,10 @@ get_type() const {
   return _type_handle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedObject::init_type
-//       Access: Public, Static
-//  Description: This function is declared non-inline to work around a
-//               compiler bug in g++ 2.96.  Making it inline seems to
-//               cause problems in the optimizer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is declared non-inline to work around a compiler bug in g++
+ * 2.96.  Making it inline seems to cause problems in the optimizer.
+ */
 void TypedObject::
 init_type() {
   register_type(_type_handle, "TypedObject");

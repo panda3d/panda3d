@@ -13,21 +13,17 @@
 
 #include "sphereVolumeEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: SphereVolumeEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 SphereVolumeEmitter::
 SphereVolumeEmitter() {
   _radius = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SphereVolumeEmitter
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 SphereVolumeEmitter::
 SphereVolumeEmitter(const SphereVolumeEmitter &copy) :
   BaseParticleEmitter(copy) {
@@ -35,30 +31,24 @@ SphereVolumeEmitter(const SphereVolumeEmitter &copy) :
   _particle_pos = copy._particle_pos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~SphereVolumeEmitter
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 SphereVolumeEmitter::
 ~SphereVolumeEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 BaseParticleEmitter *SphereVolumeEmitter::
 make_copy() {
   return new SphereVolumeEmitter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SphereVolumeEmitter::assign_initial_position
-//       Access: Public
-//  Description: Generates a location for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a location for a new particle
+ */
 void SphereVolumeEmitter::
 assign_initial_position(LPoint3& pos) {
   PN_stdfloat z, theta, r;
@@ -81,11 +71,9 @@ assign_initial_position(LPoint3& pos) {
   pos = _particle_pos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SphereVolumeEmitter::assign_initial_velocity
-//       Access: Public
-//  Description: Generates a velocity for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a velocity for a new particle
+ */
 void SphereVolumeEmitter::
 assign_initial_velocity(LVector3& vel) {
   // set velocity to [0..1] according to distance from center,
@@ -93,12 +81,9 @@ assign_initial_velocity(LVector3& vel) {
   vel = _particle_pos / _radius;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void SphereVolumeEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -106,12 +91,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void SphereVolumeEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

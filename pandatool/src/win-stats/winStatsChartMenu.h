@@ -22,11 +22,9 @@ class WinStatsMonitor;
 class PStatView;
 class PStatViewLevel;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsChartMenu
-// Description : A pulldown menu of charts available for a particular
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pulldown menu of charts available for a particular thread.
+ */
 class WinStatsChartMenu {
 public:
   WinStatsChartMenu(WinStatsMonitor *monitor, int thread_index);
@@ -50,4 +48,3 @@ private:
 };
 
 #endif
-

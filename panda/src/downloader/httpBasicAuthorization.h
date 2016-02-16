@@ -24,14 +24,11 @@
 
 #include "httpAuthorization.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPBasicAuthorization
-// Description : Implements the "Basic" type of HTTP authorization.
-//               This authorization sends usernames and passwords over
-//               the net in cleartext, so it's not much in the way of
-//               security, but it's easy to implement and therefore
-//               widely supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements the "Basic" type of HTTP authorization.  This authorization sends
+ * usernames and passwords over the net in cleartext, so it's not much in the
+ * way of security, but it's easy to implement and therefore widely supported.
+ */
 class HTTPBasicAuthorization : public HTTPAuthorization {
 public:
   HTTPBasicAuthorization(const Tokens &tokens, const URLSpec &url,
@@ -51,4 +48,3 @@ private:
 #endif  // HAVE_OPENSSL
 
 #endif
-

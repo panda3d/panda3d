@@ -22,13 +22,11 @@
 #include <assert.h>
 #include <vector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeRegistryNode
-// Description : This is a single entry in the TypeRegistry.
-//               Normally, user code will never directly access this
-//               class; this class is hidden within the TypeRegistry
-//               accessors.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a single entry in the TypeRegistry.  Normally, user code will never
+ * directly access this class; this class is hidden within the TypeRegistry
+ * accessors.
+ */
 class EXPCL_DTOOL TypeRegistryNode {
 public:
   TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref);
@@ -64,11 +62,11 @@ private:
   class Inherit {
   public:
     INLINE Inherit();
-    INLINE Inherit(TypeRegistryNode *top, int bit_count, 
+    INLINE Inherit(TypeRegistryNode *top, int bit_count,
                    SubtreeMaskType bits);
     INLINE Inherit(const Inherit &copy);
     INLINE void operator = (const Inherit &copy);
-    
+
     INLINE bool operator < (const Inherit &other) const;
     INLINE static bool is_derived_from(const Inherit &child, const Inherit &base);
 
@@ -78,7 +76,7 @@ private:
   };
   typedef vector<Inherit> TopInheritance;
 
-  void r_build_subtrees(TypeRegistryNode *top, 
+  void r_build_subtrees(TypeRegistryNode *top,
                         int bit_count, SubtreeMaskType bits);
 
   static bool check_derived_from(const TypeRegistryNode *child,

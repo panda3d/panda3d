@@ -106,4 +106,3 @@ public:
 #include "buffered_datagramreader.I"
 
 #endif //__BUFFEREDREADER_GM_H__
-

@@ -23,13 +23,13 @@
 
 TypeHandle OdeSpace::_type_handle;
 // this data is used in auto_collide
-const int OdeSpace::MAX_CONTACTS = 16; 
-OdeWorld* OdeSpace::_static_auto_collide_world; 
-OdeSpace* OdeSpace::_static_auto_collide_space; 
-dJointGroupID OdeSpace::_static_auto_collide_joint_group; 
+const int OdeSpace::MAX_CONTACTS = 16;
+OdeWorld* OdeSpace::_static_auto_collide_world;
+OdeSpace* OdeSpace::_static_auto_collide_space;
+dJointGroupID OdeSpace::_static_auto_collide_joint_group;
 
 OdeSpace::
-OdeSpace(dSpaceID id) : 
+OdeSpace(dSpaceID id) :
   _id(id) {
   _auto_collide_world = NULL;
   _auto_collide_joint_group = NULL;

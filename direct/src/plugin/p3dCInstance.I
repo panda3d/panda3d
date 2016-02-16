@@ -11,12 +11,9 @@
  * @date 2009-06-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DCInstance::get_instance_id
-//       Access: Public
-//  Description: Returns a unique integer for each instance in the
-//               system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a unique integer for each instance in the system.
+ */
 inline int P3DCInstance::
 get_instance_id() const {
   return _instance_id;

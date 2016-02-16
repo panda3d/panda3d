@@ -11,35 +11,28 @@
  * @date 2009-11-09
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelShapeDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxWheelShapeDesc::
 PhysxWheelShapeDesc() : PhysxShapeDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelShapeDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxWheelShapeDesc::
 ~PhysxWheelShapeDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelShapeDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxWheelShapeDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

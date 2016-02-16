@@ -30,16 +30,14 @@
 
 static const size_t handle_buffer_size = 4096;
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HandleStreamBuf::
 HandleStreamBuf() {
   _is_open_read = false;
   _is_open_write = false;
-  
+
   _handle = invalid_fhandle;
 
   INIT_LOCK(_lock);
@@ -50,11 +48,9 @@ HandleStreamBuf() {
   setp(_buffer, ebuf);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HandleStreamBuf::
 ~HandleStreamBuf() {
   close();
@@ -64,13 +60,10 @@ HandleStreamBuf::
   DESTROY_LOCK(_lock);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::open_read
-//       Access: Public
-//  Description: Attempts to open the given handle for input.  The
-//               stream may not be simultaneously open for input and
-//               output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the given handle for input.  The stream may not be
+ * simultaneously open for input and output.
+ */
 void HandleStreamBuf::
 open_read(FHandle handle) {
   close();
@@ -79,13 +72,10 @@ open_read(FHandle handle) {
   _is_open_read = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::open_write
-//       Access: Public
-//  Description: Attempts to open the given handle for output.  The
-//               stream may not be simultaneously open for input and
-//               output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the given handle for output.  The stream may not be
+ * simultaneously open for input and output.
+ */
 void HandleStreamBuf::
 open_write(FHandle handle) {
   close();
@@ -94,33 +84,25 @@ open_write(FHandle handle) {
   _is_open_write = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::is_open_read
-//       Access: Public
-//  Description: Returns true if the file is open for input, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file is open for input, false otherwise.
+ */
 bool HandleStreamBuf::
 is_open_read() const {
   return _is_open_read;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::is_open_write
-//       Access: Public
-//  Description: Returns true if the file is open for output, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file is open for output, false otherwise.
+ */
 bool HandleStreamBuf::
 is_open_write() const {
   return _is_open_write;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::close
-//       Access: Public
-//  Description: Empties the buffer and closes the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the buffer and closes the file.
+ */
 void HandleStreamBuf::
 close() {
   // Make sure the write buffer is flushed.
@@ -132,12 +114,9 @@ close() {
   gbump(egptr() - gptr());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::close_handle
-//       Access: Public
-//  Description: Closes the underlying handle, *without* attempting to
-//               flush the stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the underlying handle, *without* attempting to flush the stream.
+ */
 void HandleStreamBuf::
 close_handle() {
 #ifdef _WIN32
@@ -156,12 +135,10 @@ close_handle() {
   _is_open_write = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::overflow
-//       Access: Protected, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int HandleStreamBuf::
 overflow(int ch) {
   ACQUIRE_LOCK(_lock);
@@ -198,12 +175,9 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::sync
-//       Access: Protected, Virtual
-//  Description: Called by the system iostream implementation to
-//               implement a flush operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system iostream implementation to implement a flush operation.
+ */
 int HandleStreamBuf::
 sync() {
   ACQUIRE_LOCK(_lock);
@@ -222,12 +196,10 @@ sync() {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::underflow
-//       Access: Protected, Virtual
-//  Description: Called by the system istream implementation when its
-//               internal buffer needs more characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system istream implementation when its internal buffer needs
+ * more characters.
+ */
 int HandleStreamBuf::
 underflow() {
   ACQUIRE_LOCK(_lock);
@@ -262,13 +234,10 @@ underflow() {
   return next;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::read_chars
-//       Access: Private
-//  Description: Attempts to extract the indicated number of
-//               characters from the current file position.  Returns
-//               the number of characters extracted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to extract the indicated number of characters from the current file
+ * position.  Returns the number of characters extracted.
+ */
 size_t HandleStreamBuf::
 read_chars(char *start, size_t length) {
   if (length == 0 || !_is_open_read) {
@@ -282,7 +251,7 @@ read_chars(char *start, size_t length) {
   if (length == 0) {
     return 0;
   }
-  
+
 #ifdef _WIN32
   // Windows case.
   DWORD bytes_read = 0;
@@ -298,7 +267,7 @@ read_chars(char *start, size_t length) {
   }
 
   length = bytes_read;
-  
+
 #else
   // Posix case.
   ssize_t result = ::read(_handle, start, length);
@@ -313,12 +282,9 @@ read_chars(char *start, size_t length) {
   return length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleStreamBuf::write_chars
-//       Access: Private
-//  Description: Outputs the indicated stream of characters to the
-//               current file position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the indicated stream of characters to the current file position.
+ */
 size_t HandleStreamBuf::
 write_chars(const char *start, size_t length) {
   if (length == 0) {
@@ -333,7 +299,7 @@ write_chars(const char *start, size_t length) {
   if (length == 0 || !_is_open_write) {
     return 0;
   }
-  
+
 #ifdef _WIN32
   // Windows case.
   DWORD bytes_written = 0;
@@ -349,7 +315,7 @@ write_chars(const char *start, size_t length) {
     return bytes_written;
   }
   assert(bytes_written == length);
-  
+
 #else
   // Posix case.
   size_t remaining = length;
@@ -361,7 +327,7 @@ write_chars(const char *start, size_t length) {
       }
       return length - remaining;
     }
-    
+
     start += result;
     remaining -= result;
   }

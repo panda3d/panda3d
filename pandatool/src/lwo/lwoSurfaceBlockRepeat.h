@@ -18,14 +18,12 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockRepeat
-// Description : For cylindrical and spherical projections, this
-//               parameter controls how many times the image repeats
-//               over each full interval, in either dimension.  The
-//               dimension is specified by the id of the chunk, either
-//               WRPW or WRPH.  This is a subchunk of LwoSurfaceBlock.
-////////////////////////////////////////////////////////////////////
+/**
+ * For cylindrical and spherical projections, this parameter controls how many
+ * times the image repeats over each full interval, in either dimension.  The
+ * dimension is specified by the id of the chunk, either WRPW or WRPH.  This is
+ * a subchunk of LwoSurfaceBlock.
+ */
 class LwoSurfaceBlockRepeat : public LwoChunk {
 public:
   PN_stdfloat _cycles;
@@ -54,5 +52,3 @@ private:
 };
 
 #endif
-
-

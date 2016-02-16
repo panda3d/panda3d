@@ -22,12 +22,10 @@
 #include "config_express.h"
 #include "atomicAdjust.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSafePointerToBase
-// Description : This is the base class for ThreadSafePointerTo and
-//               ThreadSafeConstPointerTo.  Don't try to use it
-//               directly; use either derived class instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for ThreadSafePointerTo and ThreadSafeConstPointerTo.
+ * Don't try to use it directly; use either derived class instead.
+ */
 template <class T>
 class ThreadSafePointerToBase : public PointerToVoid {
 public:

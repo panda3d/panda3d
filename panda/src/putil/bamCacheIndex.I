@@ -11,13 +11,11 @@
  * @date 2006-06-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheIndex::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BamCacheIndex::
-BamCacheIndex() : 
+BamCacheIndex() :
   LinkedListNode(true),
   _cache_size(0)
 {

@@ -17,10 +17,9 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomTriangles
-// Description : Defines a series of disconnected triangles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of disconnected triangles.
+ */
 class EXPCL_PANDA_GOBJ GeomTriangles : public GeomPrimitive {
 PUBLISHED:
   GeomTriangles(UsageHint usage_hint);

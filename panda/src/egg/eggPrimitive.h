@@ -34,19 +34,14 @@
 
 class EggVertexPool;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPrimitive
-// Description : A base class for any of a number of kinds of geometry
-//               primitives: polygons, point lights, nurbs patches,
-//               parametrics curves, etc.  Things with a set of
-//               vertices and some rendering properties like color.
-//
-//               An EggPrimitive is an STL-style container of pointers
-//               to EggVertex's.  In fact, it IS a vector, and can be
-//               manipulated in all the ways that vectors can.
-//               However, it is necessary that all vertices belong to
-//               the same vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for any of a number of kinds of geometry primitives: polygons,
+ * point lights, nurbs patches, parametrics curves, etc.  Things with a set of
+ * vertices and some rendering properties like color.  An EggPrimitive is an
+ * STL-style container of pointers to EggVertex's.  In fact, it IS a vector, and
+ * can be manipulated in all the ways that vectors can.  However, it is
+ * necessary that all vertices belong to the same vertex pool.
+ */
 class EXPCL_PANDAEGG EggPrimitive : public EggNode, public EggAttributes,
                      public EggRenderMode
 {

@@ -11,11 +11,9 @@
  * @date 2006-03-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionGeom::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CollisionGeom::
 CollisionGeom(const LVecBase3 &a, const LVecBase3 &b,
               const LVecBase3 &c) :
@@ -23,11 +21,9 @@ CollisionGeom(const LVecBase3 &a, const LVecBase3 &b,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionGeom::Copy Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionGeom::
 CollisionGeom(const CollisionGeom &copy) :
   CollisionPolygon(copy)

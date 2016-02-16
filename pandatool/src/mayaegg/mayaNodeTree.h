@@ -31,11 +31,9 @@ class EggTable;
 class EggXfmSAnim;
 class EggSAnimData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaNodeTree
-// Description : Describes a complete tree of maya nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a complete tree of maya nodes for conversion.
+ */
 class MayaNodeTree {
 public:
   MayaNodeTree(MayaToEggConverter *converter);
@@ -55,7 +53,7 @@ public:
   MayaNodeDesc *get_node(int n) const;
 
   void clear();
-  void clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
+  void clear_egg(EggData *egg_data, EggGroupNode *egg_root,
                  EggGroupNode *skeleton_node, EggGroupNode *morph_node);
   EggGroup *get_egg_group(MayaNodeDesc *node_desc);
   EggTable *get_egg_table(MayaNodeDesc *node_desc);

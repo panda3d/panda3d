@@ -24,10 +24,9 @@
 
 class PhysxActor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxController
-// Description : Abstract base class for character controllers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for character controllers.
+ */
 class EXPCL_PANDAPHYSX PhysxController : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -95,7 +94,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxController", 
+    register_type(_type_handle, "PhysxController",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

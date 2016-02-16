@@ -21,15 +21,12 @@
 
 class EggCharacterDb;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggJointPointer
-// Description : This is a base class for EggJointNodePointer and
-//               EggMatrixTablePointer.  It stores a back pointer to
-//               either a <Joint> entry or an xform <Table> data, and
-//               thus presents an interface that returns 1-n matrices,
-//               one for each frame.  (<Joint> entries, for model
-//               files, appear the same as one-frame animations.)
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for EggJointNodePointer and EggMatrixTablePointer.  It
+ * stores a back pointer to either a <Joint> entry or an xform <Table> data, and
+ * thus presents an interface that returns 1-n matrices, one for each frame.
+ * (<Joint> entries, for model files, appear the same as one-frame animations.)
+ */
 class EggJointPointer : public EggBackPointer {
 public:
   virtual int get_num_frames() const=0;
@@ -71,5 +68,3 @@ private:
 #include "eggJointPointer.I"
 
 #endif
-
-

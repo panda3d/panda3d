@@ -11,21 +11,17 @@
  * @date 2009-09-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMotorDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxMotorDesc::
 PhysxMotorDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMotorDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxMotorDesc::
 PhysxMotorDesc(float velTarget, float maxForce, bool freeSpin) {
 
@@ -34,13 +30,10 @@ PhysxMotorDesc(float velTarget, float maxForce, bool freeSpin) {
   _desc.freeSpin = freeSpin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMotorDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxMotorDesc::
 ~PhysxMotorDesc() {
 
 }
-

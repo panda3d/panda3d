@@ -13,21 +13,14 @@
 
 TypeHandle CLP(IndexBufferContext)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLIndexBufferContext::evict_lru
-//       Access: Public, Virtual
-//  Description: Evicts the page from the LRU.  Called internally when
-//               the LRU determines that it is full.  May also be
-//               called externally when necessary to explicitly evict
-//               the page.
-//
-//               It is legal for this method to either evict the page
-//               as requested, do nothing (in which case the eviction
-//               will be requested again at the next epoch), or
-//               requeue itself on the tail of the queue (in which
-//               case the eviction will be requested again much
-//               later).
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts the page from the LRU.  Called internally when the LRU determines that
+ * it is full.  May also be called externally when necessary to explicitly evict
+ * the page.  It is legal for this method to either evict the page as requested,
+ * do nothing (in which case the eviction will be requested again at the next
+ * epoch), or requeue itself on the tail of the queue (in which case the
+ * eviction will be requested again much later).
+ */
 void CLP(IndexBufferContext)::
 evict_lru() {
   dequeue_lru();

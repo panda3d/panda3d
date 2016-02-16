@@ -21,12 +21,10 @@
 #include "pta_stdfloat.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoDiscontinuousVertexMap
-// Description : A mapping of floating-point values per integer index.
-//               The meaning of these values is determined by the
-//               mapping type code and/or its name.
-////////////////////////////////////////////////////////////////////
+/**
+ * A mapping of floating-point values per integer index.  The meaning of these
+ * values is determined by the mapping type code and/or its name.
+ */
 class LwoDiscontinuousVertexMap : public LwoChunk {
 public:
   bool has_value(int polygon_index, int vertex_index) const;
@@ -64,5 +62,3 @@ private:
 };
 
 #endif
-
-

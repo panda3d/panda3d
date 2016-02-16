@@ -19,12 +19,10 @@
 #include "typedReferenceCount.h"
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FileReference
-// Description : Keeps a reference-counted pointer to a file on disk.
-//               As long as the FileReference is held, someone
-//               presumably has a use for this file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Keeps a reference-counted pointer to a file on disk.  As long as the
+ * FileReference is held, someone presumably has a use for this file.
+ */
 class EXPCL_PANDAEXPRESS FileReference : public TypedReferenceCount {
 PUBLISHED:
   INLINE FileReference(const Filename &filename);

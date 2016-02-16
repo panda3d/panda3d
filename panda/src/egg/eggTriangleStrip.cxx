@@ -19,22 +19,17 @@
 TypeHandle EggTriangleStrip::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggTriangleStrip::
 ~EggTriangleStrip() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::write
-//       Access: Published, Virtual
-//  Description: Writes the triangle strip to the indicated output
-//               stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the triangle strip to the indicated output stream in Egg format.
+ */
 void EggTriangleStrip::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<TriangleStrip>");
@@ -42,34 +37,23 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::get_num_lead_vertices
-//       Access: Protected, Virtual
-//  Description: Returns the number of initial vertices that are not
-//               used in defining any component; the first component
-//               is defined by the (n + 1)th vertex, and then a new
-//               component at each vertex thereafter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of initial vertices that are not used in defining any
+ * component; the first component is defined by the (n + 1)th vertex, and then a
+ * new component at each vertex thereafter.
+ */
 int EggTriangleStrip::
 get_num_lead_vertices() const {
   return 2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleStrip::triangulate_poly
-//       Access: Protected, Virtual
-//  Description: Fills the container up with EggPolygons that
-//               represent the component triangles of this triangle
-//               strip.
-//
-//               It is assumed that the EggTriangleStrip is not
-//               already a child of any other group when this function
-//               is called.
-//
-//               Returns true if the triangulation is successful, or
-//               false if there was some error (in which case the
-//               container may contain some partial triangulation).
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the container up with EggPolygons that represent the component
+ * triangles of this triangle strip.  It is assumed that the EggTriangleStrip is
+ * not already a child of any other group when this function is called.  Returns
+ * true if the triangulation is successful, or false if there was some error (in
+ * which case the container may contain some partial triangulation).
+ */
 bool EggTriangleStrip::
 do_triangulate(EggGroupNode *container) const {
   if (size() < 3) {

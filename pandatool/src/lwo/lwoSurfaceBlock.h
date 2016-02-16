@@ -19,11 +19,9 @@
 #include "lwoGroupChunk.h"
 #include "lwoSurfaceBlockHeader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlock
-// Description : A texture layer or shader, part of a LwoSurface
-//               chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * A texture layer or shader, part of a LwoSurface chunk.
+ */
 class LwoSurfaceBlock : public LwoGroupChunk {
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
@@ -38,7 +36,3 @@ private:
 };
 
 #endif
-
-
-
-

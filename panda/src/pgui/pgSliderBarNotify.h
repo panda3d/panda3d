@@ -19,12 +19,10 @@
 
 class PGSliderBar;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGSliderBarNotify
-// Description : Objects that inherit from this class can receive
-//               notify messages when a slider bar moves or otherwise
-//               is reconfigured.
-////////////////////////////////////////////////////////////////////
+/**
+ * Objects that inherit from this class can receive notify messages when a
+ * slider bar moves or otherwise is reconfigured.
+ */
 class EXPCL_PANDA_PGUI PGSliderBarNotify : public PGItemNotify {
 public:
   INLINE PGSliderBarNotify();

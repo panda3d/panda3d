@@ -18,12 +18,10 @@
 #include "eggUserData.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggOptcharUserData
-// Description : This class contains extra user data which is
-//               piggybacked onto EggGroup objects for the purpose of
-//               the maya converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class contains extra user data which is piggybacked onto EggGroup
+ * objects for the purpose of the maya converter.
+ */
 class EggOptcharUserData : public EggUserData {
 public:
   INLINE EggOptcharUserData();

@@ -23,11 +23,9 @@
 
 class ForceNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BaseForce
-// Description : pure virtual base class for all forces that could
-//                POSSIBLY exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * pure virtual base class for all forces that could POSSIBLY exist.
+ */
 class EXPCL_PANDAPHYSICS BaseForce : public TypedReferenceCount {
 PUBLISHED:
   virtual ~BaseForce();

@@ -23,11 +23,9 @@
 #include "string_utils.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToC::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToC::
 EggToC() :
   EggToSomething("C", ".c", true, true)
@@ -84,11 +82,9 @@ EggToC() :
      &EggToC::dispatch_none, &_triangulate_polygons);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToC::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToC::
 run() {
   nout << "Removing invalid primitives.\n";
@@ -122,11 +118,9 @@ run() {
   traverse(_data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToC::traverse
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToC::
 traverse(EggNode *node) {
   if (node->is_of_type(EggVertexPool::get_class_type())) {
@@ -145,18 +139,16 @@ traverse(EggNode *node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToC::write_vertex_pool
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToC::
 write_vertex_pool(EggVertexPool *vpool) {
   int highest_index = vpool->get_highest_index();
   int i;
 
   ostream &out = get_output();
-  out << "/* Vertex pool index " << _next_vpool_index 
+  out << "/* Vertex pool index " << _next_vpool_index
       << ": " << vpool->get_name() << " */\n";
   _vertex_pools[vpool] = _next_vpool_index;
   _next_vpool_index++;
@@ -175,17 +167,17 @@ write_vertex_pool(EggVertexPool *vpool) {
         case 1:
           out << "  vertex(" << p[0] << "),  /* " << i << " */\n";
           break;
-  
+
         case 2:
           out << "  vertex(" << p[0] << ", " << p[1]
               << "),  /* " << i << " */\n";
           break;
-  
+
         case 3:
           out << "  vertex(" << p[0] << ", " << p[1] << ", " << p[2]
               << "),  /* " << i << " */\n";
           break;
-  
+
         case 4:
           out << "  vertex(" << p[0] << ", " << p[1] << ", " << p[2]
               << ", " << p[3] << "),  /* " << i << " */\n";
@@ -252,11 +244,9 @@ write_vertex_pool(EggVertexPool *vpool) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToC::write_bin
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToC::
 write_bin(EggBin *bin) {
   ostream &out = get_output();
@@ -285,7 +275,7 @@ write_bin(EggBin *bin) {
     } else {
       out << "  /* vpool index, num vertices, vertex0, vertex1, vertex2, ... */\n";
     }
-    
+
     EggGroupNode::const_iterator ci;
     size_t prim_index = 0;
     for (ci = bin->begin(); ci != bin->end(); ++ci) {
@@ -322,7 +312,7 @@ write_bin(EggBin *bin) {
     out << "/* Polygon normals for " << bin_name << " */\n";
     out << "normal polys_" << bin_name << "[" << num_children
         << "] = {\n";
-    
+
     EggGroupNode::const_iterator ci;
     size_t prim_index = 0;
     for (ci = bin->begin(); ci != bin->end(); ++ci) {
@@ -349,7 +339,7 @@ write_bin(EggBin *bin) {
     out << "/* Polygon colors for " << bin_name << " */\n";
     out << "color polys_" << bin_name << "[" << num_children
         << "] = {\n";
-    
+
     EggGroupNode::const_iterator ci;
     size_t prim_index = 0;
     for (ci = bin->begin(); ci != bin->end(); ++ci) {

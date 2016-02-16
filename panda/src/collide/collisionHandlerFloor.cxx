@@ -20,11 +20,9 @@
 
 TypeHandle CollisionHandlerFloor::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerFloor::
 CollisionHandlerFloor() {
   _offset = 0.0f;
@@ -32,26 +30,16 @@ CollisionHandlerFloor() {
   _max_velocity = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerFloor::
 ~CollisionHandlerFloor() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::set_highest_collision
-//       Access: Protected
-//  Description: 
-//               
-//               
-//
-//               
-//               
-//               
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat CollisionHandlerFloor::
 set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries) {
   // Get the maximum height for all collisions with this node.
@@ -119,21 +107,17 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   // Add only the one that we're impacting with:
   add_entry(highest);
   #endif
-  
+
   return max_height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::handle_entries
-//       Access: Protected, Virtual
-//  Description: Called by the parent class after all collisions have
-//               been detected, this manages the various collisions
-//               and moves around the nodes as necessary.
-//
-//               The return value is normally true, but it may be
-//               false to indicate the CollisionTraverser should
-//               disable this handler from being called in the future.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the parent class after all collisions have been detected, this
+ * manages the various collisions and moves around the nodes as necessary.  The
+ * return value is normally true, but it may be false to indicate the
+ * CollisionTraverser should disable this handler from being called in the
+ * future.
+ */
 bool CollisionHandlerFloor::
 handle_entries() {
   bool okflag = true;
@@ -166,20 +150,20 @@ handle_entries() {
         bool got_max = false;
         PN_stdfloat max_height = 0.0f;
         CollisionEntry *max_entry = NULL;
-        
+
         Entries::const_iterator ei;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
           nassertr(entry != (CollisionEntry *)NULL, false);
           nassertr(from_node_path == entry->get_from_node_path(), false);
-          
+
           if (entry->has_surface_point()) {
             LPoint3 point = entry->get_surface_point(def._target);
             if (collide_cat.is_debug()) {
               collide_cat.debug()
                 << "Intersection point detected at " << point << "\n";
             }
-            
+
             PN_stdfloat height = point[2];
             if (!got_max || height > max_height) {
               got_max = true;
@@ -199,14 +183,14 @@ handle_entries() {
         PN_stdfloat max_height = set_highest_collision(def._target, from_node_path, entries);
 
         // Now set our height accordingly.
-        PN_stdfloat adjust = max_height + _offset;        
+        PN_stdfloat adjust = max_height + _offset;
         #endif
         if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {
           if (collide_cat.is_debug()) {
             collide_cat.debug()
               << "Adjusting height by " << adjust << "\n";
           }
-          
+
           if (adjust < 0.0f && _max_velocity != 0.0f) {
             PN_stdfloat max_adjust =
               _max_velocity * ClockObject::get_global_clock()->get_dt();
@@ -233,11 +217,9 @@ handle_entries() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerFloor::apply_linear_force
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionHandlerFloor::
 apply_linear_force(ColliderDef &def, const LVector3 &force) {
 }

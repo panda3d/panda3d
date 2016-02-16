@@ -22,11 +22,9 @@ class GtkStatsMonitor;
 class PStatView;
 class PStatViewLevel;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsChartMenu
-// Description : A pulldown menu of charts available for a particular
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pulldown menu of charts available for a particular thread.
+ */
 class GtkStatsChartMenu {
 public:
   GtkStatsChartMenu(GtkStatsMonitor *monitor, int thread_index);
@@ -53,4 +51,3 @@ private:
 };
 
 #endif
-

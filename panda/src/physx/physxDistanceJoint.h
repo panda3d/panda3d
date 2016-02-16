@@ -21,11 +21,10 @@
 
 class PhysxDistanceJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxDistanceJoint
-// Description : A distance joint maintains a certain distance
-//               between two points on two actors. 
-////////////////////////////////////////////////////////////////////
+/**
+ * A distance joint maintains a certain distance between two points on two
+ * actors.
+ */
 class EXPCL_PANDAPHYSX PhysxDistanceJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -50,7 +49,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxDistanceJoint", 
+    register_type(_type_handle, "PhysxDistanceJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

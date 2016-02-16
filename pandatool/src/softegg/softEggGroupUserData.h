@@ -17,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "eggUserData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftEggGroupUserData
-// Description : This class contains extra user data which is
-//               piggybacked onto EggGroup objects for the purpose of
-//               the softimage converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class contains extra user data which is piggybacked onto EggGroup
+ * objects for the purpose of the softimage converter.
+ */
 class SoftEggGroupUserData : public EggUserData {
 public:
   INLINE SoftEggGroupUserData();

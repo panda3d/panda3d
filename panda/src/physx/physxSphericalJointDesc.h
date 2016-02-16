@@ -22,11 +22,9 @@
 class PhysxSpringDesc;
 class PhysxJointLimitDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSphericalJointDesc
-// Description : Descriptor class for distance joint. See
-//               PhysxSphericalJoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for distance joint.  See PhysxSphericalJoint.
+ */
 class EXPCL_PANDAPHYSX PhysxSphericalJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

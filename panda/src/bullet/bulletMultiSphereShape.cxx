@@ -17,11 +17,9 @@
 
 TypeHandle BulletMultiSphereShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletMultiSphereShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletMultiSphereShape::
 BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii) {
 
@@ -44,14 +42,11 @@ BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletMultiSphereShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletMultiSphereShape::
 ptr() const {
 
   return _shape;
 }
-

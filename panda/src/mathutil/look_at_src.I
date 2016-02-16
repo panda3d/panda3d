@@ -78,4 +78,3 @@ look_at(FLOATNAME(LQuaternion) &quat, const FLOATNAME(LVector3) &fwd,
         CoordinateSystem cs) {
   look_at(quat, fwd, FLOATNAME(LVector3)::up(cs), cs);
 }
-

@@ -18,11 +18,9 @@
 
 #include "imageFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ImageFixHiddenColor
-// Description : This program repairs an image's RGB values hidden
-//               behind an A value of 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * This program repairs an image's RGB values hidden behind an A value of 0.
+ */
 class ImageFixHiddenColor : public ImageFilter {
 public:
   ImageFixHiddenColor();
@@ -38,4 +36,3 @@ private:
 #include "imageFixHiddenColor.I"
 
 #endif
-

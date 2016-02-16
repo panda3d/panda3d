@@ -22,11 +22,9 @@
 
 class Character;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CharacterJointBundle
-// Description : The collection of all the joints and sliders in the
-//               character.
-////////////////////////////////////////////////////////////////////
+/**
+ * The collection of all the joints and sliders in the character.
+ */
 class EXPCL_PANDA_CHAR CharacterJointBundle : public PartBundle {
 protected:
   INLINE CharacterJointBundle(const CharacterJointBundle &copy);
@@ -72,5 +70,3 @@ private:
 #include "characterJointBundle.I"
 
 #endif
-
-

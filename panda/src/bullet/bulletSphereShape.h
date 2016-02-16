@@ -22,10 +22,9 @@
 
 #include "collisionSphere.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletSphereShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletSphereShape : public BulletShape {
 private:
   // Only used by make_from_bam
@@ -61,7 +60,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletSphereShape", 
+    register_type(_type_handle, "BulletSphereShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

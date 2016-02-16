@@ -25,11 +25,9 @@
 
 class HTTPChannel;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IdentityStreamBuf
-// Description : The streambuf object that implements
-//               IIdentityStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements IIdentityStream.
+ */
 class EXPCL_PANDAEXPRESS IdentityStreamBuf : public streambuf {
 public:
   IdentityStreamBuf();

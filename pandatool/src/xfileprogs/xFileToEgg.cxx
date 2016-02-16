@@ -16,11 +16,9 @@
 #include "config_xfile.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileToEgg::
 XFileToEgg() :
   SomethingToEgg("DirectX", ".x")
@@ -86,11 +84,9 @@ XFileToEgg() :
   _coordinate_system = CS_yup_left;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void XFileToEgg::
 run() {
   _data->set_coordinate_system(_coordinate_system);
@@ -103,7 +99,7 @@ run() {
   converter._char_name = _char_name;
   converter._keep_model = _keep_model;
   converter._keep_animation = _keep_animation;
-  
+
   // Copy in the path and animation parameters.
   apply_parameters(converter);
 

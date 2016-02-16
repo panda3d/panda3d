@@ -65,5 +65,3 @@ VRMLAppearance(const VrmlNode *appearance) {
     }
   }
 }
-
-  

@@ -19,11 +19,9 @@
 #include "somethingToEgg.h"
 #include "objToEggConverter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ObjToEgg
-// Description : A program to read a Obj file and generate an egg
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a Obj file and generate an egg file.
+ */
 class ObjToEgg : public SomethingToEgg {
 public:
   ObjToEgg();

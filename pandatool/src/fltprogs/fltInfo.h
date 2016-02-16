@@ -20,11 +20,9 @@
 
 class FltRecord;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltInfo
-// Description : A program to read a flt file and report interesting
-//               things about it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a flt file and report interesting things about it.
+ */
 class FltInfo : public ProgramBase {
 public:
   FltInfo();
@@ -41,4 +39,3 @@ protected:
 };
 
 #endif
-

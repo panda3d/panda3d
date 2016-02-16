@@ -18,13 +18,11 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockProjection
-// Description : Indicates the projection mode for this particular
-//               shader.  This determines how UV coordinates should be
-//               computed based on the vertex positions.  This is a
-//               subchunk of LwoSurfaceBlock.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the projection mode for this particular shader.  This determines
+ * how UV coordinates should be computed based on the vertex positions.  This is
+ * a subchunk of LwoSurfaceBlock.
+ */
 class LwoSurfaceBlockProjection : public LwoChunk {
 public:
   enum Mode {
@@ -60,5 +58,3 @@ private:
 };
 
 #endif
-
-

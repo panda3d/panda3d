@@ -19,14 +19,12 @@
 #include "pointerToArray.h"
 #include "vector_ushort.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_ushort
-// Description : A pta of ushorts.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of ushorts.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a pta of this type (whether they
+ * need to export it or not) should include this header file, rather than
+ * defining the pta again.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToBase<ReferenceCountedVector<ushort> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToArrayBase<ushort>)

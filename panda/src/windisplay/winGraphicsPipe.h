@@ -18,19 +18,13 @@
 #include "graphicsPipe.h"
 #include "winGraphicsWindow.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinGraphicsPipe
-// Description : This is an abstract base class for wglGraphicsPipe
-//               and wdxGraphicsPipe; that is, those graphics pipes
-//               that are specialized for working with Microsoft
-//               Windows.
-//
-//               There isn't much code here, since most of the fancy
-//               stuff is handled in WinGraphicsWindow.  You could
-//               make a case that we don't even need a WinGraphicsPipe
-//               class at all, but it is provided mainly for
-//               completeness.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class for wglGraphicsPipe and wdxGraphicsPipe; that
+ * is, those graphics pipes that are specialized for working with Microsoft
+ * Windows.  There isn't much code here, since most of the fancy stuff is
+ * handled in WinGraphicsWindow.  You could make a case that we don't even need
+ * a WinGraphicsPipe class at all, but it is provided mainly for completeness.
+ */
 class EXPCL_PANDAWIN WinGraphicsPipe : public GraphicsPipe {
 public:
   WinGraphicsPipe();

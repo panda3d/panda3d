@@ -18,7 +18,7 @@
 
 class PPInterface;
 
-class PPBrowserObject : public P3D_object 
+class PPBrowserObject : public P3D_object
 {
 public:
     PPBrowserObject( PPInterface* interfac, IDispatch* pDisp );
@@ -30,7 +30,7 @@ public:
     bool set_property( const std::string& property, bool needs_response,
                        P3D_object* value );
 
-    P3D_object* call( const std::string &method_name, 
+    P3D_object* call( const std::string &method_name,
         P3D_object* params[], int num_params ) const;
     P3D_object* eval( const std::string &expression ) const;
 

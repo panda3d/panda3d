@@ -13,22 +13,18 @@
 
 #include "bulletAllHitsRayResult.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletAllHitsRayResult::
-BulletAllHitsRayResult(const btVector3 &from_pos, const btVector3 &to_pos, const CollideMask &mask) 
+BulletAllHitsRayResult(const btVector3 &from_pos, const btVector3 &to_pos, const CollideMask &mask)
  : btCollisionWorld::AllHitsRayResultCallback(from_pos, to_pos), _mask(mask) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::needsCollision
-//       Access: Protected
-//  Description: Override default implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Override default implementation.
+ */
 bool BulletAllHitsRayResult::
 needsCollision(btBroadphaseProxy* proxy0) const {
 
@@ -39,11 +35,9 @@ needsCollision(btBroadphaseProxy* proxy0) const {
   return (_mask & mask0) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::addSingleResult
-//       Access: Protected
-//  Description: Override default implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Override default implementation.
+ */
 btScalar BulletAllHitsRayResult::
 addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) {
 
@@ -61,66 +55,54 @@ addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldS
   return btCollisionWorld::AllHitsRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::get_from_pos
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 BulletAllHitsRayResult::
 get_from_pos() const {
 
   return btVector3_to_LPoint3(m_rayFromWorld);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::get_to_pos
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 BulletAllHitsRayResult::
 get_to_pos() const {
 
   return btVector3_to_LPoint3(m_rayToWorld);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::has_hits
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BulletAllHitsRayResult::
 has_hits() const {
 
   return hasHit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::get_closest_hit_fraction
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat BulletAllHitsRayResult::
 get_closest_hit_fraction() const {
 
   return (PN_stdfloat)m_closestHitFraction;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::get_num_hits
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BulletAllHitsRayResult::
 get_num_hits() const {
 
   return m_collisionObjects.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::get_hit
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const BulletRayHit BulletAllHitsRayResult::
 get_hit(int idx) const {
 
@@ -139,69 +121,56 @@ get_hit(int idx) const {
   return hit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRayHit::get_hit_fraction
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat BulletRayHit::
 get_hit_fraction() const {
 
   return (PN_stdfloat)_fraction;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRayHit::get_node
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PandaNode *BulletRayHit::
 get_node() const {
 
   return (_object) ? (PandaNode *)_object->getUserPointer() : NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRayHit::get_hit_pos
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 BulletRayHit::
 get_hit_pos() const {
 
   return btVector3_to_LPoint3(_pos);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRayHit::get_hit_normal
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LVector3 BulletRayHit::
 get_hit_normal() const {
 
   return btVector3_to_LVector3(_normal);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRayHit::get_shape_part
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BulletRayHit::
 get_shape_part() const {
 
   return _shapePart;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRayHit::get_triangle_index
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BulletRayHit::
 get_triangle_index() const {
 
   return _triangleIndex;
 }
-

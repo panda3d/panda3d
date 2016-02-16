@@ -24,19 +24,14 @@
 
 struct PipelineCyclerTrueImpl;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Pipeline
-// Description : This class manages a staged pipeline of data, for
-//               instance the render pipeline, so that each stage of
-//               the pipeline can simultaneously access different
-//               copies of the same data.  It actually maintains a
-//               collection of PipelineCycler objects, and manages the
-//               turning of all of them at once.
-//
-//               There is one default Pipeline object, the render
-//               pipeline.  Other specialty pipelines may be created
-//               as needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class manages a staged pipeline of data, for instance the render
+ * pipeline, so that each stage of the pipeline can simultaneously access
+ * different copies of the same data.  It actually maintains a collection of
+ * PipelineCycler objects, and manages the turning of all of them at once.
+ * There is one default Pipeline object, the render pipeline.  Other specialty
+ * pipelines may be created as needed.
+ */
 class EXPCL_PANDA_PIPELINE Pipeline : public Namable {
 public:
   Pipeline(const string &name, int num_stages);
@@ -57,7 +52,7 @@ public:
 
   INLINE int get_num_cyclers() const;
   INLINE int get_num_dirty_cyclers() const;
-  
+
 #ifdef DEBUG_THREADS
   typedef void CallbackFunc(TypeHandle type, int count, void *data);
   void iterate_all_cycler_types(CallbackFunc *func, void *data) const;
@@ -82,7 +77,7 @@ private:
 #ifdef DEBUG_THREADS
   typedef pmap<TypeHandle, int> TypeCount;
   TypeCount _all_cycler_types, _dirty_cycler_types;
-  
+
   static void inc_cycler_type(TypeCount &count, TypeHandle type, int addend);
 #endif  // DEBUG_THREADS
 
@@ -96,4 +91,3 @@ private:
 #include "pipeline.I"
 
 #endif
-

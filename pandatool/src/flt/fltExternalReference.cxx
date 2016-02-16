@@ -19,39 +19,31 @@
 
 TypeHandle FltExternalReference::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltExternalReference::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltExternalReference::
 FltExternalReference(FltHeader *header) : FltBead(header) {
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltExternalReference::apply_converted_filenames
-//       Access: Public, Virtual
-//  Description: Walks the hierarchy at this record and below and
-//               copies the _converted_filename record into the
-//               _orig_filename record, so the flt file will be
-//               written out with the converted filename instead of
-//               what was originally read in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the hierarchy at this record and below and copies the
+ * _converted_filename record into the _orig_filename record, so the flt file
+ * will be written out with the converted filename instead of what was
+ * originally read in.
+ */
 void FltExternalReference::
 apply_converted_filenames() {
   _orig_filename = _converted_filename.to_os_generic();
   FltBead::apply_converted_filenames();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltExternalReference::output
-//       Access: Public, Virtual
-//  Description: Writes a quick one-line description of the record, but
-//               not its children.  This is a human-readable
-//               description, primarily for debugging; to write a flt
-//               file, use FltHeader::write_flt().
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a quick one-line description of the record, but not its children.
+ * This is a human-readable description, primarily for debugging; to write a flt
+ * file, use FltHeader::write_flt().
+ */
 void FltExternalReference::
 output(ostream &out) const {
   out << "External " << get_ref_filename();
@@ -60,35 +52,28 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltExternalReference::get_ref_filename
-//       Access: Public
-//  Description: Returns the name of the referenced file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the referenced file.
+ */
 Filename FltExternalReference::
 get_ref_filename() const {
   return _converted_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltExternalReference::set_ref_filename
-//       Access: Public
-//  Description: Changes the name of the referenced file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the name of the referenced file.
+ */
 void FltExternalReference::
 set_ref_filename(const Filename &filename) {
-  _converted_filename = filename; 
+  _converted_filename = filename;
   _orig_filename = _converted_filename.to_os_generic();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltExternalReference::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltExternalReference::
 extract_record(FltRecordReader &reader) {
   if (!FltBead::extract_record(reader)) {
@@ -121,14 +106,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltExternalReference::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltExternalReference::
 build_record(FltRecordWriter &writer) const {
   if (!FltBead::build_record(writer)) {

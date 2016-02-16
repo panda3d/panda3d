@@ -22,11 +22,9 @@
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN, MovingPart<ACScalarSwitchType>);
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovingPartScalar
-// Description : This is a particular kind of MovingPart that accepts
-//               a scalar each frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of MovingPart that accepts a scalar each frame.
+ */
 class EXPCL_PANDA_CHAN MovingPartScalar : public MovingPart<ACScalarSwitchType> {
 protected:
   INLINE MovingPartScalar(const MovingPartScalar &copy);
@@ -78,6 +76,3 @@ private:
 #endif
 
 #endif
-
-
-

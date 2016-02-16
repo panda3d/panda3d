@@ -56,11 +56,9 @@ static void conv_rgba4444(uint16_t in, xel &rgb, xelval &alpha) {
   alpha = scale_table_4[in & 0xF];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeAndroid::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeAndroid::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file), _bitmap(NULL)
@@ -109,11 +107,9 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeAndroid::Reader::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeAndroid::Reader::
 ~Reader() {
   if (_bitmap != NULL) {
@@ -121,18 +117,13 @@ PNMFileTypeAndroid::Reader::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeAndroid::Reader::prepare_read
-//       Access: Public, Virtual
-//  Description: This method will be called before read_data() or
-//               read_row() is called.  It instructs the reader to
-//               initialize its data structures as necessary to
-//               actually perform the read operation.  
-//
-//               After this call, _x_size and _y_size should reflect
-//               the actual size that will be filled by read_data()
-//               (as possibly modified by set_read_size()).
-////////////////////////////////////////////////////////////////////
+/**
+ * This method will be called before read_data() or read_row() is called.  It
+ * instructs the reader to initialize its data structures as necessary to
+ * actually perform the read operation.  After this call, _x_size and _y_size
+ * should reflect the actual size that will be filled by read_data() (as
+ * possibly modified by set_read_size()).
+ */
 void PNMFileTypeAndroid::Reader::
 prepare_read() {
   _sample_size = 2;
@@ -207,19 +198,13 @@ prepare_read() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeAndroid::Reader::read_data
-//       Access: Public, Virtual
-//  Description: Reads in an entire image all at once, storing it in
-//               the pre-allocated _x_size * _y_size array and alpha
-//               pointers.  (If the image type has no alpha channel,
-//               alpha is ignored.)  Returns the number of rows
-//               correctly read.
-//
-//               Derived classes need not override this if they
-//               instead provide supports_read_row() and read_row(),
-//               below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in an entire image all at once, storing it in the pre-allocated _x_size
+ * * _y_size array and alpha pointers.  (If the image type has no alpha channel,
+ * alpha is ignored.)  Returns the number of rows correctly read.  Derived
+ * classes need not override this if they instead provide supports_read_row()
+ * and read_row(), below.
+ */
 int PNMFileTypeAndroid::Reader::
 read_data(xel *rgb, xelval *alpha) {
   if (!_is_valid) {

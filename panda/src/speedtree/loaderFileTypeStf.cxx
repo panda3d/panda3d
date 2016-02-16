@@ -16,54 +16,43 @@
 
 TypeHandle LoaderFileTypeStf::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeStf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LoaderFileTypeStf::
 LoaderFileTypeStf() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeStf::get_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string LoaderFileTypeStf::
 get_name() const {
   return "SpeedTree compiled tree";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeStf::get_extension
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string LoaderFileTypeStf::
 get_extension() const {
   return "stf";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeStf::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files (with
+ * a .pz extension), false otherwise.
+ */
 bool LoaderFileTypeStf::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeStf::load_file
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(PandaNode) LoaderFileTypeStf::
-load_file(const Filename &path, const LoaderOptions &options, 
+load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
   if (!path.is_regular_file()) {
     // Quietly fail if the file doesn't exist.  The Loader expects

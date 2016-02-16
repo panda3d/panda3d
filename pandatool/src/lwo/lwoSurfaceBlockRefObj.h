@@ -18,11 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockRefObj
-// Description : Specifies a reference object that the texture UV's
-//               are to be computed relative to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a reference object that the texture UV's are to be computed
+ * relative to.
+ */
 class LwoSurfaceBlockRefObj : public LwoChunk {
 public:
   string _name;
@@ -50,5 +49,3 @@ private:
 };
 
 #endif
-
-

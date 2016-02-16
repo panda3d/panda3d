@@ -11,16 +11,12 @@
  * @date 2007-11-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::set_threshold
-//       Access: Private
-//  Description: As part of its analysis, the ARToolKit occasionally
-//               converts images to black and white by thresholding
-//               them.  The threshold is set to 0.5 by default, but
-//               you can tweak it here.
-////////////////////////////////////////////////////////////////////
+/**
+ * As part of its analysis, the ARToolKit occasionally converts images to black
+ * and white by thresholding them.  The threshold is set to 0.5 by default, but
+ * you can tweak it here.
+ */
 INLINE void ARToolKit::
 set_threshold(double thresh) {
   _threshold = thresh;
 }
-

@@ -19,12 +19,10 @@
 #include "eggTexture.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PT_EggTexture
-// Description : A PT(EggTexture).  This is defined here solely we can
-//               explicitly export the template class.  It's not
-//               strictly necessary, but it doesn't hurt.
-////////////////////////////////////////////////////////////////////
+/**
+ * A PT(EggTexture).  This is defined here solely we can explicitly export the
+ * template class.  It's not strictly necessary, but it doesn't hurt.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerToBase<EggTexture>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerTo<EggTexture>)

@@ -11,22 +11,18 @@
  * @date 2003-10-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE QtessInputFile::
-QtessInputFile(const QtessInputFile &copy) : 
-  _entries(copy._entries) 
-{ 
+QtessInputFile(const QtessInputFile &copy) :
+  _entries(copy._entries)
+{
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessInputFile::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void QtessInputFile::
 operator = (const QtessInputFile &copy) {
   _entries = copy._entries;

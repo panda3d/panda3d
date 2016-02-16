@@ -18,11 +18,9 @@
 
 TypeHandle DialNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DialNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DialNode::
 DialNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
@@ -47,11 +45,9 @@ DialNode(ClientBase *client, const string &device_name) :
   _dial = DCAST(ClientDialDevice, device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DialNode::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DialNode::
 ~DialNode() {
   // When the _dial pointer destructs, the ClientDialDevice
@@ -59,19 +55,14 @@ DialNode::
   // to get turned off does.  Magic.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DialNode::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output parameters.
+ * The input parameters may be accessed with the index numbers returned by the
+ * define_input() calls that were made earlier (presumably in the constructor);
+ * likewise, the output parameters should be set with the index numbers returned
+ * by the define_output() calls.
+ */
 void DialNode::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {

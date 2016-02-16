@@ -13,7 +13,7 @@
 
 #ifndef IPHONEGRAPHICSSTATEGUARDIAN_H
 #define IPHONEGRAPHICSSTATEGUARDIAN_H
-        
+
 #include "pandabase.h"
 #include "glesgsg.h"
 
@@ -21,10 +21,9 @@
 
 class IPhoneGraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IPhoneGraphicsStateGuardian
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class IPhoneGraphicsStateGuardian : public GLESGraphicsStateGuardian {
 public:
   IPhoneGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -34,7 +33,7 @@ public:
 
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);
-  
+
 private:
   void describe_pixel_format(FrameBufferProperties &fb_props);
 

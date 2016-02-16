@@ -32,17 +32,12 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientBase
-// Description : An abstract base class for a family of client
-//               device interfaces--including trackers, buttons,
-//               dials, and other analog inputs.
-//
-//               This provides a common interface to connect to such
-//               devices and extract their data; it is used by
-//               TrackerNode etc. to put these devices in the data
-//               graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for a family of client device interfaces--including
+ * trackers, buttons, dials, and other analog inputs.  This provides a common
+ * interface to connect to such devices and extract their data; it is used by
+ * TrackerNode etc.  to put these devices in the data graph.
+ */
 class EXPCL_PANDA_DEVICE ClientBase : public TypedReferenceCount {
 protected:
   ClientBase();

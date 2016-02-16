@@ -21,14 +21,11 @@
 
 #include <map>
 
-////////////////////////////////////////////////////////////////////
-//       Class : ExecutionEnvironment
-// Description : Encapsulates access to the environment variables and
-//               command-line arguments at the time of execution.
-//               This is encapsulated to support accessing these
-//               things during static init time, which seems to be
-//               risky at best.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates access to the environment variables and command-line arguments
+ * at the time of execution.  This is encapsulated to support accessing these
+ * things during static init time, which seems to be risky at best.
+ */
 class EXPCL_DTOOL ExecutionEnvironment {
 private:
   ExecutionEnvironment();

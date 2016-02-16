@@ -20,18 +20,14 @@
 
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPolysetMaker
-// Description : A specialization on EggBinMaker for making polysets
-//               that share the same basic rendering characteristic.
-//               This really just defines the example functions
-//               described in the leading comment to EggBinMaker.
-//
-//               It makes some common assumptions about how polysets
-//               should be grouped; if these are not sufficient, you
-//               can always rederive your own further specialization
-//               of this class.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization on EggBinMaker for making polysets that share the same basic
+ * rendering characteristic.  This really just defines the example functions
+ * described in the leading comment to EggBinMaker.  It makes some common
+ * assumptions about how polysets should be grouped; if these are not
+ * sufficient, you can always rederive your own further specialization of this
+ * class.
+ */
 class EXPCL_PANDAEGG EggPolysetMaker : public EggBinMaker {
 PUBLISHED:
   // The BinNumber serves to identify why a particular EggBin was

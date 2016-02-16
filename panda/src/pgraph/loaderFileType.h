@@ -25,13 +25,11 @@
 class LoaderOptions;
 class BamCacheRecord;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileType
-// Description : This is the base class for a family of scene-graph
-//               file types that the Loader supports.  Each kind of
-//               loader that's available should define a corresponding
-//               LoaderFileType object and register itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a family of scene-graph file types that the Loader
+ * supports.  Each kind of loader that's available should define a corresponding
+ * LoaderFileType object and register itself.
+ */
 class EXPCL_PANDA_PGRAPH LoaderFileType : public TypedObject {
 protected:
   LoaderFileType();
@@ -79,4 +77,3 @@ private:
 };
 
 #endif
-

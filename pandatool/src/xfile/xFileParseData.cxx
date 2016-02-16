@@ -15,11 +15,9 @@
 #include "xLexerDefs.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileParseData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileParseData::
 XFileParseData() :
   _parse_flags(0)
@@ -32,13 +30,10 @@ XFileParseData() :
   _current_line = x_current_line;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileParseData::yyerror
-//       Access: Public
-//  Description: Reports a parsing error message to the user, showing
-//               the line and column from which this object was
-//               originally parsed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports a parsing error message to the user, showing the line and column from
+ * which this object was originally parsed.
+ */
 void XFileParseData::
 yyerror(const string &message) const {
   xyyerror(message, _line_number, _col_number, _current_line);

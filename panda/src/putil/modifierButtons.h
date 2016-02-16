@@ -19,12 +19,10 @@
 #include "buttonHandle.h"
 #include "pointerToArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ModifierButtons
-// Description : This class monitors the state of a number of
-//               individual buttons and tracks whether each button is
-//               known to be down or up.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class monitors the state of a number of individual buttons and tracks
+ * whether each button is known to be down or up.
+ */
 class EXPCL_PANDA_PUTIL ModifierButtons {
 PUBLISHED:
   ModifierButtons();
@@ -83,4 +81,3 @@ INLINE ostream &operator << (ostream &out, const ModifierButtons &mb) {
 #include "modifierButtons.I"
 
 #endif
-

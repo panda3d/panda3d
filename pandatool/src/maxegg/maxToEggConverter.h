@@ -31,18 +31,17 @@
 // *** Figure out why this is causing link errors
 //DWORD WINAPI ProgressBarFunction(LPVOID arg);
 
-////////////////////////////////////////////////////////////////////
-//       Class : MaxToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from a Max model
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from a Max
+ * model
+ */
 class MaxToEggConverter {
  public:
     MaxToEggConverter();
     ~MaxToEggConverter();
 
     bool convert(MaxEggOptions *options);
-    
+
  private:
     struct PandaMaterial {
         std::vector<PT(EggTexture)> _texture_list;
@@ -62,21 +61,21 @@ class MaxToEggConverter {
     int               _cur_tref;
     EggTextureCollection _textures;
     MaterialMap       _material_map;
-    
+
     void reset();
 
     bool convert_char_model();
-    bool convert_char_chan(double start_frame, double end_frame, 
+    bool convert_char_chan(double start_frame, double end_frame,
                            double frame_inc, double output_frame_rate);
     bool convert_hierarchy(EggGroupNode *egg_root);
     bool process_model_node(MaxNodeDesc *node_desc);
-    
+
     void get_transform(INode *max_node, EggGroup *egg_group);
     LMatrix4d get_object_transform(INode *max_node);
     void get_joint_transform(INode *max_node, EggGroup *egg_group);
-    void get_joint_transform(INode *max_node, INode *parent_node, 
+    void get_joint_transform(INode *max_node, INode *parent_node,
                              EggGroup *egg_group);
-    
+
     bool make_nurbs_curve(INode *max_node, NURBSCVCurve *curve,
                           TimeValue time, EggGroup *egg_group);
     void make_polyset(INode *max_node,
@@ -88,7 +87,7 @@ class MaxToEggConverter {
     VertColor get_max_vertex_color(Mesh *mesh, int FaceNo, int VertexNo);
     VertColor get_max_vertex_color(Mesh *mesh,int FaceNo,int VertexNo, int channel);
     UVVert get_max_vertex_texcoord(Mesh *mesh, int faceNo, int vertNo, int channel);
-    
+
     void get_vertex_weights(INode *max_node, EggVertexPool *vpool);
 
     const PandaMaterial &get_panda_material(Mtl *mtl, MtlID id);
@@ -102,9 +101,9 @@ class MaxToEggConverter {
     std::string generate_tex_name();
     std::string get_uv_name(int n);
     bool reparent_decals(EggGroupNode *egg_parent);
-    
+
  public:
-    
+
     Modifier* FindSkinModifier (INode* node, const Class_ID &type);
 };
 

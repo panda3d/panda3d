@@ -11,23 +11,18 @@
  * @date 2010-02-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxLinearInterpolationValues::
 PhysxLinearInterpolationValues() : _min(0.0f), _max(0.0f), _map() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxLinearInterpolationValues::
 ~PhysxLinearInterpolationValues() {
 
 }
-

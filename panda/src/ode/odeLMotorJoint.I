@@ -47,4 +47,3 @@ INLINE dReal OdeLMotorJoint::
 get_param(int parameter) const {
   return dJointGetLMotorParam(_id, parameter);
 }
-

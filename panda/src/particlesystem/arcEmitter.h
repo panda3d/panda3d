@@ -16,11 +16,9 @@
 
 #include "ringEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ArcEmitter
-// Description : Describes a planar ring region in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a planar ring region in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS ArcEmitter : public RingEmitter {
 PUBLISHED:
   ArcEmitter();

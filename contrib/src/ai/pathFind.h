@@ -21,15 +21,12 @@
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PathFind
-// Description : This class contains all the members and functions
-//               that are required to form an interface between
-//               the AIBehaviors class and the PathFinder class.
-//               An object (pointer) of this class is provided in
-//               the AIBehaviors class.  It is only via this object
-//               that the user can activate pathfinding.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class contains all the members and functions that are required to form
+ * an interface between the AIBehaviors class and the PathFinder class.  An
+ * object (pointer) of this class is provided in the AIBehaviors class.  It is
+ * only via this object that the user can activate pathfinding.
+ */
 class EXPCL_PANDAAI PathFind {
 public:
   AICharacter *_ai_char;
@@ -66,4 +63,3 @@ public:
 };
 
 #endif
-

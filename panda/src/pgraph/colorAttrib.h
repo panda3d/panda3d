@@ -21,11 +21,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorAttrib
-// Description : Indicates what color should be applied to renderable
-//               geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates what color should be applied to renderable geometry.
+ */
 class EXPCL_PANDA_PGRAPH ColorAttrib : public RenderAttrib {
 PUBLISHED:
   enum Type {
@@ -76,7 +74,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -101,4 +99,3 @@ private:
 #include "colorAttrib.I"
 
 #endif
-

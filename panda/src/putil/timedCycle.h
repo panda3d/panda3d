@@ -14,9 +14,9 @@
 #ifndef TIMED_CYCLE_H
 #define TIMED_CYCLE_H
 //
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+/*
+ * Includes
+ */
 #include "pandabase.h"
 
 #include "clockObject.h"
@@ -24,13 +24,11 @@
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TimedCycle
-// Description : A class for anything that needs to cycle over
-//               some finite list of elements in increments based on
-//               time.  All time variables are assumed to be set in
-//               seconds.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class for anything that needs to cycle over some finite list of elements in
+ * increments based on time.  All time variables are assumed to be set in
+ * seconds.
+ */
 
 class EXPCL_PANDA_PUTIL TimedCycle
 {

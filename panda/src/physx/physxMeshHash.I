@@ -11,11 +11,9 @@
  * @date 2010-09-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxMeshHash::
 PhysxMeshHash() {
 
@@ -33,21 +31,17 @@ PhysxMeshHash() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxMeshHash::
 ~PhysxMeshHash() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::hash_function
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int PhysxMeshHash::
 hash_function(int xi, int yi, int zi) const {
 
@@ -55,11 +49,9 @@ hash_function(int xi, int yi, int zi) const {
   return h % _hashIndexSize;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::cell_coord_of
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxMeshHash::
 cell_coord_of(const NxVec3 &v, int &xi, int &yi, int &zi) const {
 
@@ -68,15 +60,11 @@ cell_coord_of(const NxVec3 &v, int &xi, int &yi, int &zi) const {
   zi = (int)(v.z * _invSpacing); if (v.z < 0.0f) zi--;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::get_grid_spacing
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE NxF32 PhysxMeshHash::
 get_grid_spacing() const {
 
   return 1.0f / _invSpacing;
 }
-
-

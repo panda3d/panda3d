@@ -176,6 +176,3 @@ ProfileTimer::AutoTimer::AutoTimer(ProfileTimer& profile, const char* tag) :
   ++_profile._autoTimerCount;
   _profile.mark(_tag);
 }
-
-
-

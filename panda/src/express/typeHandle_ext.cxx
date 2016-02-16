@@ -15,14 +15,11 @@
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeHandle::make
-//       Access: Published, Static
-//  Description: Constructs a TypeHandle from a Python class object.
-//               Useful for automatic coercion, to allow a class
-//               object to be passed wherever a TypeHandle is
-//               expected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a TypeHandle from a Python class object.  Useful for automatic
+ * coercion, to allow a class object to be passed wherever a TypeHandle is
+ * expected.
+ */
 TypeHandle Extension<TypeHandle>::
 make(PyTypeObject *tp) {
   if (!PyType_IsSubtype(tp, &Dtool_DTOOL_SUPER_BASE._PyType)) {

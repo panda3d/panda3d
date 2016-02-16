@@ -20,10 +20,9 @@
 #include "mouseAndKeyboard.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : AwMouseAndKeyboard
-// Description : Thin wrappings arround WebCore.h
-////////////////////////////////////////////////////////////////////
+/**
+ * Thin wrappings arround WebCore.h
+ */
 class EXPCL_PANDAAWESOMIUM AwMouseAndKeyboard : public DataNode {
 //member data data
 protected:

@@ -13,12 +13,9 @@
 
 #include "stringStream.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::set_data
-//       Access: Public
-//  Description: Replaces the contents of the data stream.  This
-//               implicitly reseeks to 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the contents of the data stream.  This implicitly reseeks to 0.
+ */
 void StringStream::
 set_data(const unsigned char *data, size_t size) {
   _buf.clear();

@@ -20,28 +20,19 @@
 #include "pipelineCycler.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CycleDataLockedReader
-// Description : This template class calls PipelineCycler::read() in
-//               the constructor and PipelineCycler::release_read() in
-//               the destructor.  In the interim, it provides a
-//               transparent read-only access to the CycleData.
-//
-//               Since a lock is held on the data while the instance
-//               of this class exists, no other thread may modify any
-//               stage of the pipeline during that time.  Thus, this
-//               class is appropriate to use for cases in which you
-//               might want to read and then modify the data.  It is
-//               possible to pass an instance of CycleDataLockedReader
-//               to the CycleDataWriter constructor, which
-//               automatically elevates the read lock into a write
-//               lock.
-//
-//               It exists as a syntactic convenience to access the
-//               data in the CycleData.  It also allows the whole
-//               system to compile down to nothing if
-//               DO_PIPELINING is not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class calls PipelineCycler::read() in the constructor and
+ * PipelineCycler::release_read() in the destructor.  In the interim, it
+ * provides a transparent read-only access to the CycleData.  Since a lock is
+ * held on the data while the instance of this class exists, no other thread may
+ * modify any stage of the pipeline during that time.  Thus, this class is
+ * appropriate to use for cases in which you might want to read and then modify
+ * the data.  It is possible to pass an instance of CycleDataLockedReader to the
+ * CycleDataWriter constructor, which automatically elevates the read lock into
+ * a write lock.  It exists as a syntactic convenience to access the data in the
+ * CycleData.  It also allows the whole system to compile down to nothing if
+ * DO_PIPELINING is not defined.
+ */
 template<class CycleDataType>
 class CycleDataLockedReader {
 public:
@@ -52,7 +43,7 @@ public:
                                Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy);
   INLINE void operator = (const CycleDataLockedReader<CycleDataType> &copy);
-  
+
   INLINE ~CycleDataLockedReader();
 
   INLINE const CycleDataType *operator -> () const;

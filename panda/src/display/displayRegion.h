@@ -46,17 +46,13 @@ class Camera;
 class PNMImage;
 class CullTraverser;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegion
-// Description : A rectangular subregion within a window for rendering
-//               into.  Typically, there is one DisplayRegion that
-//               covers the whole window, but you may also create
-//               smaller DisplayRegions for having different regions
-//               within the window that represent different scenes.
-//               You may also stack up DisplayRegions like panes of
-//               glass, usually for layering 2-d interfaces on top of
-//               a 3-d scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * A rectangular subregion within a window for rendering into.  Typically, there
+ * is one DisplayRegion that covers the whole window, but you may also create
+ * smaller DisplayRegions for having different regions within the window that
+ * represent different scenes.  You may also stack up DisplayRegions like panes
+ * of glass, usually for layering 2-d interfaces on top of a 3-d scene.
+ */
 class EXPCL_PANDA_DISPLAY DisplayRegion : public DisplayRegionBase, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
@@ -308,11 +304,10 @@ private:
   friend class DisplayRegionPipelineReader;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionPipelineReader
-// Description : Encapsulates the data from a DisplayRegion,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data from a DisplayRegion, pre-fetched for one stage of the
+ * pipeline.
+ */
 class EXPCL_PANDA_DISPLAY DisplayRegionPipelineReader {
 public:
   INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);

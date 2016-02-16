@@ -25,14 +25,12 @@ class EggCharacterData;
 class EggBackPointer;
 class NameUniquifier;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggComponentData
-// Description : This is the base class of both EggJointData and
-//               EggSliderData.  It represents a single component of a
-//               character, either a joint or a slider, along with
-//               back pointers to the references to this component in
-//               all model and animation egg files read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class of both EggJointData and EggSliderData.  It represents
+ * a single component of a character, either a joint or a slider, along with
+ * back pointers to the references to this component in all model and animation
+ * egg files read.
+ */
 class EggComponentData : public EggObject, public Namable {
 public:
   EggComponentData(EggCharacterCollection *collection,
@@ -89,5 +87,3 @@ private:
 #include "eggComponentData.I"
 
 #endif
-
-

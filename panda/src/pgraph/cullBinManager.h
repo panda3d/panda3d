@@ -27,11 +27,10 @@
 class CullResult;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBinManager
-// Description : This is a global object that maintains the collection
-//               of named CullBins in the world.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a global object that maintains the collection of named CullBins in
+ * the world.
+ */
 class EXPCL_PANDA_PGRAPH CullBinManager : public CullBinEnums {
 protected:
   CullBinManager();

@@ -18,11 +18,9 @@
 
 class InkblotVideoCursor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InkblotVideo
-// Description : A cellular automaton that generates an amusing
-//               pattern of swirling colors.
-////////////////////////////////////////////////////////////////////
+/**
+ * A cellular automaton that generates an amusing pattern of swirling colors.
+ */
 class EXPCL_PANDA_MOVIES InkblotVideo : public MovieVideo {
 
  PUBLISHED:

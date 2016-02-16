@@ -23,10 +23,9 @@
 #include "odeJoint.h"
 #include "odeContact.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeContactJoint
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeContactJoint : public OdeJoint {
   friend class OdeJoint;
 

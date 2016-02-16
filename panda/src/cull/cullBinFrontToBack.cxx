@@ -23,11 +23,9 @@
 
 TypeHandle CullBinFrontToBack::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CullBinFrontToBack::
 ~CullBinFrontToBack() {
   Objects::iterator oi;
@@ -37,23 +35,18 @@ CullBinFrontToBack::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::make_bin
-//       Access: Public, Static
-//  Description: Factory constructor for passing to the CullBinManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory constructor for passing to the CullBinManager.
+ */
 CullBin *CullBinFrontToBack::
 make_bin(const string &name, GraphicsStateGuardianBase *gsg,
          const PStatCollector &draw_region_pcollector) {
   return new CullBinFrontToBack(name, gsg, draw_region_pcollector);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::add_object
-//       Access: Public, Virtual
-//  Description: Adds a geom, along with its associated state, to
-//               the bin for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a geom, along with its associated state, to the bin for rendering.
+ */
 void CullBinFrontToBack::
 add_object(CullableObject *object, Thread *current_thread) {
   // Determine the center of the bounding volume.
@@ -74,27 +67,20 @@ add_object(CullableObject *object, Thread *current_thread) {
   _objects.push_back(ObjectData(object, distance));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::finish_cull
-//       Access: Public
-//  Description: Called after all the geoms have been added, this
-//               indicates that the cull process is finished for this
-//               frame and gives the bins a chance to do any
-//               post-processing (like sorting) before moving on to
-//               draw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after all the geoms have been added, this indicates that the cull
+ * process is finished for this frame and gives the bins a chance to do any
+ * post-processing (like sorting) before moving on to draw.
+ */
 void CullBinFrontToBack::
 finish_cull(SceneSetup *, Thread *current_thread) {
   PStatTimer timer(_cull_this_pcollector, current_thread);
   sort(_objects.begin(), _objects.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::draw
-//       Access: Public
-//  Description: Draws all the geoms in the bin, in the appropriate
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws all the geoms in the bin, in the appropriate order.
+ */
 void CullBinFrontToBack::
 draw(bool force, Thread *current_thread) {
   PStatTimer timer(_draw_this_pcollector, current_thread);
@@ -105,12 +91,10 @@ draw(bool force, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinFrontToBack::fill_result_graph
-//       Access: Protected, Virtual
-//  Description: Called by CullBin::make_result_graph() to add all the
-//               geoms to the special cull result scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CullBin::make_result_graph() to add all the geoms to the special
+ * cull result scene graph.
+ */
 void CullBinFrontToBack::
 fill_result_graph(CullBin::ResultGraphBuilder &builder) {
   Objects::const_iterator oi;

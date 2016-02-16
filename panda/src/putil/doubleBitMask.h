@@ -18,15 +18,12 @@
 
 #include "bitMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DoubleBitMask
-// Description : This is a special BitMask type that is implemented as
-//               a pair of lesser BitMask types, to present a
-//               double-wide bit mask.  For instance, on a 32-bit
-//               system, this can be used to make a single 64-bit bit
-//               mask.  More of these can be ganged up together to
-//               make a 128-bit mask, and so on.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special BitMask type that is implemented as a pair of lesser
+ * BitMask types, to present a double-wide bit mask.  For instance, on a 32-bit
+ * system, this can be used to make a single 64-bit bit mask.  More of these can
+ * be ganged up together to make a 128-bit mask, and so on.
+ */
 template<class BMType>
 class DoubleBitMask {
 public:

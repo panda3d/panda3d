@@ -11,46 +11,37 @@
  * @date 2010-03-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicleDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxVehicleDesc::
 PhysxVehicleDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicleDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxVehicleDesc::
 ~PhysxVehicleDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicleDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxVehicleDesc::
 set_to_default() {
 
   // TODO
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicleDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxVehicleDesc::
 is_valid() const {
 
   return true;
 }
-

@@ -18,21 +18,17 @@
 
 #include "parameterRemapToString.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapCharStarToString
-// Description : Maps from (char *) or (const char *) to the atomic
-//               string type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from (char *) or (const char *) to the atomic string type.
+ */
 class ParameterRemapCharStarToString : public ParameterRemapToString {
 public:
   ParameterRemapCharStarToString(CPPType *orig_type);
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapWCharStarToWString
-// Description : Maps from (wchar_t *) or (const wchar_ *) to the atomic
-//               wide-string type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps from (wchar_t *) or (const wchar_ *) to the atomic wide-string type.
+ */
 class ParameterRemapWCharStarToWString : public ParameterRemapToWString {
 public:
   ParameterRemapWCharStarToWString(CPPType *orig_type);

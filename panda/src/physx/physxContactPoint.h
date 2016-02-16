@@ -22,11 +22,10 @@
 
 class PhysxShape;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxContactPoint
-// Description : A helper structure for iterating over contact
-//               streams reported by PhysxContactPair.
-////////////////////////////////////////////////////////////////////
+/**
+ * A helper structure for iterating over contact streams reported by
+ * PhysxContactPair.
+ */
 class EXPCL_PANDAPHYSX PhysxContactPoint : public TypedObject {
 
 PUBLISHED:
@@ -60,7 +59,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "PhysxContactPoint", 
+    register_type(_type_handle, "PhysxContactPoint",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

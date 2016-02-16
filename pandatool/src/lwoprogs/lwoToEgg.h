@@ -21,11 +21,9 @@
 
 #include "dSearchPath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoToEgg
-// Description : A program to read a Lightwave file and generate an egg
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a Lightwave file and generate an egg file.
+ */
 class LwoToEgg : public SomethingToEgg {
 public:
   LwoToEgg();
@@ -34,4 +32,3 @@ public:
 };
 
 #endif
-

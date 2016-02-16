@@ -18,21 +18,17 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientControlMessage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatClientControlMessage::
 PStatClientControlMessage() {
   _type = T_invalid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientControlMessage::encode
-//       Access: Public
-//  Description: Writes the message into the indicated datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the message into the indicated datagram.
+ */
 void PStatClientControlMessage::
 encode(Datagram &datagram) const {
   datagram.clear();
@@ -70,12 +66,10 @@ encode(Datagram &datagram) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientControlMessage::decode
-//       Access: Public
-//  Description: Extracts the message from the indicated datagram.
-//               Returns true on success, false on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the message from the indicated datagram.  Returns true on success,
+ * false on error.
+ */
 bool PStatClientControlMessage::
 decode(const Datagram &datagram, PStatClientVersion *version) {
   DatagramIterator source(datagram);

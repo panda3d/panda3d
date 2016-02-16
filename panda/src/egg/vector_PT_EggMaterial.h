@@ -21,14 +21,12 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : vector_PT_EggMaterial
-// Description : A vector of PT(EggMaterial)'s.  This class is defined once
-//               here, and exported to PANDAEGG.DLL; other packages
-//               that want to use a vector of this type (whether they
-//               need to export it or not) should include this header
-//               file, rather than defining the vector again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A vector of PT(EggMaterial)'s.  This class is defined once here, and exported
+ * to PANDAEGG.DLL; other packages that want to use a vector of this type
+ * (whether they need to export it or not) should include this header file,
+ * rather than defining the vector again.
+ */
 
 #define EXPCL EXPCL_PANDAEGG
 #define EXPTP EXPTP_PANDAEGG

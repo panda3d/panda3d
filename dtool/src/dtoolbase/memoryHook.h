@@ -22,23 +22,17 @@
 
 class DeletedBufferChain;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MemoryHook
-// Description : This class provides a wrapper around the various
-//               possible malloc schemes Panda might employ.  It also
-//               exists to allow the MemoryUsage class in Panda to
-//               insert callback hooks to track the size of allocated
-//               pointers.
-//
-//               The PANDA_MALLOC_* and PANDA_FREE_* macros are
-//               defined to vector through through this class (except
-//               in production builds) to facilitate that.  Every
-//               memory allocation call in Panda should therefore use
-//               these macros instead of direct calls to malloc or
-//               free.  (C++ new and delete operators may be employed
-//               for classes which inherit from MemoryBase; otherwise,
-//               use the PANDA_MALLOC macros.)
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a wrapper around the various possible malloc schemes
+ * Panda might employ.  It also exists to allow the MemoryUsage class in Panda
+ * to insert callback hooks to track the size of allocated pointers.  The
+ * PANDA_MALLOC_* and PANDA_FREE_* macros are defined to vector through through
+ * this class (except in production builds) to facilitate that.  Every memory
+ * allocation call in Panda should therefore use these macros instead of direct
+ * calls to malloc or free.  (C++ new and delete operators may be employed for
+ * classes which inherit from MemoryBase; otherwise, use the PANDA_MALLOC
+ * macros.)
+ */
 class EXPCL_DTOOL MemoryHook {
 public:
   MemoryHook();

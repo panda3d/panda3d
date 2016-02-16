@@ -143,26 +143,18 @@ class ShaderInput;
 //
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodePath
-// Description : NodePath is the fundamental system for disambiguating
-//               instances, and also provides a higher-level interface
-//               for manipulating the scene graph.
-//
-//               A NodePath is a list of connected nodes from the root
-//               of the graph to any sub-node.  Each NodePath
-//               therefore uniquely describes one instance of a node.
-//
-//               NodePaths themselves are lightweight objects that may
-//               easily be copied and passed by value.  Their data is
-//               stored as a series of NodePathComponents that are
-//               stored on the nodes.  Holding a NodePath will keep a
-//               reference count to all the nodes in the path.
-//               However, if any node in the path is removed or
-//               reparented (perhaps through a different NodePath),
-//               the NodePath will automatically be updated to reflect
-//               the changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * NodePath is the fundamental system for disambiguating instances, and also
+ * provides a higher-level interface for manipulating the scene graph.  A
+ * NodePath is a list of connected nodes from the root of the graph to any sub-
+ * node.  Each NodePath therefore uniquely describes one instance of a node.
+ * NodePaths themselves are lightweight objects that may easily be copied and
+ * passed by value.  Their data is stored as a series of NodePathComponents that
+ * are stored on the nodes.  Holding a NodePath will keep a reference count to
+ * all the nodes in the path.  However, if any node in the path is removed or
+ * reparented (perhaps through a different NodePath), the NodePath will
+ * automatically be updated to reflect the changes.
+ */
 class EXPCL_PANDA_PGRAPH NodePath {
 PUBLISHED:
   // This enumeration is returned by get_error_type() for an empty

@@ -46,12 +46,10 @@ class InterrogateFunction;
 class FunctionRemap;
 class InterfaceMaker;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateBuilder
-// Description : This class builds up the InterrogateDatabase based on
-//               the data indicated by CPPParser after reading the
-//               source code.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class builds up the InterrogateDatabase based on the data indicated by
+ * CPPParser after reading the source code.
+ */
 class InterrogateBuilder {
 public:
   void add_source_file(const string &filename);
@@ -167,5 +165,3 @@ public:
 extern InterrogateBuilder builder;
 
 #endif
-
-

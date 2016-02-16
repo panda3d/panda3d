@@ -29,13 +29,11 @@ class DatagramIterator;
 class GeomVertexReader;
 class GeomVertexWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexColumn
-// Description : This defines how a single column is interleaved
-//               within a vertex array stored within a Geom.  The
-//               GeomVertexArrayFormat class maintains a list of these
-//               to completely define a particular array structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines how a single column is interleaved within a vertex array stored
+ * within a Geom.  The GeomVertexArrayFormat class maintains a list of these to
+ * completely define a particular array structure.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexColumn : public GeomEnums {
 private:
   INLINE GeomVertexColumn();

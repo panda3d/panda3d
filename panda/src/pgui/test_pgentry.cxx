@@ -33,7 +33,7 @@ main(int argc, char *argv[]) {
 
     entry->setup(10, 4);
 
-    framework.define_key("escape", "close window", 
+    framework.define_key("escape", "close window",
                          PandaFramework::event_esc, &framework);
 
     framework.main_loop();

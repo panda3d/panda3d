@@ -28,11 +28,10 @@ class AnimBundleNode;
 class AnimChannelScalarTable;
 class AnimChannelMatrixXfmTable;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimBundleMaker
-// Description : Converts an EggTable hierarchy, beginning with a
-//               <Bundle> entry, into an AnimBundle hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an EggTable hierarchy, beginning with a <Bundle> entry, into an
+ * AnimBundle hierarchy.
+ */
 class EXPCL_PANDAEGG AnimBundleMaker {
 public:
   AnimBundleMaker(EggTable *root);

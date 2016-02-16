@@ -21,11 +21,9 @@
 
 class PhysxTriangleMeshShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxTriangleMeshShape
-// Description : A shapes which is used to represent an instance of
-//               an convex mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * A shapes which is used to represent an instance of an convex mesh.
+ */
 class EXPCL_PANDAPHYSX PhysxTriangleMeshShape : public PhysxShape {
 
 PUBLISHED:
@@ -49,7 +47,7 @@ public:
   }
   static void init_type() {
     PhysxShape::init_type();
-    register_type(_type_handle, "PhysxTriangleMeshShape", 
+    register_type(_type_handle, "PhysxTriangleMeshShape",
                   PhysxShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

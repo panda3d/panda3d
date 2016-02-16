@@ -19,12 +19,10 @@
 
 class Texture;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FrameBufferProperties
-// Description : A container for the various kinds of properties we
-//               might ask to have on a graphics frameBuffer before we
-//               create a GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for the various kinds of properties we might ask to have on a
+ * graphics frameBuffer before we create a GSG.
+ */
 class EXPCL_PANDA_DISPLAY FrameBufferProperties {
 
 private:

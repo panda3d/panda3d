@@ -11,12 +11,10 @@
  * @date 2005-03-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterVertexSlider::get_char_slider
-//       Access: Published
-//  Description: Returns the CharacterSlider object for which this
-//               object returns the slider value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CharacterSlider object for which this object returns the slider
+ * value.
+ */
 INLINE const CharacterSlider *CharacterVertexSlider::
 get_char_slider() const {
   return _char_slider;

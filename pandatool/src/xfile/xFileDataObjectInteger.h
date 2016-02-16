@@ -17,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "xFileDataObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectInteger
-// Description : An integer-valued data element.  This matches one
-//               integer data member of a template, or a single
-//               element of an integer array.
-////////////////////////////////////////////////////////////////////
+/**
+ * An integer-valued data element.  This matches one integer data member of a
+ * template, or a single element of an integer array.
+ */
 class XFileDataObjectInteger : public XFileDataObject {
 public:
   XFileDataObjectInteger(const XFileDataDef *data_def, int value);
@@ -40,7 +38,7 @@ protected:
 
 private:
   int _value;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

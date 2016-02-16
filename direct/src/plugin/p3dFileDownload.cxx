@@ -16,33 +16,27 @@
 #include "mkdir_complete.h"
 #include "wstring_encode.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileDownload::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DFileDownload::
 P3DFileDownload() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileDownload::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DFileDownload::
-P3DFileDownload(const P3DFileDownload &copy) : 
+P3DFileDownload(const P3DFileDownload &copy) :
   P3DDownload(copy)
 {
   // We don't copy the filename.  You have to copy it yourself.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileDownload::set_filename
-//       Access: Public
-//  Description: Supplies the target local filename for the download.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Supplies the target local filename for the download.  Returns true on
+ * success, false on failure.
+ */
 bool P3DFileDownload::
 set_filename(const string &filename) {
   _filename = filename;
@@ -50,12 +44,10 @@ set_filename(const string &filename) {
   return open_file();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileDownload::open_file
-//       Access: Protected, Virtual
-//  Description: Opens the local file for receiving the download.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the local file for receiving the download.  Returns true on success,
+ * false on failure.
+ */
 bool P3DFileDownload::
 open_file() {
   if (!mkfile_complete(_filename, nout)) {
@@ -76,26 +68,21 @@ open_file() {
     nout << "Failed to open " << _filename << " in write mode\n";
     return false;
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileDownload::close_file
-//       Access: Protected
-//  Description: Closes the local file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the local file.
+ */
 void P3DFileDownload::
 close_file() {
   _file.close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileDownload::receive_data
-//       Access: Protected, Virtual
-//  Description: Called as new data is downloaded.  Returns true on
-//               success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called as new data is downloaded.  Returns true on success, false on failure.
+ */
 bool P3DFileDownload::
 receive_data(const unsigned char *this_data, size_t this_data_size) {
   _file.write((const char *)this_data, this_data_size);
@@ -103,18 +90,15 @@ receive_data(const unsigned char *this_data, size_t this_data_size) {
   if (!_file) {
     return false;
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileDownload::download_finished
-//       Access: Protected, Virtual
-//  Description: Intended to be overloaded to generate a callback
-//               when the download finishes, either successfully or
-//               otherwise.  The bool parameter is true if the
-//               download was successful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be overloaded to generate a callback when the download finishes,
+ * either successfully or otherwise.  The bool parameter is true if the download
+ * was successful.
+ */
 void P3DFileDownload::
 download_finished(bool success) {
   P3DDownload::download_finished(success);

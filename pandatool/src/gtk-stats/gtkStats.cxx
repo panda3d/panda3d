@@ -22,7 +22,7 @@ static GtkStatsServer *server = NULL;
 
 static gboolean
 delete_event(GtkWidget *widget,
-	     GdkEvent *event, gpointer data) {
+       GdkEvent *event, gpointer data) {
   // Returning FALSE to indicate we should destroy the main window
   // when the user selects "close".
   return FALSE;
@@ -65,10 +65,10 @@ main(int argc, char *argv[]) {
   // Connect the delete and destroy events, so the user can exit the
   // application by closing the main window.
   g_signal_connect(G_OBJECT(main_window), "delete_event",
-		   G_CALLBACK(delete_event), NULL);
+       G_CALLBACK(delete_event), NULL);
 
   g_signal_connect(G_OBJECT(main_window), "destroy",
-		   G_CALLBACK(destroy), NULL);
+       G_CALLBACK(destroy), NULL);
 
   ostringstream stream;
   stream << "Listening on port " << pstats_port;
@@ -89,10 +89,10 @@ main(int argc, char *argv[]) {
 
     GtkWidget *dialog =
       gtk_message_dialog_new(GTK_WINDOW(main_window),
-			     GTK_DIALOG_DESTROY_WITH_PARENT,
-			     GTK_MESSAGE_ERROR,
-			     GTK_BUTTONS_CLOSE,
-			     "%s", str.c_str());
+           GTK_DIALOG_DESTROY_WITH_PARENT,
+           GTK_MESSAGE_ERROR,
+           GTK_BUTTONS_CLOSE,
+           "%s", str.c_str());
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
     exit(1);

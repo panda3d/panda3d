@@ -21,10 +21,9 @@
 #include "odeGeom.h"
 #include "odeTriMeshData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeTriMeshGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeTriMeshGeom : public OdeGeom {
   friend class OdeGeom;
 
@@ -37,7 +36,7 @@ PUBLISHED:
   OdeTriMeshGeom(OdeSpace &space, OdeTriMeshData &data);
   OdeTriMeshGeom(const OdeTriMeshGeom &copy);
   virtual ~OdeTriMeshGeom();
-  
+
   void destroy();
   INLINE void set_tri_mesh_data(OdeTriMeshData &data);
   INLINE PT(OdeTriMeshData) get_tri_mesh_data() const;

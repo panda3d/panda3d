@@ -25,13 +25,11 @@
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<Datagram>);
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramGeneratorNet
-// Description : This class provides datagrams one-at-a-time as read
-//               directly from the net, via a TCP connection.  If a
-//               datagram is not available, get_datagram() will block
-//               until one is.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides datagrams one-at-a-time as read directly from the net,
+ * via a TCP connection.  If a datagram is not available, get_datagram() will
+ * block until one is.
+ */
 class EXPCL_PANDA_NET DatagramGeneratorNet : public DatagramGenerator, public ConnectionReader, public QueuedReturn<Datagram> {
 PUBLISHED:
   DatagramGeneratorNet(ConnectionManager *manager, int num_threads);
@@ -54,4 +52,3 @@ protected:
 #include "datagramGeneratorNet.I"
 
 #endif
-

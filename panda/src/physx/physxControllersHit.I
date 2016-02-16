@@ -11,22 +11,18 @@
  * @date 2012-11-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllersHit::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxControllersHit::
 PhysxControllersHit(const NxControllersHit &hit) :
   _hit(hit) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllersHit::get_controller
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxController *PhysxControllersHit::
 get_controller() const {
 
@@ -36,11 +32,9 @@ get_controller() const {
   return controller;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllersHit::get_other
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxController *PhysxControllersHit::
 get_other() const {
 
@@ -49,4 +43,3 @@ get_other() const {
 
   return other;
 }
-

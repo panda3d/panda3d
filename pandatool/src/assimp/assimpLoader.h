@@ -37,12 +37,10 @@ struct char_cmp {
 typedef pmap<const char *, const aiNode *, char_cmp> BoneMap;
 typedef pmap<const char *, PT(Character), char_cmp> CharacterMap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AssimpLoader
-// Description : Class that interfaces with Assimp and builds Panda
-//               nodes to represent the Assimp structures.
-//               The loader should be reusable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class that interfaces with Assimp and builds Panda nodes to represent the
+ * Assimp structures.  The loader should be reusable.
+ */
 class AssimpLoader : public TypedReferenceCount {
 public:
   AssimpLoader();

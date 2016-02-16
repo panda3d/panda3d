@@ -20,16 +20,15 @@
 
 #include "ode_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeMass
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeMass : public TypedReferenceCount {
 PUBLISHED:
   OdeMass();
   OdeMass(const OdeMass &copy);
   virtual ~OdeMass();
-  
+
   INLINE int check();
   INLINE void set_zero();
   INLINE void set_parameters(dReal themass,

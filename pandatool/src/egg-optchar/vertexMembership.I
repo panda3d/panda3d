@@ -11,11 +11,9 @@
  * @date 2003-07-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexMembership::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VertexMembership::
 VertexMembership(EggGroup *group, double membership) :
   _group(group),
@@ -23,11 +21,9 @@ VertexMembership(EggGroup *group, double membership) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexMembership::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VertexMembership::
 VertexMembership(const VertexMembership &copy) :
   _group(copy._group),
@@ -35,22 +31,18 @@ VertexMembership(const VertexMembership &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexMembership::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void VertexMembership::
 operator = (const VertexMembership &copy) {
   _group = copy._group;
   _membership = copy._membership;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexMembership::Ordering Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool VertexMembership::
 operator < (const VertexMembership &other) const {
   if (_membership != other._membership) {

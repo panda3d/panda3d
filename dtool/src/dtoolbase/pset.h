@@ -40,13 +40,11 @@
 
 #else  // USE_STL_ALLOCATOR
 
-////////////////////////////////////////////////////////////////////
-//       Class : pset
-// Description : This is our own Panda specialization on the default
-//               STL set.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL set.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-allocated
+ * memory.
+ */
 template<class Key, class Compare = less<Key> >
 class pset : public set<Key, Compare, pallocator_single<Key> > {
 public:
@@ -64,7 +62,7 @@ public:
   }
 
   TYPENAME base_class::iterator
-  insert(TYPENAME base_class::iterator position, 
+  insert(TYPENAME base_class::iterator position,
          const TYPENAME base_class::value_type &x) {
     TAU_PROFILE("pset::insert(iterator, const value_type &)", " ", TAU_USER);
     return base_class::insert(position, x);
@@ -81,7 +79,7 @@ public:
     TAU_PROFILE("pset::erase(const key_type &)", " ", TAU_USER);
     return base_class::erase(x);
   }
-  
+
   void
   clear() {
     TAU_PROFILE("pset::clear()", " ", TAU_USER);
@@ -102,13 +100,11 @@ public:
 #endif  // USE_TAU
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : pmultiset
-// Description : This is our own Panda specialization on the default
-//               STL multiset.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL multiset.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-allocated
+ * memory.
+ */
 template<class Key, class Compare = less<Key> >
 class pmultiset : public multiset<Key, Compare, pallocator_single<Key> > {
 public:
@@ -119,13 +115,11 @@ public:
 };
 
 #ifdef HAVE_STL_HASH
-////////////////////////////////////////////////////////////////////
-//       Class : phash_set
-// Description : This is our own Panda specialization on the default
-//               STL hash_set.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL hash_set.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-allocated
+ * memory.
+ */
 template<class Key, class Compare = method_hash<Key, less<Key> > >
 class phash_set : public stdext::hash_set<Key, Compare, pallocator_array<Key> > {
 public:
@@ -134,13 +128,11 @@ public:
   phash_set(const Compare &comp) : stdext::hash_set<Key, Compare, pallocator_array<Key> >(comp) { }
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : phash_multiset
-// Description : This is our own Panda specialization on the default
-//               STL hash_multiset.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL hash_multiset.  Its
+ * main purpose is to call the hooks for MemoryUsage to properly track STL-
+ * allocated memory.
+ */
 template<class Key, class Compare = method_hash<Key, less<Key> > >
 class phash_multiset : public stdext::hash_multiset<Key, Compare, pallocator_array<Key> > {
 public:

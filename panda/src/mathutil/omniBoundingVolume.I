@@ -11,11 +11,9 @@
  * @date 2000-06-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: OmniBoundingVolume::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_MATHUTIL OmniBoundingVolume::
 OmniBoundingVolume() {
   _flags = F_infinite;

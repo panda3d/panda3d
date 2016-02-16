@@ -18,13 +18,11 @@
 
 #include "glgsg.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PosixGraphicsStateGuardian
-// Description : This GSG is used only for CallbackGraphicsWindow
-//               (which might not be using the glx interfaces), to add
-//               the ability to peek in libGL.so to find the extension
-//               functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This GSG is used only for CallbackGraphicsWindow (which might not be using
+ * the glx interfaces), to add the ability to peek in libGL.so to find the
+ * extension functions.
+ */
 class PosixGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   PosixGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe);

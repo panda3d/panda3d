@@ -38,11 +38,9 @@ class P3DPackage;
 class FileSpec;
 class TiXmlElement;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DInstanceManager
-// Description : This global class manages the set of instances in the
-//               universe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This global class manages the set of instances in the universe.
+ */
 class P3DInstanceManager {
 private:
   P3DInstanceManager();
@@ -98,8 +96,8 @@ public:
   inline const string &get_super_mirror() const;
 
   P3DInstance *
-  create_instance(P3D_request_ready_func *func, 
-                  const P3D_token tokens[], size_t num_tokens, 
+  create_instance(P3D_request_ready_func *func,
+                  const P3D_token tokens[], size_t num_tokens,
                   int argc, const char *argv[], void *user_data);
 
   bool set_p3d_filename(P3DInstance *inst, bool is_local,
@@ -137,13 +135,13 @@ public:
   static string cert_to_der(X509 *cert);
 
   void uninstall_all();
-  
+
   static P3DInstanceManager *get_global_ptr();
   static void delete_global_ptr();
 
   static inline char encode_hexdigit(int c);
   static bool scan_directory(const string &dirname, vector<string> &contents);
-  static bool scan_directory_recursively(const string &dirname, 
+  static bool scan_directory_recursively(const string &dirname,
                                          vector<string> &filename_contents,
                                          vector<string> &dirname_contents,
                                          const string &prefix = "");
@@ -203,7 +201,7 @@ private:
   P3D_object *_false_object;
 
   typedef set<string> ApprovedCerts;
-  ApprovedCerts _approved_certs;  
+  ApprovedCerts _approved_certs;
 
   typedef set<P3DInstance *> Instances;
   Instances _instances;

@@ -39,11 +39,10 @@ class domCamera;
 class domSource;
 class DAE;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColladaLoader
-// Description : Object that interfaces with the COLLADA DOM library
-//               and loads the COLLADA structures into Panda nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Object that interfaces with the COLLADA DOM library and loads the COLLADA
+ * structures into Panda nodes.
+ */
 class ColladaLoader {
 public:
   ColladaLoader();

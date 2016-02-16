@@ -43,29 +43,23 @@ template class ParamValue<LMatrix4f>;
 TypeHandle ParamValueBase::_type_handle;
 TypeHandle ParamTypedRefCount::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamValueBase::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParamValueBase::
 ~ParamValueBase() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamTypedRefCount::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParamTypedRefCount::
 ~ParamTypedRefCount() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParamTypedRefCount::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ParamTypedRefCount::
 output(ostream &out) const {
   if (_value == (TypedReferenceCount *)NULL) {

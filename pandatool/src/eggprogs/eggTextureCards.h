@@ -24,12 +24,11 @@
 class EggVertexPool;
 class EggVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTextureCards
-// Description : Generates an egg file featuring a number of polygons,
-//               one for each named texture.  This is a support
-//               program for getting textures through egg-palettize.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates an egg file featuring a number of polygons, one for each named
+ * texture.  This is a support program for getting textures through egg-
+ * palettize.
+ */
 class EggTextureCards : public EggWriter {
 public:
   EggTextureCards();
@@ -73,4 +72,3 @@ public:
 };
 
 #endif
-

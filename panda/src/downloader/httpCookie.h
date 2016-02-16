@@ -26,12 +26,10 @@
 #include "httpDate.h"
 #include "urlSpec.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPCookie
-// Description : A cookie sent from an HTTP server to be stored on the
-//               client and returned when the path and/or domain
-//               matches.
-////////////////////////////////////////////////////////////////////
+/**
+ * A cookie sent from an HTTP server to be stored on the client and returned
+ * when the path and/or domain matches.
+ */
 class EXPCL_PANDAEXPRESS HTTPCookie {
 PUBLISHED:
   INLINE HTTPCookie();

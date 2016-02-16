@@ -27,11 +27,9 @@ class MayaShader;
 class MayaShaderColorDef;
 class MDagPath;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaCopy
-// Description : A program to copy Maya .mb files into the cvs
-//               tree.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to copy Maya .mb files into the cvs tree.
+ */
 class MayaCopy : public CVSCopy {
 public:
   MayaCopy();

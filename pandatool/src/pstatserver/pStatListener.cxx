@@ -15,11 +15,9 @@
 #include "pStatServer.h"
 #include "pStatReader.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatListener::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatListener::
 PStatListener(PStatServer *manager) :
   ConnectionListener(manager, manager->is_thread_safe() ? 1 : 0),
@@ -27,12 +25,10 @@ PStatListener(PStatServer *manager) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatListener::connection_opened
-//       Access: Protected, Virtual
-//  Description: An internal function called by ConnectionListener()
-//               when a new TCP connection has been established.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by ConnectionListener() when a new TCP connection
+ * has been established.
+ */
 void PStatListener::
 connection_opened(const PT(Connection) &,
                   const NetAddress &address,

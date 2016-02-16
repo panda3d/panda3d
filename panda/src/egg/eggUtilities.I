@@ -17,33 +17,20 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: split_vertex
-//  Description: Splits a vertex into two or more vertices, each an
-//               exact copy of the original and in the same vertex
-//               pool.
-//
-//               The splitting is based on some arbitrary property of
-//               the primitives that own the vertex.  In the extreme,
-//               each primitive may get a different copy of the
-//               vertex, although it is also possible for some
-//               primitives to still share vertices.
-//
-//               This decision is made based on the function object
-//               'sequence'.  This object must define the following
-//               function:
-//
-//               int operator () (const EggPrimitive *prim) const;
-//
-//               This function returns a sequence number, which
-//               determines which primitives will share which
-//               vertices.  The sequence number 0 refers to the
-//               original vertex pointer; other sequence numbers
-//               indicate new vertices.  Other than that, the sequence
-//               number is totally arbitrary.  Primitives for which
-//               the sequence number is the same will end up sharing
-//               the same copy of the vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Splits a vertex into two or more vertices, each an exact copy of the original
+ * and in the same vertex pool.  The splitting is based on some arbitrary
+ * property of the primitives that own the vertex.  In the extreme, each
+ * primitive may get a different copy of the vertex, although it is also
+ * possible for some primitives to still share vertices.  This decision is made
+ * based on the function object 'sequence'.  This object must define the
+ * following function:  int operator () (const EggPrimitive *prim) const;  This
+ * function returns a sequence number, which determines which primitives will
+ * share which vertices.  The sequence number 0 refers to the original vertex
+ * pointer; other sequence numbers indicate new vertices.  Other than that, the
+ * sequence number is totally arbitrary.  Primitives for which the sequence
+ * number is the same will end up sharing the same copy of the vertex.
+ */
 template<class FunctionObject>
 void
 split_vertex(EggVertex *vert, const FunctionObject &sequence) {

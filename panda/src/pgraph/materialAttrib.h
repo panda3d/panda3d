@@ -19,13 +19,11 @@
 #include "renderAttrib.h"
 #include "material.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MaterialAttrib
-// Description : Indicates which, if any, material should be applied
-//               to geometry.  The material is used primarily to
-//               control lighting effects, and isn't necessary (or
-//               useful) in the absence of lighting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates which, if any, material should be applied to geometry.  The
+ * material is used primarily to control lighting effects, and isn't necessary
+ * (or useful) in the absence of lighting.
+ */
 class EXPCL_PANDA_PGRAPH MaterialAttrib : public RenderAttrib {
 private:
   INLINE MaterialAttrib();
@@ -65,7 +63,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -89,4 +87,3 @@ private:
 #include "materialAttrib.I"
 
 #endif
-

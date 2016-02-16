@@ -23,10 +23,9 @@
 #include "pandaNode.h"
 #include "colorAttrib.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PolylightNode
-// Description : A PolylightNode
-////////////////////////////////////////////////////////////////////
+/**
+ * A PolylightNode
+ */
 class EXPCL_PANDA_PGRAPH PolylightNode : public PandaNode{
 //private:
 
@@ -152,5 +151,3 @@ private:
 #include "polylightNode.I"
 
 #endif
-
-

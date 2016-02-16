@@ -23,11 +23,10 @@ class EggGroupNode;
 class EggGroup;
 class FltToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltToEggLevelState
-// Description : This keeps track of relevant things about the
-//               traversal as we walk through the flt hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This keeps track of relevant things about the traversal as we walk through
+ * the flt hierarchy.
+ */
 class FltToEggLevelState {
 public:
   INLINE FltToEggLevelState(FltToEggConverter *converter);

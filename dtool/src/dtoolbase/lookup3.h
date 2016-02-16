@@ -30,6 +30,3 @@ EXPCL_DTOOL PN_uint32 hashword(const PN_uint32 *k,                   /* the key,
 #endif
 
 #endif
-
-
-

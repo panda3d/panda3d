@@ -20,15 +20,12 @@
 
 class GraphicsPipe;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsDevice
-// Description : An abstract device object that is part of Graphics
-//               Pipe. This device is set to NULL for OpenGL. But 
-//               DirectX uses it to take control of multiple windows
-//               under single device or multiple devices (i.e. more
-//               than one adapters in the machine).   
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract device object that is part of Graphics Pipe.  This device is set
+ * to NULL for OpenGL. But DirectX uses it to take control of multiple windows
+ * under single device or multiple devices (i.e.  more than one adapters in the
+ * machine).
+ */
 class EXPCL_PANDA_DISPLAY GraphicsDevice : public TypedReferenceCount {
 public:
   GraphicsDevice(GraphicsPipe *pipe);

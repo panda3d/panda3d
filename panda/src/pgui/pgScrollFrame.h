@@ -20,21 +20,16 @@
 #include "pgSliderBarNotify.h"
 #include "pgSliderBar.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGScrollFrame
-// Description : This is a special kind of frame that pretends to be
-//               much larger than it actually is.  You can scroll
-//               through the frame, as if you're looking through a
-//               window at the larger frame beneath.  All children of
-//               this frame node are scrolled and clipped as if they
-//               were children of the larger, virtual frame.
-//
-//               This is implemented as a specialization of
-//               PGVirtualFrame, which handles the meat of the virtual
-//               canvas.  This class adds automatic support for scroll
-//               bars, and restricts the virtual transform to
-//               translate only (no scale or rotate).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special kind of frame that pretends to be much larger than it
+ * actually is.  You can scroll through the frame, as if you're looking through
+ * a window at the larger frame beneath.  All children of this frame node are
+ * scrolled and clipped as if they were children of the larger, virtual frame.
+ * This is implemented as a specialization of PGVirtualFrame, which handles the
+ * meat of the virtual canvas.  This class adds automatic support for scroll
+ * bars, and restricts the virtual transform to translate only (no scale or
+ * rotate).
+ */
 class EXPCL_PANDA_PGUI PGScrollFrame : public PGVirtualFrame, public PGSliderBarNotify {
 PUBLISHED:
   PGScrollFrame(const string &name = "");
@@ -88,7 +83,7 @@ private:
   void recompute_clip();
 
   void recompute_canvas();
-  PN_stdfloat interpolate_canvas(PN_stdfloat clip_min, PN_stdfloat clip_max, 
+  PN_stdfloat interpolate_canvas(PN_stdfloat clip_min, PN_stdfloat clip_max,
                            PN_stdfloat canvas_min, PN_stdfloat canvas_max,
                            PGSliderBar *slider_bar);
 

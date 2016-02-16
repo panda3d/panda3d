@@ -17,11 +17,9 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableBool
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a boolean type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a boolean type.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableBool : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableBool(const string &name);

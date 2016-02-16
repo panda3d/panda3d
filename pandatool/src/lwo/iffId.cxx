@@ -15,11 +15,9 @@
 
 #include <ctype.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IffId::
 output(ostream &out) const {
   // If all of the characters are printable, just output them.

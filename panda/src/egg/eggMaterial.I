@@ -11,44 +11,35 @@
  * @date 1999-01-29
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_base
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_base(const LColor &base) {
   _base = base;
   _flags |= F_base;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_base
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_base() {
   _flags &= ~F_base;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_base
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_base() const {
   return (_flags & F_base) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_base
-//       Access: Public
-//  Description: It is legal to call this even if has_base() returns
-//               false.  If so, it simply returns the default base
-//               color.
-////////////////////////////////////////////////////////////////////
+/**
+ * It is legal to call this even if has_base() returns false.  If so, it simply
+ * returns the default base color.
+ */
 INLINE LColor EggMaterial::
 get_base() const {
   if (has_base()) {
@@ -58,44 +49,35 @@ get_base() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_diff
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_diff(const LColor &diff) {
   _diff = diff;
   _flags |= F_diff;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_diff
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_diff() {
   _flags &= ~F_diff;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_diff
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_diff() const {
   return (_flags & F_diff) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_diff
-//       Access: Public
-//  Description: It is legal to call this even if has_diff() returns
-//               false.  If so, it simply returns the default diff
-//               color.
-////////////////////////////////////////////////////////////////////
+/**
+ * It is legal to call this even if has_diff() returns false.  If so, it simply
+ * returns the default diff color.
+ */
 INLINE LColor EggMaterial::
 get_diff() const {
   if (has_diff()) {
@@ -105,44 +87,35 @@ get_diff() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_amb
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_amb(const LColor &amb) {
   _amb = amb;
   _flags |= F_amb;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_amb
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_amb() {
   _flags &= ~F_amb;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_amb
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_amb() const {
   return (_flags & F_amb) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_amb
-//       Access: Public
-//  Description: It is legal to call this even if has_amb() returns
-//               false.  If so, it simply returns the default amb
-//               color.
-////////////////////////////////////////////////////////////////////
+/**
+ * It is legal to call this even if has_amb() returns false.  If so, it simply
+ * returns the default amb color.
+ */
 INLINE LColor EggMaterial::
 get_amb() const {
   if (has_amb()) {
@@ -152,44 +125,35 @@ get_amb() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_emit
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_emit(const LColor &emit) {
   _emit = emit;
   _flags |= F_emit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_emit
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_emit() {
   _flags &= ~F_emit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_emit
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_emit() const {
   return (_flags & F_emit) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_emit
-//       Access: Public
-//  Description: It is legal to call this even if has_emit() returns
-//               false.  If so, it simply returns the default emit
-//               color.
-////////////////////////////////////////////////////////////////////
+/**
+ * It is legal to call this even if has_emit() returns false.  If so, it simply
+ * returns the default emit color.
+ */
 INLINE LColor EggMaterial::
 get_emit() const {
   if (has_emit()) {
@@ -199,44 +163,35 @@ get_emit() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_spec
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_spec(const LColor &spec) {
   _spec = spec;
   _flags |= F_spec;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_spec
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_spec() {
   _flags &= ~F_spec;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_spec
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_spec() const {
   return (_flags & F_spec) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_spec
-//       Access: Public
-//  Description: It is legal to call this even if has_spec() returns
-//               false.  If so, it simply returns the default spec
-//               color.
-////////////////////////////////////////////////////////////////////
+/**
+ * It is legal to call this even if has_spec() returns false.  If so, it simply
+ * returns the default spec color.
+ */
 INLINE LColor EggMaterial::
 get_spec() const {
   if (has_spec()) {
@@ -246,42 +201,34 @@ get_spec() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_shininess
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_shininess(double shininess) {
   _shininess = shininess;
   _flags |= F_shininess;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_shininess
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_shininess() {
   _flags &= ~F_shininess;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_shininess
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_shininess() const {
   return (_flags & F_shininess) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_shininess
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE double EggMaterial::
 get_shininess() const {
   if (has_shininess()) {
@@ -291,42 +238,34 @@ get_shininess() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_roughness
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_roughness(double roughness) {
   _roughness = roughness;
   _flags |= F_roughness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_roughness
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_roughness() {
   _flags &= ~F_roughness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_roughness
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_roughness() const {
   return (_flags & F_roughness) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_roughness
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE double EggMaterial::
 get_roughness() const {
   if (has_roughness()) {
@@ -336,42 +275,34 @@ get_roughness() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_metallic
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_metallic(double metallic) {
   _metallic = metallic;
   _flags |= F_metallic;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_metallic
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_metallic() {
   _flags &= ~F_metallic;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_metallic
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_metallic() const {
   return (_flags & F_metallic) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_metallic
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE double EggMaterial::
 get_metallic() const {
   if (has_metallic()) {
@@ -381,42 +312,34 @@ get_metallic() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_ior
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_ior(double ior) {
   _ior = ior;
   _flags |= F_ior;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_ior
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_ior() {
   _flags &= ~F_ior;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_ior
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_ior() const {
   return (_flags & F_ior) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_ior
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE double EggMaterial::
 get_ior() const {
   if (has_ior()) {
@@ -426,42 +349,34 @@ get_ior() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::set_local
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 set_local(bool local) {
   _local = local;
   _flags |= F_local;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::clear_local
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggMaterial::
 clear_local() {
   _flags &= ~F_local;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::has_local
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 has_local() const {
   return (_flags & F_local) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMaterial::get_local
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggMaterial::
 get_local() const {
   if (has_local()) {
@@ -471,22 +386,17 @@ get_local() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueEggMaterials::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE UniqueEggMaterials::
 UniqueEggMaterials(int eq) : _eq(eq) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UniqueEggMaterials::Function operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool UniqueEggMaterials::
 operator ()(const EggMaterial *t1, const EggMaterial *t2) const {
   return t1->sorts_less_than(*t2, _eq);
 }
-

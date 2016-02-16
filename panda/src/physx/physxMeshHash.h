@@ -18,12 +18,10 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxMeshHash
-// Description : Utility class used in building links between a
-//               tetrahedron mesh (soft body) and a triangle mesh
-//               used for rendering the soft body.
-////////////////////////////////////////////////////////////////////
+/**
+ * Utility class used in building links between a tetrahedron mesh (soft body)
+ * and a triangle mesh used for rendering the soft body.
+ */
 class PhysxMeshHash {
 
 public:

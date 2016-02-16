@@ -21,12 +21,10 @@
 class PaletteGroup;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PaletteGroups
-// Description : A set of PaletteGroups.  This presents an interface
-//               very like an STL set, with a few additional
-//               functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * A set of PaletteGroups.  This presents an interface very like an STL set,
+ * with a few additional functions.
+ */
 class PaletteGroups : public TypedWritable {
 private:
   typedef pset<PaletteGroup *> Groups;
@@ -111,4 +109,3 @@ INLINE ostream &operator << (ostream &out, const PaletteGroups &groups) {
 }
 
 #endif
-

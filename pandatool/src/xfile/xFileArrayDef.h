@@ -20,11 +20,9 @@
 
 class XFileDataDef;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileArrayDef
-// Description : Defines one level of array bounds for an associated
-//               XFileDataDef element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines one level of array bounds for an associated XFileDataDef element.
+ */
 class XFileArrayDef {
 public:
   INLINE XFileArrayDef(int fixed_size);
@@ -49,6 +47,3 @@ private:
 #include "xFileArrayDef.I"
 
 #endif
-  
-
-

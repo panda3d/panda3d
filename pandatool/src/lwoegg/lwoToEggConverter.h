@@ -30,13 +30,11 @@ class CLwoPolygons;
 class CLwoSurface;
 class LwoClip;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from the data represented by the LwoHeader.
-//               Reading and writing the egg and lwo structures is
-//               left to the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from the data
+ * represented by the LwoHeader.  Reading and writing the egg and lwo structures
+ * is left to the user.
+ */
 class LwoToEggConverter : public SomethingToEggConverter {
 public:
   LwoToEggConverter();
@@ -92,5 +90,3 @@ private:
 #include "lwoToEggConverter.I"
 
 #endif
-
-

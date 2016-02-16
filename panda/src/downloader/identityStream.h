@@ -25,19 +25,14 @@
 class HTTPChannel;
 class BioStreamPtr;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IIdentityStream
-// Description : An input stream object that reads data from a source
-//               istream, but automatically decodes the "identity"
-//               transfer-coding specified by an HTTP server.
-//
-//               In practice, this just means it reads from the sub
-//               stream (like a SubStreamBuf) up to but not past the
-//               specified content-length.  (If the content-length was
-//               unspecified, this class cannot be used.)  It also
-//               updates the HTTPChannel when the stream is
-//               completely read.
-////////////////////////////////////////////////////////////////////
+/**
+ * An input stream object that reads data from a source istream, but
+ * automatically decodes the "identity" transfer-coding specified by an HTTP
+ * server.  In practice, this just means it reads from the sub stream (like a
+ * SubStreamBuf) up to but not past the specified content-length.  (If the
+ * content-length was unspecified, this class cannot be used.)  It also updates
+ * the HTTPChannel when the stream is completely read.
+ */
 // No need to export from DLL.
 class IIdentityStream : public ISocketStream {
 public:
@@ -62,5 +57,3 @@ private:
 #endif  // HAVE_OPENSSL
 
 #endif
-
-

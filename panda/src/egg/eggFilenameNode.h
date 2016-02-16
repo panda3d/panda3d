@@ -19,13 +19,11 @@
 #include "eggNode.h"
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggFilenameNode
-// Description : This is an egg node that contains a filename.  It
-//               references a physical file relative to the directory
-//               the egg file was loaded in.  It is a base class for
-//               EggTexture and EggExternalReference.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an egg node that contains a filename.  It references a physical file
+ * relative to the directory the egg file was loaded in.  It is a base class for
+ * EggTexture and EggExternalReference.
+ */
 class EXPCL_PANDAEGG EggFilenameNode : public EggNode {
 PUBLISHED:
   INLINE EggFilenameNode();

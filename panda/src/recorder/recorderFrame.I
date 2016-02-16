@@ -11,20 +11,16 @@
  * @date 2004-01-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE RecorderFrame::
 RecorderFrame() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE RecorderFrame::
 RecorderFrame(double timestamp, int frame,
               bool table_changed, RecorderTable *table) :
@@ -35,11 +31,9 @@ RecorderFrame(double timestamp, int frame,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderFrame::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE RecorderFrame::
 ~RecorderFrame() {
 }

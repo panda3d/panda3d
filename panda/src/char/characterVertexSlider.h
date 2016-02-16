@@ -19,12 +19,10 @@
 #include "vertexSlider.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CharacterVertexSlider
-// Description : This is a specialization on VertexSlider that
-//               returns the slider value associated with a particular
-//               CharacterSlider object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on VertexSlider that returns the slider value
+ * associated with a particular CharacterSlider object.
+ */
 class EXPCL_PANDA_CHAR CharacterVertexSlider : public VertexSlider {
 private:
   CharacterVertexSlider();

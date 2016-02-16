@@ -21,10 +21,10 @@
 #include <intrin.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-// This file defines a few low-level bit-operation routines, optimized
-// all to heck.
-////////////////////////////////////////////////////////////////////
+/*
+ * This file defines a few low-level bit-operation routines, optimized all to
+ * heck.
+ */
 
 INLINE int count_bits_in_word(PN_uint16 x);
 INLINE int count_bits_in_word(PN_uint32 x);

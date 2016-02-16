@@ -19,21 +19,19 @@
 #include "cullBin.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBinUnsorted
-// Description : A specific kind of CullBin that does not reorder the
-//               geometry; it simply passes it through to the GSG in
-//               the same order it was encountered, which will be in
-//               scene-graph order.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specific kind of CullBin that does not reorder the geometry; it simply
+ * passes it through to the GSG in the same order it was encountered, which will
+ * be in scene-graph order.
+ */
 class EXPCL_PANDA_CULL CullBinUnsorted : public CullBin {
 public:
-  INLINE CullBinUnsorted(const string &name, 
+  INLINE CullBinUnsorted(const string &name,
                          GraphicsStateGuardianBase *gsg,
                          const PStatCollector &draw_region_pcollector);
   ~CullBinUnsorted();
 
-  static CullBin *make_bin(const string &name, 
+  static CullBin *make_bin(const string &name,
                            GraphicsStateGuardianBase *gsg,
                            const PStatCollector &draw_region_pcollector);
 
@@ -68,6 +66,3 @@ private:
 #include "cullBinUnsorted.I"
 
 #endif
-
-
-  

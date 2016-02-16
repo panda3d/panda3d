@@ -21,11 +21,10 @@
 #include "filename.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggWriter
-// Description : This is the base class for a program that generates
-//               an egg file output, but doesn't read any for input.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a program that generates an egg file output, but
+ * doesn't read any for input.
+ */
 class EggWriter : virtual public EggSingleBase, public WithOutputFile {
 public:
   EggWriter(bool allow_last_param = false, bool allow_stdout = true);
@@ -45,5 +44,3 @@ private:
 };
 
 #endif
-
-

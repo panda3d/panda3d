@@ -11,11 +11,9 @@
  * @date 2004-03-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomContext)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(GeomContext)::
 CLP(GeomContext)(Geom *geom) :
   GeomContext(geom)
@@ -25,11 +23,9 @@ CLP(GeomContext)(Geom *geom) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomContext)::DisplayList::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(GeomContext)::DisplayList::
 DisplayList() :
   _index(0)

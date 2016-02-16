@@ -11,20 +11,16 @@
  * @date 2005-08-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullPlanes::
 CullPlanes() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullPlanes::
 CullPlanes(const CullPlanes &copy) :
   _planes(copy._planes),
@@ -32,32 +28,25 @@ CullPlanes(const CullPlanes &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::Copy Assignment Operator
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CullPlanes::
 operator = (const CullPlanes &copy) {
   _planes = copy._planes;
   _occluders = copy._occluders;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CullPlanes::
 ~CullPlanes() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullPlanes::is_empty
-//       Access: Public
-//  Description: Returns true if there are no planes listed in the
-//               CullPlanes object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are no planes listed in the CullPlanes object.
+ */
 INLINE bool CullPlanes::
 is_empty() const {
   return _planes.empty() && _occluders.empty();

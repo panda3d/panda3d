@@ -22,10 +22,9 @@
 
 class PhysxSoftBodyMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSoftBodyDesc
-// Description : Descriptor for PhysxSoftBody.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for PhysxSoftBody.
+ */
 class EXPCL_PANDAPHYSX PhysxSoftBodyDesc : public PhysxEnums {
 
 PUBLISHED:
@@ -74,7 +73,7 @@ public:
   NxSoftBodyDesc _desc;
 
 private:
-  string _name;  
+  string _name;
 };
 
 #include "physxSoftBodyDesc.I"

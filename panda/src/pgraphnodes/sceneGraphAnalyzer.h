@@ -30,11 +30,10 @@ class GeomVertexFormat;
 class GeomVertexArrayData;
 class Texture;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SceneGraphAnalyzer
-// Description : A handy class that can scrub over a scene graph and
-//               collect interesting statistics on it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A handy class that can scrub over a scene graph and collect interesting
+ * statistics on it.
+ */
 class EXPCL_PANDA_PGRAPHNODES SceneGraphAnalyzer {
 PUBLISHED:
   SceneGraphAnalyzer();

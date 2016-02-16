@@ -18,14 +18,11 @@
 #include "p3dInstanceManager.h"  // for openssl
 #include "p3dPackage.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DMultifileReader
-// Description : A way-simple implementation of Panda's multifile
-//               reader.  See panda/src/express/multifile.cxx for a
-//               full description of the binary format.  This
-//               implementation doesn't support per-subfile
-//               compression or encryption.
-////////////////////////////////////////////////////////////////////
+/**
+ * A way-simple implementation of Panda's multifile reader.  See
+ * panda/src/express/multifile.cxx for a full description of the binary format.
+ * This implementation doesn't support per-subfile compression or encryption.
+ */
 class P3DMultifileReader {
 public:
   P3DMultifileReader();
@@ -33,7 +30,7 @@ public:
   inline bool is_open() const;
   void close();
 
-  bool extract_all(const string &to_dir, P3DPackage *package, 
+  bool extract_all(const string &to_dir, P3DPackage *package,
                    P3DPackage::InstallStepThreaded *step);
 
   bool extract_one(ostream &out, const string &filename);

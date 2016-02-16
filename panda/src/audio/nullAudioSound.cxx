@@ -21,11 +21,9 @@ namespace {
   //  static PN_stdfloat no_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: 
-//       Access: 
-//  Description: All of these functions are just stubs.
-////////////////////////////////////////////////////////////////////
+/**
+ * All of these functions are just stubs.
+ */
 NullAudioSound::NullAudioSound() {
   // Intentionally blank.
 }
@@ -33,7 +31,7 @@ NullAudioSound::NullAudioSound() {
 NullAudioSound::~NullAudioSound() {
   // Intentionally blank.
 }
-  
+
 void NullAudioSound::play() {
   // Intentionally blank.
 }
@@ -41,29 +39,29 @@ void NullAudioSound::play() {
 void NullAudioSound::stop() {
   // Intentionally blank.
 }
-  
+
 void NullAudioSound::set_loop(bool) {
   // Intentionally blank.
 }
 
 bool NullAudioSound::get_loop() const {
-  return false; 
+  return false;
 }
-  
+
 void NullAudioSound::set_loop_count(unsigned long) {
   // Intentionally blank.
 }
 
 unsigned long NullAudioSound::get_loop_count() const {
-  return 0; 
+  return 0;
 }
-  
+
 void NullAudioSound::set_time(PN_stdfloat) {
   // Intentionally blank.
 }
 
 PN_stdfloat NullAudioSound::get_time() const {
-  return 0; 
+  return 0;
 }
 
 void NullAudioSound::set_volume(PN_stdfloat) {
@@ -71,7 +69,7 @@ void NullAudioSound::set_volume(PN_stdfloat) {
 }
 
 PN_stdfloat NullAudioSound::get_volume() const {
-  return 0; 
+  return 0;
 }
 
 void NullAudioSound::set_balance(PN_stdfloat) {
@@ -79,7 +77,7 @@ void NullAudioSound::set_balance(PN_stdfloat) {
 }
 
 PN_stdfloat NullAudioSound::get_balance() const {
-  return 0; 
+  return 0;
 }
 
 void NullAudioSound::set_play_rate(PN_stdfloat) {
@@ -87,7 +85,7 @@ void NullAudioSound::set_play_rate(PN_stdfloat) {
 }
 
 PN_stdfloat NullAudioSound::get_play_rate() const {
-  return 0; 
+  return 0;
 }
 
 void NullAudioSound::set_active(bool) {
@@ -95,7 +93,7 @@ void NullAudioSound::set_active(bool) {
 }
 
 bool NullAudioSound::get_active() const {
-  return false; 
+  return false;
 }
 
 void NullAudioSound::set_finished_event(const string& event) {
@@ -141,5 +139,5 @@ PN_stdfloat NullAudioSound::get_3d_max_distance() const {
 }
 
 AudioSound::SoundStatus NullAudioSound::status() const {
-  return AudioSound::READY; 
+  return AudioSound::READY;
 }

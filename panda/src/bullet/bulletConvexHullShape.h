@@ -23,10 +23,9 @@
 #include "geom.h"
 #include "pta_LVecBase3.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletConvexHullShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletConvexHullShape : public BulletShape {
 PUBLISHED:
   BulletConvexHullShape();
@@ -59,7 +58,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletConvexHullShape", 
+    register_type(_type_handle, "BulletConvexHullShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

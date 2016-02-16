@@ -43,13 +43,9 @@ typedef struct _CGparameter *CGparameter;
 
 class BamCacheRecord;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Shader
-//      Summary: The Shader class is meant to select the Shader Language,
-//               select the available profile, compile the shader, and
-//               finally compile and store the shader parameters
-//               in the appropriate structure.
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount {
 PUBLISHED:
   enum ShaderLanguage {

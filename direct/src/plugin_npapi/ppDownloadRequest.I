@@ -11,11 +11,9 @@
  * @date 2009-06-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPDownloadRequest::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline PPDownloadRequest::
 PPDownloadRequest(RequestType rtype, int user_id) :
   _rtype(rtype),
@@ -23,4 +21,3 @@ PPDownloadRequest(RequestType rtype, int user_id) :
   _notified_done(false)
 {
 }
-

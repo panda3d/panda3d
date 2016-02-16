@@ -15,11 +15,9 @@
 
 TypeHandle BulletCapsuleShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCapsuleShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletCapsuleShape::
 BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
 
@@ -41,14 +39,11 @@ BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCapsuleShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletCapsuleShape::
 ptr() const {
 
   return _shape;
 }
-

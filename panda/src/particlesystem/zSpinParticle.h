@@ -16,14 +16,12 @@
 
 #include "baseParticle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ZSpinParticle
-// Description : describes a particle that spins along its z axis.
-//               this is kind of an intermediary class- if you're
-//               using a SpriteParticleRenderer and you want your
-//               sprites to spin without having them be full-blown
-//               oriented (i.e. angry quat math), use this.
-////////////////////////////////////////////////////////////////////
+/**
+ * describes a particle that spins along its z axis.  this is kind of an
+ * intermediary class- if you're using a SpriteParticleRenderer and you want
+ * your sprites to spin without having them be full-blown oriented (i.e.  angry
+ * quat math), use this.
+ */
 class EXPCL_PANDAPHYSICS ZSpinParticle : public BaseParticle {
 public:
   ZSpinParticle();

@@ -22,19 +22,17 @@
 
 #ifdef WIN32
 // For midiOutReset()
-#include <windows.h>  
+#include <windows.h>
 #include <mmsystem.h>
 #endif
 
 GlobalMilesManager *GlobalMilesManager::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::Constructor
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GlobalMilesManager::
-GlobalMilesManager() : 
+GlobalMilesManager() :
   _managers_lock("GlobalMilesManager::_managers_lock"),
   _samples_lock("GlobalMilesManager::_samples_lock"),
   _sequences_lock("GlobalMilesManager::_sequences_lock")
@@ -46,13 +44,10 @@ GlobalMilesManager() :
   _is_open = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::add_manager
-//       Access: Public
-//  Description: Records a new MilesAudioManager in the world.  This
-//               will open the Miles API when the first audio manager
-//               is added.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a new MilesAudioManager in the world.  This will open the Miles API
+ * when the first audio manager is added.
+ */
 void GlobalMilesManager::
 add_manager(MilesAudioManager *manager) {
   LightMutexHolder holder(_managers_lock);
@@ -62,13 +57,10 @@ add_manager(MilesAudioManager *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::remove_manager
-//       Access: Public
-//  Description: Records that a MilesAudioManager is destructing.
-//               This will clsoe the Miles API when the last audio
-//               manager is removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that a MilesAudioManager is destructing.  This will clsoe the Miles
+ * API when the last audio manager is removed.
+ */
 void GlobalMilesManager::
 remove_manager(MilesAudioManager *manager) {
   LightMutexHolder holder(_managers_lock);
@@ -78,12 +70,9 @@ remove_manager(MilesAudioManager *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::cleanup
-//       Access: Public
-//  Description: Calls cleanup() on all MilesAudioManagers, to cause a
-//               clean shutdown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls cleanup() on all MilesAudioManagers, to cause a clean shutdown.
+ */
 void GlobalMilesManager::
 cleanup() {
   LightMutexHolder holder(_managers_lock);
@@ -93,21 +82,14 @@ cleanup() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::get_sample
-//       Access: Public
-//  Description: Gets a sample handle from the global pool for the
-//               digital output device, to be used with the indicated
-//               AudioSound.  
-//
-//               If successful, sets the sample handle and the index
-//               (which should later be used to release the sample)
-//               and returns true.  If unsuccessful (because there are
-//               no more available handles), returns false.
-//
-//               This is a very limited resource; you should only get
-//               a sample just before playing a sound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets a sample handle from the global pool for the digital output device, to
+ * be used with the indicated AudioSound.  If successful, sets the sample handle
+ * and the index (which should later be used to release the sample) and returns
+ * true.  If unsuccessful (because there are no more available handles), returns
+ * false.  This is a very limited resource; you should only get a sample just
+ * before playing a sound.
+ */
 bool GlobalMilesManager::
 get_sample(HSAMPLE &sample, size_t &index, MilesAudioSample *sound) {
   LightMutexHolder holder(_samples_lock);
@@ -132,7 +114,7 @@ get_sample(HSAMPLE &sample, size_t &index, MilesAudioSample *sound) {
   if (sample == 0) {
     return false;
   }
-  
+
   AIL_init_sample(sample, DIG_F_STEREO_16, 0);
   index = _samples.size();
 
@@ -143,12 +125,9 @@ get_sample(HSAMPLE &sample, size_t &index, MilesAudioSample *sound) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::release_sample
-//       Access: Public
-//  Description: Indicates that the indicated AudioSound no longer
-//               needs this sample.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the indicated AudioSound no longer needs this sample.
+ */
 void GlobalMilesManager::
 release_sample(size_t index, MilesAudioSample *sound) {
   LightMutexHolder holder(_samples_lock);
@@ -160,21 +139,14 @@ release_sample(size_t index, MilesAudioSample *sound) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::get_sequence
-//       Access: Public
-//  Description: Gets a sequence handle from the global pool for the
-//               digital output device, to be used with the indicated
-//               AudioSound.  
-//
-//               If successful, sets the sequence handle and the index
-//               (which should later be used to release the sequence)
-//               and returns true.  If unsuccessful (because there are
-//               no more available handles), returns false.
-//
-//               This is a very limited resource; you should only get
-//               a sequence just before playing a sound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets a sequence handle from the global pool for the digital output device, to
+ * be used with the indicated AudioSound.  If successful, sets the sequence
+ * handle and the index (which should later be used to release the sequence) and
+ * returns true.  If unsuccessful (because there are no more available handles),
+ * returns false.  This is a very limited resource; you should only get a
+ * sequence just before playing a sound.
+ */
 bool GlobalMilesManager::
 get_sequence(HSEQUENCE &sequence, size_t &index, MilesAudioSequence *sound) {
   LightMutexHolder holder(_sequences_lock);
@@ -199,7 +171,7 @@ get_sequence(HSEQUENCE &sequence, size_t &index, MilesAudioSequence *sound) {
   if (sequence == 0) {
     return false;
   }
-  
+
   index = _sequences.size();
 
   SequenceData seq;
@@ -209,12 +181,9 @@ get_sequence(HSEQUENCE &sequence, size_t &index, MilesAudioSequence *sound) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::release_sequence
-//       Access: Public
-//  Description: Indicates that the indicated AudioSound no longer
-//               needs this sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the indicated AudioSound no longer needs this sequence.
+ */
 void GlobalMilesManager::
 release_sequence(size_t index, MilesAudioSequence *sound) {
   LightMutexHolder holder(_sequences_lock);
@@ -226,18 +195,15 @@ release_sequence(size_t index, MilesAudioSequence *sound) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::force_midi_reset
-//       Access: Public
-//  Description: Sometimes Miles seems to leave midi notes hanging,
-//               even after stop is called, so call this method to
-//               perform an explicit reset using winMM.dll calls, just
-//               to ensure silence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sometimes Miles seems to leave midi notes hanging, even after stop is called,
+ * so call this method to perform an explicit reset using winMM.dll calls, just
+ * to ensure silence.
+ */
 void GlobalMilesManager::
 force_midi_reset() {
   if (!miles_audio_force_midi_reset) {
-    audio_debug("MilesAudioManager::skipping force_midi_reset");  
+    audio_debug("MilesAudioManager::skipping force_midi_reset");
     return;
   }
   audio_debug("MilesAudioManager::force_midi_reset");
@@ -250,12 +216,9 @@ force_midi_reset() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::get_global_ptr
-//       Access: Public, Static
-//  Description: Returns the pointer to the one GlobalMilesManager
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the one GlobalMilesManager object.
+ */
 GlobalMilesManager *GlobalMilesManager::
 get_global_ptr() {
   if (_global_ptr == NULL) {
@@ -264,11 +227,9 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::open_api
-//       Access: Private
-//  Description: Called internally to initialize the Miles API.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to initialize the Miles API.
+ */
 void GlobalMilesManager::
 open_api() {
   audio_debug("GlobalMilesManager::open_api()")
@@ -282,7 +243,7 @@ open_api() {
 #ifdef IS_OSX
   audio_software_midi = true;
 #endif
-  
+
   audio_debug("  use_digital="<<use_digital);
   audio_debug("  audio_play_midi="<<audio_play_midi);
   audio_debug("  audio_software_midi="<<audio_software_midi);
@@ -306,8 +267,8 @@ open_api() {
                          seek_callback, read_callback);
 
   if (use_digital) {
-    _digital_driver = 
-      AIL_open_digital_driver(audio_output_rate, audio_output_bits, 
+    _digital_driver =
+      AIL_open_digital_driver(audio_output_rate, audio_output_bits,
                               audio_output_channels, 0);
   }
 
@@ -319,7 +280,7 @@ open_api() {
       _dls_device = AIL_DLS_open(_midi_driver, _digital_driver, NULL, 0,
                                  audio_output_rate, audio_output_bits,
                                  audio_output_channels);
-      
+
       Filename dls_pathname = AudioManager::get_dls_pathname();
 
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -334,7 +295,7 @@ open_api() {
       } else if (!file->read_file(_dls_data, true)) {
         milesAudio_cat.warning()
           << "Could not read DLS file: " << dls_pathname << "\n";
-        
+
       } else if (_dls_data.empty()) {
         milesAudio_cat.warning()
           << "DLS file is empty: " << dls_pathname << "\n";
@@ -342,14 +303,14 @@ open_api() {
       } else {
         _dls_file = AIL_DLS_load_memory(_dls_device, &_dls_data[0], 0);
       }
-      
+
       if (_dls_file == 0) {
         audio_error("  Could not get DLS file, switching to hardware MIDI.");
         AIL_DLS_close(_dls_device, 0);
         _dls_device = 0;
         AIL_close_XMIDI_driver(_midi_driver);
         _midi_driver = AIL_open_XMIDI_driver(0);
-        
+
       } else {
         audio_info("  using Miles software midi");
       }
@@ -358,15 +319,13 @@ open_api() {
       audio_info("  using Miles hardware midi");
     }
   }
-    
+
   _is_open = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::close_api
-//       Access: Private
-//  Description: Called internally to shut down the Miles API.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to shut down the Miles API.
+ */
 void GlobalMilesManager::
 close_api() {
   audio_debug("GlobalMilesManager::close_api()")
@@ -411,14 +370,11 @@ close_api() {
   _is_open = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::open_callback
-//       Access: Private, Static
-//  Description: This callback function is given to Miles to handle
-//               file I/O via the Panda VFS.  It's only used to
-//               implemented streaming audio files, since in all other
-//               cases we open files directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is given to Miles to handle file I/O via the Panda
+ * VFS.  It's only used to implemented streaming audio files, since in all other
+ * cases we open files directly.
+ */
 U32 AILCALLBACK GlobalMilesManager::
 open_callback(char const *filename, UINTa *file_handle) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -432,12 +388,10 @@ open_callback(char const *filename, UINTa *file_handle) {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::close_callback
-//       Access: Private, Static
-//  Description: This callback function is given to Miles to handle
-//               file I/O via the Panda VFS.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is given to Miles to handle file I/O via the Panda
+ * VFS.
+ */
 void AILCALLBACK GlobalMilesManager::
 close_callback(UINTa file_handle) {
   istream *strm = (istream *)file_handle;
@@ -445,12 +399,10 @@ close_callback(UINTa file_handle) {
   vfs->close_read_file(strm);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::seek_callback
-//       Access: Private, Static
-//  Description: This callback function is given to Miles to handle
-//               file I/O via the Panda VFS.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is given to Miles to handle file I/O via the Panda
+ * VFS.
+ */
 S32 AILCALLBACK GlobalMilesManager::
 seek_callback(UINTa file_handle, S32 offset, U32 type) {
   istream *strm = (istream *)file_handle;
@@ -472,12 +424,10 @@ seek_callback(UINTa file_handle, S32 offset, U32 type) {
   return strm->tellg();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GlobalMilesManager::read_callback
-//       Access: Private, Static
-//  Description: This callback function is given to Miles to handle
-//               file I/O via the Panda VFS.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is given to Miles to handle file I/O via the Panda
+ * VFS.
+ */
 U32 AILCALLBACK GlobalMilesManager::
 read_callback(UINTa file_handle, void *buffer, U32 bytes) {
   istream *strm = (istream *)file_handle;
@@ -486,4 +436,3 @@ read_callback(UINTa file_handle, void *buffer, U32 bytes) {
 }
 
 #endif //]
-

@@ -18,12 +18,10 @@
 #include "hashGenerator.h"
 #include "dcPacker.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCNumericRange
-// Description : Represents a range of legal integer or floating-point
-//               values.  This is used to constrain simple numeric
-//               types, as well as array sizes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a range of legal integer or floating-point values.  This is used
+ * to constrain simple numeric types, as well as array sizes.
+ */
 template <class NUM>
 class DCNumericRange {
 public:

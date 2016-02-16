@@ -18,11 +18,9 @@
 
 TypeHandle PhysxForceFieldShapeGroup::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxForceFieldShapeGroup::
 link(NxForceFieldShapeGroup *groupPtr) {
 
@@ -46,11 +44,9 @@ link(NxForceFieldShapeGroup *groupPtr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxForceFieldShapeGroup::
 unlink() {
 
@@ -71,11 +67,9 @@ unlink() {
   scene->_ffgroups.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::release
-//       Access: Published
-//  Description: Releases the force field shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the force field shape.
+ */
 void PhysxForceFieldShapeGroup::
 release() {
 
@@ -86,12 +80,9 @@ release() {
   _ptr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::get_scene
-//       Access: Published
-//  Description: Returns the scene that owns this force field shape
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the scene that owns this force field shape group.
+ */
 PhysxScene *PhysxForceFieldShapeGroup::
 get_scene() const {
 
@@ -99,12 +90,10 @@ get_scene() const {
   return (PhysxScene *)(_ptr->getScene().userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::get_force_field
-//       Access: Published
-//  Description: Returns the force field of this group if this is
-//               an include group. If not NULL will be returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the force field of this group if this is an include group.  If not
+ * NULL will be returned.
+ */
 PhysxForceField *PhysxForceFieldShapeGroup::
 get_force_field() const {
 
@@ -118,12 +107,9 @@ get_force_field() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the force field shape group
-//               object to a  descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the force field shape group object to a  descriptor.
+ */
 void PhysxForceFieldShapeGroup::
 save_to_desc(PhysxForceFieldShapeGroupDesc &groupDesc) const {
 
@@ -131,14 +117,10 @@ save_to_desc(PhysxForceFieldShapeGroupDesc &groupDesc) const {
   _ptr->saveToDesc(groupDesc._desc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::set_name
-//       Access: Published
-//  Description: Sets a name string for the object that can be
-//               retrieved with get_name().
-//               This is for debugging and is not used by the
-//               engine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets a name string for the object that can be retrieved with get_name(). This
+ * is for debugging and is not used by the engine.
+ */
 void PhysxForceFieldShapeGroup::
 set_name(const char *name) {
 
@@ -148,11 +130,9 @@ set_name(const char *name) {
   _ptr->setName(_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::get_name
-//       Access: Published
-//  Description: Returns the name string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name string.
+ */
 const char *PhysxForceFieldShapeGroup::
 get_name() const {
 
@@ -160,12 +140,9 @@ get_name() const {
   return _ptr->getName();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::get_num_shapes
-//       Access: Published
-//  Description: Returns the number of shapes assigned to the
-//               force field shape group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of shapes assigned to the force field shape group.
+ */
 unsigned int PhysxForceFieldShapeGroup::
 get_num_shapes() const {
 
@@ -174,12 +151,9 @@ get_num_shapes() const {
   return _ptr->getNbShapes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::create_shape
-//       Access: Published
-//  Description: Creates a force field shape and adds it to the
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a force field shape and adds it to the group.
+ */
 PhysxForceFieldShape *PhysxForceFieldShapeGroup::
 create_shape(PhysxForceFieldShapeDesc &desc) {
 
@@ -197,11 +171,9 @@ create_shape(PhysxForceFieldShapeDesc &desc) {
   return shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::get_shape
-//       Access: Published
-//  Description: Returns the i-th shape in the force field group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the i-th shape in the force field group.
+ */
 PhysxForceFieldShape *PhysxForceFieldShapeGroup::
 get_shape(unsigned int idx) const {
 
@@ -218,4 +190,3 @@ get_shape(unsigned int idx) const {
 
   return (PhysxForceFieldShape *)(shapePtr->userData);
 }
-

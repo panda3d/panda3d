@@ -15,11 +15,9 @@
 
 TypeHandle CLP(LatencyQueryContext)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(LatencyQueryContext)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(LatencyQueryContext)::
 CLP(LatencyQueryContext)(CLP(GraphicsStateGuardian) *glgsg,
                          int pstats_index) :
@@ -29,19 +27,13 @@ CLP(LatencyQueryContext)(CLP(GraphicsStateGuardian) *glgsg,
   glgsg->_glGetInteger64v(GL_TIMESTAMP, &_timestamp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LatencyQueryContext::get_timestamp
-//       Access: Public, Virtual
-//  Description: Returns the timestamp that is the result of this
-//               timer query.  There's no guarantee about which
-//               clock this uses, the only guarantee is that
-//               subtracting a start time from an end time should
-//               yield a time in seconds.
-//               If is_answer_ready() did not return true, this
-//               function may block before it returns.
-//
-//               It is only valid to call this from the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the timestamp that is the result of this timer query.  There's no
+ * guarantee about which clock this uses, the only guarantee is that subtracting
+ * a start time from an end time should yield a time in seconds.  If
+ * is_answer_ready() did not return true, this function may block before it
+ * returns.  It is only valid to call this from the draw thread.
+ */
 double CLP(LatencyQueryContext)::
 get_timestamp() const {
   GLint64 time_ns;

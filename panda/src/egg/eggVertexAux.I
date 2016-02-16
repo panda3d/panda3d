@@ -11,31 +11,25 @@
  * @date 2011-11-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexAux::set_name
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggVertexAux::
 set_name(const string &name) {
   Namable::set_name(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexAux::get_aux
-//       Access: Published
-//  Description: Returns the auxiliary data quadruple.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the auxiliary data quadruple.
+ */
 INLINE const LVecBase4d &EggVertexAux::
 get_aux() const {
   return _aux;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertexAux::set_aux
-//       Access: Published
-//  Description: Sets the auxiliary data quadruple.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the auxiliary data quadruple.
+ */
 INLINE void EggVertexAux::
 set_aux(const LVecBase4d &aux) {
   _aux = aux;

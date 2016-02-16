@@ -25,12 +25,10 @@
 class EggTable;
 class EggAttributes;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCharacterCollection
-// Description : Represents a set of characters, as read and collected
-//               from possibly several model and/or animation egg
-//               files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a set of characters, as read and collected from possibly several
+ * model and/or animation egg files.
+ */
 class EggCharacterCollection {
 public:
   EggCharacterCollection();
@@ -117,5 +115,3 @@ private:
 #include "eggCharacterCollection.I"
 
 #endif
-
-

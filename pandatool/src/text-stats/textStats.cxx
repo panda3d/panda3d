@@ -28,11 +28,9 @@ static void signal_handler(int) {
   user_interrupted = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextStats::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextStats::
 TextStats() {
   set_program_brief("text-based PStats client");
@@ -57,29 +55,25 @@ TextStats() {
     ("o", "filename", 0,
      "Filename where to print. If not given then stderr is being used.",
      &TextStats::dispatch_string, &_got_outputFileName, &_outputFileName);
-     
+
   _outFile = NULL;
   _port = pstats_port;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextStats::make_monitor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatMonitor *TextStats::
 make_monitor() {
-  
+
   return new TextMonitor(this, _outFile, _show_raw_data);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextStats::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextStats::
 run() {
   // Set up a global signal handler to catch Interrupt (Control-C) so
@@ -98,7 +92,7 @@ run() {
   } else {
     _outFile = &(nout);
   }
-  
+
   main_loop(&user_interrupted);
   nout << "Exiting.\n";
 }

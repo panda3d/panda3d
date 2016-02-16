@@ -21,11 +21,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorScaleAttrib
-// Description : Applies a scale to colors in the scene graph and on
-//               vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a scale to colors in the scene graph and on vertices.
+ */
 class EXPCL_PANDA_PGRAPH ColorScaleAttrib : public RenderAttrib {
 protected:
   ColorScaleAttrib(bool off, const LVecBase4 &scale);
@@ -82,7 +80,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -107,4 +105,3 @@ private:
 #include "colorScaleAttrib.I"
 
 #endif
-

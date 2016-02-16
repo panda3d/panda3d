@@ -11,41 +11,33 @@
  * @date 2000-06-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_vector
-//       Access: Public
-//  Description: encapsulating wrapper
-////////////////////////////////////////////////////////////////////
+/**
+ * encapsulating wrapper
+ */
 INLINE void LinearVectorForce::
 set_vector(const LVector3& v) {
   _fvec = v;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_vector
-//       Access: Public
-//  Description: piecewise encapsulating wrapper
-////////////////////////////////////////////////////////////////////
+/**
+ * piecewise encapsulating wrapper
+ */
 INLINE void LinearVectorForce::
 set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _fvec.set(x, y, z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_local_vector
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LVector3 LinearVectorForce::
 get_local_vector() const {
   return _fvec;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearVectorForce::LinearVectorForce += LinearVectorForce
-//       Access: Public
-//  Description: Performs a memberwise addition between two LinearVectorForces.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a memberwise addition between two LinearVectorForces.
+ */
 LinearVectorForce& LinearVectorForce::
 operator += (const LinearVectorForce &other) {
   _fvec+=other._fvec;

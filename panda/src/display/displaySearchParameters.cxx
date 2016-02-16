@@ -13,21 +13,17 @@
 
 #include "displaySearchParameters.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplaySearchParameters::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplaySearchParameters::
 ~DisplaySearchParameters() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplaySearchParameters::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplaySearchParameters::
 DisplaySearchParameters() {
   _minimum_width = 640;
@@ -38,61 +34,49 @@ DisplaySearchParameters() {
   _maximum_bits_per_pixel = 32;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplaySearchParameters::set_minimum_width
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplaySearchParameters::
 set_minimum_width (int minimum_width) {
   _minimum_width = minimum_width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplaySearchParameters::set_maximum_width
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplaySearchParameters::
 set_maximum_width (int maximum_width) {
   _maximum_width = maximum_width;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplaySearchParameters::set_minimum_height
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplaySearchParameters::
 set_minimum_height (int minimum_height) {
   _minimum_height = minimum_height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplaySearchParameters::set_maximum_height
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplaySearchParameters::
 set_maximum_height (int maximum_height) {
   _maximum_height = maximum_height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplaySearchParameters::set_minimum_bits_per_pixel
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplaySearchParameters::
 set_minimum_bits_per_pixel (int minimum_bits_per_pixel) {
   _minimum_bits_per_pixel = minimum_bits_per_pixel;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplaySearchParameters::set_maximum_bits_per_pixel
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplaySearchParameters::
 set_maximum_bits_per_pixel (int maximum_bits_per_pixel) {
    _maximum_bits_per_pixel = maximum_bits_per_pixel;

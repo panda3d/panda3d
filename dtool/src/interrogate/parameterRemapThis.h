@@ -20,11 +20,9 @@
 
 class CPPType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapThis
-// Description : A ParameterRemap class that represents a generated
-//               "this" parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ParameterRemap class that represents a generated "this" parameter.
+ */
 class ParameterRemapThis : public ParameterRemap {
 public:
   ParameterRemapThis(CPPType *type, bool is_const);

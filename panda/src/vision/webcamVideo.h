@@ -16,11 +16,9 @@
 
 #include "movieVideo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideo
-// Description : Allows you to open a webcam or other video capture
-//               device as a video stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allows you to open a webcam or other video capture device as a video stream.
+ */
 class EXPCL_VISION WebcamVideo : public MovieVideo {
 
 PUBLISHED:

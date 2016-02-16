@@ -191,11 +191,9 @@ static JHUFF_TBL ac_chrominance_tbl = {
 
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorV4L::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoCursorV4L::
 WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _size_x = src->_size_x;
@@ -353,11 +351,9 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _ready = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorV4L::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoCursorV4L::
 ~WebcamVideoCursorV4L() {
 #ifdef HAVE_JPEG
@@ -381,11 +377,9 @@ WebcamVideoCursorV4L::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorV4L::fetch_buffer
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PT(MovieVideoCursor::Buffer) WebcamVideoCursorV4L::
 fetch_buffer() {
   if (!_ready) {

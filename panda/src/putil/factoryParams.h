@@ -24,18 +24,13 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FactoryParams
-// Description : An instance of this class is passed to the Factory
-//               when requesting it to do its business and construct a
-//               new something.  It can be filled with optional
-//               parameters to the CreateFunc for the particular
-//               subclass the Factory will be creating.
-//
-//               This is just a vector of pointers to *something*; it
-//               will be up to the individual CreateFuncs to interpret
-//               this meaningfully.
-////////////////////////////////////////////////////////////////////
+/**
+ * An instance of this class is passed to the Factory when requesting it to do
+ * its business and construct a new something.  It can be filled with optional
+ * parameters to the CreateFunc for the particular subclass the Factory will be
+ * creating.  This is just a vector of pointers to *something*; it will be up to
+ * the individual CreateFuncs to interpret this meaningfully.
+ */
 class EXPCL_PANDA_PUTIL FactoryParams {
 public:
   FactoryParams();

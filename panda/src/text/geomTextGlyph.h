@@ -18,15 +18,12 @@
 #include "geom.h"
 #include "textGlyph.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomTextGlyph
-// Description : This is a specialization on Geom for containing a
-//               primitive intended to represent a TextGlyph.
-//               Its sole purpose is to maintain the geom count on the
-//               glyph, so we can determine the actual usage count on
-//               a dynamic glyph (and thus know when it is safe to
-//               recycle the glyph).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on Geom for containing a primitive intended to
+ * represent a TextGlyph.  Its sole purpose is to maintain the geom count on the
+ * glyph, so we can determine the actual usage count on a dynamic glyph (and
+ * thus know when it is safe to recycle the glyph).
+ */
 class EXPCL_PANDA_TEXT GeomTextGlyph : public Geom {
 public:
   GeomTextGlyph(const TextGlyph *glyph, const GeomVertexData *data);

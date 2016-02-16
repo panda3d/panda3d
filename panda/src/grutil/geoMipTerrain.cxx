@@ -39,15 +39,12 @@ static ConfigVariableBool geomipterrain_incorrect_normals
 
 TypeHandle GeoMipTerrain::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::generate_block
-//       Access: Private
-//  Description: Generates a chunk of terrain based on the level
-//               specified. As arguments it takes the x and y coords
-//               of the mipmap to be generated, and the level of
-//               detail. T-Junctions for neighbor-mipmaps with
-//               different levels are also taken into account.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a chunk of terrain based on the level specified.  As arguments it
+ * takes the x and y coords of the mipmap to be generated, and the level of
+ * detail.  T-Junctions for neighbor-mipmaps with different levels are also
+ * taken into account.
+ */
 PT(GeomNode) GeoMipTerrain::
 generate_block(unsigned short mx,
                unsigned short my,
@@ -270,20 +267,14 @@ generate_block(unsigned short mx,
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::get_elevation
-//       Access: Published
-//  Description: Fetches the elevation at (x, y), where the input
-//               coordinate is specified in pixels. This ignores
-//               the current LOD level and instead provides an
-//               accurate number. Linear blending is used for
-//               non-integral coordinates.
-//               Terrain scale is NOT taken into account! To get
-//               accurate normals, please multiply this with the
-//               terrain Z scale!
-//
-//               trueElev = terr.get_elevation(x,y) * terr.get_sz();
-////////////////////////////////////////////////////////////////////
+/**
+ * Fetches the elevation at (x, y), where the input coordinate is specified in
+ * pixels.  This ignores the current LOD level and instead provides an accurate
+ * number.  Linear blending is used for non-integral coordinates.  Terrain scale
+ * is NOT taken into account!  To get accurate normals, please multiply this
+ * with the terrain Z scale!  trueElev = terr.get_elevation(x,y) *
+ * terr.get_sz();
+ */
 double GeoMipTerrain::
 get_elevation(double x, double y) {
   y = (_ysize - 1) - y;
@@ -308,23 +299,15 @@ get_elevation(double x, double y) {
   return lerpyh * yoffs + lerpyl * (1.0 - yoffs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::get_normal
-//       Access: Published
-//  Description: Fetches the terrain normal at (x, y), where the
-//               input coordinate is specified in pixels. This
-//               ignores the current LOD level and instead provides
-//               an accurate number.
-//               Terrain scale is NOT taken into account! To get
-//               accurate normals, please divide it by the
-//               terrain scale and normalize it again, like this:
-//
-//               LVector3 normal (terr.get_normal(x, y));
-//               normal.set(normal.get_x() / root.get_sx(),
-//                          normal.get_y() / root.get_sy(),
-//                          normal.get_z() / root.get_sz());
-//               normal.normalize();
-////////////////////////////////////////////////////////////////////
+/**
+ * Fetches the terrain normal at (x, y), where the input coordinate is specified
+ * in pixels.  This ignores the current LOD level and instead provides an
+ * accurate number.  Terrain scale is NOT taken into account!  To get accurate
+ * normals, please divide it by the terrain scale and normalize it again, like
+ * this:  LVector3 normal (terr.get_normal(x, y)); normal.set(normal.get_x() /
+ * root.get_sx(), normal.get_y() / root.get_sy(), normal.get_z() /
+ * root.get_sz()); normal.normalize();
+ */
 LVector3 GeoMipTerrain::
 get_normal(int x, int y) {
   int nx = x - 1;
@@ -347,21 +330,15 @@ get_normal(int x, int y) {
   return normal;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::make_slope_image
-//       Access: Published
-//  Description: Returns a new grayscale image containing the slope
-//               angles. A white pixel value means a vertical slope,
-//               while a black pixel will mean that the terrain is
-//               entirely flat at that pixel.
-//               You can translate it to degrees by mapping the
-//               greyscale values from 0 to 90 degrees.
-//               The resulting image will have the same size as the
-//               heightfield image.
-//               The scale will be taken into respect -- meaning,
-//               if you change the terrain scale, the slope image
-//               will need to be regenerated in order to be correct.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new grayscale image containing the slope angles.  A white pixel
+ * value means a vertical slope, while a black pixel will mean that the terrain
+ * is entirely flat at that pixel.  You can translate it to degrees by mapping
+ * the greyscale values from 0 to 90 degrees.  The resulting image will have the
+ * same size as the heightfield image.  The scale will be taken into respect --
+ * meaning, if you change the terrain scale, the slope image will need to be
+ * regenerated in order to be correct.
+ */
 PNMImage GeoMipTerrain::
 make_slope_image() {
   PNMImage result (_xsize, _ysize);
@@ -379,15 +356,12 @@ make_slope_image() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::calc_ambient_occlusion
-//       Access: Published
-//  Description: Calculates an approximate for the ambient occlusion
-//               and stores it in the color map, so that it will be
-//               written to the vertex colors. Any existing color
-//               map will be discarded.
-//               You need to call this before generating the geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates an approximate for the ambient occlusion and stores it in the
+ * color map, so that it will be written to the vertex colors.  Any existing
+ * color map will be discarded.  You need to call this before generating the
+ * geometry.
+ */
 void GeoMipTerrain::
 calc_ambient_occlusion(PN_stdfloat radius, PN_stdfloat contrast, PN_stdfloat brightness) {
   _color_map = PNMImage(_xsize, _ysize);
@@ -413,15 +387,11 @@ calc_ambient_occlusion(PN_stdfloat radius, PN_stdfloat contrast, PN_stdfloat bri
   _has_color_map = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::generate
-//       Access: Published
-//  Description: (Re)generates the entire terrain, erasing the
-//               current.
-//               This call un-flattens the terrain, so make sure
-//               you have set auto-flatten if you want to keep
-//               your terrain flattened.
-////////////////////////////////////////////////////////////////////
+/**
+ * (Re)generates the entire terrain, erasing the current.  This call un-flattens
+ * the terrain, so make sure you have set auto-flatten if you want to keep your
+ * terrain flattened.
+ */
 void GeoMipTerrain::
 generate() {
   if (_xsize < 3 || _ysize < 3) {
@@ -452,20 +422,14 @@ generate() {
   _is_dirty = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::update
-//       Access: Published
-//  Description: Loops through all of the terrain blocks, and
-//               checks whether they need to be updated.
-//               If that is indeed the case, it regenerates the
-//               mipmap. Returns a true when the terrain has
-//               changed. Returns false when the terrain isn't
-//               updated at all. If there is no terrain yet,
-//               it generates the entire terrain.
-//               This call un-flattens the terrain, so make sure
-//               you have set auto-flatten if you want to keep
-//               your terrain flattened.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loops through all of the terrain blocks, and checks whether they need to be
+ * updated.  If that is indeed the case, it regenerates the mipmap.  Returns a
+ * true when the terrain has changed.  Returns false when the terrain isn't
+ * updated at all.  If there is no terrain yet, it generates the entire terrain.
+ * This call un-flattens the terrain, so make sure you have set auto-flatten if
+ * you want to keep your terrain flattened.
+ */
 bool GeoMipTerrain::
 update() {
   if (_xsize < 3 || _ysize < 3) {
@@ -525,16 +489,12 @@ update() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::root_flattened
-//       Access: Private
-//  Description: Normally, the root's children are the terrain blocks.
-//               However, if we call flatten_strong on the root,
-//               then the root will contain unpredictable stuff.
-//               This function returns true if the root has been
-//               flattened, and therefore, does not contain the
-//               terrain blocks.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normally, the root's children are the terrain blocks.  However, if we call
+ * flatten_strong on the root, then the root will contain unpredictable stuff.
+ * This function returns true if the root has been flattened, and therefore,
+ * does not contain the terrain blocks.
+ */
 bool GeoMipTerrain::
 root_flattened() {
   if (_root_flattened) {
@@ -567,11 +527,9 @@ root_flattened() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::auto_flatten
-//       Access: Private
-//  Description: Flattens the geometry under the root.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flattens the geometry under the root.
+ */
 void GeoMipTerrain::
 auto_flatten() {
   if (_auto_flatten == AFM_off) {
@@ -595,12 +553,10 @@ auto_flatten() {
   _root_flattened = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::calc_levels
-//       Access: Private
-//  Description: Loops through all of the terrain blocks, and
-//               calculates on what level they should be generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loops through all of the terrain blocks, and calculates on what level they
+ * should be generated.
+ */
 void GeoMipTerrain::
 calc_levels() {
   nassertv(_xsize >= 3 && _ysize >= 3);
@@ -620,23 +576,17 @@ calc_levels() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::update_block
-//       Access: Private
-//  Description: Checks whether the specified mipmap at (mx,my)
-//               needs to be updated, if so, it regenerates the
-//               mipmap. Returns a true when it has generated
-//               a mipmap. Returns false when the mipmap is already
-//               at the desired level, or when there is no terrain
-//               to update. Note: This does not affect neighboring
-//               blocks, so does NOT fix t-junctions. You will have
-//               to fix that by forced updating the neighboring
-//               chunks as well, with the same levels.
-//               NOTE: do NOT call this when the terrain is marked
-//               dirty. If the terrain is dirty, you will need to
-//               call update() or generate() first.
-//               You can check this by calling GeoMipTerrain::is_dirty().
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks whether the specified mipmap at (mx,my) needs to be updated, if so, it
+ * regenerates the mipmap.  Returns a true when it has generated a mipmap.
+ * Returns false when the mipmap is already at the desired level, or when there
+ * is no terrain to update.  Note: This does not affect neighboring blocks, so
+ * does NOT fix t-junctions.  You will have to fix that by forced updating the
+ * neighboring chunks as well, with the same levels.  NOTE: do NOT call this
+ * when the terrain is marked dirty.  If the terrain is dirty, you will need to
+ * call update() or generate() first.  You can check this by calling
+ * GeoMipTerrain::is_dirty().
+ */
 bool GeoMipTerrain::
 update_block(unsigned short mx, unsigned short my,
                                   signed short level, bool forced) {
@@ -655,15 +605,11 @@ update_block(unsigned short mx, unsigned short my,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::set_heightfield
-//       Access: Published
-//  Description: Loads the specified heightmap image file into
-//               the heightfield. Returns true if succeeded, or
-//               false if an error has occured.
-//               If the heightmap is not a power of two plus one,
-//               it is scaled up using a gaussian filter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the specified heightmap image file into the heightfield.  Returns true
+ * if succeeded, or false if an error has occured.  If the heightmap is not a
+ * power of two plus one, it is scaled up using a gaussian filter.
+ */
 bool GeoMipTerrain::
 set_heightfield(const Filename &filename, PNMFileType *ftype) {
   // First, we need to load the header to determine the size and format.
@@ -715,11 +661,9 @@ set_heightfield(const Filename &filename, PNMFileType *ftype) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::get_neighbor_level
-//       Access: Private
-//  Description: Helper function for generate().
-////////////////////////////////////////////////////////////////////
+/**
+ * Helper function for generate().
+ */
 unsigned short GeoMipTerrain::
 get_neighbor_level(unsigned short mx, unsigned short my, short dmx, short dmy) {
   // If we're across the terrain border, check if we want stitching.
@@ -740,4 +684,3 @@ get_neighbor_level(unsigned short mx, unsigned short my, short dmx, short dmy) {
     return min(max(_min_level, _levels[mx][my]), _max_level);
   }
 }
-

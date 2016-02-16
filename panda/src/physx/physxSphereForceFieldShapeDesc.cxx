@@ -13,25 +13,20 @@
 
 #include "physxSphereForceFieldShapeDesc.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereForceFieldShapeDesc::set_radius
-//       Access: Published
-//  Description: Radius of shape. Must be positive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Radius of shape.  Must be positive.
+ */
 void PhysxSphereForceFieldShapeDesc::
 set_radius(float radius) {
 
   _desc.radius = radius;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSphereForceFieldShapeDesc::get_radius
-//       Access: Published
-//  Description: Radius of shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Radius of shape.
+ */
 float PhysxSphereForceFieldShapeDesc::
 get_radius() const {
 
   return _desc.radius;
 }
-

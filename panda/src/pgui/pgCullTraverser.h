@@ -19,15 +19,12 @@
 #include "pgTop.h"
 #include "cullTraverser.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGCullTraverser
-// Description : This is a specialization of CullTraverser for use
-//               within the pgui system.  It is substituted in for the
-//               normal CullTraverser by the PGTop node.  Its purpose
-//               is to carry additional data through the traversal so
-//               that PGItems can know how to register their regions
-//               with the current MouseWatcherGroup.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization of CullTraverser for use within the pgui system.  It
+ * is substituted in for the normal CullTraverser by the PGTop node.  Its
+ * purpose is to carry additional data through the traversal so that PGItems can
+ * know how to register their regions with the current MouseWatcherGroup.
+ */
 class EXPCL_PANDA_PGUI PGCullTraverser : public CullTraverser {
 public:
   INLINE PGCullTraverser(PGTop *top, CullTraverser *trav);
@@ -56,6 +53,3 @@ private:
 #include "pgCullTraverser.I"
 
 #endif
-
-
-  

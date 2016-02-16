@@ -18,12 +18,10 @@
 
 #include "eggFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTrans
-// Description : A program to read an egg file and write an equivalent
-//               egg file, possibly performing some minor operations
-//               along the way.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an egg file and write an equivalent egg file, possibly
+ * performing some minor operations along the way.
+ */
 class EggTrans : public EggFilter {
 public:
   EggTrans();
@@ -40,4 +38,3 @@ public:
 };
 
 #endif
-

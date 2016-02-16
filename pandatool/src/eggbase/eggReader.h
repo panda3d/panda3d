@@ -21,18 +21,17 @@
 
 class PNMFileType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggReader
-// Description : This is the base class for a program that reads egg
-//               files, but doesn't write an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a program that reads egg files, but doesn't write
+ * an egg file.
+ */
 class EggReader : virtual public EggSingleBase {
 public:
   EggReader();
 
   void add_texture_options();
   void add_delod_options(double default_delod = -1.0);
-  
+
   virtual EggReader *as_reader();
   virtual void pre_process_egg_file();
 
@@ -59,5 +58,3 @@ private:
 };
 
 #endif
-
-

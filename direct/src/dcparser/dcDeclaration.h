@@ -19,16 +19,13 @@
 class DCClass;
 class DCSwitch;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCDeclaration
-// Description : This is a common interface for a declaration in a DC
-//               file.  Currently, this is either a class or a typedef
-//               declaration (import declarations are still collected
-//               together at the top, and don't inherit from this
-//               object).  Its only purpose is so that classes and
-//               typedefs can be stored in one list together so they
-//               can be ordered correctly on output.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a common interface for a declaration in a DC file.  Currently, this
+ * is either a class or a typedef declaration (import declarations are still
+ * collected together at the top, and don't inherit from this object).  Its only
+ * purpose is so that classes and typedefs can be stored in one list together so
+ * they can be ordered correctly on output.
+ */
 class EXPCL_DIRECT DCDeclaration {
 public:
   virtual ~DCDeclaration();
@@ -53,4 +50,3 @@ INLINE ostream &operator << (ostream &out, const DCDeclaration &decl) {
 }
 
 #endif
-

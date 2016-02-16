@@ -14,15 +14,12 @@
 #include "physxWheelDesc.h"
 
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelDesc::set_wheel_radius
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxWheelDesc::
 set_wheel_radius(float wheelRadius) {
 
   _wheelRadius = wheelRadius;
 }
 */
-

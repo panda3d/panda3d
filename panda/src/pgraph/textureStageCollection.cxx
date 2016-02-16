@@ -17,41 +17,33 @@
 #include "indirectLess.h"
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureStageCollection::
 TextureStageCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureStageCollection::
 TextureStageCollection(const TextureStageCollection &copy) :
   _texture_stages(copy._texture_stages)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextureStageCollection::
 operator = (const TextureStageCollection &copy) {
   _texture_stages = copy._texture_stages;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::add_texture_stage
-//       Access: Published
-//  Description: Adds a new TextureStage to the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new TextureStage to the collection.
+ */
 void TextureStageCollection::
 add_texture_stage(TextureStage *node_texture_stage) {
   // If the pointer to our internal array is shared by any other
@@ -68,13 +60,10 @@ add_texture_stage(TextureStage *node_texture_stage) {
   _texture_stages.push_back(node_texture_stage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::remove_texture_stage
-//       Access: Published
-//  Description: Removes the indicated TextureStage from the collection.
-//               Returns true if the texture_stage was removed, false if it was
-//               not a member of the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated TextureStage from the collection.  Returns true if the
+ * texture_stage was removed, false if it was not a member of the collection.
+ */
 bool TextureStageCollection::
 remove_texture_stage(TextureStage *node_texture_stage) {
   int texture_stage_index = -1;
@@ -104,14 +93,11 @@ remove_texture_stage(TextureStage *node_texture_stage) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::add_texture_stages_from
-//       Access: Published
-//  Description: Adds all the TextureStages indicated in the other
-//               collection to this texture_stage.  The other texture_stages are simply
-//               appended to the end of the texture_stages in this list;
-//               duplicates are not automatically removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all the TextureStages indicated in the other collection to this
+ * texture_stage.  The other texture_stages are simply appended to the end of
+ * the texture_stages in this list; duplicates are not automatically removed.
+ */
 void TextureStageCollection::
 add_texture_stages_from(const TextureStageCollection &other) {
   int other_num_texture_stages = other.get_num_texture_stages();
@@ -121,12 +107,10 @@ add_texture_stages_from(const TextureStageCollection &other) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::remove_texture_stages_from
-//       Access: Published
-//  Description: Removes from this collection all of the TextureStages
-//               listed in the other collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes from this collection all of the TextureStages listed in the other
+ * collection.
+ */
 void TextureStageCollection::
 remove_texture_stages_from(const TextureStageCollection &other) {
   TextureStages new_texture_stages;
@@ -140,14 +124,11 @@ remove_texture_stages_from(const TextureStageCollection &other) {
   _texture_stages = new_texture_stages;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::remove_duplicate_texture_stages
-//       Access: Published
-//  Description: Removes any duplicate entries of the same TextureStages
-//               on this collection.  If a TextureStage appears multiple
-//               times, the first appearance is retained; subsequent
-//               appearances are removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any duplicate entries of the same TextureStages on this collection.
+ * If a TextureStage appears multiple times, the first appearance is retained;
+ * subsequent appearances are removed.
+ */
 void TextureStageCollection::
 remove_duplicate_texture_stages() {
   TextureStages new_texture_stages;
@@ -169,12 +150,10 @@ remove_duplicate_texture_stages() {
   _texture_stages = new_texture_stages;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::has_texture_stage
-//       Access: Published
-//  Description: Returns true if the indicated TextureStage appears in
-//               this collection, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated TextureStage appears in this collection, false
+ * otherwise.
+ */
 bool TextureStageCollection::
 has_texture_stage(TextureStage *texture_stage) const {
   for (int i = 0; i < get_num_texture_stages(); i++) {
@@ -185,23 +164,18 @@ has_texture_stage(TextureStage *texture_stage) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::clear
-//       Access: Published
-//  Description: Removes all TextureStages from the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all TextureStages from the collection.
+ */
 void TextureStageCollection::
 clear() {
   _texture_stages.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::find_texture_stage
-//       Access: Published
-//  Description: Returns the texture_stage in the collection with the
-//               indicated name, if any, or NULL if no texture_stage has
-//               that name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the texture_stage in the collection with the indicated name, if any,
+ * or NULL if no texture_stage has that name.
+ */
 TextureStage *TextureStageCollection::
 find_texture_stage(const string &name) const {
   int num_texture_stages = get_num_texture_stages();
@@ -214,21 +188,17 @@ find_texture_stage(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::get_num_texture_stages
-//       Access: Published
-//  Description: Returns the number of TextureStages in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of TextureStages in the collection.
+ */
 int TextureStageCollection::
 get_num_texture_stages() const {
   return _texture_stages.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::get_texture_stage
-//       Access: Published
-//  Description: Returns the nth TextureStage in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth TextureStage in the collection.
+ */
 TextureStage *TextureStageCollection::
 get_texture_stage(int index) const {
   nassertr(index >= 0 && index < (int)_texture_stages.size(), NULL);
@@ -236,13 +206,10 @@ get_texture_stage(int index) const {
   return _texture_stages[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::operator []
-//       Access: Published
-//  Description: Returns the nth TextureStage in the collection.  This is
-//               the same as get_texture_stage(), but it may be a more
-//               convenient way to access it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth TextureStage in the collection.  This is the same as
+ * get_texture_stage(), but it may be a more convenient way to access it.
+ */
 TextureStage *TextureStageCollection::
 operator [] (int index) const {
   nassertr(index >= 0 && index < (int)_texture_stages.size(), NULL);
@@ -250,36 +217,29 @@ operator [] (int index) const {
   return _texture_stages[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::size
-//       Access: Published
-//  Description: Returns the number of texture stages in the
-//               collection.  This is the same thing as
-//               get_num_texture_stages().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of texture stages in the collection.  This is the same
+ * thing as get_num_texture_stages().
+ */
 int TextureStageCollection::
 size() const {
   return _texture_stages.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::sort
-//       Access: Published
-//  Description: Sorts the TextureStages in this collection into order
-//               by TextureStage::sort(), from lowest to highest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts the TextureStages in this collection into order by
+ * TextureStage::sort(), from lowest to highest.
+ */
 void TextureStageCollection::
 sort() {
   ::sort(_texture_stages.begin(), _texture_stages.end(),
          CompareTextureStageSort());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::output
-//       Access: Published
-//  Description: Writes a brief one-line description of the
-//               TextureStageCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief one-line description of the TextureStageCollection to the
+ * indicated output stream.
+ */
 void TextureStageCollection::
 output(ostream &out) const {
   if (get_num_texture_stages() == 1) {
@@ -289,12 +249,10 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureStageCollection::write
-//       Access: Published
-//  Description: Writes a complete multi-line description of the
-//               TextureStageCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a complete multi-line description of the TextureStageCollection to the
+ * indicated output stream.
+ */
 void TextureStageCollection::
 write(ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_texture_stages(); i++) {

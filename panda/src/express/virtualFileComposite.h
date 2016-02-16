@@ -18,13 +18,11 @@
 
 #include "virtualFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileComposite
-// Description : A composite directory within the VirtualFileSystem:
-//               this maps to more than one directory on different
-//               mount points.  The resulting directory appears to be
-//               the union of all the individual simple directories.
-////////////////////////////////////////////////////////////////////
+/**
+ * A composite directory within the VirtualFileSystem: this maps to more than
+ * one directory on different mount points.  The resulting directory appears to
+ * be the union of all the individual simple directories.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileComposite : public VirtualFile {
 public:
   INLINE VirtualFileComposite(VirtualFileSystem *file_system,
@@ -39,7 +37,7 @@ public:
   virtual bool is_directory() const;
 
 protected:
-  virtual bool scan_local_directory(VirtualFileList *file_list, 
+  virtual bool scan_local_directory(VirtualFileList *file_list,
                                     const ov_set<string> &mount_points) const;
 
 private:

@@ -11,23 +11,18 @@
  * @date 2002-08-03
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileMountMultifile::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VirtualFileMountMultifile::
 VirtualFileMountMultifile(Multifile *multifile) :
   _multifile(multifile)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileMountMultifile::get_multifile
-//       Access: Public
-//  Description: Returns the Multifile pointer that this mount object
-//               is based on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Multifile pointer that this mount object is based on.
+ */
 INLINE Multifile *VirtualFileMountMultifile::
 get_multifile() const {
   return _multifile;

@@ -18,20 +18,18 @@
 
 #include <string.h>  // For memcpy, memcmp
 
-////////////////////////////////////////////////////////////////////
-//       Class : WindowsGuid
-// Description : This is an implementation of the Windows GUID object,
-//               used everywhere as a world-unique identifier for
-//               anything and everything.  In particular, it's used in
-//               the X file format to identify standard templates.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an implementation of the Windows GUID object, used everywhere as a
+ * world-unique identifier for anything and everything.  In particular, it's
+ * used in the X file format to identify standard templates.
+ */
 class WindowsGuid {
 public:
   INLINE WindowsGuid();
-  INLINE WindowsGuid(unsigned long data1, 
+  INLINE WindowsGuid(unsigned long data1,
                      unsigned short data2, unsigned short data3,
-                     unsigned char b1, unsigned char b2, unsigned char b3, 
-                     unsigned char b4, unsigned char b5, unsigned char b6, 
+                     unsigned char b1, unsigned char b2, unsigned char b3,
+                     unsigned char b4, unsigned char b5, unsigned char b6,
                      unsigned char b7, unsigned char b8);
   INLINE WindowsGuid(const WindowsGuid &copy);
   INLINE void operator = (const WindowsGuid &copy);
@@ -58,4 +56,3 @@ INLINE ostream &operator << (ostream &out, const WindowsGuid &guid);
 #include "windowsGuid.I"
 
 #endif
-

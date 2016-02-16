@@ -23,11 +23,9 @@
 
 TypeHandle TinySDLGraphicsPipe::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TinySDLGraphicsPipe::
 TinySDLGraphicsPipe() {
   _is_valid = true;
@@ -39,11 +37,9 @@ TinySDLGraphicsPipe() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TinySDLGraphicsPipe::
 ~TinySDLGraphicsPipe() {
   if (SDL_WasInit(SDL_INIT_VIDEO)) {
@@ -53,38 +49,29 @@ TinySDLGraphicsPipe::
   SDL_Quit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to choose
+ * between several possible GraphicsPipes available on a particular platform, so
+ * the name should be meaningful and unique for a given platform.
+ */
 string TinySDLGraphicsPipe::
 get_interface_name() const {
   return "TinyPanda";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               TinySDLGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the user
+ * to make a default TinySDLGraphicsPipe.
+ */
 PT(GraphicsPipe) TinySDLGraphicsPipe::
 pipe_constructor() {
   return new TinySDLGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) TinySDLGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -119,7 +106,7 @@ make_output(const string &name,
     return new TinySDLGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                      flags, gsg, host);
   }
-  
+
   // Nothing else left to try.
   return NULL;
 }

@@ -11,10 +11,9 @@
  * @date 2000-03-08
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LPoint2
-// Description : This is a two-component point in space.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a two-component point in space.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LPoint2) : public FLOATNAME(LVecBase2) {
 PUBLISHED:
 

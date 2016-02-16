@@ -24,12 +24,10 @@ class PNMImage;
 class PNMReader;
 class PNMWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PfmFile
-// Description : Defines a pfm file, a 2-d table of floating-point
-//               numbers, either 3-component or 1-component, or with a
-//               special extension, 2- or 4-component.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a pfm file, a 2-d table of floating-point numbers, either 3-component
+ * or 1-component, or with a special extension, 2- or 4-component.
+ */
 class EXPCL_PANDA_PNMIMAGE PfmFile : public PNMImageHeader {
 PUBLISHED:
   PfmFile();

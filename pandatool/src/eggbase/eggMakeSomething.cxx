@@ -13,11 +13,9 @@
 
 #include "eggMakeSomething.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeSomething::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMakeSomething::
 EggMakeSomething() :
   EggWriter(true, true)
@@ -25,4 +23,3 @@ EggMakeSomething() :
   add_normals_options();
   add_transform_options();
 }
-

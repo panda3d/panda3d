@@ -11,12 +11,9 @@
  * @date 2000-06-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ProgramBase::show_text
-//       Access: Public
-//  Description: Formats the indicated text to stderr with the known
-//               _terminal_width.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the indicated text to stderr with the known _terminal_width.
+ */
 INLINE void ProgramBase::
 show_text(const string &text) {
   show_text("", 0, text);

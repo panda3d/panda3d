@@ -11,45 +11,36 @@
  * @date 2009-12-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConstraintDominance::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxConstraintDominance::
 PhysxConstraintDominance(float d0, float d1) : _dominance(d0, d1) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConstraintDominance::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxConstraintDominance::
 ~PhysxConstraintDominance() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConstraintDominance::get_dominance
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE NxConstraintDominance PhysxConstraintDominance::
 get_dominance() const {
 
   return _dominance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConstraintDominance::set_dominance
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxConstraintDominance::
 set_dominance(NxConstraintDominance value) {
 
   _dominance = value;
 }
-

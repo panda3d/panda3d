@@ -12,4 +12,3 @@
  */
 
 #include "hashGeneratorBase.h"
-

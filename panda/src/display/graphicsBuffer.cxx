@@ -15,13 +15,10 @@
 
 TypeHandle GraphicsBuffer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::Constructor
-//       Access: Protected
-//  Description: Normally, the GraphicsBuffer constructor is not
-//               called directly; these are created instead via the
-//               GraphicsEngine::make_buffer() function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normally, the GraphicsBuffer constructor is not called directly; these are
+ * created instead via the GraphicsEngine::make_buffer() function.
+ */
 GraphicsBuffer::
 GraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                const string &name,
@@ -44,24 +41,19 @@ GraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   _open_request = OR_none;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsBuffer::
 ~GraphicsBuffer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::set_size
-//       Access: Public, Virtual
-//  Description: This is called by the GraphicsEngine to request that
-//               the buffer resize itself.  Although calls to get the
-//               size will return the new value, much of the actual
-//               resizing work doesn't take place until the next
-//               begin_frame.  Not all buffers are resizeable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GraphicsEngine to request that the buffer resize
+ * itself.  Although calls to get the size will return the new value, much of
+ * the actual resizing work doesn't take place until the next begin_frame.  Not
+ * all buffers are resizeable.
+ */
 void GraphicsBuffer::
 set_size(int x, int y) {
   if ((_creation_flags & GraphicsPipe::BF_resizeable) == 0) {
@@ -71,55 +63,40 @@ set_size(int x, int y) {
   set_size_and_recalc(x, y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::request_open
-//       Access: Public, Virtual
-//  Description: This is called by the GraphicsEngine to request that
-//               the buffer (or whatever) open itself or, in general,
-//               make itself valid, at the next call to
-//               process_events().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GraphicsEngine to request that the buffer (or whatever)
+ * open itself or, in general, make itself valid, at the next call to
+ * process_events().
+ */
 void GraphicsBuffer::
 request_open() {
   _open_request = OR_open;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::request_close
-//       Access: Public, Virtual
-//  Description: This is called by the GraphicsEngine to request that
-//               the buffer (or whatever) close itself or, in general,
-//               make itself invalid, at the next call to
-//               process_events().  By that time we promise the gsg
-//               pointer will be cleared.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the GraphicsEngine to request that the buffer (or whatever)
+ * close itself or, in general, make itself invalid, at the next call to
+ * process_events().  By that time we promise the gsg pointer will be cleared.
+ */
 void GraphicsBuffer::
 request_close() {
   _open_request = OR_none;
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::set_close_now
-//       Access: Public, Virtual
-//  Description: This is called by the GraphicsEngine to insist that
-//               the buffer be closed immediately.  This is only
-//               called from the buffer thread.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * This is called by the GraphicsEngine to insist that the buffer be closed
+ * immediately.  This is only called from the buffer thread.
+ */
 void GraphicsBuffer::
 set_close_now() {
   _open_request = OR_none;
   close_buffer();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::process_events
-//       Access: Public, Virtual
-//  Description: Honor any requests recently made via request_open()
-//               or request_close().
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Honor any requests recently made via request_open() or request_close().  This
+ * function is called only within the window thread.
+ */
 void GraphicsBuffer::
 process_events() {
   // Save the current request and reset it immediately, in case we end
@@ -144,25 +121,19 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::close_buffer
-//       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the buffer right now.  Called from the window thread.
+ */
 void GraphicsBuffer::
 close_buffer() {
   display_cat.info()
     << "Closing " << get_type() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsBuffer::open_buffer
-//       Access: Protected, Virtual
-//  Description: Opens the buffer right now.  Called from the window
-//               thread.  Returns true if the buffer is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the buffer right now.  Called from the window thread.  Returns true if
+ * the buffer is successfully opened, or false if there was a problem.
+ */
 bool GraphicsBuffer::
 open_buffer() {
   return false;

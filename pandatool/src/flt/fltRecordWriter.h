@@ -24,11 +24,10 @@
 
 class FltHeader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltRecordWriter
-// Description : This class writes a sequence of FltRecords to an
-//               ostream, handling opcode and size counts properly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class writes a sequence of FltRecords to an ostream, handling opcode and
+ * size counts properly.
+ */
 class FltRecordWriter {
 public:
   FltRecordWriter(ostream &out);
@@ -56,5 +55,3 @@ private:
 };
 
 #endif
-
-

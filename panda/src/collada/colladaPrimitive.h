@@ -31,11 +31,10 @@ class domTriangles;
 class domTrifans;
 class domTristrips;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColladaPrimitive
-// Description : Class that deals with COLLADA primitive structures,
-//               such as <triangles> and <polylist>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class that deals with COLLADA primitive structures, such as <triangles> and
+ * <polylist>.
+ */
 class ColladaPrimitive : public ReferenceCount {
 public:
   static ColladaPrimitive *from_dom(domLines &lines);

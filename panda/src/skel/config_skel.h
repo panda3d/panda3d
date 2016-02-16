@@ -27,5 +27,3 @@ extern ConfigVariableInt    skel_sample_config_variable;
 extern EXPCL_PANDASKEL void init_libskel();
 
 #endif
-
-

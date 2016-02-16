@@ -11,32 +11,26 @@
  * @date 2009-09-16
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxShape::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxShape::
 PhysxShape() : PhysxObject() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxShape::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxShape::
 ls() const {
 
   ls(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxShape::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxShape::
 ls(ostream &out, int indent_level) const {
 
@@ -44,4 +38,3 @@ ls(ostream &out, int indent_level) const {
                             << " " << _name
                             << " (at 0x" << this << ")\n";
 }
-

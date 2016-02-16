@@ -20,11 +20,9 @@
 #include <stdio.h>   // for sprintf()
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: pm_message
-//  Description: Outputs the given printf-style message to the user
-//               and returns.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the given printf-style message to the user and returns.
+ */
 void
 pm_message(const char *format, ...) {
   va_list ap;
@@ -45,12 +43,10 @@ pm_message(const char *format, ...) {
   va_end(ap);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: pm_error
-//  Description: Outputs the given printf-style message to the user
-//               and terminates messily.  Minimize use of this
-//               function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs the given printf-style message to the user and terminates messily.
+ * Minimize use of this function.
+ */
 void
 pm_error(const char *format, ...) {
   va_list ap;
@@ -75,11 +71,9 @@ pm_error(const char *format, ...) {
   exit(1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: pm_maxvaltobits
-//  Description: Returns the number of bits sufficient to hold the
-//               indicated maxval value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bits sufficient to hold the indicated maxval value.
+ */
 int
 pm_maxvaltobits(int maxval) {
   int bits = 1;
@@ -90,29 +84,26 @@ pm_maxvaltobits(int maxval) {
   return bits;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: pm_bitstomaxval
-//  Description: Returns the highest maxval that can be represented in
-//               the indicated number of bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the highest maxval that can be represented in the indicated number of
+ * bits.
+ */
 int
 pm_bitstomaxval(int bits) {
   return ( 1 << bits ) - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: pm_allocrow
-//  Description: Allocates a row of cols * size bytes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a row of cols * size bytes.
+ */
 char *
 pm_allocrow(int cols, int size) {
   return (char *)PANDA_MALLOC_ARRAY(cols * size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: pm_freerow
-//  Description: Frees the row previously allocated withm pm_allocrow().
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the row previously allocated withm pm_allocrow().
+ */
 void
 pm_freerow(char *itrow) {
   PANDA_FREE_ARRAY(itrow);

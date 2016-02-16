@@ -22,11 +22,10 @@
 #include <iostream>
 #include <fstream>
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextStats
-// Description : A simple, scrolling-text stats server.  Guaranteed to
-//               compile on every platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple, scrolling-text stats server.  Guaranteed to compile on every
+ * platform.
+ */
 class TextStats : public ProgramBase, public PStatServer {
 public:
   TextStats();
@@ -35,10 +34,10 @@ public:
 
   void run();
 
-private:  
+private:
   int _port;
   bool _show_raw_data;
-  
+
   //[PECI]
   bool _got_outputFileName;
   string _outputFileName;
@@ -46,4 +45,3 @@ private:
 };
 
 #endif
-

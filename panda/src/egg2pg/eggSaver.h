@@ -44,14 +44,12 @@ class Texture;
 class CharacterJoint;
 class EggVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSaver
-// Description : Converts the scene graph beginning at the indicated
-//               node into an EggData structure, for writing to an egg
-//               file.  The conversion is not necessarily complete
-//               (some Panda or egg constructs are not fully supported
-//               by this class).
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the scene graph beginning at the indicated node into an EggData
+ * structure, for writing to an egg file.  The conversion is not necessarily
+ * complete (some Panda or egg constructs are not fully supported by this
+ * class).
+ */
 class EggSaver {
 PUBLISHED:
   EggSaver(EggData *data = NULL);
@@ -78,11 +76,11 @@ private:
   void convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *jointMap);
   void convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
                         EggGroupNode *egg_parent, bool has_decal);
-  void convert_geom_node(GeomNode *node, const WorkingNodePath &node_path, 
+  void convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
                          EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap=NULL);
   void convert_primitive(const GeomVertexData *vertex_data,
-                         const GeomPrimitive *primitive, 
-                         const RenderState *net_state, 
+                         const GeomPrimitive *primitive,
+                         const RenderState *net_state,
                          const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                          CharacterJointMap *jointMap);
 

@@ -19,12 +19,10 @@
 
 class CLP(GraphicsStateGuardian);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLSamplerContext
-// Description : This class represents a sampler object, which
-//               contains a set of sampler parameters used when
-//               sampling a texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class represents a sampler object, which contains a set of sampler
+ * parameters used when sampling a texture.
+ */
 class EXPCL_GL CLP(SamplerContext) : public SamplerContext {
 public:
   INLINE CLP(SamplerContext)(CLP(GraphicsStateGuardian) *glgsg,

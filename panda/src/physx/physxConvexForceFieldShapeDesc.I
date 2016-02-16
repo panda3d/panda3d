@@ -11,32 +11,26 @@
  * @date 2009-11-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShapeDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxConvexForceFieldShapeDesc::
 PhysxConvexForceFieldShapeDesc() : PhysxForceFieldShapeDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShapeDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxConvexForceFieldShapeDesc::
 ~PhysxConvexForceFieldShapeDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShapeDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxConvexForceFieldShapeDesc::
 set_to_default() {
 
@@ -44,14 +38,11 @@ set_to_default() {
   set_name("");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShapeDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxConvexForceFieldShapeDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

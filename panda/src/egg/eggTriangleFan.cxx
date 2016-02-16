@@ -19,22 +19,17 @@
 TypeHandle EggTriangleFan::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleFan::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggTriangleFan::
 ~EggTriangleFan() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleFan::write
-//       Access: Published, Virtual
-//  Description: Writes the triangle fan to the indicated output
-//               stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the triangle fan to the indicated output stream in Egg format.
+ */
 void EggTriangleFan::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<TriangleFan>");
@@ -42,19 +37,13 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleFan::apply_first_attribute
-//       Access: Published, Virtual
-//  Description: Sets the first vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               DirectX convention of storing flat-shaded properties
-//               on the first vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may introduce redundant vertices to the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the first vertex of the triangle (or each component) to the primitive
+ * normal and/or color, if the primitive is flat-shaded.  This reflects the
+ * DirectX convention of storing flat-shaded properties on the first vertex,
+ * although it is not usually a convention in Egg.  This may introduce redundant
+ * vertices to the vertex pool.
+ */
 void EggTriangleFan::
 apply_first_attribute() {
   // In the case of a triangle fan, the first vertex of the fan is the
@@ -66,34 +55,23 @@ apply_first_attribute() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleFan::get_num_lead_vertices
-//       Access: Protected, Virtual
-//  Description: Returns the number of initial vertices that are not
-//               used in defining any component; the first component
-//               is defined by the (n + 1)th vertex, and then a new
-//               component at each vertex thereafter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of initial vertices that are not used in defining any
+ * component; the first component is defined by the (n + 1)th vertex, and then a
+ * new component at each vertex thereafter.
+ */
 int EggTriangleFan::
 get_num_lead_vertices() const {
   return 2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleFan::triangulate_poly
-//       Access: Protected, Virtual
-//  Description: Fills the container up with EggPolygons that
-//               represent the component triangles of this triangle
-//               fan.
-//
-//               It is assumed that the EggTriangleFan is not
-//               already a child of any other group when this function
-//               is called.
-//
-//               Returns true if the triangulation is successful, or
-//               false if there was some error (in which case the
-//               container may contain some partial triangulation).
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the container up with EggPolygons that represent the component
+ * triangles of this triangle fan.  It is assumed that the EggTriangleFan is not
+ * already a child of any other group when this function is called.  Returns
+ * true if the triangulation is successful, or false if there was some error (in
+ * which case the container may contain some partial triangulation).
+ */
 bool EggTriangleFan::
 do_triangulate(EggGroupNode *container) const {
   if (size() < 3) {

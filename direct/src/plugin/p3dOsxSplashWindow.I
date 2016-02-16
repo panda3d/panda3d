@@ -11,11 +11,9 @@
  * @date 2009-07-16
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::OsxImageData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline P3DOsxSplashWindow::OsxImageData::
 OsxImageData() {
   _raw_data = NULL;
@@ -25,13 +23,10 @@ OsxImageData() {
   _data = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::OsxImageData::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline P3DOsxSplashWindow::OsxImageData::
 ~OsxImageData() {
   dump_image();
 }
-

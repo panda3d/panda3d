@@ -22,18 +22,14 @@
 
 class GeomVertexData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RopeNode
-// Description : This class draws a visible representation of the
-//               NURBS curve stored in its NurbsCurveEvaluator.  It
-//               automatically recomputes the curve every frame.
-//
-//               This is not related to NurbsCurve, CubicCurveseg or
-//               any of the ParametricCurve-derived objects in this
-//               module.  It is a completely parallel implementation
-//               of NURBS curves, and will probably eventually replace
-//               the whole ParametricCurve class hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class draws a visible representation of the NURBS curve stored in its
+ * NurbsCurveEvaluator.  It automatically recomputes the curve every frame.
+ * This is not related to NurbsCurve, CubicCurveseg or any of the
+ * ParametricCurve-derived objects in this module.  It is a completely parallel
+ * implementation of NURBS curves, and will probably eventually replace the
+ * whole ParametricCurve class hierarchy.
+ */
 class EXPCL_PANDA_PARAMETRICS RopeNode : public PandaNode {
 PUBLISHED:
   RopeNode(const string &name);
@@ -151,15 +147,15 @@ private:
   CPT(GeomVertexFormat) get_format(bool support_normals) const;
 
   PT(BoundingVolume) do_recompute_bounds(const NodePath &rel_to,
-                                         int pipeline_stage, 
+                                         int pipeline_stage,
                                          Thread *current_thread) const;
-  void render_thread(CullTraverser *trav, CullTraverserData &data, 
+  void render_thread(CullTraverser *trav, CullTraverserData &data,
                      NurbsCurveResult *result) const;
-  void render_tape(CullTraverser *trav, CullTraverserData &data, 
+  void render_tape(CullTraverser *trav, CullTraverserData &data,
                    NurbsCurveResult *result) const;
-  void render_billboard(CullTraverser *trav, CullTraverserData &data, 
+  void render_billboard(CullTraverser *trav, CullTraverserData &data,
                         NurbsCurveResult *result) const;
-  void render_tube(CullTraverser *trav, CullTraverserData &data, 
+  void render_tube(CullTraverser *trav, CullTraverserData &data,
                    NurbsCurveResult *result) const;
 
   class CurveVertex {

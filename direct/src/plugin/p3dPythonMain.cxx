@@ -61,12 +61,12 @@ parse_unquoted_arg(char *&p) {
   return strdup(result.c_str());
 }
 
-int WINAPI 
+int WINAPI
 WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   char *command_line = GetCommandLine();
 
   vector<char *> argv;
-  
+
   char *p = command_line;
   while (*p != '\0') {
     if (*p == '"') {
@@ -88,13 +88,11 @@ WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 #endif  // NON_CONSOLE
 
-////////////////////////////////////////////////////////////////////
-//     Function: main
-//  Description: This is a trivial main() function that invokes
-//               P3DPythonRun.  It's used to build p3dpython.exe,
-//               which is the preferred way to run Python in a child
-//               process, as a separate executable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a trivial main() function that invokes P3DPythonRun.  It's used to
+ * build p3dpython.exe, which is the preferred way to run Python in a child
+ * process, as a separate executable.
+ */
 int
 main(int argc, char *argv[]) {
   const char *program_name = argv[0];

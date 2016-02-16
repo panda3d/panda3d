@@ -20,13 +20,11 @@
 #include "nativeNumericData.h"
 #include "reversedNumericData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BigEndian
-// Description : BigEndian is a special class that automatically
-//               reverses the byte-order of numeric values for
-//               little-endian machines, and passes them through
-//               unchanged for big-endian machines.
-////////////////////////////////////////////////////////////////////
+/**
+ * BigEndian is a special class that automatically reverses the byte-order of
+ * numeric values for little-endian machines, and passes them through unchanged
+ * for big-endian machines.
+ */
 
 #ifdef WORDS_BIGENDIAN
 typedef NativeNumericData BigEndian;

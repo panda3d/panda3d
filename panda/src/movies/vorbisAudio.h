@@ -21,11 +21,10 @@
 
 class VorbisAudioCursor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VorbisAudio
-// Description : Interfaces with the libvorbisfile library to
-//               implement decoding of Ogg Vorbis audio files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interfaces with the libvorbisfile library to implement decoding of Ogg Vorbis
+ * audio files.
+ */
 class EXPCL_PANDA_MOVIES VorbisAudio : public MovieAudio {
 PUBLISHED:
   VorbisAudio(const Filename &name);
@@ -36,7 +35,7 @@ PUBLISHED:
 
 private:
   friend class VorbisAudioCursor;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

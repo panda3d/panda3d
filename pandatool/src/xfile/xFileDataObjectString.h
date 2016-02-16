@@ -17,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "xFileDataObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectString
-// Description : An string-valued data element.  This matches one
-//               string data member of a template, or a single
-//               element of an string array.
-////////////////////////////////////////////////////////////////////
+/**
+ * An string-valued data element.  This matches one string data member of a
+ * template, or a single element of an string array.
+ */
 class XFileDataObjectString : public XFileDataObject {
 public:
   XFileDataObjectString(const XFileDataDef *data_def, const string &value);
@@ -39,7 +37,7 @@ private:
   void enquote_string(ostream &out) const;
 
   string _value;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

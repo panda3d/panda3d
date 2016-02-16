@@ -11,19 +11,15 @@
  * @date 2007-10-10
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LParabola
-// Description : An abstract mathematical description of a parabola,
-//               particularly useful for describing arcs of
-//               projectiles.
-//
-//               The parabolic equation, given parametrically here, is
-//               P = At^2 + Bt + C.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract mathematical description of a parabola, particularly useful for
+ * describing arcs of projectiles.  The parabolic equation, given parametrically
+ * here, is P = At^2 + Bt + C.
+ */
 class EXPCL_PANDA_MATHUTIL FLOATNAME(LParabola) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(LParabola)();
-  INLINE_MATHUTIL FLOATNAME(LParabola)(const FLOATNAME(LVecBase3) &a, 
+  INLINE_MATHUTIL FLOATNAME(LParabola)(const FLOATNAME(LVecBase3) &a,
                                       const FLOATNAME(LVecBase3) &b,
                                       const FLOATNAME(LVecBase3) &c);
   INLINE_MATHUTIL FLOATNAME(LParabola)(const FLOATNAME(LParabola) &copy);

@@ -27,22 +27,16 @@ class NetAddress;
 class ConnectionReader;
 class ConnectionWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConnectionManager
-// Description : The primary interface to the low-level networking
-//               layer in this package.  A ConnectionManager is used
-//               to establish and destroy TCP and UDP connections.
-//               Communication on these connections, once established,
-//               is handled via ConnectionReader, ConnectionWriter,
-//               and ConnectionListener.
-//
-//               You may use this class directly if you don't care
-//               about tracking which connections have been
-//               unexpectedly closed; otherwise, you should use
-//               QueuedConnectionManager to get reports about these
-//               events (or derive your own class to handle these
-//               events properly).
-////////////////////////////////////////////////////////////////////
+/**
+ * The primary interface to the low-level networking layer in this package.  A
+ * ConnectionManager is used to establish and destroy TCP and UDP connections.
+ * Communication on these connections, once established, is handled via
+ * ConnectionReader, ConnectionWriter, and ConnectionListener.  You may use this
+ * class directly if you don't care about tracking which connections have been
+ * unexpectedly closed; otherwise, you should use QueuedConnectionManager to get
+ * reports about these events (or derive your own class to handle these events
+ * properly).
+ */
 class EXPCL_PANDA_NET ConnectionManager {
 PUBLISHED:
   ConnectionManager();
@@ -52,9 +46,9 @@ PUBLISHED:
   PT(Connection) open_UDP_connection(const string &hostname, int port, bool for_broadcast = false);
 
   BLOCKING PT(Connection) open_TCP_server_rendezvous(int port, int backlog);
-  BLOCKING PT(Connection) open_TCP_server_rendezvous(const string &hostname, 
+  BLOCKING PT(Connection) open_TCP_server_rendezvous(const string &hostname,
                                                      int port, int backlog);
-  BLOCKING PT(Connection) open_TCP_server_rendezvous(const NetAddress &address, 
+  BLOCKING PT(Connection) open_TCP_server_rendezvous(const NetAddress &address,
                                                      int backlog);
   BLOCKING PT(Connection) open_TCP_client_connection(const NetAddress &address,
                                                      int timeout_ms);
@@ -116,7 +110,7 @@ PUBLISHED:
 protected:
   void new_connection(const PT(Connection) &connection);
   virtual void flush_read_connection(Connection *connection);
-  virtual void connection_reset(const PT(Connection) &connection, 
+  virtual void connection_reset(const PT(Connection) &connection,
                                 bool okflag);
 
   void add_reader(ConnectionReader *reader);

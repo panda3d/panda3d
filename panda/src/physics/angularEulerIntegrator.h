@@ -16,16 +16,15 @@
 
 #include "angularIntegrator.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AngularEulerIntegrator
-// Description : Performs Euler integration on a vector of
-//               physically modelable objects given a quantum dt.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs Euler integration on a vector of physically modelable objects given
+ * a quantum dt.
+ */
 class EXPCL_PANDAPHYSICS AngularEulerIntegrator : public AngularIntegrator {
 PUBLISHED:
   AngularEulerIntegrator();
   virtual ~AngularEulerIntegrator();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

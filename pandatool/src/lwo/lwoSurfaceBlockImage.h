@@ -18,12 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockImage
-// Description : Specifies the particular image that is being applied
-//               as a texture.  This references a recently-defined
-//               CLIP image by index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the particular image that is being applied as a texture.  This
+ * references a recently-defined CLIP image by index number.
+ */
 class LwoSurfaceBlockImage : public LwoChunk {
 public:
   int _index;
@@ -51,5 +49,3 @@ private:
 };
 
 #endif
-
-

@@ -30,15 +30,11 @@
 #include "cppTypedefType.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::resolve_type
-//       Access: Public, Static
-//  Description: A horrible hack around a CPPParser bug.  We don't
-//               trust the CPPType pointer we were given; instead, we
-//               ask CPPParser to parse a new type of the same name.
-//               This has a better chance of fully resolving
-//               templates.
-////////////////////////////////////////////////////////////////////
+/**
+ * A horrible hack around a CPPParser bug.  We don't trust the CPPType pointer
+ * we were given; instead, we ask CPPParser to parse a new type of the same
+ * name.  This has a better chance of fully resolving templates.
+ */
 CPPType *TypeManager::
 resolve_type(CPPType *type, CPPScope *scope) {
   if (scope == (CPPScope *)NULL) {
@@ -68,13 +64,10 @@ resolve_type(CPPType *type, CPPScope *scope) {
 */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_assignable
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is something we
-//               can legitimately assign a value to, or false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is something we can legitimately assign a
+ * value to, or false otherwise.
+ */
 bool TypeManager::
 is_assignable(CPPType *type) {
   switch (type->get_subtype()) {
@@ -110,13 +103,10 @@ is_assignable(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_reference
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is some kind of a
-//               reference or const reference type to something
-//               useful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is some kind of a reference or const
+ * reference type to something useful, false otherwise.
+ */
 bool TypeManager::
 is_reference(CPPType *type) {
   switch (type->get_subtype()) {
@@ -134,13 +124,10 @@ is_reference(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_ref_to_anything
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is some kind of a
-//               reference or const reference type at all, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is some kind of a reference or const
+ * reference type at all, false otherwise.
+ */
 bool TypeManager::
 is_ref_to_anything(CPPType *type) {
   switch (type->get_subtype()) {
@@ -158,12 +145,10 @@ is_ref_to_anything(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_ref_to_anything
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               reference to something, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const reference to something, false
+ * otherwise.
+ */
 bool TypeManager::
 is_const_ref_to_anything(CPPType *type) {
   switch (type->get_subtype()) {
@@ -181,12 +166,10 @@ is_const_ref_to_anything(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_pointer_to_anything
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               pointer to something, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const pointer to something, false
+ * otherwise.
+ */
 bool TypeManager::
 is_const_pointer_to_anything(CPPType *type) {
   switch (type->get_subtype()) {
@@ -204,12 +187,10 @@ is_const_pointer_to_anything(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_pointer_or_ref
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a non-const
-//               pointer or reference to something, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a non-const pointer or reference to
+ * something, false otherwise.
+ */
 bool TypeManager::
 is_const_pointer_or_ref(CPPType *type) {
   switch (type->get_subtype()) {
@@ -237,12 +218,10 @@ is_const_pointer_or_ref(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_non_const_pointer_or_ref
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a non-const
-//               pointer or reference to something, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a non-const pointer or reference to
+ * something, false otherwise.
+ */
 bool TypeManager::
 is_non_const_pointer_or_ref(CPPType *type) {
   switch (type->get_subtype()) {
@@ -270,12 +249,10 @@ is_non_const_pointer_or_ref(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is some kind of a
-//               pointer or const pointer type, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is some kind of a pointer or const pointer
+ * type, false otherwise.
+ */
 bool TypeManager::
 is_pointer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -293,12 +270,10 @@ is_pointer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is some kind of a
-//               const type, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is some kind of a const type, false
+ * otherwise.
+ */
 bool TypeManager::
 is_const(CPPType *type) {
   switch (type->get_subtype()) {
@@ -313,12 +288,10 @@ is_const(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_struct
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a concrete
-//               struct, class, or union type, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a concrete struct, class, or union
+ * type, or false otherwise.
+ */
 bool TypeManager::
 is_struct(CPPType *type) {
   switch (type->get_subtype()) {
@@ -337,12 +310,10 @@ is_struct(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_enum
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is some kind of
-//               enumerated type, const or otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is some kind of enumerated type, const or
+ * otherwise.
+ */
 bool TypeManager::
 is_enum(CPPType *type) {
   switch (type->get_subtype()) {
@@ -360,12 +331,9 @@ is_enum(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_enum
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               enumerated type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const enumerated type.
+ */
 bool TypeManager::
 is_const_enum(CPPType *type) {
   switch (type->get_subtype()) {
@@ -380,12 +348,10 @@ is_const_enum(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_ref_to_enum
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               reference to an enumerated type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const reference to an enumerated
+ * type.
+ */
 bool TypeManager::
 is_const_ref_to_enum(CPPType *type) {
   switch (type->get_subtype()) {
@@ -400,14 +366,11 @@ is_const_ref_to_enum(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_simple
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is something that
-//               a scripting language can handle directly as a
-//               concrete, like an int or float, either const or
-//               non-const.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is something that a scripting language can
+ * handle directly as a concrete, like an int or float, either const or non-
+ * const.
+ */
 bool TypeManager::
 is_simple(CPPType *type) {
   switch (type->get_subtype()) {
@@ -426,12 +389,10 @@ is_simple(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_simple
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const wrapper
-//               around some simple type like int.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const wrapper around some simple type
+ * like int.
+ */
 bool TypeManager::
 is_const_simple(CPPType *type) {
   switch (type->get_subtype()) {
@@ -446,13 +407,10 @@ is_const_simple(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_ref_to_simple
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               reference to something that a scripting language can
-//               handle directly as a concrete.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const reference to something that a
+ * scripting language can handle directly as a concrete.
+ */
 bool TypeManager::
 is_const_ref_to_simple(CPPType *type) {
   switch (type->get_subtype()) {
@@ -467,13 +425,10 @@ is_const_ref_to_simple(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_ref_to_simple
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a non-const
-//               reference to something that a scripting language can
-//               handle directly as a concrete.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a non-const reference to something that
+ * a scripting language can handle directly as a concrete.
+ */
 bool TypeManager::
 is_ref_to_simple(CPPType *type) {
   switch (type->get_subtype()) {
@@ -488,12 +443,9 @@ is_ref_to_simple(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_simple_array
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is an array of
-//               a simple type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is an array of a simple type.
+ */
 bool TypeManager::
 is_simple_array(CPPType *type) {
   switch (type->get_subtype()) {
@@ -511,13 +463,10 @@ is_simple_array(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer_to_simple
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const or
-//               a non-constant pointer to a simple type.  This could
-//               also be a reference to an array of the simple type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const or a non-constant pointer to a
+ * simple type.  This could also be a reference to an array of the simple type.
+ */
 bool TypeManager::
 is_pointer_to_simple(CPPType *type) {
   switch (type->get_subtype()) {
@@ -541,14 +490,11 @@ is_pointer_to_simple(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointable
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is something
-//               ordinary that a scripting language can handle a
-//               pointer to, e.g. a class or a structure, but not an
-//               int or a function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is something ordinary that a scripting
+ * language can handle a pointer to, e.g.  a class or a structure, but not an
+ * int or a function.
+ */
 bool TypeManager::
 is_pointable(CPPType *type) {
   switch (type->get_subtype()) {
@@ -572,12 +518,10 @@ is_pointable(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_char
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is char or const
-//               char, but not signed or unsigned char.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is char or const char, but not signed or
+ * unsigned char.
+ */
 bool TypeManager::
 is_char(CPPType *type) {
   switch (type->get_subtype()) {
@@ -604,12 +548,10 @@ is_char(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_unsigned_char
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is unsigned char,
-//               but not signed or 'plain' char.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is unsigned char, but not signed or
+ * 'plain' char.
+ */
 bool TypeManager::
 is_unsigned_char(CPPType *type) {
   switch (type->get_subtype()) {
@@ -638,12 +580,10 @@ is_unsigned_char(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_signed_char
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is signed char,
-//               but not unsigned or 'plain' char.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is signed char, but not unsigned or
+ * 'plain' char.
+ */
 bool TypeManager::
 is_signed_char(CPPType *type) {
   switch (type->get_subtype()) {
@@ -672,12 +612,9 @@ is_signed_char(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_char_pointer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is char * or const
-//               char * or some such.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is char * or const char * or some such.
+ */
 bool TypeManager::
 is_char_pointer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -695,11 +632,9 @@ is_char_pointer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_char_pointer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is const char*.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is const char*.
+ */
 bool TypeManager::
 is_const_char_pointer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -718,12 +653,9 @@ is_const_char_pointer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_unsigned_char_pointer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is unsigned char*
-//               or const unsigned char*.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is unsigned char* or const unsigned char*.
+ */
 bool TypeManager::
 is_unsigned_char_pointer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -741,12 +673,9 @@ is_unsigned_char_pointer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_unsigned_char_pointer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is
-//               const unsigned char*.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is const unsigned char*.
+ */
 bool TypeManager::
 is_const_unsigned_char_pointer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -761,12 +690,10 @@ is_const_unsigned_char_pointer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_basic_string_char
-//       Access: Public, Static
-//  Description: Returns true if the type is basic_string<char>.  This
-//               is the standard C++ string class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is basic_string<char>.  This is the standard C++
+ * string class.
+ */
 bool TypeManager::
 is_basic_string_char(CPPType *type) {
   CPPType *string_type = get_basic_string_char_type();
@@ -789,12 +716,10 @@ is_basic_string_char(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_basic_string_char
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const wrapper
-//               around basic_string<char>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const wrapper around
+ * basic_string<char>.
+ */
 bool TypeManager::
 is_const_basic_string_char(CPPType *type) {
   switch (type->get_subtype()) {
@@ -809,12 +734,10 @@ is_const_basic_string_char(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_ref_to_basic_string_char
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               reference to basic_string<char>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const reference to
+ * basic_string<char>.
+ */
 bool TypeManager::
 is_const_ref_to_basic_string_char(CPPType *type) {
   switch (type->get_subtype()) {
@@ -829,12 +752,9 @@ is_const_ref_to_basic_string_char(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_ptr_to_basic_string_char
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               pointer to basic_string<char>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const pointer to basic_string<char>.
+ */
 bool TypeManager::
 is_const_ptr_to_basic_string_char(CPPType *type) {
   switch (type->get_subtype()) {
@@ -849,12 +769,9 @@ is_const_ptr_to_basic_string_char(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_string
-//       Access: Public, Static
-//  Description: Returns true if the type is basic_string<char>, or
-//               a const reference to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is basic_string<char>, or a const reference to it.
+ */
 bool TypeManager::
 is_string(CPPType *type) {
   switch (type->get_subtype()) {
@@ -871,12 +788,10 @@ is_string(CPPType *type) {
   return is_basic_string_char(type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_wchar
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is wchar_t or const
-//               wchar_t.  We don't mind signed or unsigned wchar_t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is wchar_t or const wchar_t.  We don't
+ * mind signed or unsigned wchar_t.
+ */
 bool TypeManager::
 is_wchar(CPPType *type) {
   switch (type->get_subtype()) {
@@ -901,12 +816,10 @@ is_wchar(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_wchar_pointer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is wchar_t * or const
-//               wchar_t * or some such.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is wchar_t * or const wchar_t * or some
+ * such.
+ */
 bool TypeManager::
 is_wchar_pointer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -924,12 +837,10 @@ is_wchar_pointer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_basic_string_wchar
-//       Access: Public, Static
-//  Description: Returns true if the type is basic_string<wchar_t>.  This
-//               is the standard C++ wide string class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is basic_string<wchar_t>.  This is the standard C++
+ * wide string class.
+ */
 bool TypeManager::
 is_basic_string_wchar(CPPType *type) {
   CPPType *string_type = get_basic_string_wchar_type();
@@ -952,12 +863,10 @@ is_basic_string_wchar(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_basic_string_wchar
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const wrapper
-//               around basic_string<wchar_t>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const wrapper around
+ * basic_string<wchar_t>.
+ */
 bool TypeManager::
 is_const_basic_string_wchar(CPPType *type) {
   switch (type->get_subtype()) {
@@ -972,12 +881,10 @@ is_const_basic_string_wchar(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_ref_to_basic_string_wchar
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               reference to basic_string<wchar_t>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const reference to
+ * basic_string<wchar_t>.
+ */
 bool TypeManager::
 is_const_ref_to_basic_string_wchar(CPPType *type) {
   switch (type->get_subtype()) {
@@ -992,12 +899,10 @@ is_const_ref_to_basic_string_wchar(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_ptr_to_basic_string_wchar
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               pointer to basic_string<wchar_t>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const pointer to
+ * basic_string<wchar_t>.
+ */
 bool TypeManager::
 is_const_ptr_to_basic_string_wchar(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1012,12 +917,10 @@ is_const_ptr_to_basic_string_wchar(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_wstring
-//       Access: Public, Static
-//  Description: Returns true if the type is basic_string<wchar_t>, or
-//               a const reference to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is basic_string<wchar_t>, or a const reference to
+ * it.
+ */
 bool TypeManager::
 is_wstring(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1034,12 +937,9 @@ is_wstring(CPPType *type) {
   return is_basic_string_wchar(type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_bool
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is bool, or some
-//               trivial variant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is bool, or some trivial variant.
+ */
 bool TypeManager::
 is_bool(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1066,13 +966,10 @@ is_bool(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_integer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is one of the
-//               basic integer types: bool, char, short, int, or long,
-//               signed or unsigned, as well as enumerated types.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is one of the basic integer types: bool,
+ * char, short, int, or long, signed or unsigned, as well as enumerated types.
+ */
 bool TypeManager::
 is_integer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1107,12 +1004,10 @@ is_integer(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_unsigned_integer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is one of the
-//               basic integer types, but only the unsigned varieties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is one of the basic integer types, but
+ * only the unsigned varieties.
+ */
 bool TypeManager::
 is_unsigned_integer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1145,12 +1040,10 @@ is_unsigned_integer(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_size
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is the "size_t"
-//               type, or a const size_t, or a typedef to either.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is the "size_t" type, or a const size_t,
+ * or a typedef to either.
+ */
 bool TypeManager::
 is_size(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1171,15 +1064,11 @@ is_size(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_ssize
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is the "ssize_t"
-//               type, or a const ssize_t, or a typedef to either.
-//               ptrdiff_t and streamsize are also accepted, since
-//               they are usually also defined as the signed
-//               counterpart to size_t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is the "ssize_t" type, or a const ssize_t,
+ * or a typedef to either.  ptrdiff_t and streamsize are also accepted, since
+ * they are usually also defined as the signed counterpart to size_t.
+ */
 bool TypeManager::
 is_ssize(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1203,12 +1092,10 @@ is_ssize(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_long
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is the "long"
-//               type, whether signed or unsigned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is the "long" type, whether signed or
+ * unsigned.
+ */
 bool TypeManager::
 is_long(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1235,12 +1122,10 @@ is_long(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_short
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is the "short"
-//               type, whether signed or unsigned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is the "short" type, whether signed or
+ * unsigned.
+ */
 bool TypeManager::
 is_short(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1267,12 +1152,9 @@ is_short(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_unsigned_short
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is an unsigned
-//               "short" type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is an unsigned "short" type.
+ */
 bool TypeManager::
 is_unsigned_short(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1299,13 +1181,10 @@ is_unsigned_short(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_longlong
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is the "long long"
-//               type or larger, or at least a 64-bit integer, whether
-//               signed or unsigned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is the "long long" type or larger, or at
+ * least a 64-bit integer, whether signed or unsigned.
+ */
 bool TypeManager::
 is_longlong(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1332,13 +1211,10 @@ is_longlong(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_unsigned_longlong
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is an unsigned
-//               "long long" type or larger, or at least a 64-bit
-//               unsigned integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is an unsigned "long long" type or larger,
+ * or at least a 64-bit unsigned integer.
+ */
 bool TypeManager::
 is_unsigned_longlong(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1365,12 +1241,9 @@ is_unsigned_longlong(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_double
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is the "double"
-//               type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is the "double" type.
+ */
 bool TypeManager::
 is_double(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1396,13 +1269,10 @@ is_double(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_float
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is one of the
-//               basic floating-point types: float, double, or some
-//               similar variant.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is one of the basic floating-point types:
+ * float, double, or some similar variant.
+ */
 bool TypeManager::
 is_float(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1430,12 +1300,9 @@ is_float(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_void
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is void.  (Not
-//               void *, just void.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is void.  (Not void *, just void.)
+ */
 bool TypeManager::
 is_void(CPPType *type) {
   CPPSimpleType *simple_type = type->as_simple_type();
@@ -1448,12 +1315,10 @@ is_void(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_reference_count
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is some class that
-//               derives from ReferenceCount, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is some class that derives from
+ * ReferenceCount, or false otherwise.
+ */
 bool TypeManager::
 is_reference_count(CPPType *type) {
   CPPType *refcount_type = get_reference_count_type();
@@ -1490,12 +1355,10 @@ is_reference_count(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_reference_count_pointer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a pointer to a
-//               class that derives from ReferenceCount.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a pointer to a class that derives from
+ * ReferenceCount.
+ */
 bool TypeManager::
 is_reference_count_pointer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1513,12 +1376,10 @@ is_reference_count_pointer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer_to_base
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is some class that
-//               derives from PointerToBase, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is some class that derives from
+ * PointerToBase, or false otherwise.
+ */
 bool TypeManager::
 is_pointer_to_base(CPPType *type) {
   // We only check the simple name of the type against PointerToBase,
@@ -1559,12 +1420,10 @@ is_pointer_to_base(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_pointer_to_base
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               PointerToBase or some derivative.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const PointerToBase or some
+ * derivative.
+ */
 bool TypeManager::
 is_const_pointer_to_base(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1579,12 +1438,10 @@ is_const_pointer_to_base(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_const_ref_to_pointer_to_base
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is a const
-//               reference to a class that derives from PointerToBase.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is a const reference to a class that
+ * derives from PointerToBase.
+ */
 bool TypeManager::
 is_const_ref_to_pointer_to_base(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1602,12 +1459,9 @@ is_const_ref_to_pointer_to_base(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pair
-//       Access: Public, Static
-//  Description: Returns true if the type is pair<>, or
-//               a reference to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is pair<>, or a reference to it.
+ */
 bool TypeManager::
 is_pair(CPPType *type) {
   // We only check the simple name of the type against pair,
@@ -1634,11 +1488,9 @@ is_pair(CPPType *type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer_to_PyObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyObject *.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyObject *.
+ */
 bool TypeManager::
 is_pointer_to_PyObject(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1656,11 +1508,9 @@ is_pointer_to_PyObject(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_PyObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyObject.
+ */
 bool TypeManager::
 is_PyObject(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1685,11 +1535,9 @@ is_PyObject(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer_to_PyTypeObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyTypeObject *.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyTypeObject *.
+ */
 bool TypeManager::
 is_pointer_to_PyTypeObject(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1707,11 +1555,9 @@ is_pointer_to_PyTypeObject(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_PyTypeObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyTypeObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyTypeObject.
+ */
 bool TypeManager::
 is_PyTypeObject(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1732,11 +1578,9 @@ is_PyTypeObject(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer_to_PyStringObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyStringObject *.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyStringObject *.
+ */
 bool TypeManager::
 is_pointer_to_PyStringObject(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1751,11 +1595,9 @@ is_pointer_to_PyStringObject(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_PyStringObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyStringObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyStringObject.
+ */
 bool TypeManager::
 is_PyStringObject(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1772,11 +1614,9 @@ is_PyStringObject(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer_to_PyUnicodeObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyStringObject *.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyStringObject *.
+ */
 bool TypeManager::
 is_pointer_to_PyUnicodeObject(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1791,11 +1631,9 @@ is_pointer_to_PyUnicodeObject(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_PyUnicodeObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyUnicodeObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyUnicodeObject.
+ */
 bool TypeManager::
 is_PyUnicodeObject(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1812,11 +1650,9 @@ is_PyUnicodeObject(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer_to_Py_buffer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is Py_buffer *.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is Py_buffer *.
+ */
 bool TypeManager::
 is_pointer_to_Py_buffer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1834,11 +1670,9 @@ is_pointer_to_Py_buffer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_Py_buffer
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is Py_buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is Py_buffer.
+ */
 bool TypeManager::
 is_Py_buffer(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1857,12 +1691,10 @@ is_Py_buffer(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_handle
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is TypeHandle
-//               or a class with identical semantics like ButtonHandle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is TypeHandle or a class with identical
+ * semantics like ButtonHandle.
+ */
 bool TypeManager::
 is_handle(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1882,11 +1714,9 @@ is_handle(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_ostream
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyObject.
+ */
 bool TypeManager::is_ostream(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_const:
@@ -1903,11 +1733,9 @@ bool TypeManager::is_ostream(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_pointer_to_PyObject
-//       Access: Public, Static
-//  Description: Returns true if the indicated type is PyObject *.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated type is PyObject *.
+ */
 bool TypeManager::
 is_pointer_to_ostream(CPPType *type) {
   switch (type->get_subtype()) {
@@ -1928,16 +1756,12 @@ is_pointer_to_ostream(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::involves_unpublished
-//       Access: Public, Static
-//  Description: Returns true if the type is an unpublished type,
-//               e.g. a protected or private nested class, or simply a
-//               type not marked as 'published', or if the type is a
-//               pointer or reference to such an unpublished type, or
-//               even if the type is a function type that includes a
-//               parameter of such an unpublished type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is an unpublished type, e.g.  a protected or private
+ * nested class, or simply a type not marked as 'published', or if the type is a
+ * pointer or reference to such an unpublished type, or even if the type is a
+ * function type that includes a parameter of such an unpublished type.
+ */
 bool TypeManager::
 involves_unpublished(CPPType *type) {
   switch (type->get_subtype()) {
@@ -2010,15 +1834,12 @@ involves_unpublished(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::involves_protected
-//       Access: Public, Static
-//  Description: Returns true if the type is an protected type,
-//               e.g. a protected or private nested class, or if the
-//               type is a pointer or reference to such a protected
-//               type, or even if the type is a function type that
-//               includes a parameter of such a protected type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is an protected type, e.g.  a protected or private
+ * nested class, or if the type is a pointer or reference to such a protected
+ * type, or even if the type is a function type that includes a parameter of
+ * such a protected type.
+ */
 bool TypeManager::
 involves_protected(CPPType *type) {
   switch (type->get_subtype()) {
@@ -2059,11 +1880,9 @@ involves_protected(CPPType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::unwrap_pointer
-//       Access: Public, Static
-//  Description: Returns the type this pointer type points to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type this pointer type points to.
+ */
 CPPType *TypeManager::
 unwrap_pointer(CPPType *source_type) {
   switch (source_type->get_subtype()) {
@@ -2078,11 +1897,9 @@ unwrap_pointer(CPPType *source_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::unwrap_reference
-//       Access: Public, Static
-//  Description: Returns the type this reference type points to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type this reference type points to.
+ */
 CPPType *TypeManager::
 unwrap_reference(CPPType *source_type) {
   switch (source_type->get_subtype()) {
@@ -2097,12 +1914,9 @@ unwrap_reference(CPPType *source_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::unwrap_const
-//       Access: Public, Static
-//  Description: Removes the const declaration from the outside of the
-//               type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the const declaration from the outside of the type.
+ */
 CPPType *TypeManager::
 unwrap_const(CPPType *source_type) {
   switch (source_type->get_subtype()) {
@@ -2114,12 +1928,9 @@ unwrap_const(CPPType *source_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::unwrap_const_reference
-//       Access: Public, Static
-//  Description: Removes a reference or a const reference from the
-//               type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes a reference or a const reference from the type.
+ */
 CPPType *TypeManager::
 unwrap_const_reference(CPPType *source_type) {
   switch (source_type->get_subtype()) {
@@ -2134,12 +1945,10 @@ unwrap_const_reference(CPPType *source_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::unwrap
-//       Access: Public, Static
-//  Description: Removes all const, pointer, reference wrappers, and
-//               typedefs, to get to the thing we're talking about.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all const, pointer, reference wrappers, and typedefs, to get to the
+ * thing we're talking about.
+ */
 CPPType *TypeManager::
 unwrap(CPPType *source_type) {
   switch (source_type->get_subtype()) {
@@ -2160,14 +1969,11 @@ unwrap(CPPType *source_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_pointer_type
-//       Access: Public, Static
-//  Description: Returns the type of pointer the given PointerTo class
-//               emulates.  Essentially this just checks the return
-//               type of the method called 'p()'.  Returns NULL if the
-//               PointerTo class has no method p().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type of pointer the given PointerTo class emulates.  Essentially
+ * this just checks the return type of the method called 'p()'.  Returns NULL if
+ * the PointerTo class has no method p().
+ */
 CPPType *TypeManager::
 get_pointer_type(CPPStructType *pt_type) {
   CPPScope *scope = pt_type->_scope;
@@ -2196,14 +2002,11 @@ get_pointer_type(CPPStructType *pt_type) {
   return (CPPType *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_template_parameter_type
-//       Access: Public, Static
-//  Description: Returns the ith template parameter type.  For
-//               instance, if the type is pair<A, B>, then this
-//               function will return type A when passing 0 and
-//               type B when passing 1, and NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ith template parameter type.  For instance, if the type is
+ * pair<A, B>, then this function will return type A when passing 0 and type B
+ * when passing 1, and NULL otherwise.
+ */
 CPPType *TypeManager::
 get_template_parameter_type(CPPType *source_type, int i) {
   switch (source_type->get_subtype()) {
@@ -2236,23 +2039,17 @@ get_template_parameter_type(CPPType *source_type, int i) {
   return decl->as_type();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::wrap_pointer
-//       Access: Public, Static
-//  Description: Returns the type corresponding to a pointer to the
-//               given type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type corresponding to a pointer to the given type.
+ */
 CPPType *TypeManager::
 wrap_pointer(CPPType *source_type) {
   return CPPType::new_type(new CPPPointerType(source_type));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::wrap_const_pointer
-//       Access: Public, Static
-//  Description: Returns the type corresponding to a const pointer
-//               to the given type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type corresponding to a const pointer to the given type.
+ */
 CPPType *TypeManager::
 wrap_const_pointer(CPPType *source_type) {
   if (source_type->as_const_type() != (CPPConstType *)NULL) {
@@ -2265,12 +2062,9 @@ wrap_const_pointer(CPPType *source_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::wrap_const_reference
-//       Access: Public, Static
-//  Description: Returns the type corresponding to a const reference
-//               to the given type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type corresponding to a const reference to the given type.
+ */
 CPPType *TypeManager::
 wrap_const_reference(CPPType *source_type) {
   if (source_type->as_const_type() != (CPPConstType *)NULL) {
@@ -2283,12 +2077,10 @@ wrap_const_reference(CPPType *source_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_basic_string_char_type
-//       Access: Public, Static
-//  Description: Returns a CPPType that represents basic_string<char>,
-//               or NULL if the type is unknown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a CPPType that represents basic_string<char>, or NULL if the type is
+ * unknown.
+ */
 CPPType *TypeManager::
 get_basic_string_char_type() {
   static bool got_type = false;
@@ -2300,12 +2092,10 @@ get_basic_string_char_type() {
   return type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_basic_string_wchar_type
-//       Access: Public, Static
-//  Description: Returns a CPPType that represents basic_string<wchar_t>,
-//               or NULL if the type is unknown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a CPPType that represents basic_string<wchar_t>, or NULL if the type
+ * is unknown.
+ */
 CPPType *TypeManager::
 get_basic_string_wchar_type() {
   static bool got_type = false;
@@ -2317,12 +2107,10 @@ get_basic_string_wchar_type() {
   return type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_reference_count_type
-//       Access: Public, Static
-//  Description: Returns a CPPType that represents ReferenceCount,
-//               or NULL if the type is unknown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a CPPType that represents ReferenceCount, or NULL if the type is
+ * unknown.
+ */
 CPPType *TypeManager::
 get_reference_count_type() {
   static bool got_type = false;
@@ -2334,11 +2122,9 @@ get_reference_count_type() {
   return type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_void_type
-//       Access: Public, Static
-//  Description: Returns a CPPType that represents void.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a CPPType that represents void.
+ */
 CPPType *TypeManager::
 get_void_type() {
   static bool got_type = false;
@@ -2350,11 +2136,9 @@ get_void_type() {
   return type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_int_type
-//       Access: Public, Static
-//  Description: Returns a CPPType that represents int.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a CPPType that represents int.
+ */
 CPPType *TypeManager::
 get_int_type() {
   static bool got_type = false;
@@ -2366,20 +2150,14 @@ get_int_type() {
   return type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_function_signature
-//       Access: Public, Static
-//  Description: Returns a string corresponding to the given function
-//               signature.  This is a unique string per each
-//               uniquely-callable C++ function or method.  Basically
-//               it's the function prototype, sans the return type.
-//
-//               If num_default_parameters is nonzero, it is the
-//               number of parameters to omit from the end of the
-//               parameter list.  This in effect gets the function
-//               signature for an equivalent function with n
-//               parameters assuming default values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string corresponding to the given function signature.  This is a
+ * unique string per each uniquely-callable C++ function or method.  Basically
+ * it's the function prototype, sans the return type.  If num_default_parameters
+ * is nonzero, it is the number of parameters to omit from the end of the
+ * parameter list.  This in effect gets the function signature for an equivalent
+ * function with n parameters assuming default values.
+ */
 string TypeManager::
 get_function_signature(CPPInstance *function,
                        int num_default_parameters) {
@@ -2436,27 +2214,20 @@ get_function_signature(CPPInstance *function,
   return out.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::get_function_name
-//       Access: Public, Static
-//  Description: Returns a string corresponding to the given function
-//               name.  This is not necessarily unique to the
-//               particular overloaded function instance, but is
-//               common among all overloaded functions of the same
-//               name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a string corresponding to the given function name.  This is not
+ * necessarily unique to the particular overloaded function instance, but is
+ * common among all overloaded functions of the same name.
+ */
 string TypeManager::
 get_function_name(CPPInstance *function) {
   return function->get_local_name(&parser);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::has_protected_destructor
-//       Access: Public, Static
-//  Description: Returns true if the destructor for the given class or
-//               struct is protected or private, or false if the
-//               destructor is public or absent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the destructor for the given class or struct is protected or
+ * private, or false if the destructor is public or absent.
+ */
 bool TypeManager::
 has_protected_destructor(CPPType *type) {
   CPPStructType *struct_type = type->as_struct_type();
@@ -2489,11 +2260,9 @@ has_protected_destructor(CPPType *type) {
   // No explicit destructor.
   return false;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_exported
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool TypeManager::
 is_exported(CPPType *in_type) {
   string name = in_type->get_local_name(&parser);
@@ -2575,12 +2344,10 @@ is_exported(CPPType *in_type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_local
-//       Access: Public, Static
-//  Description: Returns true if the type is defined in a local
-//               file rather than one that is included.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is defined in a local file rather than one that is
+ * included.
+ */
 bool TypeManager::
 is_local(CPPType *source_type) {
   switch (source_type->get_subtype()) {
@@ -2668,12 +2435,9 @@ is_local(CPPType *source_type) {
  */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypeManager::is_trivial
-//       Access: Public, Static
-//  Description: Returns true if the type is trivial (or trivial
-//               enough for our purposes).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is trivial (or trivial enough for our purposes).
+ */
 bool TypeManager::
 is_trivial(CPPType *source_type) {
   switch (source_type->get_subtype()) {

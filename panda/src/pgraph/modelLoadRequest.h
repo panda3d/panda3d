@@ -23,40 +23,38 @@
 #include "pointerTo.h"
 #include "loader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ModelLoadRequest
-// Description : A class object that manages a single asynchronous
-//               model load request.  Create a new ModelLoadRequest,
-//               and add it to the loader via load_async(), to begin
-//               an asynchronous load.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class object that manages a single asynchronous model load request.  Create
+ * a new ModelLoadRequest, and add it to the loader via load_async(), to begin
+ * an asynchronous load.
+ */
 class EXPCL_PANDA_PGRAPH ModelLoadRequest : public AsyncTask {
 public:
   ALLOC_DELETED_CHAIN(ModelLoadRequest);
 
 PUBLISHED:
   ModelLoadRequest(const string &name,
-                   const Filename &filename, 
+                   const Filename &filename,
                    const LoaderOptions &options,
                    Loader *loader);
-  
+
   INLINE const Filename &get_filename() const;
   INLINE const LoaderOptions &get_options() const;
   INLINE Loader *get_loader() const;
-  
+
   INLINE bool is_ready() const;
   INLINE PandaNode *get_model() const;
-  
+
 protected:
   virtual DoneStatus do_task();
-  
+
 private:
   Filename _filename;
   LoaderOptions _options;
   PT(Loader) _loader;
   bool _is_ready;
   PT(PandaNode) _model;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -70,7 +68,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
   static TypeHandle _type_handle;
 };

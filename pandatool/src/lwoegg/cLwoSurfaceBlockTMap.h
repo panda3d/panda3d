@@ -23,12 +23,10 @@
 
 class LwoToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLwoSurfaceBlockTMap
-// Description : This class is a wrapper around LwoSurfaceBlockTMap
-//               and stores additional information useful during the
-//               conversion-to-egg process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a wrapper around LwoSurfaceBlockTMap and stores additional
+ * information useful during the conversion-to-egg process.
+ */
 class CLwoSurfaceBlockTMap {
 public:
   CLwoSurfaceBlockTMap(LwoToEggConverter *converter, const LwoSurfaceBlockTMap *tmap);
@@ -50,5 +48,3 @@ public:
 #include "cLwoSurfaceBlockTMap.I"
 
 #endif
-
-

@@ -16,10 +16,9 @@
 
 #include "odeJoint.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeJointCollection
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeJointCollection {
 PUBLISHED:
   OdeJointCollection();
@@ -43,8 +42,8 @@ PUBLISHED:
   int size() const;
   INLINE void operator += (const OdeJointCollection &other);
   INLINE OdeJointCollection operator + (const OdeJointCollection &other) const;
-  
-private:  
+
+private:
   typedef PTA(OdeJoint) Joints;
   Joints _joints;
 };

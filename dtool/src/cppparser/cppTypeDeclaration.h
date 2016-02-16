@@ -18,13 +18,11 @@
 
 #include "cppInstance.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPTypeDeclaration
-// Description : A CPPTypeDeclaration is a special declaration that
-//               represents the top-level declaration of a type in a
-//               source file.  Typically this is the first appearance
-//               of the type.
-////////////////////////////////////////////////////////////////////
+/**
+ * A CPPTypeDeclaration is a special declaration that represents the top-level
+ * declaration of a type in a source file.  Typically this is the first
+ * appearance of the type.
+ */
 class CPPTypeDeclaration : public CPPInstance {
 public:
   CPPTypeDeclaration(CPPType *type);
@@ -41,4 +39,3 @@ public:
 };
 
 #endif
-

@@ -17,13 +17,10 @@
 #include "dtoolbase.h"
 #include "filename.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPFile
-// Description : This defines a source file (typically a C++ header
-//               file) that is parsed by the CPPParser.  Each
-//               declaration indicates the source file where it
-//               appeared.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a source file (typically a C++ header file) that is parsed by
+ * the CPPParser.  Each declaration indicates the source file where it appeared.
+ */
 class CPPFile {
 public:
   enum Source {
@@ -66,4 +63,3 @@ inline ostream &operator << (ostream &out, const CPPFile &file) {
 }
 
 #endif
-

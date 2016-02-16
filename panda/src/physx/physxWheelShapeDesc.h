@@ -21,10 +21,9 @@
 
 class PhysxSpringDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxWheelShapeDesc
-// Description : Descriptor class for PhysxWheelShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxWheelShape.
+ */
 class EXPCL_PANDAPHYSX PhysxWheelShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

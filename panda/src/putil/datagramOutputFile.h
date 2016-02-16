@@ -23,12 +23,10 @@
 #include "virtualFileSystem.h"
 #include "config_util.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramOutputFile
-// Description : This class can be used to write a binary file that
-//               consists of an arbitrary header followed by a number
-//               of datagrams.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class can be used to write a binary file that consists of an arbitrary
+ * header followed by a number of datagrams.
+ */
 class EXPCL_PANDA_PUTIL DatagramOutputFile : public DatagramSink {
 public:
   INLINE DatagramOutputFile();

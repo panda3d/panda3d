@@ -22,11 +22,10 @@
 
 class EggTransform;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggObject
-// Description : The highest-level base class in the egg directory.
-//               (Almost) all things egg inherit from this.
-////////////////////////////////////////////////////////////////////
+/**
+ * The highest-level base class in the egg directory.  (Almost) all things egg
+ * inherit from this.
+ */
 class EXPCL_PANDAEGG EggObject : public TypedReferenceCount {
 PUBLISHED:
   EggObject();

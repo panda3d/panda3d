@@ -21,13 +21,11 @@
 class GtkStatsMonitor;
 class GtkStatsGraph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsLabel
-// Description : A text label that will draw in color appropriate for
-//               a particular collector.  It also responds when the
-//               user double-clicks on it.  This is handy for putting
-//               colored labels on strip charts.
-////////////////////////////////////////////////////////////////////
+/**
+ * A text label that will draw in color appropriate for a particular collector.
+ * It also responds when the user double-clicks on it.  This is handy for
+ * putting colored labels on strip charts.
+ */
 class GtkStatsLabel {
 public:
   GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
@@ -44,17 +42,17 @@ public:
 
 private:
   void set_mouse_within(bool mouse_within);
-  static gboolean expose_event_callback(GtkWidget *widget, 
-					GdkEventExpose *event, gpointer data);
-  static gboolean enter_notify_event_callback(GtkWidget *widget, 
-					      GdkEventCrossing *event, 
-					      gpointer data);
-  static gboolean leave_notify_event_callback(GtkWidget *widget, 
-					      GdkEventCrossing *event, 
-					      gpointer data);
-  static gboolean button_press_event_callback(GtkWidget *widget, 
-					      GdkEventButton *event, 
-					      gpointer data);
+  static gboolean expose_event_callback(GtkWidget *widget,
+          GdkEventExpose *event, gpointer data);
+  static gboolean enter_notify_event_callback(GtkWidget *widget,
+                GdkEventCrossing *event,
+                gpointer data);
+  static gboolean leave_notify_event_callback(GtkWidget *widget,
+                GdkEventCrossing *event,
+                gpointer data);
+  static gboolean button_press_event_callback(GtkWidget *widget,
+                GdkEventButton *event,
+                gpointer data);
 
   GtkStatsMonitor *_monitor;
   GtkStatsGraph *_graph;
@@ -82,4 +80,3 @@ private:
 };
 
 #endif
-

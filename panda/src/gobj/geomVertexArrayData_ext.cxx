@@ -23,13 +23,10 @@ struct InternalBufferData {
 };
 
 #if PY_VERSION_HEX >= 0x02060000
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::__getbuffer__
-//       Access: Published
-//  Description: This is used to implement the buffer protocol, in
-//               order to allow efficient access to the array data
-//               through a Python multiview object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement the buffer protocol, in order to allow efficient
+ * access to the array data through a Python multiview object.
+ */
 int Extension<GeomVertexArrayData>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 
@@ -84,12 +81,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::__getbuffer__
-//       Access: Published
-//  Description: This is the const version of __getbuffer__, which
-//               does not support writing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the const version of __getbuffer__, which does not support writing.
+ */
 int Extension<GeomVertexArrayData>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 
@@ -150,11 +144,9 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::__releasebuffer__
-//       Access: Published
-//  Description: Releases the buffer allocated by __getbuffer__.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the buffer allocated by __getbuffer__.
+ */
 void Extension<GeomVertexArrayData>::
 __releasebuffer__(PyObject *self, Py_buffer *view) const {
   // Note: PyBuffer_Release automatically decrements view->obj.
@@ -170,12 +162,10 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
 
 #endif  // PY_VERSION_HEX >= 0x02060000
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::copy_data_from
-//       Access: Published
-//  Description: Copies all data from the given buffer object.
-//               The array is rescaled as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies all data from the given buffer object.  The array is rescaled as
+ * necessary.
+ */
 void Extension<GeomVertexArrayDataHandle>::
 copy_data_from(PyObject *buffer) {
 
@@ -200,14 +190,11 @@ copy_data_from(PyObject *buffer) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::copy_subdata_from
-//       Access: Public
-//  Description: Copies the entire data array from the buffer
-//               into a portion of the data array of this object.
-//               If to_size is not the size of the given buffer,
-//               the size of this dat array is adjusted accordingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the entire data array from the buffer into a portion of the data array
+ * of this object.  If to_size is not the size of the given buffer, the size of
+ * this dat array is adjusted accordingly.
+ */
 void Extension<GeomVertexArrayDataHandle>::
 copy_subdata_from(size_t to_start, size_t to_size, PyObject *buffer) {
 
@@ -234,14 +221,11 @@ copy_subdata_from(size_t to_start, size_t to_size, PyObject *buffer) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::copy_subdata_from
-//       Access: Public
-//  Description: Copies a portion of the data array from the buffer
-//               into a portion of the data array of this object.
-//               If to_size != from_size, the size of this data
-//               array is adjusted accordingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a portion of the data array from the buffer into a portion of the data
+ * array of this object.  If to_size != from_size, the size of this data array
+ * is adjusted accordingly.
+ */
 void Extension<GeomVertexArrayDataHandle>::
 copy_subdata_from(size_t to_start, size_t to_size,
                   PyObject *buffer,

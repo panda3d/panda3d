@@ -20,15 +20,13 @@
 #include "buttonRegistry.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonMap
-// Description : This class represents a map containing all of the
-//               buttons of a (keyboard) device, though it can also
-//               be used as a generic mapping between ButtonHandles.
-//               It maps an underlying 'raw' button to a 'virtual'
-//               button, which may optionally be associated with an
-//               appropriate platform-specific name for the button.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class represents a map containing all of the buttons of a (keyboard)
+ * device, though it can also be used as a generic mapping between
+ * ButtonHandles.  It maps an underlying 'raw' button to a 'virtual' button,
+ * which may optionally be associated with an appropriate platform-specific name
+ * for the button.
+ */
 class EXPCL_PANDA_PUTIL ButtonMap : public TypedReferenceCount {
 PUBLISHED:
   INLINE size_t get_num_buttons() const;

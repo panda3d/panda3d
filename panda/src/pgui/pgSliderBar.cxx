@@ -22,13 +22,11 @@
 
 TypeHandle PGSliderBar::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGSliderBar::
-PGSliderBar(const string &name) 
+PGSliderBar(const string &name)
   : PGItem(name)
 {
   set_cull_callback();
@@ -52,20 +50,16 @@ PGSliderBar(const string &name)
   set_active(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGSliderBar::
 ~PGSliderBar() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGSliderBar::
 PGSliderBar(const PGSliderBar &copy) :
   PGItem(copy),
@@ -87,27 +81,21 @@ PGSliderBar(const PGSliderBar &copy) :
   _dragging = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PGSliderBar::
 make_copy() const {
   LightReMutexHolder holder(_lock);
   return new PGSliderBar(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::press
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse or keyboard button is depressed while the mouse
-//               is within the region.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard button
+ * is depressed while the mouse is within the region.
+ */
 void PGSliderBar::
 press(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -123,20 +111,17 @@ press(const MouseWatcherParameter &param, bool background) {
       _mouse_button_page = true;
       _scroll_button_held = NULL;
       advance_page();
-      _next_advance_time = 
+      _next_advance_time =
         ClockObject::get_global_clock()->get_frame_time() + scroll_initial_delay;
     }
   }
   PGItem::press(param, background);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::release
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse or keyboard button previously depressed with
-//               press() is released.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard button
+ * previously depressed with press() is released.
+ */
 void PGSliderBar::
 release(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -149,12 +134,10 @@ release(const MouseWatcherParameter &param, bool background) {
   PGItem::release(param, background);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::move
-//       Access: Protected, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse is moved while within the region.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse is moved while
+ * within the region.
+ */
 void PGSliderBar::
 move(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -169,31 +152,20 @@ move(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool PGSliderBar::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LightReMutexHolder holder(_lock);
@@ -204,12 +176,12 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     recompute();
   }
 
-  if (_scroll_button_held != (PGItem *)NULL && 
+  if (_scroll_button_held != (PGItem *)NULL &&
       _next_advance_time <= ClockObject::get_global_clock()->get_frame_time()) {
     advance_scroll();
   }
 
-  if (_mouse_button_page && 
+  if (_mouse_button_page &&
       _next_advance_time <= ClockObject::get_global_clock()->get_frame_time()) {
     advance_page();
   }
@@ -221,13 +193,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return PGItem::cull_callback(trav, data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this node by the indicated matrix, if it means
+ * anything to do so.  For most kinds of nodes, this does nothing.
+ */
 void PGSliderBar::
 xform(const LMatrix4 &mat) {
   LightReMutexHolder holder(_lock);
@@ -244,13 +213,10 @@ xform(const LMatrix4 &mat) {
   _needs_recompute = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::adjust
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               slider value is adjusted by the user or
-//               programmatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the slider value is
+ * adjusted by the user or programmatically.
+ */
 void PGSliderBar::
 adjust() {
   LightReMutexHolder holder(_lock);
@@ -263,20 +229,14 @@ adjust() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::setup_scroll_bar
-//       Access: Published
-//  Description: Creates PGSliderBar that represents a vertical or
-//               horizontal scroll bar (if vertical is true or false,
-//               respectively), with additional buttons for scrolling,
-//               and a range of 0 .. 1.
-//
-//               length here is the measurement along the scroll bar,
-//               and width is the measurement across the scroll bar,
-//               whether it is vertical or horizontal (so for a
-//               horizontal scroll bar, the length is actually the x
-//               dimension, and the width is the y dimension).
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates PGSliderBar that represents a vertical or horizontal scroll bar (if
+ * vertical is true or false, respectively), with additional buttons for
+ * scrolling, and a range of 0 .. 1.  length here is the measurement along the
+ * scroll bar, and width is the measurement across the scroll bar, whether it is
+ * vertical or horizontal (so for a horizontal scroll bar, the length is
+ * actually the x dimension, and the width is the y dimension).
+ */
 void PGSliderBar::
 setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
@@ -317,14 +277,14 @@ setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdflo
 
   PT(PGButton) thumb = new PGButton("thumb");
   thumb->setup("", bevel);
-  thumb->set_frame(-width / 2.0f, width / 2.0f, 
+  thumb->set_frame(-width / 2.0f, width / 2.0f,
                    -width / 2.0f, width / 2.0f);
   add_child(thumb);
   set_thumb_button(thumb);
 
   PT(PGButton) left = new PGButton("left");
   left->setup("", bevel);
-  left->set_frame(-width / 2.0f, width / 2.0f, 
+  left->set_frame(-width / 2.0f, width / 2.0f,
                   -width / 2.0f, width / 2.0f);
   left->set_transform(TransformState::make_pos(((width - length) / 2.0f) * _axis));
   add_child(left);
@@ -332,7 +292,7 @@ setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdflo
 
   PT(PGButton) right = new PGButton("right");
   right->setup("", bevel);
-  right->set_frame(-width / 2.0f, width / 2.0f, 
+  right->set_frame(-width / 2.0f, width / 2.0f,
                    -width / 2.0f, width / 2.0f);
   right->set_transform(TransformState::make_pos(((length - width) / 2.0f) * _axis));
   add_child(right);
@@ -342,15 +302,11 @@ setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdflo
   set_manage_pieces(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::setup_slider
-//       Access: Published
-//  Description: Creates PGSliderBar that represents a slider that the
-//               user can use to control an analog quantity.
-//
-//               This is functionally the same as a scroll bar, but it
-//               has a distinctive look.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates PGSliderBar that represents a slider that the user can use to control
+ * an analog quantity.  This is functionally the same as a scroll bar, but it
+ * has a distinctive look.
+ */
 void PGSliderBar::
 setup_slider(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
@@ -389,7 +345,7 @@ setup_slider(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat b
 
   PT(PGButton) thumb = new PGButton("thumb");
   thumb->setup(" ", bevel);
-  thumb->set_frame(-width / 4.0f, width / 4.0f, 
+  thumb->set_frame(-width / 4.0f, width / 4.0f,
                    -width / 2.0f, width / 2.0f);
   add_child(thumb);
   set_thumb_button(thumb);
@@ -398,15 +354,12 @@ setup_slider(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat b
   set_manage_pieces(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::set_active
-//       Access: Published, Virtual
-//  Description: Sets whether the PGItem is active for mouse watching.
-//               This is not necessarily related to the
-//               active/inactive appearance of the item, which is
-//               controlled by set_state(), but it does affect whether
-//               it responds to mouse events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether the PGItem is active for mouse watching.  This is not
+ * necessarily related to the active/inactive appearance of the item, which is
+ * controlled by set_state(), but it does affect whether it responds to mouse
+ * events.
+ */
 void PGSliderBar::
 set_active(bool active) {
   LightReMutexHolder holder(_lock);
@@ -424,13 +377,10 @@ set_active(bool active) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::remanage
-//       Access: Published
-//  Description: Manages the position and size of the scroll bars and
-//               the thumb.  Normally this should not need to be
-//               called directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Manages the position and size of the scroll bars and the thumb.  Normally
+ * this should not need to be called directly.
+ */
 void PGSliderBar::
 remanage() {
   LightReMutexHolder holder(_lock);
@@ -443,7 +393,7 @@ remanage() {
     // The slider is X-dominant.
     width = frame[3] - frame[2];
     length = frame[1] - frame[0];
-    
+
   } else {
     // The slider is Y-dominant.
     width = frame[1] - frame[0];
@@ -455,19 +405,19 @@ remanage() {
                                     (frame[2] + frame[3]) / 2.0f);
 
   if (_left_button != (PGButton *)NULL) {
-    _left_button->set_frame(-width / 2.0f, width / 2.0f, 
+    _left_button->set_frame(-width / 2.0f, width / 2.0f,
                             -width / 2.0f, width / 2.0f);
     _left_button->set_transform(TransformState::make_pos(center + ((width - length) / 2.0f) * _axis));
   }
 
   if (_right_button != (PGButton *)NULL) {
-    _right_button->set_frame(-width / 2.0f, width / 2.0f, 
+    _right_button->set_frame(-width / 2.0f, width / 2.0f,
                              -width / 2.0f, width / 2.0f);
     _right_button->set_transform(TransformState::make_pos(center + ((length - width) / 2.0f) * _axis));
   }
 
   if (_thumb_button != (PGButton *)NULL) {
-    _thumb_button->set_frame(-width / 2.0f, width / 2.0f, 
+    _thumb_button->set_frame(-width / 2.0f, width / 2.0f,
                              -width / 2.0f, width / 2.0f);
     _thumb_button->set_transform(TransformState::make_pos(center));
   }
@@ -475,12 +425,10 @@ remanage() {
   recompute();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::recompute
-//       Access: Published
-//  Description: Recomputes the position and size of the thumb.
-//               Normally this should not need to be called directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the position and size of the thumb.  Normally this should not need
+ * to be called directly.
+ */
 void PGSliderBar::
 recompute() {
   LightReMutexHolder holder(_lock);
@@ -506,23 +454,23 @@ recompute() {
     LVecBase4 frame = get_frame();
     reduce_region(frame, _left_button);
     reduce_region(frame, _right_button);
-    
+
     if (fabs(_axis[0]) > fabs(_axis[1] + _axis[2])) {
       // The slider is X-dominant.
-      
+
       _min_x = frame[0];
       _max_x = frame[1];
-      
+
       PN_stdfloat trough_width = _max_x - _min_x;
-      
+
       if (_thumb_button == (PGButton *)NULL) {
         _thumb_width = 0.0f;
         _range_x = 0.0f;
         _thumb_start.set(0.0f, 0.0f, 0.0f);
-        
+
       } else {
         const LVecBase4 &thumb_frame = _thumb_button->get_frame();
-        
+
         if (_resize_thumb) {
           // If we're allowed to adjust the thumb's size, we don't need to
           // find out how wide it is.
@@ -534,9 +482,9 @@ recompute() {
           // its current width.
           _thumb_width = thumb_frame[1] - thumb_frame[0];
         }
-        
+
         _range_x = trough_width - _thumb_width;
-        
+
         if (_axis[0] >= 0.0f) {
           // The slider runs forwards, left to right.
           _thumb_start = (_min_x - thumb_frame[0]) * _axis;
@@ -546,24 +494,24 @@ recompute() {
         }
         _thumb_start += LVector3::rfu(0.0f, 0.0f, (frame[2] + frame[3]) / 2.0f);
       }
-      
+
     } else {
       // The slider is Y-dominant.  We call it X in the variable names,
       // but it's really Y (or even Z).
-      
+
       _min_x = frame[2];
       _max_x = frame[3];
-      
+
       PN_stdfloat trough_width = _max_x - _min_x;
-      
+
       if (_thumb_button == (PGButton *)NULL) {
         _thumb_width = 0.0f;
         _range_x = 0.0f;
         _thumb_start.set(0.0f, 0.0f, 0.0f);
-        
+
       } else {
         const LVecBase4 &thumb_frame = _thumb_button->get_frame();
-        
+
         if (_resize_thumb) {
           // If we're allowed to adjust the thumb's size, we don't need to
           // find out how wide it is.
@@ -575,9 +523,9 @@ recompute() {
           // its current width.
           _thumb_width = thumb_frame[3] - thumb_frame[2];
         }
-        
+
         _range_x = trough_width - _thumb_width;
-        
+
         if (_axis[1] >= 0.0f && _axis[2] >= 0.0f) {
           // The slider runs forwards, bottom to top.
           _thumb_start = (_min_x - thumb_frame[2]) * _axis;
@@ -593,11 +541,9 @@ recompute() {
   reposition();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::frame_changed
-//       Access: Protected, Virtual
-//  Description: Called when the user changes the frame size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user changes the frame size.
+ */
 void PGSliderBar::
 frame_changed() {
   LightReMutexHolder holder(_lock);
@@ -606,48 +552,37 @@ frame_changed() {
   _needs_recompute = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::item_transform_changed
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGItem's local transform
-//               has been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGItem's local transform has been changed.
+ */
 void PGSliderBar::
 item_transform_changed(PGItem *) {
   LightReMutexHolder holder(_lock);
   _needs_recompute = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::item_frame_changed
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGItem's frame
-//               has been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGItem's frame has been changed.
+ */
 void PGSliderBar::
 item_frame_changed(PGItem *) {
   LightReMutexHolder holder(_lock);
   _needs_recompute = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::item_draw_mask_changed
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGItem's draw_mask
-//               has been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGItem's draw_mask has been changed.
+ */
 void PGSliderBar::
 item_draw_mask_changed(PGItem *) {
   LightReMutexHolder holder(_lock);
   _needs_recompute = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::item_press
-//       Access: Protected, Virtual
-//  Description: Called whenever the "press" event is triggered on a
-//               watched PGItem.  See PGItem::press().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the "press" event is triggered on a watched PGItem.  See
+ * PGItem::press().
+ */
 void PGSliderBar::
 item_press(PGItem *item, const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -658,7 +593,7 @@ item_press(PGItem *item, const MouseWatcherParameter &param) {
     _scroll_button_held = item;
     _mouse_button_page = false;
     advance_scroll();
-    _next_advance_time = 
+    _next_advance_time =
       ClockObject::get_global_clock()->get_frame_time() + scroll_initial_delay;
 
   } else if (item == _thumb_button) {
@@ -667,12 +602,10 @@ item_press(PGItem *item, const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::item_release
-//       Access: Protected, Virtual
-//  Description: Called whenever the "release" event is triggered on a
-//               watched PGItem.  See PGItem::release().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the "release" event is triggered on a watched PGItem.  See
+ * PGItem::release().
+ */
 void PGSliderBar::
 item_release(PGItem *item, const MouseWatcherParameter &) {
   LightReMutexHolder holder(_lock);
@@ -687,12 +620,10 @@ item_release(PGItem *item, const MouseWatcherParameter &) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::item_move
-//       Access: Protected, Virtual
-//  Description: Called whenever the "move" event is triggered on a
-//               watched PGItem.  See PGItem::move().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the "move" event is triggered on a watched PGItem.  See
+ * PGItem::move().
+ */
 void PGSliderBar::
 item_move(PGItem *item, const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -704,13 +635,10 @@ item_move(PGItem *item, const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::reposition
-//       Access: Private
-//  Description: A lighter-weight version of recompute(), this just
-//               moves the thumb, assuming all other properties are
-//               unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * A lighter-weight version of recompute(), this just moves the thumb, assuming
+ * all other properties are unchanged.
+ */
 void PGSliderBar::
 reposition() {
   _needs_reposition = false;
@@ -732,13 +660,10 @@ reposition() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::advance_scroll
-//       Access: Private
-//  Description: Advances the scroll bar by one unit in the left or
-//               right direction while the user is holding down the
-//               left or right scroll button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the scroll bar by one unit in the left or right direction while the
+ * user is holding down the left or right scroll button.
+ */
 void PGSliderBar::
 advance_scroll() {
   if (_scroll_button_held == _left_button) {
@@ -748,17 +673,14 @@ advance_scroll() {
     internal_set_ratio(min(_ratio + _scroll_ratio, (PN_stdfloat)1.0));
   }
 
-  _next_advance_time = 
+  _next_advance_time =
     ClockObject::get_global_clock()->get_frame_time() + scroll_continued_delay;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::advance_page
-//       Access: Private
-//  Description: Advances the scroll bar by one page in the left or
-//               right direction while the user is holding down the
-//               mouse button on the track.
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the scroll bar by one page in the left or right direction while the
+ * user is holding down the mouse button on the track.
+ */
 void PGSliderBar::
 advance_page() {
   // Is the mouse position left or right of the current thumb
@@ -780,16 +702,14 @@ advance_page() {
     begin_drag();
   }
 
-  _next_advance_time = 
+  _next_advance_time =
     ClockObject::get_global_clock()->get_frame_time() + scroll_continued_delay;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::begin_drag
-//       Access: Private
-//  Description: Called when the user clicks down on the thumb button,
-//               possibly to begin dragging.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user clicks down on the thumb button, possibly to begin
+ * dragging.
+ */
 void PGSliderBar::
 begin_drag() {
   if (_needs_recompute) {
@@ -802,12 +722,9 @@ begin_drag() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::continue_drag
-//       Access: Private
-//  Description: Called as the user moves the mouse while still
-//               dragging on the thumb button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called as the user moves the mouse while still dragging on the thumb button.
+ */
 void PGSliderBar::
 continue_drag() {
   if (_needs_recompute) {
@@ -819,11 +736,9 @@ continue_drag() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::end_drag
-//       Access: Private
-//  Description: Called as the user releases the mouse after dragging.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called as the user releases the mouse after dragging.
+ */
 void PGSliderBar::
 end_drag() {
   _dragging = false;

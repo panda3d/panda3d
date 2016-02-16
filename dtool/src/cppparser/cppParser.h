@@ -22,10 +22,9 @@
 
 #include <set>
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPParser
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPParser : public CPPScope, public CPPPreprocessor {
 public:
   CPPParser();
@@ -50,5 +49,3 @@ public:
 extern bool cppparser_output_class_keyword;
 
 #endif
-
-

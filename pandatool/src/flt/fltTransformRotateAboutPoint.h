@@ -18,11 +18,10 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformRotateAboutPoint
-// Description : A transformation that rotates about a particular axis
-//               in space, defined by a point and vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * A transformation that rotates about a particular axis in space, defined by a
+ * point and vector.
+ */
 class FltTransformRotateAboutPoint : public FltTransformRecord {
 public:
   FltTransformRotateAboutPoint(FltHeader *header);

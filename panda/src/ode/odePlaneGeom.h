@@ -20,10 +20,9 @@
 #include "ode_includes.h"
 #include "odeGeom.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdePlaneGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdePlaneGeom : public OdeGeom {
   friend class OdeGeom;
 

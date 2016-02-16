@@ -26,10 +26,9 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadWin32Impl
-// Description : Uses native Windows calls to implement a thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses native Windows calls to implement a thread.
+ */
 class EXPCL_PANDA_PIPELINE ThreadWin32Impl {
 public:
   INLINE ThreadWin32Impl(Thread *parent_obj);

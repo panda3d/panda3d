@@ -16,13 +16,11 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CompareTo
-// Description : An STL function object class, this is intended to be
-//               used on any ordered collection of classes that
-//               contain a compare_to() method.  It defines the order
-//               of the pointers via compare_to().
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object class, this is intended to be used on any ordered
+ * collection of classes that contain a compare_to() method.  It defines the
+ * order of the pointers via compare_to().
+ */
 template<class ObjectType>
 class CompareTo {
 public:
@@ -32,4 +30,3 @@ public:
 #include "compareTo.I"
 
 #endif
-

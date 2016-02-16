@@ -15,39 +15,31 @@
 
 TypeHandle ExternalThread::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExternalThread::Constructor
-//       Access: Private
-//  Description: This constructor is used to create the one global
-//               ExternalThread object that is shared by all
-//               externally-created threads that are not specifically
-//               bound to a particular Thread object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor is used to create the one global ExternalThread object that
+ * is shared by all externally-created threads that are not specifically bound
+ * to a particular Thread object.
+ */
 ExternalThread::
 ExternalThread() : Thread("External", "External") {
   init_type();  // in case static init comes in the wrong order
   _started = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExternalThread::Constructor
-//       Access: Private
-//  Description: This constructor is used to create the particular
-//               Thread object for each external thread that is bound
-//               via Thread::bind_thread().
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor is used to create the particular Thread object for each
+ * external thread that is bound via Thread::bind_thread().
+ */
 ExternalThread::
-ExternalThread(const string &name, const string &sync_name) : 
+ExternalThread(const string &name, const string &sync_name) :
   Thread(name, sync_name)
 {
   _started = true;
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: ExternalThread::thread_main
-//       Access: Private, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+
+/**
+
+ */
 void ExternalThread::
 thread_main() {
 }

@@ -20,11 +20,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoBoundingBox
-// Description : Stores the bounding box for the vertex data in a
-//               layer.  Optional.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the bounding box for the vertex data in a layer.  Optional.
+ */
 class LwoBoundingBox : public LwoChunk {
 public:
   LVecBase3 _min;
@@ -53,5 +51,3 @@ private:
 };
 
 #endif
-
-

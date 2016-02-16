@@ -16,13 +16,11 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IndirectCompareSort
-// Description : An STL function object class, this is intended to be
-//               used on any ordered collection of pointers to classes
-//               that define a get_sort() method.  It defines the
-//               order of the pointers by sort comparison.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object class, this is intended to be used on any ordered
+ * collection of pointers to classes that define a get_sort() method.  It
+ * defines the order of the pointers by sort comparison.
+ */
 template<class ObjectType>
 class IndirectCompareSort {
 public:
@@ -32,4 +30,3 @@ public:
 #include "indirectCompareSort.I"
 
 #endif
-

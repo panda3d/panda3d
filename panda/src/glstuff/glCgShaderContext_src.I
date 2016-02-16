@@ -13,15 +13,12 @@
 
 #ifndef OPENGLES_1
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::valid
-//       Access: Public
-//  Description: Returns true if the shader is "valid", ie, if the
-//               compilation was successful.  The compilation could
-//               fail if there is a syntax error in the shader, or
-//               if the current video card isn't shader-capable,
-//               or if no shader languages are compiled into panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the shader is "valid", ie, if the compilation was successful.
+ * The compilation could fail if there is a syntax error in the shader, or if
+ * the current video card isn't shader-capable, or if no shader languages are
+ * compiled into panda.
+ */
 INLINE bool CLP(CgShaderContext)::
 valid() {
   if (_shader->get_error_flag()) return false;
@@ -29,27 +26,21 @@ valid() {
   return (_cg_program != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::uses_standard_vertex_arrays
-//       Access: Public
-//  Description: Returns true if the shader may need to access
-//               standard vertex attributes as passed by
-//               glVertexPointer and the like.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the shader may need to access standard vertex attributes as
+ * passed by glVertexPointer and the like.
+ */
 INLINE bool CLP(CgShaderContext)::
 uses_standard_vertex_arrays() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLCgShaderContext::uses_custom_vertex_arrays
-//       Access: Public
-//  Description: Always true, for now.
-////////////////////////////////////////////////////////////////////
+/**
+ * Always true, for now.
+ */
 INLINE bool CLP(CgShaderContext)::
 uses_custom_vertex_arrays() {
   return true;
 }
 
 #endif  // OPENGLES_1
-

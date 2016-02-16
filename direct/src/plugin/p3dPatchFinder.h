@@ -20,16 +20,12 @@
 #include <vector>
 #include <map>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DPatchFinder
-// Description : This class is used to reconstruct the patch
-//               chain--the chain of patch files needed to generate a
-//               file--for downloading a package via patches, rather
-//               than downloading the entire file.
-//
-//               It is similar to PatchMaker.py, except it only reads
-//               patches, it does not generate them.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to reconstruct the patch chain--the chain of patch files
+ * needed to generate a file--for downloading a package via patches, rather than
+ * downloading the entire file.  It is similar to PatchMaker.py, except it only
+ * reads patches, it does not generate them.
+ */
 class P3DPatchFinder {
 public:
   class Package;
@@ -179,4 +175,3 @@ inline ostream &operator << (ostream &out, const P3DPatchFinder::PackageVersionK
 }
 
 #endif
-

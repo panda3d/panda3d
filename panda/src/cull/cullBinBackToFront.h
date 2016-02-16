@@ -22,25 +22,23 @@
 #include "renderState.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBinBackToFront
-// Description : A specific kind of CullBin that sorts geometry in
-//               order from furthest to nearest based on the center of
-//               its bounding volume.  This is primarily intended for
-//               rendering transparent and semi-transparent geometry
-//               that must be sorted from back to front.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specific kind of CullBin that sorts geometry in order from furthest to
+ * nearest based on the center of its bounding volume.  This is primarily
+ * intended for rendering transparent and semi-transparent geometry that must be
+ * sorted from back to front.
+ */
 class EXPCL_PANDA_CULL CullBinBackToFront : public CullBin {
 public:
-  INLINE CullBinBackToFront(const string &name, 
+  INLINE CullBinBackToFront(const string &name,
                             GraphicsStateGuardianBase *gsg,
                             const PStatCollector &draw_region_pcollector);
   virtual ~CullBinBackToFront();
 
-  static CullBin *make_bin(const string &name, 
+  static CullBin *make_bin(const string &name,
                            GraphicsStateGuardianBase *gsg,
                            const PStatCollector &draw_region_pcollector);
-  
+
 
   virtual void add_object(CullableObject *object, Thread *current_thread);
   virtual void finish_cull(SceneSetup *scene_setup, Thread *current_thread);
@@ -54,7 +52,7 @@ private:
   public:
     INLINE ObjectData(CullableObject *object, PN_stdfloat dist);
     INLINE bool operator < (const ObjectData &other) const;
-    
+
     CullableObject *_object;
     PN_stdfloat _dist;
   };
@@ -83,6 +81,3 @@ private:
 #include "cullBinBackToFront.I"
 
 #endif
-
-
-  

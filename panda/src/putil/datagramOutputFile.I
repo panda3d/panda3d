@@ -11,11 +11,9 @@
  * @date 2000-10-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE DatagramOutputFile::
 DatagramOutputFile() {
   _error = false;
@@ -24,32 +22,26 @@ DatagramOutputFile() {
   _owns_out = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE DatagramOutputFile::
 ~DatagramOutputFile() {
   close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::open
-//       Access: Published
-//  Description: Opens the indicated filename for writing.  Returns
-//               true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated filename for writing.  Returns true on success, false on
+ * failure.
+ */
 INLINE bool DatagramOutputFile::
 open(const Filename &filename) {
   return open(new FileReference(filename));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramOutputFile::get_stream
-//       Access: Published
-//  Description: Returns the ostream represented by the output file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ostream represented by the output file.
+ */
 INLINE ostream &DatagramOutputFile::
 get_stream() {
   static ofstream null_stream;

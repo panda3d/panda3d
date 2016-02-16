@@ -22,16 +22,13 @@
 #include "ordered_vector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OccluderEffect
-// Description : This functions similarly to a LightAttrib or
-//               ClipPlaneAttrib.  It indicates the set of occluders
-//               that modify the geometry at this level and below.
-//               Unlike a ClipPlaneAttrib, an OccluderEffect takes
-//               effect immediately when it is encountered during
-//               traversal, and thus can only add occluders; it may
-//               not remove them.
-////////////////////////////////////////////////////////////////////
+/**
+ * This functions similarly to a LightAttrib or ClipPlaneAttrib.  It indicates
+ * the set of occluders that modify the geometry at this level and below.
+ * Unlike a ClipPlaneAttrib, an OccluderEffect takes effect immediately when it
+ * is encountered during traversal, and thus can only add occluders; it may not
+ * remove them.
+ */
 class EXPCL_PANDA_PGRAPH OccluderEffect : public RenderEffect {
 private:
   INLINE OccluderEffect();
@@ -76,7 +73,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -98,4 +95,3 @@ private:
 #include "occluderEffect.I"
 
 #endif
-

@@ -21,10 +21,9 @@
 #include "odeSpace.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeSimpleSpace
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeSimpleSpace : public OdeSpace {
   friend class OdeSpace;
   friend class OdeGeom;
@@ -58,4 +57,3 @@ private:
 #include "odeSimpleSpace.I"
 
 #endif
-

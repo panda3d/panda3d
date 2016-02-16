@@ -20,12 +20,10 @@
 
 #include "pta_stdfloat.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoVertexMap
-// Description : A mapping of floating-point values per integer index.
-//               The meaning of these values is determined by the
-//               mapping type code and/or its name.
-////////////////////////////////////////////////////////////////////
+/**
+ * A mapping of floating-point values per integer index.  The meaning of these
+ * values is determined by the mapping type code and/or its name.
+ */
 class LwoVertexMap : public LwoChunk {
 public:
   bool has_value(int index) const;
@@ -62,5 +60,3 @@ private:
 };
 
 #endif
-
-

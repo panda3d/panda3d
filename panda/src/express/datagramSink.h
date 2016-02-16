@@ -22,12 +22,10 @@ class SubfileInfo;
 class FileReference;
 class Filename;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramSink
-// Description : This class defines the abstract interface to sending
-//               datagrams to any target, whether it be into a file
-//               or across the net
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the abstract interface to sending datagrams to any target,
+ * whether it be into a file or across the net
+ */
 class EXPCL_PANDAEXPRESS DatagramSink {
 PUBLISHED:
   INLINE DatagramSink();
@@ -47,4 +45,3 @@ PUBLISHED:
 #include "datagramSink.I"
 
 #endif
-

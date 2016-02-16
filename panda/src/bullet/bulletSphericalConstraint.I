@@ -11,14 +11,11 @@
  * @date 2010-03-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSphericalConstraint::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletSphericalConstraint::
 ~BulletSphericalConstraint() {
 
   delete _constraint;
 }
-

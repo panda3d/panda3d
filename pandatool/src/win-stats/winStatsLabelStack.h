@@ -23,11 +23,9 @@ class WinStatsLabel;
 class WinStatsMonitor;
 class WinStatsGraph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsLabelStack
-// Description : A window that contains a stack of labels from bottom
-//               to top.
-////////////////////////////////////////////////////////////////////
+/**
+ * A window that contains a stack of labels from bottom to top.
+ */
 class WinStatsLabelStack {
 public:
   WinStatsLabelStack();
@@ -77,4 +75,3 @@ private:
 };
 
 #endif
-

@@ -40,4 +40,3 @@ EXPCL_DTOOL void *
 get_dso_symbol(void *handle, const string &name);
 
 #endif
-

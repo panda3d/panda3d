@@ -22,11 +22,10 @@
 // includes gl.h).
 #include "wglext.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsStateGuardian
-// Description : A tiny specialization on GLGraphicsStateGuardian to
-//               add some wgl-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLGraphicsStateGuardian to add some wgl-specific
+ * information.
+ */
 class wglGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -63,7 +62,7 @@ private:
   void make_context(HDC hdc);
   HGLRC get_share_context() const;
   void redirect_share_pool(wglGraphicsStateGuardian *share_with);
-  
+
 
   bool make_twindow();
   void release_twindow();

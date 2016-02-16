@@ -16,11 +16,9 @@
 
 TypeHandle VrpnTrackerDevice::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTrackerDevice::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnTrackerDevice::
 VrpnTrackerDevice(VrpnClient *client, const string &device_name,
                   int sensor, VrpnTrackerDevice::DataType data_type,
@@ -32,11 +30,9 @@ VrpnTrackerDevice(VrpnClient *client, const string &device_name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnTrackerDevice::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnTrackerDevice::
 ~VrpnTrackerDevice() {
   disconnect();

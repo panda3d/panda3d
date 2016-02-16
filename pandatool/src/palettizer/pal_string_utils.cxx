@@ -82,5 +82,3 @@ parse_image_type_request(const string &word, PNMFileType *&color_type,
 
   return true;
 }
-
-

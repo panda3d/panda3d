@@ -11,41 +11,33 @@
  * @date 2000-06-26
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_endpoint1
-//       Access: Public
-//  Description: endpoint assignment
-////////////////////////////////////////////////////////////////////
+/**
+ * endpoint assignment
+ */
 INLINE void LineEmitter::
 set_endpoint1(const LPoint3& point) {
   _endpoint1 = point;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_endpoint2
-//       Access: Public
-//  Description: endpoint assignment
-////////////////////////////////////////////////////////////////////
+/**
+ * endpoint assignment
+ */
 INLINE void LineEmitter::
 set_endpoint2(const LPoint3& point) {
   _endpoint2 = point;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_endpoint1
-//       Access: Public
-//  Description: endpoint accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * endpoint accessor
+ */
 INLINE LPoint3 LineEmitter::
 get_endpoint1() const {
   return _endpoint1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_endpoint2
-//       Access: Public
-//  Description: endpoint accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * endpoint accessor
+ */
 INLINE LPoint3 LineEmitter::
 get_endpoint2() const {
   return _endpoint2;

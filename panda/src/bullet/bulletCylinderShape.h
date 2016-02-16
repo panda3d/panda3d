@@ -20,10 +20,9 @@
 #include "bullet_utils.h"
 #include "bulletShape.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletCylinderShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletCylinderShape : public BulletShape {
 
 PUBLISHED:
@@ -49,7 +48,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletCylinderShape", 
+    register_type(_type_handle, "BulletCylinderShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

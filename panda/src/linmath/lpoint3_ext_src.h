@@ -11,12 +11,10 @@
  * @date 2013-09-13
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<LPoint3>
-// Description : This class defines the extension methods for
-//               LPoint3, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for LPoint3, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<FLOATNAME(LPoint3)> : public ExtensionBase<FLOATNAME(LPoint3)> {
 public:

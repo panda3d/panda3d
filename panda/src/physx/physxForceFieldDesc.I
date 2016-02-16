@@ -11,31 +11,25 @@
  * @date 2009-11-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxForceFieldDesc::
 PhysxForceFieldDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxForceFieldDesc::
 ~PhysxForceFieldDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxForceFieldDesc::
 set_to_default() {
 
@@ -43,14 +37,11 @@ set_to_default() {
   set_name("");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxForceFieldDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

@@ -16,12 +16,10 @@
 
 #include "nppanda3d_common.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PPDownloadRequest
-// Description : An instance of this object is assigned as the
-//               notifyData for URL requests, to help the plugin
-//               associate streams with requests.
-////////////////////////////////////////////////////////////////////
+/**
+ * An instance of this object is assigned as the notifyData for URL requests, to
+ * help the plugin associate streams with requests.
+ */
 class PPDownloadRequest {
 public:
   enum RequestType {
@@ -45,4 +43,3 @@ public:
 #include "ppDownloadRequest.I"
 
 #endif
-

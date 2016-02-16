@@ -21,14 +21,11 @@
 
 class PGTop;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGMouseWatcherGroup
-// Description : This is a specialization on MouseWatcherGroup, to
-//               associate it with a PGTop.  Originally we had PGTop
-//               multiply inheriting from NamedNode and
-//               MouseWatcherGroup, but this causes problems with
-//               circular reference counts.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on MouseWatcherGroup, to associate it with a PGTop.
+ * Originally we had PGTop multiply inheriting from NamedNode and
+ * MouseWatcherGroup, but this causes problems with circular reference counts.
+ */
 class EXPCL_PANDA_PGUI PGMouseWatcherGroup : public MouseWatcherGroup {
 public:
   INLINE PGMouseWatcherGroup(PGTop *top);

@@ -34,10 +34,9 @@
 
 class ParticleSystemManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParticleSystem
-// Description : Contains and manages a particle system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Contains and manages a particle system.
+ */
 class EXPCL_PANDAPHYSICS ParticleSystem : public Physical {
 PUBLISHED:
   // constructor/destructor
@@ -67,7 +66,7 @@ PUBLISHED:
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
   INLINE void set_floor_z(PN_stdfloat z);
-  
+
   INLINE void clear_floor_z();
 
   INLINE int get_pool_size() const;
@@ -187,4 +186,3 @@ private:
 #include "particleSystem.I"
 
 #endif // PARTICLESYSTEM_H
-

@@ -31,10 +31,9 @@ class OdeSimpleSpace;
 class OdeHashSpace;
 class OdeQuadTreeSpace;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeSpace
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeSpace : public TypedObject {
   friend class OdeGeom;
   static const int MAX_CONTACTS;

@@ -11,45 +11,36 @@
  * @date 2010-01-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSphereShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletSphereShape::
 ~BulletSphereShape() {
 
   delete _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSphereShape::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletSphereShape::
 BulletSphereShape(const BulletSphereShape &copy) :
   _shape(copy._shape) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSphereShape::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletSphereShape::
 operator = (const BulletSphereShape &copy) {
   _shape = copy._shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSphereShape::get_radius
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat BulletSphereShape::
 get_radius() const {
 
   return _shape->getRadius();
 }
-

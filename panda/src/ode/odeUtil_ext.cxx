@@ -20,13 +20,10 @@
 
 PyObject *Extension<OdeUtil>::_python_callback = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeUtil::collide2
-//       Access: Public, Static
-//  Description: Calls the callback for all potentially intersecting
-//               pairs that contain one geom from geom1 and one geom
-//               from geom2.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls the callback for all potentially intersecting pairs that contain one
+ * geom from geom1 and one geom from geom2.
+ */
 int Extension<OdeUtil>::
 collide2(const OdeGeom &geom1, const OdeGeom &geom2, PyObject* arg, PyObject* callback) {
   nassertr(callback != NULL, -1);

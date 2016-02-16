@@ -21,10 +21,9 @@
 #include "ode_includes.h"
 #include "odeGeom.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeConvexGeom
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeConvexGeom : public OdeGeom {
   friend class OdeGeom;
 

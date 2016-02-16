@@ -11,11 +11,9 @@
  * @date 2010-09-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxSoftBodyNode::
 PhysxSoftBodyNode(const char *name) : GeomNode(name) {
 
@@ -30,13 +28,10 @@ PhysxSoftBodyNode(const char *name) : GeomNode(name) {
   this->add_geom(_geom);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxSoftBodyNode::
 ~PhysxSoftBodyNode() {
 
 }
-

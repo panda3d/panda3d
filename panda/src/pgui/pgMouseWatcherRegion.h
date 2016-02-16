@@ -20,13 +20,11 @@
 
 class PGItem;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGMouseWatcherRegion
-// Description : This is a specialization on MouseWatcherRegion, to
-//               add a bit more fields that are relevant to the PG
-//               system.  Each PGItem corresponds to exactly one
-//               PGMouseWatcherRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on MouseWatcherRegion, to add a bit more fields that
+ * are relevant to the PG system.  Each PGItem corresponds to exactly one
+ * PGMouseWatcherRegion.
+ */
 class EXPCL_PANDA_PGUI PGMouseWatcherRegion : public MouseWatcherRegion {
 public:
   PGMouseWatcherRegion(PGItem *item);

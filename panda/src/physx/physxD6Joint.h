@@ -21,14 +21,12 @@
 
 class PhysxD6JointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxD6Joint
-// Description : A D6 joint is a general constraint between two
-//               actors.  It allows the user to individually define
-//               the linear and rotational degrees of freedom.  It
-//               also allows the user to configure the joint with
-//               limits and driven degrees of freedom as they wish.
-////////////////////////////////////////////////////////////////////
+/**
+ * A D6 joint is a general constraint between two actors.  It allows the user to
+ * individually define the linear and rotational degrees of freedom.  It also
+ * allows the user to configure the joint with limits and driven degrees of
+ * freedom as they wish.
+ */
 class EXPCL_PANDAPHYSX PhysxD6Joint : public PhysxJoint {
 
 PUBLISHED:
@@ -58,7 +56,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxD6Joint", 
+    register_type(_type_handle, "PhysxD6Joint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

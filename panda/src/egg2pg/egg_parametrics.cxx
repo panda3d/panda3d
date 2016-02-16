@@ -14,15 +14,12 @@
 #include "egg_parametrics.h"
 #include "config_egg2pg.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_nurbs_surface
-//  Description: Returns a new NurbsSurfaceEvaluator that's filled in
-//               with the values from the given EggSurface (and
-//               transformed by the indicated matrix), or NULL if the
-//               object is invalid.  If there is vertex color, it will
-//               be applied to values 0 - 3 of the extended vertex
-//               values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new NurbsSurfaceEvaluator that's filled in with the values from the
+ * given EggSurface (and transformed by the indicated matrix), or NULL if the
+ * object is invalid.  If there is vertex color, it will be applied to values 0
+ * - 3 of the extended vertex values.
+ */
 PT(NurbsSurfaceEvaluator)
 make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat) {
   if (egg_surface->get_u_order() < 1 || egg_surface->get_u_order() > 4) {
@@ -87,15 +84,12 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat) {
   return nurbs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_nurbs_curve
-//  Description: Returns a new NurbsCurveEvaluator that's filled in
-//               with the values from the given EggCurve (and
-//               transformed by the indicated matrix), or NULL if the
-//               object is invalid.  If there is vertex color, it will
-//               be applied to values 0 - 3 of the extended vertex
-//               values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new NurbsCurveEvaluator that's filled in with the values from the
+ * given EggCurve (and transformed by the indicated matrix), or NULL if the
+ * object is invalid.  If there is vertex color, it will be applied to values 0
+ * - 3 of the extended vertex values.
+ */
 PT(NurbsCurveEvaluator)
 make_nurbs_curve(EggNurbsCurve *egg_curve, const LMatrix4d &mat) {
   if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {

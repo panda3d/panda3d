@@ -24,5 +24,3 @@ extern string cpp_longlong_keyword;
 
 
 #endif
-
-

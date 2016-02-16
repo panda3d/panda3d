@@ -21,10 +21,9 @@
 
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToDXF
-// Description : A program to read an egg file and write a DXF file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an egg file and write a DXF file.
+ */
 class EggToDXF : public EggToSomething {
 public:
   EggToDXF();
@@ -42,4 +41,3 @@ private:
 };
 
 #endif
-

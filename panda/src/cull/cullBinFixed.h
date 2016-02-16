@@ -22,25 +22,20 @@
 #include "renderState.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBinFixed
-// Description : A specific kind of CullBin that sorts geometry in
-//               the order specified by the user-specified draw_order
-//               parameter.  This allows precise relative ordering of
-//               two objects.
-//
-//               When two or more objects are assigned the same
-//               draw_order, they are drawn in scene-graph order (as
-//               with CullBinUnsorted).
-////////////////////////////////////////////////////////////////////
+/**
+ * A specific kind of CullBin that sorts geometry in the order specified by the
+ * user-specified draw_order parameter.  This allows precise relative ordering
+ * of two objects.  When two or more objects are assigned the same draw_order,
+ * they are drawn in scene-graph order (as with CullBinUnsorted).
+ */
 class EXPCL_PANDA_CULL CullBinFixed : public CullBin {
 public:
-  INLINE CullBinFixed(const string &name, 
+  INLINE CullBinFixed(const string &name,
                       GraphicsStateGuardianBase *gsg,
                       const PStatCollector &draw_region_pcollector);
   virtual ~CullBinFixed();
 
-  static CullBin *make_bin(const string &name, 
+  static CullBin *make_bin(const string &name,
                            GraphicsStateGuardianBase *gsg,
                            const PStatCollector &draw_region_pcollector);
 
@@ -56,7 +51,7 @@ private:
   public:
     INLINE ObjectData(CullableObject *object, int draw_order);
     INLINE bool operator < (const ObjectData &other) const;
-    
+
     CullableObject *_object;
     int _draw_order;
   };
@@ -85,6 +80,3 @@ private:
 #include "cullBinFixed.I"
 
 #endif
-
-
-  

@@ -11,29 +11,23 @@
  * @date 2005-03-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleFan::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTriangleFan::
 EggTriangleFan(const string &name) : EggCompositePrimitive(name) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleFan::Copy constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTriangleFan::
 EggTriangleFan(const EggTriangleFan &copy) : EggCompositePrimitive(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTriangleFan::Copy assignment operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTriangleFan &EggTriangleFan::
 operator = (const EggTriangleFan &copy) {
   EggCompositePrimitive::operator = (copy);

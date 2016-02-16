@@ -22,17 +22,16 @@
 
 class UserDataAudio;
 
-////////////////////////////////////////////////////////////////////
-//       Class : UserDataAudioCursor
-// Description : A UserDataAudioCursor is a means to manually
-//               supply a sequence of raw audio samples.
-////////////////////////////////////////////////////////////////////
+/**
+ * A UserDataAudioCursor is a means to manually supply a sequence of raw audio
+ * samples.
+ */
 class EXPCL_PANDA_MOVIES UserDataAudioCursor : public MovieAudioCursor {
 
 PUBLISHED:
   UserDataAudioCursor(UserDataAudio *src);
   virtual ~UserDataAudioCursor();
-  
+
 public:
   virtual void read_samples(int n, PN_int16 *data);
   virtual int ready() const;

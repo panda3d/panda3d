@@ -32,7 +32,7 @@ private:
 
 
 ThreadWithData::
-ThreadWithData(const string &name, int parameter) : 
+ThreadWithData(const string &name, int parameter) :
   Thread(name, name),
   _parameter(parameter)
 {
@@ -67,7 +67,7 @@ main() {
       cout << "Unable to start " << name << ".\n";
     } else {
       MutexHolder holder(cout_mutex);
-      cout << "Started " << name << ", count = " 
+      cout << "Started " << name << ", count = "
            << thread->get_ref_count() << "\n";
     }
   }

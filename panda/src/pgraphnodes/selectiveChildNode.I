@@ -11,11 +11,9 @@
  * @date 2002-03-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: SelectiveChildNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SelectiveChildNode::
 SelectiveChildNode(const string &name) :
   PandaNode(name),
@@ -23,11 +21,9 @@ SelectiveChildNode(const string &name) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SelectiveChildNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SelectiveChildNode::
 SelectiveChildNode(const SelectiveChildNode &copy) :
   PandaNode(copy),
@@ -35,13 +31,10 @@ SelectiveChildNode(const SelectiveChildNode &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SelectiveChildNode::select_child
-//       Access: Protected
-//  Description: Selects the indicated child for rendering.  This is
-//               normally called during the cull_callback() method,
-//               but it may be called at any time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects the indicated child for rendering.  This is normally called during
+ * the cull_callback() method, but it may be called at any time.
+ */
 INLINE void SelectiveChildNode::
 select_child(int n) {
   nassertv(n >= 0);

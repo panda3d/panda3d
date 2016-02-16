@@ -19,21 +19,16 @@
 
 TypeHandle GeomCacheEntry::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomCacheEntry::
 ~GeomCacheEntry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::record
-//       Access: Public
-//  Description: Records the entry in the global cache for the first
-//               time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the entry in the global cache for the first time.
+ */
 PT(GeomCacheEntry) GeomCacheEntry::
 record(Thread *current_thread) {
   nassertr(_next == (GeomCacheEntry *)NULL && _prev == (GeomCacheEntry *)NULL, NULL);
@@ -71,12 +66,9 @@ record(Thread *current_thread) {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::refresh
-//       Access: Public
-//  Description: Marks the cache entry recently used, so it will not
-//               be evicted for a while.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the cache entry recently used, so it will not be evicted for a while.
+ */
 void GeomCacheEntry::
 refresh(Thread *current_thread) {
   GeomCacheManager *cache_mgr = GeomCacheManager::get_global_ptr();
@@ -96,12 +88,10 @@ refresh(Thread *current_thread) {
   _last_frame_used = current_frame;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::erase
-//       Access: Public
-//  Description: Removes the entry from the queue, returning a pointer
-//               to the entry.  Does not call evict_callback().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the entry from the queue, returning a pointer to the entry.  Does not
+ * call evict_callback().
+ */
 PT(GeomCacheEntry) GeomCacheEntry::
 erase() {
   nassertr(_next != (GeomCacheEntry *)NULL && _prev != (GeomCacheEntry *)NULL, NULL);
@@ -132,21 +122,17 @@ erase() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::evict_callback
-//       Access: Public, Virtual
-//  Description: Called when the entry is evicted from the cache, this
-//               should clean up the owning object appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the entry is evicted from the cache, this should clean up the
+ * owning object appropriately.
+ */
 void GeomCacheEntry::
 evict_callback() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomCacheEntry::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GeomCacheEntry::
 output(ostream &out) const {
   out << "[ unknown ]";

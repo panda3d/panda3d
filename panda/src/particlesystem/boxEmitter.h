@@ -16,11 +16,9 @@
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoxEmitter
-// Description : Describes a voluminous box region in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a voluminous box region in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS BoxEmitter : public BaseParticleEmitter {
 PUBLISHED:
   BoxEmitter();

@@ -25,23 +25,18 @@ class P3DHost;
 class P3DInstance;
 class P3DTemporaryFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DPackage
-// Description : This corresponds to a downloadable, patchable
-//               package, and all its constituent files.  For
-//               instance, a particular version of the Panda3D
-//               runtime, which consists of a bunch of dll's
-//               downloaded in a single tar file, is a package.
-//
-//               The core API is responsible for managing these
-//               packages on disk, downloading new versions when
-//               needed, and removing stale versions to limit disk
-//               space waste.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to a downloadable, patchable package, and all its
+ * constituent files.  For instance, a particular version of the Panda3D
+ * runtime, which consists of a bunch of dll's downloaded in a single tar file,
+ * is a package.  The core API is responsible for managing these packages on
+ * disk, downloading new versions when needed, and removing stale versions to
+ * limit disk space waste.
+ */
 class P3DPackage {
 private:
   P3DPackage(P3DHost *host,
-             const string &package_name, 
+             const string &package_name,
              const string &package_version,
              const string &package_platform,
              const string &alt_host);
@@ -170,7 +165,7 @@ private:
     bool _thread_started;
     InstallToken _thread_token;
     size_t _thread_bytes_done;
-  };    
+  };
 
   class InstallStepUncompressFile : public InstallStepThreaded {
   public:
@@ -233,7 +228,7 @@ private:
   void report_progress(InstallStep *step);
   void report_info_ready();
   void report_done(bool success);
-  Download *start_download(DownloadType dtype, const string &urlbase, 
+  Download *start_download(DownloadType dtype, const string &urlbase,
                            const string &pathname, const FileSpec &file_spec);
   void set_active_download(Download *download);
   void set_saved_download(Download *download);

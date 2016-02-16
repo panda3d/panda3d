@@ -18,14 +18,12 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : vector_double
-// Description : A vector of doubles.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a vector of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the vector again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A vector of doubles.  This class is defined once here, and exported to
+ * PANDA.DLL; other packages that want to use a vector of this type (whether
+ * they need to export it or not) should include this header file, rather than
+ * defining the vector again.
+ */
 
 #define EXPCL EXPCL_PANDAEXPRESS
 #define EXPTP EXPTP_PANDAEXPRESS

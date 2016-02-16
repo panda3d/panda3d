@@ -20,4 +20,3 @@ bool MaxLoadEggData(EggData *data,    bool merge, bool model, bool anim);
 bool MaxLoadEggFile(const char *name, bool merge, bool model, bool anim);
 
 #endif
-

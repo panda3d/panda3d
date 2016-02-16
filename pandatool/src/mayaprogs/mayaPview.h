@@ -23,12 +23,10 @@
 #include <maya/MObject.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaPview
-// Description : This class serves as a plug-in to Maya to allow
-//               viewing the current Maya selection as it will be
-//               converted to Panda.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class serves as a plug-in to Maya to allow viewing the current Maya
+ * selection as it will be converted to Panda.
+ */
 class MayaPview : public MPxCommand {
 public:
   MayaPview();

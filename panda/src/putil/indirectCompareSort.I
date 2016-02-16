@@ -11,11 +11,9 @@
  * @date 2005-03-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndirectCompareSort::operator ()
-//       Access: Public
-//  Description: Returns true if a sorts before b, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a sorts before b, false otherwise.
+ */
 template<class ObjectType>
 INLINE bool IndirectCompareSort<ObjectType>::
 operator () (const ObjectType *a, const ObjectType *b) const {

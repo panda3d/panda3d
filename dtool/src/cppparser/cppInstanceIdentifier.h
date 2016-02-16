@@ -41,14 +41,12 @@ enum CPPInstanceIdentifierType {
   IIT_initializer,
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPInstanceIdentifier
-// Description : This class is used in parser.y to build up a variable
-//               instance definition.  An instance is something like
-//               'int *&a'; the InstanceIdentifier stores everything
-//               to the right of the typename.  Later this can be
-//               passed to make_instance() to construct a CPPInstance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used in parser.y to build up a variable instance definition.
+ * An instance is something like 'int *&a'; the InstanceIdentifier stores
+ * everything to the right of the typename.  Later this can be passed to
+ * make_instance() to construct a CPPInstance.
+ */
 class CPPInstanceIdentifier {
 public:
   CPPInstanceIdentifier(CPPIdentifier *ident);

@@ -17,7 +17,7 @@
 TypeHandle AwWebView::_type_handle;
 
 AwWebView::
-AwWebView(Awesomium::WebView * webViewPtr)  {  
+AwWebView(Awesomium::WebView * webViewPtr)  {
   _myWebView = webViewPtr;
 
 }
@@ -52,7 +52,7 @@ void AwWebView::
 render(size_t destination, int destRowSpan, int destDepth, AwWebView::Rect * renderedRect) {
   if (renderedRect) {
     Awesomium::Rect rect(renderedRect->x, renderedRect->y, renderedRect->width, renderedRect->height);
-    _myWebView->Awesomium::WebView::render( reinterpret_cast<unsigned char *>(destination), destRowSpan, destDepth, &rect);    
+    _myWebView->Awesomium::WebView::render( reinterpret_cast<unsigned char *>(destination), destRowSpan, destDepth, &rect);
   }
   else
   {
@@ -72,4 +72,3 @@ injectMouseMove(int x, int y) {
   //awesomium_cat.debug() <<"got mouse move " << x << " " << y << "\n";
   _myWebView->injectMouseMove(x,y);
 }
-

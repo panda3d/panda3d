@@ -22,10 +22,9 @@
 static const char *toplevel_class_name = "pstats";
 static WinStatsServer *server = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: toplevel_window_proc
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 static LONG WINAPI
 toplevel_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
@@ -44,12 +43,10 @@ toplevel_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-  
-////////////////////////////////////////////////////////////////////
-//     Function: create_toplevel_window
-//  Description: Creates the initial, toplevel window for the
-//               application.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Creates the initial, toplevel window for the application.
+ */
 static HWND
 create_toplevel_window(HINSTANCE application) {
   WNDCLASS wc;
@@ -70,7 +67,7 @@ create_toplevel_window(HINSTANCE application) {
   strm << "PStats " << pstats_port;
   string window_name = strm.str();
 
-  HWND toplevel_window = 
+  HWND toplevel_window =
     CreateWindow(toplevel_class_name, window_name.c_str(), window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                  NULL, NULL, application, 0);
@@ -78,7 +75,7 @@ create_toplevel_window(HINSTANCE application) {
     nout << "Could not create toplevel window!\n";
     exit(1);
   }
-  
+
   return toplevel_window;
 }
 
@@ -88,7 +85,7 @@ create_toplevel_window(HINSTANCE application) {
 // main() instead, which doesn't squelch the stderr output.
 
 #ifndef DEVELOP_WINSTATS
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) 
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #else
 int main(int argc, char *argv[])
 #endif
@@ -102,12 +99,12 @@ int main(int argc, char *argv[])
   server = new WinStatsServer;
   if (!server->listen()) {
     ostringstream stream;
-    stream 
+    stream
       << "Unable to open port " << pstats_port
       << ".  Try specifying a different\n"
       << "port number using pstats-port in your Config file.";
     string str = stream.str();
-    MessageBox(toplevel_window, str.c_str(), "PStats error", 
+    MessageBox(toplevel_window, str.c_str(), "PStats error",
                MB_OK | MB_ICONEXCLAMATION);
     exit(1);
   }

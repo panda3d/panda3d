@@ -18,15 +18,12 @@
 
 #include "eggGroupNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTable
-// Description : This corresponds to a <Table> or a <Bundle> entry.
-//               As such, it doesn't actually contain a table of
-//               numbers, but it may be a parent to an EggSAnimData or
-//               an EggXfmAnimData, which do.  It may also be a parent
-//               to another <Table> or <Bundle>, establishing a
-//               hierarchy of tables.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to a <Table> or a <Bundle> entry.  As such, it doesn't
+ * actually contain a table of numbers, but it may be a parent to an
+ * EggSAnimData or an EggXfmAnimData, which do.  It may also be a parent to
+ * another <Table> or <Bundle>, establishing a hierarchy of tables.
+ */
 class EXPCL_PANDAEGG EggTable : public EggGroupNode {
 PUBLISHED:
   enum TableType {
@@ -79,4 +76,3 @@ ostream &operator << (ostream &out, EggTable::TableType t);
 #include "eggTable.I"
 
 #endif
-

@@ -17,17 +17,17 @@
 TypeHandle OdeNullJoint::_type_handle;
 
 OdeNullJoint::
-OdeNullJoint(dJointID id) : 
+OdeNullJoint(dJointID id) :
   OdeJoint(id) {
 }
 
 OdeNullJoint::
-OdeNullJoint(OdeWorld &world) : 
+OdeNullJoint(OdeWorld &world) :
   OdeJoint(dJointCreateNull(world.get_id(), 0)) {
 }
 
 OdeNullJoint::
-OdeNullJoint(OdeWorld &world, OdeJointGroup &joint_group) : 
+OdeNullJoint(OdeWorld &world, OdeJointGroup &joint_group) :
   OdeJoint(dJointCreateNull(world.get_id(), joint_group.get_id())) {
 }
 

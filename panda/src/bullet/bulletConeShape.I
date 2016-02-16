@@ -11,56 +11,45 @@
  * @date 2010-01-24
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConeShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletConeShape::
 ~BulletConeShape() {
 
   delete _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConeShape::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletConeShape::
 BulletConeShape(const BulletConeShape &copy) :
   _shape(copy._shape) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConeShape::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletConeShape::
 operator = (const BulletConeShape &copy) {
   _shape = copy._shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConeShape::get_radius
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat BulletConeShape::
 get_radius() const {
 
   return (PN_stdfloat)_shape->getRadius();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConeShape::get_height
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat BulletConeShape::
 get_height() const {
 
   return (PN_stdfloat)_shape->getHeight();
 }
-

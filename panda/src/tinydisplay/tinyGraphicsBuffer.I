@@ -11,12 +11,9 @@
  * @date 2008-08-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsBuffer::get_frame_buffer
-//       Access: Public
-//  Description: Returns a direct pointer to the frame buffer used in
-//               this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a direct pointer to the frame buffer used in this object.
+ */
 ZBuffer *TinyGraphicsBuffer::
 get_frame_buffer() {
   return _frame_buffer;

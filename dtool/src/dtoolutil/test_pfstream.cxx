@@ -14,7 +14,7 @@
 #include "dtoolbase.h"
 #include "pfstream.h"
 
-int 
+int
 main(int argc, char *argv[]) {
   if (argc < 2) {
     cout << "test_pfstream command-line\n";
@@ -30,7 +30,7 @@ main(int argc, char *argv[]) {
   }
 
   cout << "Executing command:\n" << cmd << "\n";
-  
+
   IPipeStream in(cmd);
 
   char c;

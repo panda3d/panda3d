@@ -54,4 +54,3 @@ INLINE_LINMATH LMatrix3f cast_to_float(const LMatrix3d &source) {
 INLINE_LINMATH LMatrix4f cast_to_float(const LMatrix4d &source) {
   return LCAST(float, source);
 }
-

@@ -22,11 +22,10 @@ class EggGroup;
 class EggVertexPool;
 class EggVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMakeTube
-// Description : A program to generate an egg file representing a tube
-//               model, similar in shape to a CollisionTube.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to generate an egg file representing a tube model, similar in shape
+ * to a CollisionTube.
+ */
 class EggMakeTube : public EggMakeSomething {
 public:
   EggMakeTube();
@@ -54,4 +53,3 @@ private:
 };
 
 #endif
-

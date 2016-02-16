@@ -23,16 +23,15 @@
 
 class TextStats;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextMonitor
-// Description : A simple, scrolling-text stats monitor.  Guaranteed
-//               to compile on every platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple, scrolling-text stats monitor.  Guaranteed to compile on every
+ * platform.
+ */
 class TextMonitor : public PStatMonitor {
 public:
   TextMonitor(TextStats *server, ostream *outStream, bool show_raw_data);
   TextStats *get_server();
- 
+
   virtual string get_monitor_name();
 
   virtual void got_hello();
@@ -44,7 +43,7 @@ public:
 
   void show_ms(const PStatViewLevel *level, int indent_level);
   void show_level(const PStatViewLevel *level, int indent_level);
-  
+
 private:
   ostream *_outStream; //[PECI]
   bool _show_raw_data;

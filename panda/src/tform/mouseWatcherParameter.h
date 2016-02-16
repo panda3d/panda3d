@@ -21,12 +21,10 @@
 #include "textEncoder.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseWatcherParameter
-// Description : This is sent along as a parameter to most events
-//               generated for a region to indicate the mouse and
-//               button state for the event.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is sent along as a parameter to most events generated for a region to
+ * indicate the mouse and button state for the event.
+ */
 class EXPCL_PANDA_TFORM MouseWatcherParameter {
 public:
   INLINE MouseWatcherParameter();
@@ -38,7 +36,7 @@ public:
   INLINE void set_keyrepeat(bool flag);
   INLINE void set_keycode(int keycode);
   INLINE void set_candidate(const wstring &candidate_string,
-                            size_t highlight_start, 
+                            size_t highlight_start,
                             size_t higlight_end,
                             size_t cursor_pos);
   INLINE void set_modifier_buttons(const ModifierButtons &mods);

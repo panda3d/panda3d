@@ -160,11 +160,9 @@ CFArrayRef GSCGDisplayAvailableModesUsefulForOpenGL(CGDirectDisplayID display) {
 
 TypeHandle osxGraphicsPipe::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 osxGraphicsPipe::
 osxGraphicsPipe() {
   CGRect display_bounds = CGDisplayBounds(kCGDirectMainDisplay);
@@ -192,62 +190,47 @@ osxGraphicsPipe() {
   _display_information -> _display_mode_array = displays;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 osxGraphicsPipe::
 ~osxGraphicsPipe() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to choose
+ * between several possible GraphicsPipes available on a particular platform, so
+ * the name should be meaningful and unique for a given platform.
+ */
 string osxGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               osxGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the user
+ * to make a default osxGraphicsPipe.
+ */
 PT(GraphicsPipe) osxGraphicsPipe::
 pipe_constructor() {
   return new osxGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::get_preferred_window_thread
-//       Access: Public, Virtual
-//  Description: Returns an indication of the thread in which this
-//               GraphicsPipe requires its window processing to be
-//               performed: typically either the app thread (e.g. X)
-//               or the draw thread (Windows).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an indication of the thread in which this GraphicsPipe requires its
+ * window processing to be performed: typically either the app thread (e.g.  X)
+ * or the draw thread (Windows).
+ */
 GraphicsPipe::PreferredWindowThread
 osxGraphicsPipe::get_preferred_window_thread() const {
   return PWT_app;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::create_cg_image
-//       Access: Public, Static
-//  Description: Creates a new Quartz bitmap image with the data in
-//               the indicated PNMImage.  The caller should eventually
-//               free this image via CGImageRelease.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new Quartz bitmap image with the data in the indicated PNMImage.
+ * The caller should eventually free this image via CGImageRelease.
+ */
 CGImageRef osxGraphicsPipe::
 create_cg_image(const PNMImage &pnm_image) {
   size_t width = pnm_image.get_x_size();
@@ -349,23 +332,19 @@ create_cg_image(const PNMImage &pnm_image) {
   return image;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::release_data
-//       Access: Private, Static
-//  Description: This callback is assigned to delete the data array
-//               allocated within create_cg_image().
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback is assigned to delete the data array allocated within
+ * create_cg_image().
+ */
 void osxGraphicsPipe::
 release_data(void *info, const void *data, size_t size) {
   char *char_array = (char *)data;
   PANDA_FREE_ARRAY(char_array);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) osxGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -462,15 +441,12 @@ make_output(const string &name,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsPipe::make_callback_gsg
-//       Access: Protected, Virtual
-//  Description: This is called when make_output() is used to create a
-//               CallbackGraphicsWindow.  If the GraphicsPipe can
-//               construct a GSG that's not associated with any
-//               particular window object, do so now, assuming the
-//               correct graphics context has been set up externally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called when make_output() is used to create a CallbackGraphicsWindow.
+ * If the GraphicsPipe can construct a GSG that's not associated with any
+ * particular window object, do so now, assuming the correct graphics context
+ * has been set up externally.
+ */
 PT(GraphicsStateGuardian) osxGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
   return new osxGraphicsStateGuardian(engine, this, NULL);

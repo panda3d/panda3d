@@ -19,10 +19,9 @@
 #include "config_physx.h"
 #include "physxSegment.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxCapsule
-// Description : Represents a capsule.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a capsule.
+ */
 class EXPCL_PANDAPHYSX PhysxCapsule {
 
 PUBLISHED:

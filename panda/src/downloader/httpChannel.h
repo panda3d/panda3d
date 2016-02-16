@@ -45,21 +45,15 @@
 class Ramfile;
 class HTTPClient;
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPChannel
-// Description : A single channel of communication from an HTTPClient.
-//               This is similar to the concept of a 'connection',
-//               except that HTTP is technically connectionless; in
-//               fact, a channel may represent one unbroken connection
-//               or it may transparently close and reopen a new
-//               connection with each request.
-//
-//               A channel is conceptually a single thread of I/O.
-//               One document at a time may be requested using a
-//               channel; a new document may (in general) not be
-//               requested from the same HTTPChannel until the first
-//               document has been fully retrieved.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single channel of communication from an HTTPClient.  This is similar to the
+ * concept of a 'connection', except that HTTP is technically connectionless; in
+ * fact, a channel may represent one unbroken connection or it may transparently
+ * close and reopen a new connection with each request.  A channel is
+ * conceptually a single thread of I/O. One document at a time may be requested
+ * using a channel; a new document may (in general) not be requested from the
+ * same HTTPChannel until the first document has been fully retrieved.
+ */
 class EXPCL_PANDAEXPRESS HTTPChannel : public TypedReferenceCount {
 private:
   HTTPChannel(HTTPClient *client);
@@ -93,7 +87,7 @@ PUBLISHED:
     SC_ssl_invalid_server_certificate,
     SC_ssl_self_signed_server_certificate,
     SC_ssl_unexpected_server,
-    
+
     // These errors are only generated after a download_to_*() call
     // been issued.
     SC_download_open_error,
@@ -170,7 +164,7 @@ PUBLISHED:
   INLINE void send_extra_header(const string &key, const string &value);
 
   BLOCKING INLINE bool get_document(const DocumentSpec &url);
-  BLOCKING INLINE bool get_subdocument(const DocumentSpec &url, 
+  BLOCKING INLINE bool get_subdocument(const DocumentSpec &url,
                                        size_t first_byte, size_t last_byte);
   BLOCKING INLINE bool get_header(const DocumentSpec &url);
   BLOCKING INLINE bool post_form(const DocumentSpec &url, const string &body);
@@ -181,7 +175,7 @@ PUBLISHED:
   BLOCKING INLINE bool get_options(const DocumentSpec &url);
 
   INLINE void begin_get_document(const DocumentSpec &url);
-  INLINE void begin_get_subdocument(const DocumentSpec &url, 
+  INLINE void begin_get_subdocument(const DocumentSpec &url,
                                     size_t first_byte, size_t last_byte);
   INLINE void begin_get_header(const DocumentSpec &url);
   INLINE void begin_post_form(const DocumentSpec &url, const string &body);
@@ -232,7 +226,7 @@ private:
   bool run_download_to_ram();
   bool run_download_to_stream();
 
-  void begin_request(HTTPEnum::Method method, const DocumentSpec &url, 
+  void begin_request(HTTPEnum::Method method, const DocumentSpec &url,
                      const string &body, bool nonblocking,
                      size_t first_byte, size_t last_byte);
   void reconsider_proxy();
@@ -252,7 +246,7 @@ private:
 
   void check_socket();
 
-  void check_preapproved_server_certificate(X509 *cert, bool &cert_preapproved, 
+  void check_preapproved_server_certificate(X509 *cert, bool &cert_preapproved,
                                             bool &cert_name_preapproved) const;
   bool validate_server_name(X509 *cert);
   static bool match_cert_name(const string &cert_name, const string &hostname);
@@ -386,13 +380,13 @@ private:
   // What type of response do we get to our HTTP request?
   enum ResponseType {
     RT_none,
-    RT_hangup,       // immediately lost connection 
+    RT_hangup,       // immediately lost connection
     RT_non_http,     // something that wasn't an expected HTTP response
     RT_http_hangup,  // the start of an HTTP response, then a lost connection
     RT_http_complete // a valid HTTP response completed
   };
   ResponseType _response_type;
-  
+
   // Not a phash_map, to maintain sorted order.
   typedef pmap<string, string> Headers;
   Headers _headers;
@@ -464,5 +458,3 @@ ostream &operator << (ostream &out, HTTPChannel::State state);
 #endif  // HAVE_OPENSSL
 
 #endif
-
-

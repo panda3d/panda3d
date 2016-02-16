@@ -34,4 +34,3 @@ protected:
 };
 
 #define nout PPLogger::Log( )
-

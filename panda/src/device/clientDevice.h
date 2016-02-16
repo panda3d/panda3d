@@ -24,13 +24,11 @@
 
 class ClientBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientDevice
-// Description : Any of a number of different devices that might be
-//               attached to a ClientBase, including trackers, etc.
-//               This is an abstract interface; the actual
-//               implementations are in ClientTrackerDevice, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Any of a number of different devices that might be attached to a ClientBase,
+ * including trackers, etc.  This is an abstract interface; the actual
+ * implementations are in ClientTrackerDevice, etc.
+ */
 class EXPCL_PANDA_DEVICE ClientDevice : public TypedReferenceCount {
 protected:
   ClientDevice(ClientBase *client, TypeHandle device_type,

@@ -35,13 +35,11 @@ class EggGroup;
 class EggTable;
 class EggXfmSAnim;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftNodeDesc
-// Description : Describes a single instance of a node aka element in the Soft
-//               scene graph, relating it to the corresponding egg
-//               structures (e.g. node, group, or table entry) that
-//               will be created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a single instance of a node aka element in the Soft scene graph,
+ * relating it to the corresponding egg structures (e.g.  node, group, or table
+ * entry) that will be created.
+ */
 class SoftNodeDesc : public ReferenceCount, public Namable {
 public:
   SoftNodeDesc(SoftNodeDesc *parent=NULL, const string &name = string());
@@ -114,7 +112,7 @@ public:
   PN_stdfloat *vScale;
   PN_stdfloat *uOffset;
   PN_stdfloat *vOffset;
-  
+
   SAA_Boolean valid;
   SAA_Boolean uv_swap;
   //  SAA_Boolean visible;

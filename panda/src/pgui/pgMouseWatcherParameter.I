@@ -11,31 +11,25 @@
  * @date 2001-07-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherParameter::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PGMouseWatcherParameter::
 PGMouseWatcherParameter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherParameter::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PGMouseWatcherParameter::
 PGMouseWatcherParameter(const MouseWatcherParameter &copy) :
   MouseWatcherParameter(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherParameter::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PGMouseWatcherParameter::
 operator = (const MouseWatcherParameter &copy) {
   MouseWatcherParameter::operator = (copy);

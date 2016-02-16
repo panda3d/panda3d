@@ -19,10 +19,9 @@
 class CLP(GraphicsStateGuardian);
 class CLP(SamplerContext);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLTextureContext
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_GL CLP(TextureContext) : public TextureContext {
 public:
   INLINE CLP(TextureContext)(CLP(GraphicsStateGuardian) *glgsg,
@@ -89,4 +88,3 @@ private:
 };
 
 #include "glTextureContext_src.I"
-

@@ -13,33 +13,27 @@
 
 #include "physxHeightFieldDesc.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::set_convex_edge_threshold
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightFieldDesc::
 set_convex_edge_threshold(float threshold) {
 
   _desc.convexEdgeThreshold = threshold;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::set_thickness
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightFieldDesc::
 set_thickness(float thickness) {
 
   _desc.thickness = thickness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::set_image
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightFieldDesc::
 set_image(const PNMImage &image, unsigned short materialIndex) {
 
@@ -71,11 +65,9 @@ set_image(const PNMImage &image, unsigned short materialIndex) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::set_material_index
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightFieldDesc::
 set_material_index(unsigned int row, unsigned int column, unsigned short materialIndex0, unsigned short materialIndex1) {
 
@@ -93,11 +85,9 @@ set_material_index(unsigned int row, unsigned int column, unsigned short materia
   sample->materialIndex1 = (NxU8)materialIndex1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::set_height
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightFieldDesc::
 set_height(unsigned int row, unsigned int column, short height) {
 
@@ -112,11 +102,9 @@ set_height(unsigned int row, unsigned int column, short height) {
   sample->height = (NxI16)height;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::set_tess_flag
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightFieldDesc::
 set_tess_flag(unsigned int row, unsigned int column, unsigned short value) {
 
@@ -131,4 +119,3 @@ set_tess_flag(unsigned int row, unsigned int column, unsigned short value) {
   nassertv(value < 2);
   sample->tessFlag = (NxU8)value;
 }
-

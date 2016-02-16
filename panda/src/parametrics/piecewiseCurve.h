@@ -19,13 +19,11 @@
 #include "parametricCurve.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PiecewiseCurve
-// Description : A PiecewiseCurve is a curve made up of several curve
-//               segments, connected in a head-to-tail fashion.  The
-//               length of each curve segment in parametric space is
-//               definable.
-////////////////////////////////////////////////////////////////////
+/**
+ * A PiecewiseCurve is a curve made up of several curve segments, connected in a
+ * head-to-tail fashion.  The length of each curve segment in parametric space
+ * is definable.
+ */
 class EXPCL_PANDA_PARAMETRICS PiecewiseCurve : public ParametricCurve {
 PUBLISHED:
   PiecewiseCurve();

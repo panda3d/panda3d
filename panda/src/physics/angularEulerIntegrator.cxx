@@ -16,31 +16,24 @@
 #include "physicalNode.h"
 #include "config_physics.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularEulerIntegrator
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 AngularEulerIntegrator::
 AngularEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularEulerIntegrator
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 AngularEulerIntegrator::
 ~AngularEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Integrate
-//       Access: Public
-//  Description: Integrate a step of motion (based on dt) by
-//                applying every force in force_vec to every object
-//                in obj_vec.
-////////////////////////////////////////////////////////////////////
+/**
+ * Integrate a step of motion (based on dt) by applying every force in force_vec
+ * to every object in obj_vec.
+ */
 void AngularEulerIntegrator::
 child_integrate(Physical *physical,
                 AngularForceVector& forces,
@@ -148,12 +141,9 @@ child_integrate(Physical *physical,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularEulerIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -161,12 +151,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularEulerIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

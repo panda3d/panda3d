@@ -23,37 +23,37 @@
 // PPBrowserObject methods; they are defined to allow us to create the
 // C-style P3D_class_definition method table to store in the
 // P3D_object structure.
-static void object_finish(P3D_object *object) 
+static void object_finish(P3D_object *object)
 {
     delete ((PPBrowserObject *)object);
 }
 
-static int object_get_repr(P3D_object *object, char *buffer, int buffer_length) 
+static int object_get_repr(P3D_object *object, char *buffer, int buffer_length)
 {
     return ((const PPBrowserObject *)object)->get_repr(buffer, buffer_length);
 }
 
-static P3D_object* object_get_property(P3D_object *object, const char *property) 
+static P3D_object* object_get_property(P3D_object *object, const char *property)
 {
     return ((const PPBrowserObject *)object)->get_property(property);
 }
 
 static bool object_set_property(P3D_object* object, const char* property,
-                                bool needs_response, P3D_object *value) 
+                                bool needs_response, P3D_object *value)
 {
     return ((PPBrowserObject *)object)->set_property(property, needs_response, value);
 }
 
-static P3D_object* object_call(P3D_object* object, const char* method_name, 
+static P3D_object* object_call(P3D_object* object, const char* method_name,
                                bool needs_response,
-                               P3D_object *params[], int num_params) 
+                               P3D_object *params[], int num_params)
 {
     if (method_name == NULL)
     {
         method_name = "";
     }
     P3D_object *response = ((const PPBrowserObject *)object)->call(method_name, params, num_params);
-    if (!needs_response) 
+    if (!needs_response)
     {
         // No response was expected.  Throw away the response we received,
         // so we can be consistent with defined semantics.
@@ -63,15 +63,15 @@ static P3D_object* object_call(P3D_object* object, const char* method_name,
     return response;
 }
 
-static P3D_object* object_eval( P3D_object *object, const char *expression ) 
+static P3D_object* object_eval( P3D_object *object, const char *expression )
 {
     return ( ( const PPBrowserObject* )object )->eval( expression );
 }
 
 P3D_class_definition* PPBrowserObject::_browser_object_class;
 
-PPBrowserObject::PPBrowserObject( PPInterface* interfac, IDispatch* pDispatch ) : 
-    m_interface( interfac ), m_pDispatch( pDispatch ) 
+PPBrowserObject::PPBrowserObject( PPInterface* interfac, IDispatch* pDispatch ) :
+    m_interface( interfac ), m_pDispatch( pDispatch )
 {
     _class = get_class_definition( );
     _ref_count = 1;
@@ -84,7 +84,7 @@ PPBrowserObject::PPBrowserObject( const PPBrowserObject& copy ) :
     _ref_count = 1;
 }
 
-PPBrowserObject::~PPBrowserObject( ) 
+PPBrowserObject::~PPBrowserObject( )
 {
     assert( _ref_count == 0 );
 }
@@ -100,7 +100,7 @@ P3D_object* PPBrowserObject::get_property( const std::string &property ) const
     {
         return NULL;
     }
-    
+
     hr = m_interface->GetProperty( pDispatch, CString( property.c_str() ), varResult );
     if ( FAILED( hr ) )
     {
@@ -112,7 +112,7 @@ P3D_object* PPBrowserObject::get_property( const std::string &property ) const
 
 bool PPBrowserObject::set_property( const std::string& property, bool needs_response,
                                     P3D_object* value )
-{   
+{
     assert( m_interface );
 
     CComPtr<IDispatch> pDispatch( m_pDispatch );
@@ -135,13 +135,13 @@ P3D_object* PPBrowserObject::call( const std::string &method_name, P3D_object* p
     COleVariant varResult;
 
     // First, convert all of the parameters.
-    for ( int i = 0; i < num_params; ++i ) 
+    for ( int i = 0; i < num_params; ++i )
     {
         m_interface->p3dobj_to_variant( &varParams[i], params[i] );
     }
 
     CComPtr<IDispatch> pDispatch( m_pDispatch );
-    HRESULT hr = m_interface->CallMethod( pDispatch, CString( method_name.c_str() ), varResult,  num_params, varParams ); 
+    HRESULT hr = m_interface->CallMethod( pDispatch, CString( method_name.c_str() ), varResult,  num_params, varParams );
 
     delete [] varParams;
     if ( FAILED( hr ) )
@@ -159,7 +159,7 @@ P3D_object* PPBrowserObject::eval( const std::string &expression ) const
     CComPtr<IDispatch> pDispatch( m_pDispatch );
 
     CString evalExpression( expression.c_str() );
-    HRESULT hr = m_interface->EvalExpression( pDispatch, evalExpression , varResult ); 
+    HRESULT hr = m_interface->EvalExpression( pDispatch, evalExpression , varResult );
     if ( FAILED( hr ) )
     {
         return NULL;
@@ -183,14 +183,14 @@ int PPBrowserObject::get_repr( char* buffer, int buffer_length ) const
     return (int)result.GetLength();
 }
 
-void PPBrowserObject::clear_class_definition() 
+void PPBrowserObject::clear_class_definition()
 {
     _browser_object_class = NULL;
 }
 
-P3D_class_definition* PPBrowserObject::get_class_definition() 
+P3D_class_definition* PPBrowserObject::get_class_definition()
 {
-    if ( _browser_object_class == NULL ) 
+    if ( _browser_object_class == NULL )
     {
         // Create a default class_definition object, and fill in the
         // appropriate pointers.

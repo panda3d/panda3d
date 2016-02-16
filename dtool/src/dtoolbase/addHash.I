@@ -11,33 +11,26 @@
  * @date 2006-09-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AddHash::add_hash
-//       Access: Public, Static
-//  Description: Adds a linear sequence of uint32 words to the hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a linear sequence of uint32 words to the hash.
+ */
 INLINE size_t AddHash::
 add_hash(size_t start, const PN_uint32 *words, size_t num_words) {
   return (size_t)hashword(words, num_words, (PN_uint32)start);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AddHash::add_hash
-//       Access: Public, Static
-//  Description: Adds a linear sequence of float32 words to the hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a linear sequence of float32 words to the hash.
+ */
 INLINE size_t AddHash::
 add_hash(size_t start, const PN_float32 *floats, size_t num_floats) {
   return add_hash(start, (const PN_uint32 *)floats, num_floats);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AddHash::add_hash
-//       Access: Public, Static
-//  Description: Adds a linear sequence of float64 words to the hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a linear sequence of float64 words to the hash.
+ */
 INLINE size_t AddHash::
 add_hash(size_t start, const PN_float64 *floats, size_t num_floats) {
   return add_hash(start, (const PN_uint32 *)floats, num_floats * 2);
 }
-

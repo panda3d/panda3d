@@ -23,11 +23,9 @@
 TypeHandle DisplayRegionDrawCallbackData::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionDrawCallbackData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplayRegionDrawCallbackData::
 DisplayRegionDrawCallbackData(CullResult *cull_result, SceneSetup *scene_setup) :
   _cull_result(cull_result),
@@ -35,28 +33,22 @@ DisplayRegionDrawCallbackData(CullResult *cull_result, SceneSetup *scene_setup) 
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionDrawCallbackData::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DisplayRegionDrawCallbackData::
 output(ostream &out) const {
-  out << get_type() << "(" << (void *)_cull_result << ", " 
+  out << get_type() << "(" << (void *)_cull_result << ", "
       << (void *)_scene_setup << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionDrawCallbackData::upcall
-//       Access: Published, Virtual
-//  Description: You should make this call during the callback if you
-//               want to continue the normal rendering function that
-//               would have been done in the absence of a callback.
-//
-//               Specifically, this method will draw all of the
-//               objects in the CullResult list that have been built
-//               up for the DisplayRegion during the cull traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * You should make this call during the callback if you want to continue the
+ * normal rendering function that would have been done in the absence of a
+ * callback.  Specifically, this method will draw all of the objects in the
+ * CullResult list that have been built up for the DisplayRegion during the cull
+ * traversal.
+ */
 void DisplayRegionDrawCallbackData::
 upcall() {
   Thread *current_thread = Thread::get_current_thread();
@@ -89,4 +81,3 @@ upcall() {
     }
   }
 }
-

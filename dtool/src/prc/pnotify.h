@@ -20,20 +20,15 @@
 
 class NotifyCategory;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Notify
-// Description : An object that handles general error reporting to the
-//               user.  It contains a pointer to an ostream, initially
-//               cerr, which can be reset at will to point to
-//               different output devices, according to the needs of
-//               the application.  All output generated within Panda
-//               should vector through the Notify ostream.
-//
-//               This also includes a collection of Categories and
-//               Severities, which may be independently enabled or
-//               disabled, so that error messages may be squelched or
-//               respected according to the wishes of the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object that handles general error reporting to the user.  It contains a
+ * pointer to an ostream, initially cerr, which can be reset at will to point to
+ * different output devices, according to the needs of the application.  All
+ * output generated within Panda should vector through the Notify ostream.  This
+ * also includes a collection of Categories and Severities, which may be
+ * independently enabled or disabled, so that error messages may be squelched or
+ * respected according to the wishes of the user.
+ */
 class EXPCL_DTOOLCONFIG Notify {
 PUBLISHED:
   Notify();

@@ -25,10 +25,9 @@
 
 class BulletShape;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletRigidBodyNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletRigidBodyNode : public BulletBodyNode {
 
 PUBLISHED:
@@ -142,7 +141,7 @@ public:
   }
   static void init_type() {
     BulletBodyNode::init_type();
-    register_type(_type_handle, "BulletRigidBodyNode", 
+    register_type(_type_handle, "BulletRigidBodyNode",
                   BulletBodyNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -160,4 +159,3 @@ private:
 #include "bulletRigidBodyNode.I"
 
 #endif // __BULLET_RIGID_BODY_NODE_H__
-

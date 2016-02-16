@@ -28,4 +28,3 @@ void initialize_collector_def(const PStatClient *client, PStatCollectorDef *def)
 #endif  // DO_PSTATS
 
 #endif
-

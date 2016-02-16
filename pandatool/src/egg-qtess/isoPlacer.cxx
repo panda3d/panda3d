@@ -18,11 +18,9 @@
 #include "pvector.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IsoPlacer::get_scores
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IsoPlacer::
 get_scores(int subdiv, int across, double ratio,
            NurbsSurfaceResult *surf, bool s) {
@@ -104,11 +102,9 @@ get_scores(int subdiv, int across, double ratio,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IsoPlacer::place
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IsoPlacer::
 place(int count, pvector<double> &iso_points) {
   int i;
@@ -137,7 +133,7 @@ place(int count, pvector<double> &iso_points) {
     // A point must be measurably higher than both its neighbors, as
     // well as at least 50% more curvy than the average curvature, to
     // qualify as a bend point.
-    if (_cscore[i] > _cscore[i-1]+0.001 && 
+    if (_cscore[i] > _cscore[i-1]+0.001 &&
         _cscore[i] > _cscore[i+1]+0.001 &&
         _cscore[i] > 1.5 * avg_curve) {
       bpoints.push_back(i);
@@ -233,5 +229,3 @@ place(int count, pvector<double> &iso_points) {
   // Oh, wait.  The last segment is actually drawn all the way to 1.
   iso_points.back() = 1.0;
 }
-    
-

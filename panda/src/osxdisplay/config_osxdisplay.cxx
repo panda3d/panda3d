@@ -56,14 +56,12 @@ ConfigVariableInt osx_mouse_wheel_scale
  PRC_DESC("Specify the number of units to spin the Mac mouse wheel to "
           "represent a single wheel_up or wheel_down message."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libosxdisplay
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libosxdisplay() {
   static bool initialized = false;

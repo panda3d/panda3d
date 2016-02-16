@@ -16,11 +16,9 @@
 #include "dxfToEggConverter.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXFToEgg::
 DXFToEgg() :
   SomethingToEgg("DXF", ".dxf")
@@ -44,11 +42,9 @@ DXFToEgg() :
   _coordinate_system = CS_zup_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXFToEgg::
 run() {
   nout << "Reading " << _input_filename << "\n";

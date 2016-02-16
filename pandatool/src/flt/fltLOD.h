@@ -18,10 +18,9 @@
 
 #include "fltBeadID.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltLOD
-// Description : A Level-of-Detail record.
-////////////////////////////////////////////////////////////////////
+/**
+ * A Level-of-Detail record.
+ */
 class FltLOD : public FltBeadID {
 public:
   FltLOD(FltHeader *header);
@@ -63,5 +62,3 @@ private:
 };
 
 #endif
-
-

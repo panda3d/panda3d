@@ -18,10 +18,9 @@
 
 #include "lwoGroupChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoHeader
-// Description : The first chunk in a Lightwave Object file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The first chunk in a Lightwave Object file.
+ */
 class LwoHeader : public LwoGroupChunk {
 public:
   LwoHeader();
@@ -60,5 +59,3 @@ private:
 #include "lwoHeader.I"
 
 #endif
-
-

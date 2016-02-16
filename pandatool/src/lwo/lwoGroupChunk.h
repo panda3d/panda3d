@@ -23,11 +23,10 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoGroupChunk
-// Description : A particular kind of LwoChunk that is expected to
-//               contain an arbitrary number of child chunks.
-////////////////////////////////////////////////////////////////////
+/**
+ * A particular kind of LwoChunk that is expected to contain an arbitrary number
+ * of child chunks.
+ */
 class LwoGroupChunk : public LwoChunk {
 public:
   int get_num_chunks() const;
@@ -60,5 +59,3 @@ private:
 };
 
 #endif
-
-

@@ -23,11 +23,10 @@
 
 #include <math.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggAnimData
-// Description : A base class for EggSAnimData and EggXfmAnimData,
-//               which contain rows and columns of numbers.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for EggSAnimData and EggXfmAnimData, which contain rows and
+ * columns of numbers.
+ */
 class EXPCL_PANDAEGG EggAnimData : public EggNode {
 PUBLISHED:
 

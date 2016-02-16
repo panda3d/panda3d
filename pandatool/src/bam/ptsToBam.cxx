@@ -23,11 +23,9 @@
 #include "string_utils.h"
 #include "config_egg2pg.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PtsToBam::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PtsToBam::
 PtsToBam() : WithOutputFile(true, false, true)
 {
@@ -57,11 +55,9 @@ PtsToBam() : WithOutputFile(true, false, true)
   _decimate_divisor = 1.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PtsToBam::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PtsToBam::
 run() {
   pifstream pts;
@@ -86,7 +82,7 @@ run() {
     process_line(line);
   }
   close_vertex_data();
-  
+
   nout << "\nFound " << _num_points_found << " points of " << _num_points_expected << " expected.\n";
   nout << "Generated " << _num_points_added << " points to bam file.\n";
 
@@ -102,18 +98,16 @@ run() {
     nout << "Error in writing.\n";
     exit(1);
   }
-  
+
   if (!bam_file.write_object(_gnode.p())) {
     nout << "Error in writing.\n";
     exit(1);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PtsToBam::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PtsToBam::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {
@@ -131,11 +125,9 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PtsToBam::process_line
-//       Access: Private
-//  Description: Reads a single line from the pts file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single line from the pts file.
+ */
 void PtsToBam::
 process_line(const string &line) {
   _line_number++;
@@ -176,11 +168,9 @@ process_line(const string &line) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PtsToBam::add_point
-//       Access: Private
-//  Description: Adds a point from the pts file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a point from the pts file.
+ */
 void PtsToBam::
 add_point(const vector_string &words) {
   if (_data == NULL || _data->get_num_rows() >= egg_max_vertices) {
@@ -196,11 +186,9 @@ add_point(const vector_string &words) {
   _num_points_added++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PtsToBam::open_vertex_data
-//       Access: Private
-//  Description: Creates a new GeomVertexData.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new GeomVertexData.
+ */
 void PtsToBam::
 open_vertex_data() {
   if (_data != (GeomVertexData *)NULL) {
@@ -211,12 +199,9 @@ open_vertex_data() {
   _vertex = GeomVertexWriter(_data, "vertex");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PtsToBam::close_vertex_data
-//       Access: Private
-//  Description: Closes a previous GeomVertexData and adds it to the
-//               scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes a previous GeomVertexData and adds it to the scene graph.
+ */
 void PtsToBam::
 close_vertex_data() {
   if (_data == NULL) {

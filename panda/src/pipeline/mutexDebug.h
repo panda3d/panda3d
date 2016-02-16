@@ -23,12 +23,10 @@
 
 #ifdef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//       Class : MutexDebug
-// Description : This class implements a standard mutex the hard way,
-//               by doing everything by hand.  This does allow fancy
-//               things like deadlock detection, however.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements a standard mutex the hard way, by doing everything by
+ * hand.  This does allow fancy things like deadlock detection, however.
+ */
 class EXPCL_PANDA_PIPELINE MutexDebug : public Namable {
 protected:
   MutexDebug(const string &name, bool allow_recursion, bool lightweight);

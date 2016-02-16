@@ -22,11 +22,9 @@
 #include "blockerSimple.h"
 #include "mutexTrueImpl.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarSimpleImpl
-// Description : Implements a simple condition variable using
-//               simulated user-space threads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a simple condition variable using simulated user-space threads.
+ */
 class EXPCL_PANDA_PIPELINE ConditionVarSimpleImpl : public BlockerSimple {
 public:
   INLINE ConditionVarSimpleImpl(MutexTrueImpl &mutex);

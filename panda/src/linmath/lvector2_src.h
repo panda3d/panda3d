@@ -11,10 +11,9 @@
  * @date 2000-03-08
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVector2
-// Description : This is a two-component vector offset.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a two-component vector offset.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector2) : public FLOATNAME(LVecBase2) {
 PUBLISHED:
 

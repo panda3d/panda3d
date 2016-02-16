@@ -23,11 +23,9 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoPolygons
-// Description : An array of polygons that will be referenced by later
-//               chunks.
-////////////////////////////////////////////////////////////////////
+/**
+ * An array of polygons that will be referenced by later chunks.
+ */
 class LwoPolygons : public LwoChunk {
 public:
   enum PolygonFlags {
@@ -85,5 +83,3 @@ private:
 };
 
 #endif
-
-

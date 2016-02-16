@@ -22,22 +22,15 @@
 
 class VrpnDialDevice;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnDial
-// Description : This is the actual interface to a particular VRPN
-//               dial device, and all of its numbered dials.  A
-//               pointer to this object is stored in the VrpnClient
-//               class for each differently-named VRPN dial device
-//               we connect to.
-//
-//               The VRPN callbacks go here, which in turn get
-//               vectored out to any VrpnDialDevice objects that
-//               register with this.  When the last VrpnDialDevice
-//               object unregisters, the VrpnDial will be deleted
-//               by the VrpnClient.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the actual interface to a particular VRPN dial device, and all of its
+ * numbered dials.  A pointer to this object is stored in the VrpnClient class
+ * for each differently-named VRPN dial device we connect to.  The VRPN
+ * callbacks go here, which in turn get vectored out to any VrpnDialDevice
+ * objects that register with this.  When the last VrpnDialDevice object
+ * unregisters, the VrpnDial will be deleted by the VrpnClient.  This class does
+ * not need to be exported from the DLL.
+ */
 class VrpnDial {
 public:
   VrpnDial(const string &dial_name, vrpn_Connection *connection);

@@ -23,28 +23,18 @@
 #include "physxTriggerReport.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxHeightField
-// Description : A height field object. 
-//               Height fields work in a similar way as triangle
-//               meshes specified to act as height fields, with
-//               some important differences:
-//
-//               Triangle meshes can be made of nonuniform geometry,
-//               while height fields are regular, rectangular grids.
-//               This means that with PhysxHeightField, you
-//               sacrifice flexibility in return for improved
-//               performance and decreased memory consumption.
-//
-//               Height fields are referenced by shape instances of
-//               type PhysxHeightFieldShape.
-//
-//               To create an instance of this class call
-//               PhysxManager::create_height_field(), and
-//               PhysxHeightField::release() to release it. This is
-//               only possible once you have released all of its
-//               PhysxHeightFiedShape instances before.
-////////////////////////////////////////////////////////////////////
+/**
+ * A height field object.  Height fields work in a similar way as triangle
+ * meshes specified to act as height fields, with some important differences:
+ * Triangle meshes can be made of nonuniform geometry, while height fields are
+ * regular, rectangular grids.  This means that with PhysxHeightField, you
+ * sacrifice flexibility in return for improved performance and decreased memory
+ * consumption.  Height fields are referenced by shape instances of type
+ * PhysxHeightFieldShape.  To create an instance of this class call
+ * PhysxManager::create_height_field(), and PhysxHeightField::release() to
+ * release it.  This is only possible once you have released all of its
+ * PhysxHeightFiedShape instances before.
+ */
 class EXPCL_PANDAPHYSX PhysxHeightField : public PhysxObject {
 
 PUBLISHED:
@@ -74,7 +64,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxHeightField", 
+    register_type(_type_handle, "PhysxHeightField",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

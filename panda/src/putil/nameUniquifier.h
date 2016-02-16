@@ -19,14 +19,12 @@
 #include <string>
 #include "pset.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NameUniquifier
-// Description : A handy class for converting a list of arbitrary
-//               names (strings) so that each name is guaranteed to be
-//               unique in the list.  Useful for writing egg files
-//               with unique vertex pool names, or for file converters
-//               to file formats that require unique node names, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * A handy class for converting a list of arbitrary names (strings) so that each
+ * name is guaranteed to be unique in the list.  Useful for writing egg files
+ * with unique vertex pool names, or for file converters to file formats that
+ * require unique node names, etc.
+ */
 class EXPCL_PANDA_PUTIL NameUniquifier {
 public:
   NameUniquifier(const string &separator = string(),

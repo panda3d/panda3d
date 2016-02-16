@@ -20,12 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DecalEffect
-// Description : Applied to a GeomNode to indicate that the children
-//               of this GeomNode are coplanar and should be drawn as
-//               decals (eliminating Z-fighting).
-////////////////////////////////////////////////////////////////////
+/**
+ * Applied to a GeomNode to indicate that the children of this GeomNode are
+ * coplanar and should be drawn as decals (eliminating Z-fighting).
+ */
 class EXPCL_PANDA_PGRAPH DecalEffect : public RenderEffect {
 private:
   INLINE DecalEffect();
@@ -44,7 +42,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -66,4 +64,3 @@ private:
 #include "decalEffect.I"
 
 #endif
-

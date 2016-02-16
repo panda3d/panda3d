@@ -11,11 +11,9 @@
  * @date 2002-02-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DrawCullHandler::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE DrawCullHandler::
 DrawCullHandler(GraphicsStateGuardianBase *gsg) :
   _gsg(gsg)

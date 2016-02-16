@@ -18,18 +18,12 @@
 #include <stdio.h>
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: NameUniquifier::Constructor
-//       Access: Public
-//  Description: Creates a new NameUniquifier.
-//
-//               The separator string is used to separate the original
-//               name (or supplied prefix) and the generated number
-//               when a name must be generated.
-//
-//               If the original name is empty, the empty string is
-//               used, followed by the generated number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new NameUniquifier.  The separator string is used to separate the
+ * original name (or supplied prefix) and the generated number when a name must
+ * be generated.  If the original name is empty, the empty string is used,
+ * followed by the generated number.
+ */
 NameUniquifier::
 NameUniquifier(const string &separator,
                const string &empty) :
@@ -43,36 +37,22 @@ NameUniquifier(const string &separator,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NameUniquifier::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NameUniquifier::
 ~NameUniquifier() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NameUniquifier::add_name_body
-//       Access: Private
-//  Description: The actual implementation of the two flavors of
-//               add_name().
-//
-//               If name is nonempty and so far unique, returns it
-//               unchanged.
-//
-//               Otherwise, generates and returns a new name according
-//               to the following rules:
-//
-//               If the prefix is empty, the new name is the
-//               NameUniquifier's "empty" string followed by a number,
-//               or the "separator" string if the "empty" string is
-//               empty.
-//
-//               If the prefix is nonempty, the new name is the
-//               prefix, followed by the NameUniquifier's "separator"
-//               string, followed by a number.
-////////////////////////////////////////////////////////////////////
+/**
+ * The actual implementation of the two flavors of add_name().  If name is
+ * nonempty and so far unique, returns it unchanged.  Otherwise, generates and
+ * returns a new name according to the following rules:  If the prefix is empty,
+ * the new name is the NameUniquifier's "empty" string followed by a number, or
+ * the "separator" string if the "empty" string is empty.  If the prefix is
+ * nonempty, the new name is the prefix, followed by the NameUniquifier's
+ * "separator" string, followed by a number.
+ */
 string NameUniquifier::
 add_name_body(const string &name, const string &prefix) {
   if (!name.empty()) {
@@ -103,4 +83,3 @@ add_name_body(const string &name, const string &prefix) {
 
   return temp_name;
 }
-

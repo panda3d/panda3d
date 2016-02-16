@@ -18,11 +18,10 @@
 #include "pvector.h"
 #include "vector_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SubdivSegment
-// Description : Represents a single hypothetical subdivided segment,
-//               under consideration by the IsoPlacer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single hypothetical subdivided segment, under consideration by
+ * the IsoPlacer.
+ */
 class SubdivSegment {
 public:
   INLINE SubdivSegment(const double *cint, int f, int t);
@@ -42,4 +41,3 @@ public:
 #include "subdivSegment.I"
 
 #endif
-

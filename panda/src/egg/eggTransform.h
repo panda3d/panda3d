@@ -18,17 +18,12 @@
 #include "luse.h"
 #include "eggObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTransform
-// Description : This represents the <Transform> entry of a group
-//               or texture node: a list of component transform
-//               operations, applied in order, that describe a net
-//               transform matrix.  
-//
-//               This may be either a 3-d transform, and therefore
-//               described by a 4x4 matrix, or a 2-d transform,
-//               described by a 3x3 matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents the <Transform> entry of a group or texture node: a list of
+ * component transform operations, applied in order, that describe a net
+ * transform matrix.  This may be either a 3-d transform, and therefore
+ * described by a 4x4 matrix, or a 2-d transform, described by a 3x3 matrix.
+ */
 class EXPCL_PANDAEGG EggTransform {
 PUBLISHED:
   EggTransform();
@@ -41,9 +36,9 @@ PUBLISHED:
   void add_translate2d(const LVector2d &translate);
   void add_translate3d(const LVector3d &translate);
   void add_rotate2d(double angle);
-  void add_rotx(double angle); 
-  void add_roty(double angle); 
-  void add_rotz(double angle); 
+  void add_rotx(double angle);
+  void add_roty(double angle);
+  void add_rotz(double angle);
   void add_rotate3d(double angle, const LVector3d &axis);
   void add_rotate3d(const LQuaterniond &quat);
   void add_scale2d(const LVecBase2d &scale);

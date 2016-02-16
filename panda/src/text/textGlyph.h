@@ -21,16 +21,14 @@
 #include "pointerTo.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextGlyph
-// Description : A representation of a single glyph (character) from a
-//               font.  This is a piece of renderable geometry of some
-//               kind.
-////////////////////////////////////////////////////////////////////
+/**
+ * A representation of a single glyph (character) from a font.  This is a piece
+ * of renderable geometry of some kind.
+ */
 class EXPCL_PANDA_TEXT TextGlyph : public TypedReferenceCount {
 public:
   INLINE TextGlyph(int character, PN_stdfloat advance=0);
-  INLINE TextGlyph(int character, const Geom *geom, 
+  INLINE TextGlyph(int character, const Geom *geom,
                    const RenderState *state, PN_stdfloat advance);
   INLINE TextGlyph(const TextGlyph &copy);
   INLINE void operator = (const TextGlyph &copy);

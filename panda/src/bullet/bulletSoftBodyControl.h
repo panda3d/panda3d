@@ -21,10 +21,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletSoftBodyControl
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletSoftBodyControl : public btSoftBody::AJoint::IControl {
 
 PUBLISHED:

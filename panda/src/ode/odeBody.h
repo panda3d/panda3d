@@ -26,10 +26,9 @@ class OdeJoint;
 class OdeGeom;
 class OdeCollisionEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeBody
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeBody : public TypedObject {
   friend class OdeJoint;
   friend class OdeGeom;
@@ -93,21 +92,21 @@ PUBLISHED:
   INLINE void add_rel_force(const LVecBase3f &f);
   INLINE void add_rel_torque(dReal fx, dReal fy, dReal fz);
   INLINE void add_rel_torque(const LVecBase3f &f);
-  INLINE void add_force_at_pos(dReal fx, dReal fy, dReal fz, 
+  INLINE void add_force_at_pos(dReal fx, dReal fy, dReal fz,
                                dReal px, dReal py, dReal pz);
-  INLINE void add_force_at_pos(const LVecBase3f &f, 
+  INLINE void add_force_at_pos(const LVecBase3f &f,
                                const LVecBase3f &pos);
-  INLINE void add_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
+  INLINE void add_force_at_rel_pos(dReal fx, dReal fy, dReal fz,
                                    dReal px, dReal py, dReal pz);
-  INLINE void add_force_at_rel_pos(const LVecBase3f &f, 
+  INLINE void add_force_at_rel_pos(const LVecBase3f &f,
                                    const LVecBase3f &pos);
-  INLINE void add_rel_force_at_pos(dReal fx, dReal fy, dReal fz, 
+  INLINE void add_rel_force_at_pos(dReal fx, dReal fy, dReal fz,
                                    dReal px, dReal py, dReal pz);
-  INLINE void add_rel_force_at_pos(const LVecBase3f &f, 
+  INLINE void add_rel_force_at_pos(const LVecBase3f &f,
                                    const LVecBase3f &pos);
-  INLINE void add_rel_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
+  INLINE void add_rel_force_at_rel_pos(dReal fx, dReal fy, dReal fz,
                                        dReal px, dReal py, dReal pz);
-  INLINE void add_rel_force_at_rel_pos(const LVecBase3f &f, 
+  INLINE void add_rel_force_at_rel_pos(const LVecBase3f &f,
                                        const LVecBase3f &pos);
   INLINE void set_force(dReal x, dReal y, dReal z);
   INLINE void set_force(const LVecBase3f &f);

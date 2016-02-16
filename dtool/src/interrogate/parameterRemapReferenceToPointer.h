@@ -18,12 +18,10 @@
 
 #include "parameterRemap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapReferenceToPointer
-// Description : A ParameterRemap class that handles remapping a
-//               reference (or a const reference) parameter to a
-//               pointer (or const pointer) parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ParameterRemap class that handles remapping a reference (or a const
+ * reference) parameter to a pointer (or const pointer) parameter.
+ */
 class ParameterRemapReferenceToPointer : public ParameterRemap {
 public:
   ParameterRemapReferenceToPointer(CPPType *orig_type);

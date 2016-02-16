@@ -15,13 +15,10 @@
 #include "xml_helpers.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: parse_bool_attrib
-//  Description: Examines the indicated attrib from the XML attrib and
-//               returns its true or false value.  Returns
-//               default_value if the attrib is not present or is
-//               empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Examines the indicated attrib from the XML attrib and returns its true or
+ * false value.  Returns default_value if the attrib is not present or is empty.
+ */
 bool
 parse_bool_attrib(TiXmlElement *xelem, const string &attrib,
                   bool default_value) {

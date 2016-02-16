@@ -21,12 +21,10 @@
 #include "luse.h"
 #include "lmatrix.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeometricBoundingVolume
-// Description : This is another abstract class, for a general class
-//               of bounding volumes that actually enclose points in
-//               3-d space, such as BSP's and bounding spheres.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is another abstract class, for a general class of bounding volumes that
+ * actually enclose points in 3-d space, such as BSP's and bounding spheres.
+ */
 class EXPCL_PANDA_MATHUTIL GeometricBoundingVolume : public BoundingVolume {
 public:
   INLINE_MATHUTIL GeometricBoundingVolume();

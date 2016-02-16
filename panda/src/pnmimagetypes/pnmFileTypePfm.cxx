@@ -20,78 +20,61 @@
 
 TypeHandle PNMFileTypePfm::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypePfm::
 PNMFileTypePfm() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::get_name
-//       Access: Public, Virtual
-//  Description: Returns a few words describing the file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a few words describing the file type.
+ */
 string PNMFileTypePfm::
 get_name() const {
   return "Portable Float Map";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::get_num_extensions
-//       Access: Public, Virtual
-//  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of different possible filename extensions associated with
+ * this particular file type.
+ */
 int PNMFileTypePfm::
 get_num_extensions() const {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the nth possible filename extension
-//               associated with this particular file type, without a
-//               leading dot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth possible filename extension associated with this particular
+ * file type, without a leading dot.
+ */
 string PNMFileTypePfm::
 get_extension(int n) const {
   return "pfm";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::get_suggested_extension
-//       Access: Public, Virtual
-//  Description: Returns a suitable filename extension (without a
-//               leading dot) to suggest for files of this type, or
-//               empty string if no suggestions are available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable filename extension (without a leading dot) to suggest for
+ * files of this type, or empty string if no suggestions are available.
+ */
 string PNMFileTypePfm::
 get_suggested_extension() const {
   return "pfm";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::has_magic_number
-//       Access: Public, Virtual
-//  Description: Returns true if this particular file type uses a
-//               magic number to identify it, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular file type uses a magic number to identify it,
+ * false otherwise.
+ */
 bool PNMFileTypePfm::
 has_magic_number() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::matches_magic_number
-//       Access: Public, Virtual
-//  Description: Returns true if the indicated "magic number" byte
-//               stream (the initial few bytes read from the file)
-//               matches this particular file type, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated "magic number" byte stream (the initial few
+ * bytes read from the file) matches this particular file type, false otherwise.
+ */
 bool PNMFileTypePfm::
 matches_magic_number(const string &magic_number) const {
   return (magic_number.size() >= 2) &&
@@ -100,36 +83,30 @@ matches_magic_number(const string &magic_number) const {
      magic_number.substr(0, 2) == "pf");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::make_reader
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new PNMReader suitable for
-//               reading from this file type, if possible.  If reading
-//               from this file type is not supported, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new PNMReader suitable for reading from this file
+ * type, if possible.  If reading from this file type is not supported, returns
+ * NULL.
+ */
 PNMReader *PNMFileTypePfm::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
   return new Reader(this, file, owns_file, magic_number);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::make_writer
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new PNMWriter suitable for
-//               reading from this file type, if possible.  If writing
-//               files of this type is not supported, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new PNMWriter suitable for reading from this file
+ * type, if possible.  If writing files of this type is not supported, returns
+ * NULL.
+ */
 PNMWriter *PNMFileTypePfm::
 make_writer(ostream *file, bool owns_file) {
   return new Writer(this, file, owns_file);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypePfm::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
@@ -156,7 +133,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   } else if (magic_number == "pf4c") {
     // Special DRZ extension.
     _num_channels = 4;
-    
+
   } else {
     pnmimage_cat.debug()
       << "Not a PFM file\n";
@@ -179,25 +156,20 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   (*_file).get();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Reader::is_floating_point
-//       Access: Public, Virtual
-//  Description: Returns true if this PNMFileType represents a
-//               floating-point image type, false if it is a normal,
-//               integer type.  If this returns true, read_pfm() is
-//               implemented instead of read_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this PNMFileType represents a floating-point image type,
+ * false if it is a normal, integer type.  If this returns true, read_pfm() is
+ * implemented instead of read_data().
+ */
 bool PNMFileTypePfm::Reader::
 is_floating_point() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Reader::read_pfm
-//       Access: Public, Virtual
-//  Description: Reads floating-point data directly into the indicated
-//               PfmFile.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads floating-point data directly into the indicated PfmFile.  Returns true
+ * on success, false on failure.
+ */
 bool PNMFileTypePfm::Reader::
 read_pfm(PfmFile &pfm) {
   if (!is_valid()) {
@@ -252,49 +224,39 @@ read_pfm(PfmFile &pfm) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Writer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypePfm::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Writer::supports_floating_point
-//       Access: Public, Virtual
-//  Description: Returns true if this PNMFileType can accept a
-//               floating-point image type, false if it can only
-//               accept a normal, integer type.  If this returns true,
-//               write_pfm() is implemented.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this PNMFileType can accept a floating-point image type,
+ * false if it can only accept a normal, integer type.  If this returns true,
+ * write_pfm() is implemented.
+ */
 bool PNMFileTypePfm::Writer::
 supports_floating_point() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Writer::supports_integer
-//       Access: Public, Virtual
-//  Description: Returns true if this PNMFileType can accept an
-//               integer image type, false if it can only
-//               accept a floating-point type.  If this returns true,
-//               write_data() or write_row() is implemented.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this PNMFileType can accept an integer image type, false if
+ * it can only accept a floating-point type.  If this returns true, write_data()
+ * or write_row() is implemented.
+ */
 bool PNMFileTypePfm::Writer::
 supports_integer() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Writer::write_pfm
-//       Access: Public, Virtual
-//  Description: Writes floating-point data from the indicated
-//               PfmFile.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes floating-point data from the indicated PfmFile.  Returns true on
+ * success, false on failure.
+ */
 bool PNMFileTypePfm::Writer::
 write_pfm(const PfmFile &pfm) {
   nassertr(pfm.is_valid(), false);
@@ -343,30 +305,21 @@ write_pfm(const PfmFile &pfm) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void PNMFileTypePfm::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_PNMFileTypePfm);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::make_PNMFileTypePfm
-//       Access: Protected, Static
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-//
-//               In the case of the PNMFileType objects, since these
-//               objects are all shared, we just pull the object from
-//               the registry.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.  In the case of the PNMFileType objects, since these
+ * objects are all shared, we just pull the object from the registry.
+ */
 TypedWritable *PNMFileTypePfm::
 make_PNMFileTypePfm(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());

@@ -58,4 +58,3 @@ operator << (ostream &out, P3D_object &value) {
 }
 
 #endif
-

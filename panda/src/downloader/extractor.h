@@ -20,21 +20,15 @@
 #include "pointerTo.h"
 #include "vector_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extractor
-// Description : This class automatically extracts the contents of a
-//               Multifile to the current directory (or to a specified
-//               directory) in the background.
-//
-//               It is designed to limit its use of system resources
-//               and run unobtrusively in the background.  After
-//               specifying the files you wish to extract via repeated
-//               calls to request_subfile(), begin the process by
-//               calling run() repeatedly.  Each call to run()
-//               extracts another small portion of the Multifile.
-//               Call run() whenever you have spare cycles until run()
-//               returns EU_success.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class automatically extracts the contents of a Multifile to the current
+ * directory (or to a specified directory) in the background.  It is designed to
+ * limit its use of system resources and run unobtrusively in the background.
+ * After specifying the files you wish to extract via repeated calls to
+ * request_subfile(), begin the process by calling run() repeatedly.  Each call
+ * to run() extracts another small portion of the Multifile.  Call run()
+ * whenever you have spare cycles until run() returns EU_success.
+ */
 class EXPCL_PANDAEXPRESS Extractor {
 PUBLISHED:
   Extractor();
@@ -65,7 +59,7 @@ private:
   typedef vector_int Requests;
   Requests _requests;
   size_t _requests_total_length;
-  
+
   bool _initiated;
 
   // These are used only while processing.

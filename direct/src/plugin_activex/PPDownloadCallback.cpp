@@ -16,15 +16,15 @@
 #include "PPInstance.h"
 
 
-PPDownloadCallback::PPDownloadCallback( PPDownloadCallbackSync& downloadSync ) 
-    : m_downloadSync( downloadSync ), m_dwTotalRead( 0 ), 
-      m_dwTotalInStream( 0 ), m_ulObjRefCount( 1 ) 
+PPDownloadCallback::PPDownloadCallback( PPDownloadCallbackSync& downloadSync )
+    : m_downloadSync( downloadSync ), m_dwTotalRead( 0 ),
+      m_dwTotalInStream( 0 ), m_ulObjRefCount( 1 )
 {
 }
 
 PPDownloadCallback::~PPDownloadCallback()
 {
-	m_spStream.Release();
+  m_spStream.Release();
 }
 
 STDMETHODIMP PPDownloadCallback::QueryInterface(REFIID riid, void **ppvObject)
@@ -56,7 +56,7 @@ STDMETHODIMP PPDownloadCallback::QueryInterface(REFIID riid, void **ppvObject)
     }
 
     return E_NOINTERFACE;
-}                                             
+}
 
 STDMETHODIMP_(ULONG) PPDownloadCallback::AddRef()
 {
@@ -101,7 +101,7 @@ STDMETHODIMP PPDownloadCallback::OnProgress(ULONG ulProgress,
                                          LPCWSTR szStatusText)
 {
 #ifdef _DEBUG
-    static const LPCTSTR plpszStatus[] = 
+    static const LPCTSTR plpszStatus[] =
     {
         _T("BINDSTATUS_FINDINGRESOURCE"),  // 1
         _T("BINDSTATUS_CONNECTING"),

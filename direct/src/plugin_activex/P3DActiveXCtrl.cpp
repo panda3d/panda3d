@@ -280,7 +280,7 @@ void CP3DActiveXCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInv
 
 void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
 {
-	m_instance.Stop();
+  m_instance.Stop();
 
     // Make sure the init thread has finished.
     if (_state == S_loading) {
@@ -289,7 +289,7 @@ void CP3DActiveXCtrl::OnClose( DWORD dwSaveOption )
       nout << "Done waiting for thread stop\n" << flush;
     }
 
-	COleControl::OnClose( dwSaveOption );
+  COleControl::OnClose( dwSaveOption );
 }
 
 
@@ -621,4 +621,3 @@ timer_callback(HWND hwnd, UINT msg, UINT_PTR id, DWORD time) {
   // Just invalidate the region and make it draw again.
   ::InvalidateRect(hwnd, NULL, FALSE);
 }
-

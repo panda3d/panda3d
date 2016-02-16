@@ -11,23 +11,18 @@
  * @date 2002-02-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransparencyAttrib::Constructor
-//       Access: Private
-//  Description: Use TransparencyAttrib::make() to construct a new
-//               TransparencyAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use TransparencyAttrib::make() to construct a new TransparencyAttrib object.
+ */
 INLINE TransparencyAttrib::
 TransparencyAttrib(TransparencyAttrib::Mode mode) :
   _mode(mode)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransparencyAttrib::get_mode
-//       Access: Published
-//  Description: Returns the transparency mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the transparency mode.
+ */
 INLINE TransparencyAttrib::Mode TransparencyAttrib::
 get_mode() const {
   return _mode;

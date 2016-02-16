@@ -25,20 +25,14 @@
 class GraphicsStateGuardian;
 class PGMouseWatcherGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGTop
-// Description : The "top" node of the new Panda GUI system.  This
-//               node must be parented to the 2-d scene graph, and all
-//               PG objects should be parented to this node or
-//               somewhere below it.  PG objects not parented within
-//               this hierarchy will not be clickable.
-//
-//               This node begins the special traversal of the PG
-//               objects that registers each node within the
-//               MouseWatcher and forces everything to render in a
-//               depth-first, left-to-right order, appropriate for 2-d
-//               objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * The "top" node of the new Panda GUI system.  This node must be parented to
+ * the 2-d scene graph, and all PG objects should be parented to this node or
+ * somewhere below it.  PG objects not parented within this hierarchy will not
+ * be clickable.  This node begins the special traversal of the PG objects that
+ * registers each node within the MouseWatcher and forces everything to render
+ * in a depth-first, left-to-right order, appropriate for 2-d objects.
+ */
 class EXPCL_PANDA_PGUI PGTop : public PandaNode {
 PUBLISHED:
   PGTop(const string &name);
@@ -69,7 +63,7 @@ private:
   PT(MouseWatcher) _watcher;
   PT(PGMouseWatcherGroup) _watcher_group;
   int _start_sort;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

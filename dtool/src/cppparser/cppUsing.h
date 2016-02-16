@@ -21,10 +21,9 @@
 class CPPIdentifier;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPUsing
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPUsing : public CPPDeclaration {
 public:
   CPPUsing(CPPIdentifier *ident, bool full_namespace, const CPPFile &file);

@@ -18,11 +18,10 @@
 
 #include "lightLensNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DirectionalLight
-// Description : A light shining from infinitely far away in a
-//               particular direction, like sunlight.
-////////////////////////////////////////////////////////////////////
+/**
+ * A light shining from infinitely far away in a particular direction, like
+ * sunlight.
+ */
 class EXPCL_PANDA_PGRAPHNODES DirectionalLight : public LightLensNode {
 PUBLISHED:
   DirectionalLight(const string &name);

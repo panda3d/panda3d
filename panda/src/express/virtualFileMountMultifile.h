@@ -20,11 +20,9 @@
 #include "multifile.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMountMultifile
-// Description : Maps a Multifile's contents into the
-//               VirtualFileSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps a Multifile's contents into the VirtualFileSystem.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMountMultifile : public VirtualFileMount {
 PUBLISHED:
   INLINE VirtualFileMountMultifile(Multifile *multifile);
@@ -46,7 +44,7 @@ public:
   virtual time_t get_timestamp(const Filename &file) const;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
   virtual void output(ostream &out) const;

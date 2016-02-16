@@ -20,14 +20,12 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockTransform
-// Description : Specifies a center point, scale, or rotation for the
-//               texture coordinates in this shader's texture mapping.
-//               The type of transform is specified by the ID of the
-//               chunk; either CNTR, SIZE, or ROTA.  This is a
-//               subchunk of LwoSurfaceBlockTMap.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a center point, scale, or rotation for the texture coordinates in
+ * this shader's texture mapping.  The type of transform is specified by the ID
+ * of the chunk; either CNTR, SIZE, or ROTA.  This is a subchunk of
+ * LwoSurfaceBlockTMap.
+ */
 class LwoSurfaceBlockTransform : public LwoChunk {
 public:
   LVecBase3 _vec;
@@ -56,5 +54,3 @@ private:
 };
 
 #endif
-
-

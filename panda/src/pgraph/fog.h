@@ -23,25 +23,18 @@
 
 class TransformState;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Fog
-// Description : Specifies how atmospheric fog effects are applied to
-//               geometry.  The Fog object is now a PandaNode, which
-//               means it can be used similarly to a Light to define
-//               effects relative to a particular coordinate system
-//               within the scene graph.
-//
-//               In exponential mode, the fog effects are always
-//               camera-relative, and it does not matter where the Fog
-//               node is parented.  However, in linear mode, the onset
-//               and opaque distances are defined as offsets along the
-//               local forward axis (e.g. the Y axis).  This allows
-//               the fog effect to be localized to a particular region
-//               in space, rather than always camera-relative.  If the
-//               fog object is not parented to any node, it is used to
-//               generate traditonal camera-relative fog, as if it
-//               were parented to the camera.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies how atmospheric fog effects are applied to geometry.  The Fog
+ * object is now a PandaNode, which means it can be used similarly to a Light to
+ * define effects relative to a particular coordinate system within the scene
+ * graph.  In exponential mode, the fog effects are always camera-relative, and
+ * it does not matter where the Fog node is parented.  However, in linear mode,
+ * the onset and opaque distances are defined as offsets along the local forward
+ * axis (e.g.  the Y axis).  This allows the fog effect to be localized to a
+ * particular region in space, rather than always camera-relative.  If the fog
+ * object is not parented to any node, it is used to generate traditonal camera-
+ * relative fog, as if it were parented to the camera.
+ */
 class EXPCL_PANDA_PGRAPH Fog : public PandaNode {
 PUBLISHED:
   Fog(const string &name);
@@ -115,7 +108,7 @@ protected:
 
   PN_stdfloat _linear_fallback_cosa;
   PN_stdfloat _linear_fallback_onset, _linear_fallback_opaque;
-  
+
   PN_stdfloat _transformed_onset, _transformed_opaque;
 
 public:

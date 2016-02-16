@@ -15,11 +15,9 @@
 #include "cvsSourceDirectory.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TestCopy::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TestCopy::
 TestCopy() {
   set_program_brief("copy files into a CVS source hierarchy");
@@ -34,11 +32,9 @@ TestCopy() {
      "This is primarily useful as a test program for libcvscopy.");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TestCopy::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TestCopy::
 run() {
   SourceFiles::iterator fi;
@@ -50,14 +46,11 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TestCopy::copy_file
-//       Access: Protected, Virtual
-//  Description: Called by import() if the timestamps indicate that a
-//               file needs to be copied.  This does the actual copy
-//               of a file from source to destination.  If new_file is
-//               true, then dest does not already exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by import() if the timestamps indicate that a file needs to be copied.
+ * This does the actual copy of a file from source to destination.  If new_file
+ * is true, then dest does not already exist.
+ */
 bool TestCopy::
 copy_file(const Filename &source, const Filename &dest,
           CVSSourceDirectory *, void *, bool) {

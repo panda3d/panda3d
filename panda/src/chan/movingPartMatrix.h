@@ -23,11 +23,9 @@
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN, MovingPart<ACMatrixSwitchType>);
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovingPartMatrix
-// Description : This is a particular kind of MovingPart that accepts
-//               a matrix each frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of MovingPart that accepts a matrix each frame.
+ */
 class EXPCL_PANDA_CHAN MovingPartMatrix : public MovingPart<ACMatrixSwitchType> {
 protected:
   INLINE MovingPartMatrix(const MovingPartMatrix &copy);
@@ -80,6 +78,3 @@ private:
 #endif
 
 #endif
-
-
-

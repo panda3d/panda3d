@@ -30,16 +30,13 @@ class PNMFileType;
 class PNMReader;
 class PNMWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMImageHeader
-// Description : This is the base class of PNMImage, PNMReader, and
-//               PNMWriter.  It encapsulates all the information
-//               associated with an image that describes its size,
-//               number of channels, etc; that is, all the information
-//               about the image except the image data itself.  It's
-//               the sort of information you typically read from the
-//               image file's header.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class of PNMImage, PNMReader, and PNMWriter.  It
+ * encapsulates all the information associated with an image that describes its
+ * size, number of channels, etc; that is, all the information about the image
+ * except the image data itself.  It's the sort of information you typically
+ * read from the image file's header.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMImageHeader {
 PUBLISHED:
   INLINE PNMImageHeader();

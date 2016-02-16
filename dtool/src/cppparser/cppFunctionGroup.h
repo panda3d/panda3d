@@ -20,15 +20,12 @@
 
 class CPPInstance;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPFunctionGroup
-// Description : This class is simply a container for one or more
-//               CPPInstances for functions of the same name.  It's
-//               handy for storing in the CPPScope, so that
-//               CPPScope::find_symbol() can return a single pointer
-//               to indicate all of the functions that may share a
-//               given name.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is simply a container for one or more CPPInstances for functions
+ * of the same name.  It's handy for storing in the CPPScope, so that
+ * CPPScope::find_symbol() can return a single pointer to indicate all of the
+ * functions that may share a given name.
+ */
 class CPPFunctionGroup : public CPPDeclaration {
 public:
   CPPFunctionGroup(const string &name);
@@ -48,5 +45,3 @@ public:
 };
 
 #endif
-
-

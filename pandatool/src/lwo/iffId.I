@@ -11,11 +11,9 @@
  * @date 2001-04-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IffId::
 IffId() {
   _id._c[0] = 0;
@@ -24,11 +22,9 @@ IffId() {
   _id._c[3] = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IffId::
 IffId(const char id[4]) {
   _id._c[0] = id[0];
@@ -37,66 +33,51 @@ IffId(const char id[4]) {
   _id._c[3] = id[3];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IffId::
 IffId(const IffId &copy) {
   _id._n = copy._id._n;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void IffId::
 operator = (const IffId &copy) {
   _id._n = copy._id._n;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::Equivalence Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool IffId::
 operator == (const IffId &other) const {
   return (_id._n == other._id._n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::Nonequivalence Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool IffId::
 operator != (const IffId &other) const {
   return (_id._n != other._id._n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::Ordering Operator
-//       Access: Public
-//  Description: The ordering is arbitrary, and may not even be
-//               consistent between different architectures
-//               (e.g. big-endian and little-endian).  It is useful
-//               mainly for putting IffId's into a sorted container,
-//               like sets and maps.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ordering is arbitrary, and may not even be consistent between different
+ * architectures (e.g.  big-endian and little-endian).  It is useful mainly for
+ * putting IffId's into a sorted container, like sets and maps.
+ */
 INLINE bool IffId::
 operator < (const IffId &other) const {
   return (_id._n < other._id._n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffId::get_name
-//       Access: Public
-//  Description: Returns the four-character name of the Id, for
-//               outputting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the four-character name of the Id, for outputting.
+ */
 INLINE string IffId::
 get_name() const {
   return string(_id._c, 4);

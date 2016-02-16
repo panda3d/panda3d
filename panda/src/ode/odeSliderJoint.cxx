@@ -17,17 +17,17 @@
 TypeHandle OdeSliderJoint::_type_handle;
 
 OdeSliderJoint::
-OdeSliderJoint(dJointID id) : 
+OdeSliderJoint(dJointID id) :
   OdeJoint(id) {
 }
 
 OdeSliderJoint::
-OdeSliderJoint(OdeWorld &world) : 
+OdeSliderJoint(OdeWorld &world) :
   OdeJoint(dJointCreateSlider(world.get_id(), 0)) {
 }
 
 OdeSliderJoint::
-OdeSliderJoint(OdeWorld &world, OdeJointGroup &joint_group) : 
+OdeSliderJoint(OdeWorld &world, OdeJointGroup &joint_group) :
   OdeJoint(dJointCreateSlider(world.get_id(), joint_group.get_id())) {
 }
 

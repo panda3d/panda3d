@@ -17,11 +17,9 @@
 
 #include "conditionVarSpinlockImpl.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSpinlockImpl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSpinlockImpl::
 wait() {
   AtomicAdjust::Integer current = _event;

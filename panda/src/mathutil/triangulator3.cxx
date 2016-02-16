@@ -14,21 +14,17 @@
 #include "triangulator3.h"
 #include "look_at.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator3::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Triangulator3::
 Triangulator3() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator3::clear
-//       Access: Published
-//  Description: Removes all vertices and polygon specifications from
-//               the Triangulator, and prepares it to start over.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all vertices and polygon specifications from the Triangulator, and
+ * prepares it to start over.
+ */
 void Triangulator3::
 clear() {
   _vertices3.clear();
@@ -36,12 +32,9 @@ clear() {
   Triangulator::clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator3::add_vertex
-//       Access: Published
-//  Description: Adds a new vertex to the vertex pool.  Returns the
-//               vertex index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new vertex to the vertex pool.  Returns the vertex index number.
+ */
 int Triangulator3::
 add_vertex(const LPoint3d &point) {
   int index = (int)_vertices3.size();
@@ -49,14 +42,11 @@ add_vertex(const LPoint3d &point) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator3::triangulate
-//       Access: Published
-//  Description: Does the work of triangulating the specified polygon.
-//               After this call, you may retrieve the new triangles
-//               one at a time by iterating through
-//               get_triangle_v0/1/2().
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the work of triangulating the specified polygon.  After this call, you
+ * may retrieve the new triangles one at a time by iterating through
+ * get_triangle_v0/1/2().
+ */
 void Triangulator3::
 triangulate() {
   _result.clear();

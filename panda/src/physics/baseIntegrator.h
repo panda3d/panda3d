@@ -27,12 +27,10 @@
 
 class Physical;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BaseIntegrator
-// Description : pure virtual integrator class that holds cached
-//               matrix information that really should be common to
-//               any possible child implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * pure virtual integrator class that holds cached matrix information that
+ * really should be common to any possible child implementation.
+ */
 class EXPCL_PANDAPHYSICS BaseIntegrator : public ReferenceCount {
 public:
   typedef epvector<LMatrix4> MatrixVector;

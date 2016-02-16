@@ -19,11 +19,10 @@
 #include "nodePath.h"
 #include "lvecBase3.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConstrainPosInterval
-// Description : A constraint interval that will constrain the
-//               position of one node to the position of another.
-////////////////////////////////////////////////////////////////////
+/**
+ * A constraint interval that will constrain the position of one node to the
+ * position of another.
+ */
 class EXPCL_DIRECT CConstrainPosInterval : public CConstraintInterval {
 PUBLISHED:
   CConstrainPosInterval(const string &name, double duration,
@@ -63,4 +62,3 @@ private:
 #include "cConstrainPosInterval.I"
 
 #endif
-

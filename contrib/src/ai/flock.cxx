@@ -26,10 +26,9 @@ Flock::Flock(unsigned int flock_id, double vcone_angle, double vcone_radius, uns
 Flock::~Flock() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_ai_char
-//  Description: This function adds AI characters to the flock.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function adds AI characters to the flock.
+ */
 void Flock::add_ai_char(AICharacter *ai_char) {
   ai_char->_ai_char_flock_id = _flock_id;
   ai_char->_steering->_flock_group = this;

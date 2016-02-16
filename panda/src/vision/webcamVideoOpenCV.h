@@ -22,13 +22,11 @@
 
 class WebcamVideoCursorOpenCV;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideoOpenCV
-// Description : The OpenCV implementation of webcams.  Probably won't
-//               be needed once we have a native webcam implementation
-//               for each Panda3D-supported platform.  (So far, we're
-//               2 for 3.)
-////////////////////////////////////////////////////////////////////
+/**
+ * The OpenCV implementation of webcams.  Probably won't be needed once we have
+ * a native webcam implementation for each Panda3D-supported platform.  (So far,
+ * we're 2 for 3.)
+ */
 class WebcamVideoOpenCV : public WebcamVideo {
 private:
   WebcamVideoOpenCV(int camera_index);

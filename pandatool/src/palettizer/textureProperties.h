@@ -22,14 +22,11 @@
 class PNMFileType;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureProperties
-// Description : This is the set of characteristics of a texture that,
-//               if different from another texture, prevent the two
-//               textures from sharing a PaletteImage.  It includes
-//               properties such as mipmapping, number of channels,
-//               etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the set of characteristics of a texture that, if different from
+ * another texture, prevent the two textures from sharing a PaletteImage.  It
+ * includes properties such as mipmapping, number of channels, etc.
+ */
 class TextureProperties : public TypedWritable {
 public:
   TextureProperties();
@@ -117,4 +114,3 @@ private:
 };
 
 #endif
-

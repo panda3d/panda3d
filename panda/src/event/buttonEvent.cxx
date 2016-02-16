@@ -17,11 +17,9 @@
 #include "buttonRegistry.h"
 #include "textEncoder.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ButtonEvent::
 output(ostream &out) const {
   switch (_type) {
@@ -65,11 +63,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::write_datagram
-//       Access: Public
-//  Description: Writes the event into a datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the event into a datagram.
+ */
 void ButtonEvent::
 write_datagram(Datagram &dg) const {
   dg.add_uint8(_type);
@@ -106,11 +102,9 @@ write_datagram(Datagram &dg) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonEvent::read_datagram
-//       Access: Public
-//  Description: Restores the event from the datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Restores the event from the datagram.
+ */
 void ButtonEvent::
 read_datagram(DatagramIterator &scan) {
   _type = (Type)scan.get_uint8();

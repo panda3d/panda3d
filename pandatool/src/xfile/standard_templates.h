@@ -24,4 +24,3 @@ extern const int standard_templates_data_len;
 #endif  // CPPPARSER
 
 #endif
-

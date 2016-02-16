@@ -15,12 +15,10 @@
 
 TypeHandle NodeCachedReferenceCount::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeCachedReferenceCount::do_test_ref_count_integrity
-//       Access: Protected
-//  Description: Does some easy checks to make sure that the reference
-//               count isn't completely bogus.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does some easy checks to make sure that the reference count isn't completely
+ * bogus.
+ */
 bool NodeCachedReferenceCount::
 do_test_ref_count_integrity() const {
   nassertr(this != NULL, false);

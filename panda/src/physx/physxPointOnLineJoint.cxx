@@ -16,11 +16,9 @@
 
 TypeHandle PhysxPointOnLineJoint::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPointOnLineJoint::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxPointOnLineJoint::
 link(NxJoint *jointPtr) {
 
@@ -34,11 +32,9 @@ link(NxJoint *jointPtr) {
   scene->_joints.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPointOnLineJoint::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxPointOnLineJoint::
 unlink() {
 
@@ -49,12 +45,9 @@ unlink() {
   scene->_joints.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPointOnLineJoint::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the joint object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the joint object to a descriptor.
+ */
 void PhysxPointOnLineJoint::
 save_to_desc(PhysxPointOnLineJointDesc &jointDesc) const {
 
@@ -62,16 +55,12 @@ save_to_desc(PhysxPointOnLineJointDesc &jointDesc) const {
   _ptr->saveToDesc(jointDesc._desc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPointOnLineJoint::load_from_desc
-//       Access: Published
-//  Description: Loads the entire state of the joint from a
-//               descriptor with a single call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the entire state of the joint from a descriptor with a single call.
+ */
 void PhysxPointOnLineJoint::
 load_from_desc(const PhysxPointOnLineJointDesc &jointDesc) {
 
   nassertv(_error_type == ET_ok);
   _ptr->loadFromDesc(jointDesc._desc);
 }
-

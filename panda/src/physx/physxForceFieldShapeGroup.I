@@ -11,42 +11,34 @@
  * @date 2009-11-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxForceFieldShapeGroup::
 PhysxForceFieldShapeGroup() : PhysxObject() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxForceFieldShapeGroup::
 ~PhysxForceFieldShapeGroup() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxForceFieldShapeGroup::
 ls() const {
 
   ls(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceFieldShapeGroup::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxForceFieldShapeGroup::
 ls(ostream &out, int indent_level) const {
 
@@ -56,4 +48,3 @@ ls(ostream &out, int indent_level) const {
 
   _shapes.ls(out, indent_level);
 }
-

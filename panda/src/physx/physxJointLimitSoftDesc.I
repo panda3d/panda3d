@@ -11,21 +11,17 @@
  * @date 2009-10-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointLimitSoftDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointLimitSoftDesc::
 PhysxJointLimitSoftDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointLimitSoftDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointLimitSoftDesc::
 PhysxJointLimitSoftDesc(float value, float restitution, float spring, float damping) {
 
@@ -35,13 +31,10 @@ PhysxJointLimitSoftDesc(float value, float restitution, float spring, float damp
   _desc.damping = damping;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointLimitSoftDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointLimitSoftDesc::
 ~PhysxJointLimitSoftDesc() {
 
 }
-

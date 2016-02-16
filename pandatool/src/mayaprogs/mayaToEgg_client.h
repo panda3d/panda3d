@@ -19,10 +19,9 @@
 #include "queuedConnectionReader.h"
 #include "connectionWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaToEggClient
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class MayaToEggClient : public SomethingToEgg {
 public:
   MayaToEggClient();

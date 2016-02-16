@@ -93,4 +93,3 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   }
   PANDA_FREE_ARRAY(matrix);
 }
-

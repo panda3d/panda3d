@@ -18,18 +18,13 @@
 
 #include "typedReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggUserData
-// Description : This is a base class for a user-defined data type to
-//               extend egg structures in processing code.  The user
-//               of the egg library may derive from EggUserData to
-//               associate any arbitrary data with various egg
-//               objects.
-//
-//               However, this data will not be written out to the
-//               disk when the egg file is written; it is an in-memory
-//               object only.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for a user-defined data type to extend egg structures in
+ * processing code.  The user of the egg library may derive from EggUserData to
+ * associate any arbitrary data with various egg objects.  However, this data
+ * will not be written out to the disk when the egg file is written; it is an
+ * in-memory object only.
+ */
 class EXPCL_PANDAEGG EggUserData : public TypedReferenceCount {
 PUBLISHED:
   INLINE EggUserData();
@@ -59,4 +54,3 @@ private:
 #include "eggUserData.I"
 
 #endif
-

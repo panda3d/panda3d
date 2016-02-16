@@ -11,24 +11,18 @@
  * @date 2005-03-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::get_gsg
-//       Access: Public
-//  Description: Returns a pointer to the GSG that created this
-//               munger.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the GSG that created this munger.
+ */
 INLINE GraphicsStateGuardian *StandardMunger::
 get_gsg() const {
   return (GraphicsStateGuardian *)GeomMunger::get_gsg();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::get_render_mode
-//       Access: Protected
-//  Description: Returns the render mode active on this munger.
-//               Intended for derived classes that may have to munge
-//               differently depending on render mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the render mode active on this munger.  Intended for derived classes
+ * that may have to munge differently depending on render mode.
+ */
 INLINE RenderModeAttrib::Mode StandardMunger::
 get_render_mode() const {
   return (_render_mode != NULL) ? _render_mode->get_mode()

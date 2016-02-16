@@ -17,11 +17,10 @@
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DNoneObject
-// Description : An object type that contains no value, similar to
-//               Python's None type, or JavaScript's null type.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object type that contains no value, similar to Python's None type, or
+ * JavaScript's null type.
+ */
 class P3DNoneObject : public P3DObject {
 public:
   P3DNoneObject();
@@ -33,4 +32,3 @@ public:
 };
 
 #endif
-

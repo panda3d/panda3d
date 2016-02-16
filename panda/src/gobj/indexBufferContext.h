@@ -21,17 +21,13 @@
 #include "preparedGraphicsObjects.h"
 #include "adaptiveLru.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IndexBufferContext
-// Description : This is a special class object that holds all the
-//               information returned by a particular GSG to indicate
-//               the vertex data array's internal context identifier.
-//
-//               This allows the GSG to cache the vertex data array in
-//               whatever way makes sense.  For instance, DirectX can
-//               allocate a vertex buffer for the array.  OpenGL can
-//               create a buffer object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special class object that holds all the information returned by a
+ * particular GSG to indicate the vertex data array's internal context
+ * identifier.  This allows the GSG to cache the vertex data array in whatever
+ * way makes sense.  For instance, DirectX can allocate a vertex buffer for the
+ * array.  OpenGL can create a buffer object.
+ */
 class EXPCL_PANDA_GOBJ IndexBufferContext : public BufferContext, public AdaptiveLruPage {
 public:
   INLINE IndexBufferContext(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
@@ -86,4 +82,3 @@ inline ostream &operator << (ostream &out, const IndexBufferContext &context) {
 #include "indexBufferContext.I"
 
 #endif
-

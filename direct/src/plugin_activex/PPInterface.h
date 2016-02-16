@@ -35,7 +35,7 @@ public:
     HRESULT P3DGetProperty( P3D_object* p3dObject, CString& name, VARIANT FAR* varResult );
     HRESULT P3DSetProperty( P3D_object* p3dObject, CString& name, DISPPARAMS FAR* pdispparams, bool& result );
 
-    void p3dobj_to_variant(VARIANT* result, P3D_object* object); 
+    void p3dobj_to_variant(VARIANT* result, P3D_object* object);
     P3D_object* variant_to_p3dobj(COleVariant* variant);
     CString get_repr(COleVariant& variant);
 

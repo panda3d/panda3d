@@ -17,16 +17,12 @@
 #include "pandabase.h"
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatCollectorForwardBase
-// Description : This class serves as a cheap forward reference to a
-//               PStatCollector, which is defined in the pstatclient
-//               module (and is not directly accessible here in the
-//               express module).
-//
-//               This is subclassed as PStatCollectorForward, which
-//               defines the actual functionality.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class serves as a cheap forward reference to a PStatCollector, which is
+ * defined in the pstatclient module (and is not directly accessible here in the
+ * express module).  This is subclassed as PStatCollectorForward, which defines
+ * the actual functionality.
+ */
 class EXPCL_PANDAEXPRESS PStatCollectorForwardBase : public ReferenceCount {
 PUBLISHED:
 #ifdef DO_PSTATS

@@ -24,11 +24,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TexMatrixAttrib
-// Description : Applies a transform matrix to UV's before they are
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a transform matrix to UV's before they are rendered.
+ */
 class EXPCL_PANDA_PGRAPH TexMatrixAttrib : public RenderAttrib {
 protected:
   INLINE TexMatrixAttrib();
@@ -113,7 +111,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -137,4 +135,3 @@ private:
 #include "texMatrixAttrib.I"
 
 #endif
-

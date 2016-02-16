@@ -16,11 +16,9 @@
 #include "vrmlToEggConverter.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VRMLToEgg::
 VRMLToEgg() :
   SomethingToEgg("VRML", ".wrl")
@@ -42,11 +40,9 @@ VRMLToEgg() :
   _coordinate_system = CS_yup_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VRMLToEgg::
 run() {
   nout << "Reading " << _input_filename << "\n";

@@ -19,11 +19,10 @@
 
 #include "config_physx.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxRay
-// Description : Represents an ray as an origin and direction.
-//               The ray will be infinite if no length is given.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents an ray as an origin and direction.  The ray will be infinite if no
+ * length is given.
+ */
 class EXPCL_PANDAPHYSX PhysxRay {
 
 PUBLISHED:

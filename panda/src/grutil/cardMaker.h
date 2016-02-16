@@ -22,12 +22,10 @@
 #include "namable.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CardMaker
-// Description : This class generates 2-d "cards", that is,
-//               rectangular polygons, particularly useful for showing
-//               textures etc. in the 2-d scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class generates 2-d "cards", that is, rectangular polygons, particularly
+ * useful for showing textures etc.  in the 2-d scene graph.
+ */
 class EXPCL_PANDA_GRUTIL CardMaker : public Namable {
 PUBLISHED:
   INLINE CardMaker(const string &name);
@@ -78,4 +76,3 @@ private:
 #include "cardMaker.I"
 
 #endif
-

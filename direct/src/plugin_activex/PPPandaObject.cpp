@@ -16,7 +16,7 @@
 #include "PPInstance.h"
 #include "load_plugin.h"
 
-PPandaObject::PPandaObject( PPInterface* interfac, P3D_object* p3dObject ) : 
+PPandaObject::PPandaObject( PPInterface* interfac, P3D_object* p3dObject ) :
     m_interface( interfac ), m_p3dObject( p3dObject ), m_refs( 0 ), m_ptinfo( NULL )
 {
     if ( m_p3dObject )
@@ -66,9 +66,9 @@ STDMETHODIMP PPandaObject::QueryInterface(REFIID riid, void FAR* FAR* ppv)
 {
     if(!IsEqualIID(riid, IID_IUnknown))
     {
-        if(!IsEqualIID(riid, IID_IDispatch)) 
+        if(!IsEqualIID(riid, IID_IDispatch))
         {
-            *ppv = NULL;      
+            *ppv = NULL;
             return E_NOINTERFACE;
         }
     }
@@ -169,7 +169,7 @@ STDMETHODIMP PPandaObject::Invoke(
         return E_FAIL;
     }
 
-    if ( dispidMember >= m_idsOfNames.size( ) ) 
+    if ( dispidMember >= m_idsOfNames.size( ) )
     {
         return E_FAIL;
     }
@@ -182,7 +182,7 @@ STDMETHODIMP PPandaObject::Invoke(
     case ( DISPATCH_METHOD | DISPATCH_PROPERTYGET ):
         {
             // NOTE: http://msdn.microsoft.com/en-us/library/ms221479.aspx
-            // The member is invoked as a method. If a property has the same name, 
+            // The member is invoked as a method. If a property has the same name,
             // both the DISPATCH_METHOD and the DISPATCH_PROPERTYGET flag may be set.
 
             bool hasMethod( false );

@@ -19,15 +19,12 @@
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandlerQueue
-// Description : A special kind of CollisionHandler that does nothing
-//               except remember the CollisionEntries detected the
-//               last pass.  This set of CollisionEntries may then be
-//               queried by the calling function.  It's primarily
-//               useful when a simple intersection test is being made,
-//               e.g. for picking from the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special kind of CollisionHandler that does nothing except remember the
+ * CollisionEntries detected the last pass.  This set of CollisionEntries may
+ * then be queried by the calling function.  It's primarily useful when a simple
+ * intersection test is being made, e.g.  for picking from the window.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandlerQueue : public CollisionHandler {
 PUBLISHED:
   CollisionHandlerQueue();
@@ -75,6 +72,3 @@ INLINE ostream &operator << (ostream &out, const CollisionHandlerQueue &chq) {
 }
 
 #endif
-
-
-

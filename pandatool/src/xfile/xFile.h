@@ -25,12 +25,10 @@
 class XFileTemplate;
 class XFileDataNodeTemplate;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFile
-// Description : This represents the complete contents of an X file
-//               (file.x) in memory.  It may be read or written from
-//               or to a disk file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents the complete contents of an X file (file.x) in memory.  It
+ * may be read or written from or to a disk file.
+ */
 class XFile : public XFileNode {
 public:
   XFile(bool keep_names=false);
@@ -68,19 +66,19 @@ public:
 private:
   bool read_header(istream &in);
   bool write_header(ostream &out) const;
-  
+
   static const XFile *get_standard_templates();
 
   int _major_version, _minor_version;
   FormatType _format_type;
   FloatSize _float_size;
   bool _keep_names;
-  
+
   typedef pmap<WindowsGuid, XFileNode *> NodesByGuid;
   NodesByGuid _nodes_by_guid;
 
   static PT(XFile) _standard_templates;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -104,5 +102,3 @@ private:
 #include "xFile.I"
 
 #endif
-
-

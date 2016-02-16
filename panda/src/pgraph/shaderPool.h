@@ -20,13 +20,11 @@
 #include "lightMutex.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderPool
-// Description : This is the preferred interface for loading shaders for
-//               the TextNode system.  It is similar to ModelPool and
-//               TexturePool in that it unifies references to the same
-//               filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the preferred interface for loading shaders for the TextNode system.
+ * It is similar to ModelPool and TexturePool in that it unifies references to
+ * the same filename.
+ */
 class EXPCL_PANDA_PGRAPH ShaderPool {
 PUBLISHED:
   INLINE static bool has_shader(const Filename &filename);

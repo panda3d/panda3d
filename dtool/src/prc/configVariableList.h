@@ -17,24 +17,18 @@
 #include "dtoolbase.h"
 #include "configVariableBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableList
-// Description : This class is similar to ConfigVariable, but it
-//               reports its value as a list of strings.  In this
-//               special case, all of the declarations of the variable
-//               are returned as the elements of this list, in order.
-//
-//               Note that this is different from a normal
-//               ConfigVariableString, which just returns its topmost
-//               value, which can optionally be treated as a number of
-//               discrete words by dividing it at the spaces.
-//
-//               A ConfigVariableList cannot be modified locally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is similar to ConfigVariable, but it reports its value as a list
+ * of strings.  In this special case, all of the declarations of the variable
+ * are returned as the elements of this list, in order.  Note that this is
+ * different from a normal ConfigVariableString, which just returns its topmost
+ * value, which can optionally be treated as a number of discrete words by
+ * dividing it at the spaces.  A ConfigVariableList cannot be modified locally.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableList : public ConfigVariableBase {
 PUBLISHED:
   INLINE ConfigVariableList(const string &name,
-                            const string &description = string(), 
+                            const string &description = string(),
                             int flags = 0);
   INLINE ~ConfigVariableList();
 

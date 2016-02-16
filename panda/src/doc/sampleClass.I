@@ -11,11 +11,9 @@
  * @date 2000-06-10
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: SampleClass::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SampleClass::
 SampleClass(const SampleClass &copy) :
   _public_data_member(copy._public_data_member),
@@ -24,36 +22,27 @@ SampleClass(const SampleClass &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SampleClass::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SampleClass::
 ~SampleClass() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SampleClass::set_flag
-//       Access: Public
-//  Description: A few sentences describing the purpose of flag, the
-//               legal values it may be set to, and the implications
-//               of setting it to certain values.
-////////////////////////////////////////////////////////////////////
+/**
+ * A few sentences describing the purpose of flag, the legal values it may be
+ * set to, and the implications of setting it to certain values.
+ */
 INLINE void SampleClass::
 set_flag(int flag) {
   _flag = flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SampleClass::get_flag
-//       Access: Public
-//  Description: A few sentences describing the purpose of flag, the
-//               legal values it may be set to, and the implications
-//               of setting it to certain values.
-////////////////////////////////////////////////////////////////////
+/**
+ * A few sentences describing the purpose of flag, the legal values it may be
+ * set to, and the implications of setting it to certain values.
+ */
 INLINE int SampleClass::
 get_flag() const {
   return _flag;
 }
-

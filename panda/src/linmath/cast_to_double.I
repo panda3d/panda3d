@@ -54,4 +54,3 @@ INLINE_LINMATH LMatrix3d cast_to_double(const LMatrix3f &source) {
 INLINE_LINMATH LMatrix4d cast_to_double(const LMatrix4f &source) {
   return LCAST(double, source);
 }
-

@@ -18,12 +18,10 @@
 
 #include "collisionRay.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionLine
-// Description : An infinite line, similar to a CollisionRay, except
-//               that it extends in both directions.  It is, however,
-//               directional.
-////////////////////////////////////////////////////////////////////
+/**
+ * An infinite line, similar to a CollisionRay, except that it extends in both
+ * directions.  It is, however, directional.
+ */
 class EXPCL_PANDA_COLLIDE CollisionLine : public CollisionRay {
 PUBLISHED:
   INLINE CollisionLine();
@@ -72,5 +70,3 @@ private:
 #include "collisionLine.I"
 
 #endif
-
-

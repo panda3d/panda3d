@@ -11,11 +11,9 @@
  * @date 2007-07-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AttribNodeRegistry::get_global_ptr
-//       Access: Published, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE AttribNodeRegistry *AttribNodeRegistry::
 get_global_ptr() {
   if (_global_ptr == (AttribNodeRegistry *)NULL) {
@@ -24,11 +22,9 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AttribNodeRegistry::Entry::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE AttribNodeRegistry::Entry::
 Entry(const NodePath &node) :
   _type(node.node()->get_type()),
@@ -37,11 +33,9 @@ Entry(const NodePath &node) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AttribNodeRegistry::Entry::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE AttribNodeRegistry::Entry::
 Entry(TypeHandle type, const string &name) :
   _type(type),
@@ -49,11 +43,9 @@ Entry(TypeHandle type, const string &name) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AttribNodeRegistry::Entry::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool AttribNodeRegistry::Entry::
 operator < (const Entry &other) const {
   if (_type != other._type) {

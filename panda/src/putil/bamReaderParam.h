@@ -21,11 +21,10 @@
 class BamReader;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamReaderParam
-// Description : The parameters that are passed through the Factory to
-//               any object constructing itself from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The parameters that are passed through the Factory to any object constructing
+ * itself from a Bam file.
+ */
 class EXPCL_PANDA_PUTIL BamReaderParam : public FactoryParam {
 public:
   INLINE const DatagramIterator &get_iterator();
@@ -60,4 +59,3 @@ private:
 #include "bamReaderParam.I"
 
 #endif
-

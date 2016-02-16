@@ -18,30 +18,24 @@
 
 TypeHandle TransformBlendTable::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::make_cow_copy
-//       Access: Protected, Virtual
-//  Description: Required to implement CopyOnWriteObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required to implement CopyOnWriteObject.
+ */
 PT(CopyOnWriteObject) TransformBlendTable::
 make_cow_copy() {
   return new TransformBlendTable(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TransformBlendTable::
 TransformBlendTable() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::Copy Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TransformBlendTable::
 TransformBlendTable(const TransformBlendTable &copy) :
   _blends(copy._blends),
@@ -49,11 +43,9 @@ TransformBlendTable(const TransformBlendTable &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::Copy Assignment Operator
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TransformBlendTable::
 operator = (const TransformBlendTable &copy) {
   _blends = copy._blends;
@@ -61,45 +53,35 @@ operator = (const TransformBlendTable &copy) {
   clear_index();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TransformBlendTable::
 ~TransformBlendTable() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::set_blend
-//       Access: Published
-//  Description: Replaces the blend at the nth position with the
-//               indicated value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the blend at the nth position with the indicated value.
+ */
 void TransformBlendTable::
 set_blend(size_t n, const TransformBlend &blend) {
   nassertv(n < _blends.size());
   _blends[n] = blend;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::remove_blend
-//       Access: Published
-//  Description: Removes the blend at the nth position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the blend at the nth position.
+ */
 void TransformBlendTable::
 remove_blend(size_t n) {
   nassertv(n < _blends.size());
   _blends.erase(_blends.begin() + n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::add_blend
-//       Access: Published
-//  Description: Adds a new blend to the table, and returns its
-//               index number.  If there is already an identical blend
-//               in the table, simply returns that number instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new blend to the table, and returns its index number.  If there is
+ * already an identical blend in the table, simply returns that number instead.
+ */
 size_t TransformBlendTable::
 add_blend(const TransformBlend &blend) {
   consider_rebuild_index();
@@ -136,11 +118,9 @@ add_blend(const TransformBlend &blend) {
   return new_position;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TransformBlendTable::
 write(ostream &out, int indent_level) const {
   for (size_t i = 0; i < _blends.size(); ++i) {
@@ -149,24 +129,18 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::clear_index
-//       Access: Private
-//  Description: Resets the index so that it will be rebuilt next time
-//               it is needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the index so that it will be rebuilt next time it is needed.
+ */
 void TransformBlendTable::
 clear_index() {
   _blend_index.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::rebuild_index
-//       Access: Private
-//  Description: Rebuilds the index so that we can easily determine
-//               what blend combinations are already present in the
-//               table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rebuilds the index so that we can easily determine what blend combinations
+ * are already present in the table.
+ */
 void TransformBlendTable::
 rebuild_index() {
   _blend_index.clear();
@@ -192,12 +166,10 @@ rebuild_index() {
   _num_transforms = transforms.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::recompute_modified
-//       Access: Private
-//  Description: Recomputes the modified stamp from the various
-//               TransformBlend objects, if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the modified stamp from the various TransformBlend objects, if
+ * necessary.
+ */
 void TransformBlendTable::
 recompute_modified(TransformBlendTable::CData *cdata, Thread *current_thread) {
   // Update the global_modified sequence number first, to prevent race
@@ -214,12 +186,9 @@ recompute_modified(TransformBlendTable::CData *cdata, Thread *current_thread) {
   cdata->_modified = seq;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::clear_modified
-//       Access: Private
-//  Description: Clears the modified stamp to force it to be
-//               recomputed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the modified stamp to force it to be recomputed.
+ */
 void TransformBlendTable::
 clear_modified(Thread *current_thread) {
   CDWriter cdata(_cycler, true, current_thread);
@@ -227,23 +196,18 @@ clear_modified(Thread *current_thread) {
   cdata->_modified = UpdateSeq();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               TransformBlendTable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type TransformBlendTable.
+ */
 void TransformBlendTable::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void TransformBlendTable::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -259,13 +223,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int TransformBlendTable::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
@@ -278,14 +239,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type TransformBlendTable is encountered
-//               in the Bam file.  It should create the TransformBlendTable
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * TransformBlendTable is encountered in the Bam file.  It should create the
+ * TransformBlendTable and extract its information from the file.
+ */
 TypedWritable *TransformBlendTable::
 make_from_bam(const FactoryParams &params) {
   TransformBlendTable *object = new TransformBlendTable;
@@ -298,13 +256,10 @@ make_from_bam(const FactoryParams &params) {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new TransformBlendTable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new TransformBlendTable.
+ */
 void TransformBlendTable::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
@@ -329,33 +284,26 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_cdata(scan, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *TransformBlendTable::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void TransformBlendTable::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TransformBlendTable::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new TransformBlendTable.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new TransformBlendTable.
+ */
 void TransformBlendTable::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   Thread *current_thread = Thread::get_current_thread();

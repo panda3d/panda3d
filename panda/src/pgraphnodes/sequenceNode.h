@@ -20,11 +20,10 @@
 #include "animInterface.h"
 #include "clockObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SequenceNode
-// Description : A node that automatically cycles through rendering
-//               each one of its children according to its frame rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that automatically cycles through rendering each one of its children
+ * according to its frame rate.
+ */
 class EXPCL_PANDA_PGRAPHNODES SequenceNode : public SelectiveChildNode, public AnimInterface {
 PUBLISHED:
   INLINE SequenceNode(const string &name);

@@ -21,20 +21,15 @@
 #include "dataNode.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : DialNode
-// Description : This is the primary interface to infinite dial type
-//               devices associated with a ClientBase.  This creates a
-//               node that connects to the named dial device, if it
-//               exists, and provides hooks to the user to read the
-//               state of any of the sequentially numbered dial
-//               controls associated with that device.
-//
-//               A dial is a rotating device that does not have
-//               stops--it can keep rotating any number of times.
-//               Therefore it does not have a specific position at any
-//               given time, unlike an AnalogDevice.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary interface to infinite dial type devices associated with a
+ * ClientBase.  This creates a node that connects to the named dial device, if
+ * it exists, and provides hooks to the user to read the state of any of the
+ * sequentially numbered dial controls associated with that device.  A dial is a
+ * rotating device that does not have stops--it can keep rotating any number of
+ * times.  Therefore it does not have a specific position at any given time,
+ * unlike an AnalogDevice.
+ */
 class EXPCL_PANDA_DEVICE DialNode : public DataNode {
 PUBLISHED:
   DialNode(ClientBase *client, const string &device_name);

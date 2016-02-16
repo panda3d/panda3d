@@ -22,14 +22,13 @@
 #include "bullet_utils.h"
 #include "bulletManifoldPoint.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletContactCallbackData
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletContactCallbackData : public CallbackData {
 
 PUBLISHED:
-  INLINE BulletContactCallbackData(BulletManifoldPoint &mp, 
+  INLINE BulletContactCallbackData(BulletManifoldPoint &mp,
                                    PandaNode *node0, PandaNode *node1,
                                    int id0, int id1,
                                    int index0, int index1);
@@ -57,7 +56,7 @@ public:
   }
   static void init_type() {
     CallbackData::init_type();
-    register_type(_type_handle, "BulletContactCallbackData", 
+    register_type(_type_handle, "BulletContactCallbackData",
                   CallbackData::get_class_type());
   }
   virtual TypeHandle get_type() const {

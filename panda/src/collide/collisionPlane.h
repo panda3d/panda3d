@@ -21,10 +21,9 @@
 #include "luse.h"
 #include "plane.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionPlane
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_COLLIDE CollisionPlane : public CollisionSolid {
 protected:
   INLINE CollisionPlane();
@@ -115,5 +114,3 @@ private:
 #include "collisionPlane.I"
 
 #endif
-
-

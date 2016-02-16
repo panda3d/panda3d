@@ -22,10 +22,9 @@
 
 class CLP(GraphicsStateGuardian);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLShaderContext
-// Description : xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 class EXPCL_GL CLP(CgShaderContext) : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
@@ -106,4 +105,3 @@ private:
 #include "glCgShaderContext_src.I"
 
 #endif  // OPENGLES_1
-

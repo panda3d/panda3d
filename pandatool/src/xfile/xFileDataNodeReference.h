@@ -18,15 +18,10 @@
 #include "xFileDataNodeTemplate.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataNodeReference
-// Description : This is a nested reference to an instance of a
-//               template object, declared via the syntax:
-//
-//                 { InstanceName }
-//
-//               in the X File.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a nested reference to an instance of a template object, declared via
+ * the syntax:  { InstanceName }  in the X File.
+ */
 class XFileDataNodeReference : public XFileDataNode {
 public:
   XFileDataNodeReference(XFileDataNodeTemplate *object);
@@ -68,7 +63,3 @@ private:
 #include "xFileDataNodeReference.I"
 
 #endif
-  
-
-
-

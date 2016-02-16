@@ -22,21 +22,15 @@
 
 class VrpnTrackerDevice;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnTracker
-// Description : This is the actual interface to a particular VRPN
-//               tracker object, and all of its sensors.  A pointer to
-//               this object is stored in the VrpnClient class for
-//               each differently-named VRPN tracker we connect to.
-//
-//               The VRPN callbacks go here, which in turn get
-//               vectored out to any VrpnTrackerDevice objects that
-//               register with this.  When the last VrpnTrackerDevice
-//               object unregisters, the VrpnTracker will be deleted
-//               by the VrpnClient.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the actual interface to a particular VRPN tracker object, and all of
+ * its sensors.  A pointer to this object is stored in the VrpnClient class for
+ * each differently-named VRPN tracker we connect to.  The VRPN callbacks go
+ * here, which in turn get vectored out to any VrpnTrackerDevice objects that
+ * register with this.  When the last VrpnTrackerDevice object unregisters, the
+ * VrpnTracker will be deleted by the VrpnClient.  This class does not need to
+ * be exported from the DLL.
+ */
 class VrpnTracker {
 public:
   VrpnTracker(const string &tracker_name, vrpn_Connection *connection);
@@ -77,4 +71,3 @@ INLINE ostream &operator << (ostream &out, const VrpnTracker &tracker) {
 #include "vrpnTracker.I"
 
 #endif
-

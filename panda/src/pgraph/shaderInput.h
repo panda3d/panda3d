@@ -32,12 +32,10 @@
 #include "shader.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShaderInput
-// Description : This is a small container class that can hold any
-//               one of the value types that can be passed as input
-//               to a shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a small container class that can hold any one of the value types that
+ * can be passed as input to a shader.
+ */
 class EXPCL_PANDA_PGRAPH ShaderInput : public TypedWritableReferenceCount {
 public:
   INLINE ~ShaderInput();
@@ -147,4 +145,3 @@ private:
 #include "shaderInput.I"
 
 #endif  // SHADERINPUT_H
-

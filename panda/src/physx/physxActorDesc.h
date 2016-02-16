@@ -22,10 +22,9 @@
 class PhysxBodyDesc;
 class PhysxShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxActorDesc
-// Description : Descriptor for PhysxActor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for PhysxActor.
+ */
 class EXPCL_PANDAPHYSX PhysxActorDesc {
 
 PUBLISHED:

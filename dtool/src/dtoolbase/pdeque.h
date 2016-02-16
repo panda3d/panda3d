@@ -22,17 +22,15 @@
 #ifndef USE_STL_ALLOCATOR
 // If we're not using custom allocators, just use the standard class
 // definition.
-#define pdeque deque 
+#define pdeque deque
 
 #else
 
-////////////////////////////////////////////////////////////////////
-//       Class : pdeque
-// Description : This is our own Panda specialization on the default
-//               STL deque.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL deque.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-allocated
+ * memory.
+ */
 template<class Type>
 class pdeque : public deque<Type, pallocator_array<Type> > {
 public:

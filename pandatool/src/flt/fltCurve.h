@@ -21,10 +21,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltCurve
-// Description : A single curve, like a Bezier or B-Spline.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single curve, like a Bezier or B-Spline.
+ */
 class FltCurve : public FltBeadID {
 public:
   FltCurve(FltHeader *header);
@@ -70,5 +69,3 @@ private:
 #include "fltCurve.I"
 
 #endif
-
-

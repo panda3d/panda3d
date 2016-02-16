@@ -20,30 +20,23 @@ ConfigVariableDouble LinearIntegrator::_max_linear_dt
 ("default_max_linear_dt", 1.0f / 30.0f);
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseLinearIntegrator
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LinearIntegrator::
 LinearIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~LinearIntegrator
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 LinearIntegrator::
 ~LinearIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: integrate
-//       Access: Public
-//  Description: parent integration routine, hands off to child
-//               virtual.
-////////////////////////////////////////////////////////////////////
+/**
+ * parent integration routine, hands off to child virtual.
+ */
 void LinearIntegrator::
 integrate(Physical *physical, LinearForceVector &forces,
           PN_stdfloat dt) {
@@ -71,12 +64,9 @@ integrate(Physical *physical, LinearForceVector &forces,
   child_integrate(physical, forces, dt);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -84,12 +74,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

@@ -22,10 +22,9 @@
 #include <Python.h>
 #endif // HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxObject
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxObject : public TypedReferenceCount {
 
 #ifdef HAVE_PYTHON
@@ -66,7 +65,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "PhysxObject", 
+    register_type(_type_handle, "PhysxObject",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -26,11 +26,9 @@ extern "C" {
   #define AVSEEK_SIZE 0x10000
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FfmpegVirtualFile::
 FfmpegVirtualFile() :
   _io_context(NULL),
@@ -41,43 +39,35 @@ FfmpegVirtualFile() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FfmpegVirtualFile::
 ~FfmpegVirtualFile() {
   close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::Copy Constructor
-//       Access: Private
-//  Description: These objects are not meant to be copied.
-////////////////////////////////////////////////////////////////////
+/**
+ * These objects are not meant to be copied.
+ */
 FfmpegVirtualFile::
 FfmpegVirtualFile(const FfmpegVirtualFile &copy) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::Copy Assignment Operator
-//       Access: Private
-//  Description: These objects are not meant to be copied.
-////////////////////////////////////////////////////////////////////
+/**
+ * These objects are not meant to be copied.
+ */
 void FfmpegVirtualFile::
 operator = (const FfmpegVirtualFile &copy) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::open_vfs
-//       Access: Public
-//  Description: Opens the movie file via Panda's VFS.  Returns true
-//               on success, false on failure.  If successful, use
-//               get_format_context() to get the open file handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the movie file via Panda's VFS.  Returns true on success, false on
+ * failure.  If successful, use get_format_context() to get the open file
+ * handle.
+ */
 bool FfmpegVirtualFile::
 open_vfs(const Filename &filename) {
   close();
@@ -129,14 +119,11 @@ open_vfs(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::open_subfile
-//       Access: Public
-//  Description: Opens the movie file directly from a file on disk
-//               (does not go through the VFS).  Returns true on
-//               success, false on failure.  If successful, use
-//               get_format_context() to get the open file handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the movie file directly from a file on disk (does not go through the
+ * VFS).  Returns true on success, false on failure.  If successful, use
+ * get_format_context() to get the open file handle.
+ */
 bool FfmpegVirtualFile::
 open_subfile(const SubfileInfo &info) {
   close();
@@ -183,12 +170,10 @@ open_subfile(const SubfileInfo &info) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::close
-//       Access: Public
-//  Description: Explicitly closes the opened file.  This is also
-//               called implicitly by the destructor if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly closes the opened file.  This is also called implicitly by the
+ * destructor if necessary.
+ */
 void FfmpegVirtualFile::
 close() {
   if (_format_context != NULL) {
@@ -216,12 +201,10 @@ close() {
   _in = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::register_protocol
-//       Access: Public, Static
-//  Description: Should be called at startup to attach the appropriate
-//               hooks between Panda and FFMpeg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called at startup to attach the appropriate hooks between Panda and
+ * FFMpeg.
+ */
 void FfmpegVirtualFile::
 register_protocol() {
   static bool initialized = false;
@@ -242,11 +225,9 @@ register_protocol() {
   av_log_set_callback(&log_callback);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::read_packet
-//       Access: Private, Static
-//  Description: A callback to read a virtual file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback to read a virtual file.
+ */
 int FfmpegVirtualFile::
 read_packet(void *opaque, uint8_t *buf, int size) {
   streampos ssize = (streampos)size;
@@ -271,11 +252,9 @@ read_packet(void *opaque, uint8_t *buf, int size) {
   return (int)gc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::seek
-//       Access: Private, Static
-//  Description: A callback to change the read position on an istream.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback to change the read position on an istream.
+ */
 int64_t FfmpegVirtualFile::
 seek(void *opaque, int64_t pos, int whence) {
   FfmpegVirtualFile *self = (FfmpegVirtualFile *) opaque;
@@ -310,12 +289,10 @@ seek(void *opaque, int64_t pos, int whence) {
   return in->tellg() - self->_start;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVirtualFile::log_callback
-//       Access: Private, Static
-//  Description: These callbacks are made when ffmpeg wants to write a
-//               log entry; it redirects into Panda's notify.
-////////////////////////////////////////////////////////////////////
+/**
+ * These callbacks are made when ffmpeg wants to write a log entry; it redirects
+ * into Panda's notify.
+ */
 void FfmpegVirtualFile::
 log_callback(void *ptr, int level, const char *fmt, va_list v1) {
   NotifySeverity severity;

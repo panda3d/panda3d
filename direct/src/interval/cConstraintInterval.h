@@ -17,11 +17,10 @@
 #include "directbase.h"
 #include "cInterval.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConstraintInterval
-// Description : The base class for a family of intervals that
-//               constrain some property to a value over time.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for a family of intervals that constrain some property to a
+ * value over time.
+ */
 class EXPCL_DIRECT CConstraintInterval : public CInterval {
 PUBLISHED:
  bool bogus_variable;
@@ -50,4 +49,3 @@ private:
 #include "cConstraintInterval.I"
 
 #endif
-

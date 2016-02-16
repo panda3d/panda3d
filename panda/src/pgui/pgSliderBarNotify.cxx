@@ -14,22 +14,17 @@
 #include "pgSliderBarNotify.h"
 #include "pgSliderBar.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBarNotify::slider_bar_adjust
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGSliderBar's value
-//               has been changed by the user or programmatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGSliderBar's value has been changed by the user or
+ * programmatically.
+ */
 void PGSliderBarNotify::
 slider_bar_adjust(PGSliderBar *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBarNotify::slider_bar_set_range
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGSliderBar's overall range
-//               has been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGSliderBar's overall range has been changed.
+ */
 void PGSliderBarNotify::
 slider_bar_set_range(PGSliderBar *) {
 }

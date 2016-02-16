@@ -497,7 +497,7 @@ main(int argc, char **argv) {
     exit(1);
   }
 
-  if (!build_c_wrappers && !build_python_wrappers && 
+  if (!build_c_wrappers && !build_python_wrappers &&
       !build_python_obj_wrappers &&!build_python_native) {
     build_c_wrappers = true;
   }
@@ -547,12 +547,12 @@ main(int argc, char **argv) {
   // database, so we can check synchronicity at load time.
   int file_identifier = time((time_t *)NULL);
   InterrogateModuleDef *def = builder.make_module_def(file_identifier);
-    
+
   pofstream * the_output_include = NULL;
   pofstream output_include;
-  
 
-  if (1==2 && !output_include_filename.empty()) 
+
+  if (1==2 && !output_include_filename.empty())
   {
     output_include_filename.open_write(output_include);
 
@@ -567,11 +567,11 @@ main(int argc, char **argv) {
       << " */\n\n";
 
 
-    if (output_include.fail()) 
+    if (output_include.fail())
     {
       nout << "Unable to write to " << output_include_filename << "\n";
       exit(-1);
-    } 
+    }
     the_output_include = &output_include;
   }
 
@@ -610,7 +610,7 @@ main(int argc, char **argv) {
     pofstream output_data;
     output_data_filename.open_write(output_data);
 
-    if (output_data.fail()) 
+    if (output_data.fail())
     {
       nout << "Unable to write to " << output_data_filename << "\n";
     } else {

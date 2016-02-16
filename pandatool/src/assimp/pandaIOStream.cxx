@@ -14,20 +14,16 @@
 #include "pandaIOStream.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PandaIOStream::
 PandaIOStream(istream &stream) : _istream(stream) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOStream::FileSize
-//       Access: Public
-//  Description: Returns the size of this file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size of this file.
+ */
 size_t PandaIOStream::
 FileSize() const {
   streampos cur = _istream.tellg();
@@ -37,32 +33,26 @@ FileSize() const {
   return end;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOStream::Flush
-//       Access: Public
-//  Description: See fflush.
-////////////////////////////////////////////////////////////////////
+/**
+ * See fflush.
+ */
 void PandaIOStream::
 Flush() {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOStream::Read
-//       Access: Public
-//  Description: See fread.
-////////////////////////////////////////////////////////////////////
+/**
+ * See fread.
+ */
 size_t PandaIOStream::
 Read(void *buffer, size_t size, size_t count) {
   _istream.read((char*) buffer, size * count);
   return _istream.gcount();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOStream::Seek
-//       Access: Public
-//  Description: See fseek.
-////////////////////////////////////////////////////////////////////
+/**
+ * See fseek.
+ */
 aiReturn PandaIOStream::
 Seek(size_t offset, aiOrigin origin) {
   switch (origin) {
@@ -91,21 +81,17 @@ Seek(size_t offset, aiOrigin origin) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOStream::Tell
-//       Access: Public
-//  Description: See ftell.
-////////////////////////////////////////////////////////////////////
+/**
+ * See ftell.
+ */
 size_t PandaIOStream::
 Tell() const {
   return _istream.tellg();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOStream::Write
-//       Access: Public
-//  Description: See fwrite.
-////////////////////////////////////////////////////////////////////
+/**
+ * See fwrite.
+ */
 size_t PandaIOStream::
 Write(const void *buffer, size_t size, size_t count) {
   nassertr(false, 0);

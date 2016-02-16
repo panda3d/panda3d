@@ -29,11 +29,9 @@
 #include <stdio.h>
 #include <errno.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Decompressor::
 Decompressor() {
   _source = NULL;
@@ -41,24 +39,19 @@ Decompressor() {
   _dest = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Decompressor::
 ~Decompressor() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::initiate
-//       Access: Public
-//  Description: Begins a background decompression of the named file
-//               (whose filename must end in ".pz") to a new file
-//               without the .pz extension.  The source file is
-//               removed after successful completion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins a background decompression of the named file (whose filename must end
+ * in ".pz") to a new file without the .pz extension.  The source file is
+ * removed after successful completion.
+ */
 int Decompressor::
 initiate(const Filename &source_file) {
   string extension = source_file.get_extension();
@@ -76,13 +69,10 @@ initiate(const Filename &source_file) {
   return EU_error_abort;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::initiate
-//       Access: Public
-//  Description: Begins a background decompression from the named
-//               source file to the named destination file.  The
-//               source file is removed after successful completion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins a background decompression from the named source file to the named
+ * destination file.  The source file is removed after successful completion.
+ */
 int Decompressor::
 initiate(const Filename &source_file, const Filename &dest_file) {
   cleanup();
@@ -140,15 +130,11 @@ initiate(const Filename &source_file, const Filename &dest_file) {
   return EU_success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::run
-//       Access: Public
-//  Description: Called each frame to do the next bit of work in the
-//               background task.  Returns EU_ok if a chunk is
-//               completed but there is more to go, or EU_success when
-//               we're all done.  Any other return value indicates an
-//               error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called each frame to do the next bit of work in the background task.  Returns
+ * EU_ok if a chunk is completed but there is more to go, or EU_success when
+ * we're all done.  Any other return value indicates an error.
+ */
 int Decompressor::
 run() {
   if (_decompress == (istream *)NULL) {
@@ -186,13 +172,10 @@ run() {
   return EU_success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::decompress
-//       Access: Public
-//  Description: Performs a foreground decompression of the named
-//               file; does not return until the decompression is
-//               complete.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a foreground decompression of the named file; does not return until
+ * the decompression is complete.
+ */
 bool Decompressor::
 decompress(const Filename &source_file) {
   int ret = initiate(source_file);
@@ -212,13 +195,10 @@ decompress(const Filename &source_file) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::decompress
-//       Access: Public
-//  Description: Does an in-memory decompression of the indicated
-//               Ramfile.  The decompressed contents are written back
-//               into the same Ramfile on completion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does an in-memory decompression of the indicated Ramfile.  The decompressed
+ * contents are written back into the same Ramfile on completion.
+ */
 bool Decompressor::
 decompress(Ramfile &source_and_dest_file) {
   istringstream source(source_and_dest_file._data);
@@ -237,12 +217,9 @@ decompress(Ramfile &source_and_dest_file) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::get_progress
-//       Access: Public
-//  Description: Returns the ratio through the decompression step
-//               in the background.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ratio through the decompression step in the background.
+ */
 PN_stdfloat Decompressor::
 get_progress() const {
   if (_decompress == (istream *)NULL) {
@@ -258,12 +235,9 @@ get_progress() const {
   return (0.99f * (PN_stdfloat)source_pos / (PN_stdfloat)_source_length);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Decompressor::cleanup
-//       Access: Private
-//  Description: Called to reset a previous decompressor state and
-//               clean up properly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to reset a previous decompressor state and clean up properly.
+ */
 void Decompressor::
 cleanup() {
   if (_source != (istream *)NULL) {

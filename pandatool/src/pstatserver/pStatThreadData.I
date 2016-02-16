@@ -11,12 +11,9 @@
  * @date 2000-07-10
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThreadData::get_client_data
-//       Access: Public
-//  Description: Returns a pointer to the ClientData structure
-//               associated with this data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the ClientData structure associated with this data.
+ */
 INLINE const PStatClientData *PStatThreadData::
 get_client_data() const {
   return _client_data;

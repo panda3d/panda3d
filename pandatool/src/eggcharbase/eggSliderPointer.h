@@ -20,11 +20,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSliderPointer
-// Description : This is a base class for EggVertexPointer and
-//               EggScalarTablePointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for EggVertexPointer and EggScalarTablePointer.
+ */
 class EggSliderPointer : public EggBackPointer {
 public:
   virtual int get_num_frames() const=0;
@@ -49,5 +47,3 @@ private:
 };
 
 #endif
-
-

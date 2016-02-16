@@ -13,14 +13,10 @@
 
 #include "characterJointBundle.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: Character::get_bundle
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CharacterJointBundle *Character::
 get_bundle(int i) const {
   return DCAST(CharacterJointBundle, PartBundleNode::get_bundle(i));
 }
-
-

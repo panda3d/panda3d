@@ -18,11 +18,9 @@
 
 #include "eggPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCurve
-// Description : A parametric curve of some kind.  See
-//               EggNurbsCurve.
-////////////////////////////////////////////////////////////////////
+/**
+ * A parametric curve of some kind.  See EggNurbsCurve.
+ */
 class EXPCL_PANDAEGG EggCurve : public EggPrimitive {
 PUBLISHED:
   INLINE EggCurve(const string &name = "");

@@ -18,14 +18,11 @@
 #include "pointerToArray.h"
 #include "asyncTask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTaskCollection
-// Description : A list of tasks, for instance as returned by some of
-//               the AsyncTaskManager query functions.  This also
-//               serves to define an AsyncTaskSequence.
-//
-//               TODO: None of this is thread-safe yet.
-////////////////////////////////////////////////////////////////////
+/**
+ * A list of tasks, for instance as returned by some of the AsyncTaskManager
+ * query functions.  This also serves to define an AsyncTaskSequence.  TODO:
+ * None of this is thread-safe yet.
+ */
 class EXPCL_PANDA_PGRAPH AsyncTaskCollection {
 PUBLISHED:
   AsyncTaskCollection();
@@ -68,5 +65,3 @@ INLINE ostream &operator << (ostream &out, const AsyncTaskCollection &col) {
 #include "asyncTaskCollection.I"
 
 #endif
-
-

@@ -22,10 +22,9 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateFunctionWrapper
-// Description : An internal representation of a callable function.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a callable function.
+ */
 class EXPCL_INTERROGATEDB InterrogateFunctionWrapper : public InterrogateComponent {
 public:
   INLINE InterrogateFunctionWrapper(InterrogateModuleDef *def = NULL);

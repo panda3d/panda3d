@@ -11,11 +11,9 @@
  * @date 2009-10-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxHeightFieldDesc::
 PhysxHeightFieldDesc() {
 
@@ -23,43 +21,35 @@ PhysxHeightFieldDesc() {
   _desc.setToDefault();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxHeightFieldDesc::
 ~PhysxHeightFieldDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxHeightFieldDesc::
 set_to_default() {
 
   _desc.setToDefault();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxHeightFieldDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::set_size
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxHeightFieldDesc::
 set_size(unsigned int num_rows, unsigned int num_columns) {
 
@@ -77,12 +67,9 @@ set_size(unsigned int num_rows, unsigned int num_columns) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldDesc::unset_size
-//       Access: Private
-//  Description: Releases the memory allocated for the height field
-//               samples.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the memory allocated for the height field samples.
+ */
 INLINE void PhysxHeightFieldDesc::
 unset_size() {
 
@@ -93,4 +80,3 @@ unset_size() {
     delete[] _samples;
   }
 }
-

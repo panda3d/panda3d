@@ -20,11 +20,10 @@
 
 class WavAudio;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WavAudioCursor
-// Description : Used for reading PCM .wav files.  Supported formats
-//               are linear PCM, IEEE float, A-law and mu-law.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used for reading PCM .wav files.  Supported formats are linear PCM, IEEE
+ * float, A-law and mu-law.
+ */
 class EXPCL_PANDA_MOVIES WavAudioCursor : public MovieAudioCursor {
 PUBLISHED:
   WavAudioCursor(WavAudio *src, istream *stream);

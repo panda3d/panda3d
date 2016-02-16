@@ -24,15 +24,12 @@ class PhysxScene;
 class PhysxForceFieldDesc;
 class PhysxForceFieldShapeGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxForceField
-// Description : A force field effector. Instances of this object
-//               automate the application of forces onto rigid
-//               bodies, fluid, soft bodies and cloth.
-//               Force fields allow you to implement for example
-//               gusts of wind, dust devils, vacuum cleaners or
-//               anti-gravity zones.
-////////////////////////////////////////////////////////////////////
+/**
+ * A force field effector.  Instances of this object automate the application of
+ * forces onto rigid bodies, fluid, soft bodies and cloth.  Force fields allow
+ * you to implement for example gusts of wind, dust devils, vacuum cleaners or
+ * anti-gravity zones.
+ */
 class EXPCL_PANDAPHYSX PhysxForceField : public PhysxObject {
 
 PUBLISHED:
@@ -74,7 +71,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxForceField", 
+    register_type(_type_handle, "PhysxForceField",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

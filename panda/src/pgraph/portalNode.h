@@ -22,14 +22,11 @@
 #include "nodePath.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PortalNode
-// Description : A node in the scene graph that can hold a
-//                     Portal Polygon, which is a rectangle. Other
-//                     types of polygons are not supported for
-//                     now. It also holds a PT(PandaNode) Cell that
-//                     this portal is connected to
-////////////////////////////////////////////////////////////////////
+/**
+ * A node in the scene graph that can hold a Portal Polygon, which is a
+ * rectangle.  Other types of polygons are not supported for now.  It also holds
+ * a PT(PandaNode) Cell that this portal is connected to
+ */
 class EXPCL_PANDA_PGRAPH PortalNode : public PandaNode {
 PUBLISHED:
   PortalNode(const string &name);

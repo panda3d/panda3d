@@ -19,11 +19,9 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxTriggerReport
-// Description : Implementation of the NxUserTriggerReport
-//               interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implementation of the NxUserTriggerReport interface.
+ */
 class EXPCL_PANDAPHYSX PhysxTriggerReport : public NxUserTriggerReport {
 
 public:

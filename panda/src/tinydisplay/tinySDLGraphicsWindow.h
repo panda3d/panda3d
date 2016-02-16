@@ -24,13 +24,12 @@
 #include "SDL.h"
 #include "zbuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinySDLGraphicsWindow
-// Description : This graphics window class is implemented via SDL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics window class is implemented via SDL.
+ */
 class EXPCL_TINYDISPLAY TinySDLGraphicsWindow : public GraphicsWindow {
 public:
-  TinySDLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  TinySDLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                         const string &name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,

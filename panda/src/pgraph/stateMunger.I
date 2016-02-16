@@ -11,11 +11,9 @@
  * @date 2005-05-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: StateMunger::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE StateMunger::
 StateMunger(GraphicsStateGuardianBase *gsg) :
   GeomMunger(gsg)

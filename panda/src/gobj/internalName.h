@@ -24,21 +24,15 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InternalName
-// Description : Encodes a string name in a hash table, mapping it to
-//               a pointer.  This is used to tokenify names so they
-//               may be used efficiently in low-level Panda
-//               structures, for instance to differentiate the
-//               multiple sets of texture coordinates that might be
-//               stored on a Geom.
-//
-//               InternalNames are hierarchical, with the '.' used by
-//               convention as a separator character.  You can
-//               construct a single InternalName as a composition of
-//               one or more other names, or by giving it a source
-//               string directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encodes a string name in a hash table, mapping it to a pointer.  This is used
+ * to tokenify names so they may be used efficiently in low-level Panda
+ * structures, for instance to differentiate the multiple sets of texture
+ * coordinates that might be stored on a Geom.  InternalNames are hierarchical,
+ * with the '.' used by convention as a separator character.  You can construct
+ * a single InternalName as a composition of one or more other names, or by
+ * giving it a source string directly.
+ */
 class EXPCL_PANDA_GOBJ InternalName FINAL : public TypedWritableReferenceCount {
 private:
   InternalName(InternalName *parent, const string &basename);
@@ -184,15 +178,12 @@ private:
 
 INLINE ostream &operator << (ostream &out, const InternalName &tcn);
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPT_InternalName
-// Description : This is a const pointer to an InternalName, and
-//               should be used in lieu of a CPT(InternalName) in
-//               function arguments.  The extra feature that it
-//               offers is that it has a constructor to automatically
-//               convert from a string, so that strings are coerced
-//               by the compiler when passed to such a function.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a const pointer to an InternalName, and should be used in lieu of a
+ * CPT(InternalName) in function arguments.  The extra feature that it offers is
+ * that it has a constructor to automatically convert from a string, so that
+ * strings are coerced by the compiler when passed to such a function.
+ */
 #ifdef CPPPARSER
 // The construct below confuses interrogate, so we give it a typedef.
 typedef ConstPointerTo<InternalName> CPT_InternalName;

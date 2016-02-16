@@ -25,24 +25,16 @@ class GraphicsEngine;
 class GraphicsPipe;
 class GraphicsStateGuardian;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PipeOcclusionCullTraverser
-// Description : This specialization of CullTraverser uses the
-//               graphics pipe itself to perform occlusion culling.
-//               As such, it's likely to be inefficient (since it
-//               interferes with the pipe's normal mode of rendering),
-//               and is mainly useful to test other, CPU-based
-//               occlusion algorithms.
-//
-//               This cannot be used in a multithreaded pipeline
-//               environment where cull and draw are operating
-//               simultaneously.
-//
-//               It can't be defined in the cull subdirectory, because
-//               it needs access to GraphicsPipe and DisplayRegion and
-//               other classes in display.  So we put it in grutil
-//               instead, for lack of any better ideas.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization of CullTraverser uses the graphics pipe itself to perform
+ * occlusion culling.  As such, it's likely to be inefficient (since it
+ * interferes with the pipe's normal mode of rendering), and is mainly useful to
+ * test other, CPU-based occlusion algorithms.  This cannot be used in a
+ * multithreaded pipeline environment where cull and draw are operating
+ * simultaneously.  It can't be defined in the cull subdirectory, because it
+ * needs access to GraphicsPipe and DisplayRegion and other classes in display.
+ * So we put it in grutil instead, for lack of any better ideas.
+ */
 class EXPCL_PANDA_GRUTIL PipeOcclusionCullTraverser : public CullTraverser,
                                                public CullHandler {
 PUBLISHED:
@@ -155,6 +147,3 @@ private:
 #include "pipeOcclusionCullTraverser.I"
 
 #endif
-
-
-

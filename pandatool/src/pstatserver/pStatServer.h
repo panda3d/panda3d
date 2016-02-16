@@ -23,20 +23,14 @@
 
 class PStatReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatServer
-// Description : The overall manager of the network connections.  This
-//               class gets the ball rolling; to use this package, you
-//               need to derive from this and define make_monitor() to
-//               allocate and return a PStatMonitor of the suitable
-//               type.
-//
-//               Then create just one PStatServer object and call
-//               listen() with the port(s) you would like to listen
-//               on.  It will automatically create PStatMonitors as
-//               connections are established and mark the connections
-//               closed as they are lost.
-////////////////////////////////////////////////////////////////////
+/**
+ * The overall manager of the network connections.  This class gets the ball
+ * rolling; to use this package, you need to derive from this and define
+ * make_monitor() to allocate and return a PStatMonitor of the suitable type.
+ * Then create just one PStatServer object and call listen() with the port(s)
+ * you would like to listen on.  It will automatically create PStatMonitors as
+ * connections are established and mark the connections closed as they are lost.
+ */
 class PStatServer : public ConnectionManager {
 public:
   PStatServer();
@@ -64,7 +58,7 @@ public:
   virtual bool is_thread_safe();
 
 protected:
-  virtual void connection_reset(const PT(Connection) &connection, 
+  virtual void connection_reset(const PT(Connection) &connection,
                                 bool okflag);
 
 private:

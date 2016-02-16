@@ -32,7 +32,7 @@ build_tree(const string &name, int depth) {
   return node;
 }
 
-int 
+int
 main(int argc, char *argv[]) {
 
   // Build up a tree of height 6.  Each level has three children, so

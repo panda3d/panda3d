@@ -18,20 +18,17 @@
 #include "urlSpec.h"
 #include "config_downloader.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioPtr::Constructor
-//       Access: Public
-//  Description: This flavor of the constructor automatically creates
-//               a socket BIO and feeds it the server and port name
-//               from the indicated URL.  It doesn't call
-//               BIO_do_connect(), though.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of the constructor automatically creates a socket BIO and feeds
+ * it the server and port name from the indicated URL.  It doesn't call
+ * BIO_do_connect(), though.
+ */
 BioPtr::
 BioPtr(const URLSpec &url) {
   if (url.get_scheme() == "file") {
     // We're just reading a disk file.
     string filename = URLSpec::unquote(url.get_path());
-#ifdef _WIN32 
+#ifdef _WIN32
     // On Windows, we have to munge the filename specially, because it's
     // been URL-munged.  It might begin with a leading slash as well as
     // a drive letter.  Clean up that nonsense.
@@ -59,11 +56,9 @@ BioPtr(const URLSpec &url) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioPtr::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BioPtr::
 ~BioPtr() {
   if (_bio != (BIO *)NULL) {
@@ -71,7 +66,7 @@ BioPtr::
       downloader_cat.debug()
         << "Dropping connection to " << _server_name << ":" << _port << "\n";
     }
-      
+
     BIO_free_all(_bio);
     _bio = (BIO *)NULL;
   }

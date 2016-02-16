@@ -14,14 +14,11 @@
 #include "pStatCollectorForward.h"
 
 #ifdef DO_PSTATS
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollectorForward::add_level
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PStatCollectorForward::
 add_level(double increment) {
   _col.add_level_now(increment);
 }
 #endif  // DO_PSTATS
-

@@ -19,4 +19,3 @@
 EXPCL_PANDAEGG void init_libpandaegg();
 
 #endif
-

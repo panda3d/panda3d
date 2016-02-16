@@ -34,12 +34,10 @@ class PhysxOutputStream;
 class PhysxCcdSkeleton;
 class PhysxCcdSkeletonDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxManager
-// Description : The central interface to the PhysX subsystem.
-//               Used e. g. for setting/retrieving global parameters
-//               or for creating scenes.
-////////////////////////////////////////////////////////////////////
+/**
+ * The central interface to the PhysX subsystem.  Used e.  g.  for
+ * setting/retrieving global parameters or for creating scenes.
+ */
 class EXPCL_PANDAPHYSX PhysxManager : public PhysxEnums {
 
 protected:

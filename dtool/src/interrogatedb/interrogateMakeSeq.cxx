@@ -15,12 +15,9 @@
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateMakeSeq::output
-//       Access: Public
-//  Description: Formats the InterrogateMakeSeq data for output to a data
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the InterrogateMakeSeq data for output to a data file.
+ */
 void InterrogateMakeSeq::
 output(ostream &out) const {
   InterrogateComponent::output(out);
@@ -30,12 +27,9 @@ output(ostream &out) const {
   idf_output_string(out, _comment, '\n');
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateMakeSeq::input
-//       Access: Public
-//  Description: Reads the data file as previously formatted by
-//               output().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the data file as previously formatted by output().
+ */
 void InterrogateMakeSeq::
 input(istream &in) {
   InterrogateComponent::input(in);
@@ -45,13 +39,10 @@ input(istream &in) {
   idf_input_string(in, _comment);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateMakeSeq::remap_indices
-//       Access: Public
-//  Description: Remaps all internal index numbers according to the
-//               indicated map.  This called from
-//               InterrogateDatabase::remap_indices().
-////////////////////////////////////////////////////////////////////
+/**
+ * Remaps all internal index numbers according to the indicated map.  This
+ * called from InterrogateDatabase::remap_indices().
+ */
 void InterrogateMakeSeq::
 remap_indices(const IndexRemapper &remap) {
   _length_getter = remap.map_from(_length_getter);

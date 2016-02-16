@@ -19,13 +19,11 @@
 #include "renderState.h"
 #include "weakKeyHashMap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StateMunger
-// Description : This is just a simple derivative of GeomMunger that
-//               adds the ability to munge states.  That functionality
-//               can't be declared in the base class, since it doesn't
-//               really know about RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is just a simple derivative of GeomMunger that adds the ability to munge
+ * states.  That functionality can't be declared in the base class, since it
+ * doesn't really know about RenderState.
+ */
 class EXPCL_PANDA_PGRAPH StateMunger : public GeomMunger {
 public:
   INLINE StateMunger(GraphicsStateGuardianBase *gsg);
@@ -59,4 +57,3 @@ private:
 #include "stateMunger.I"
 
 #endif
-

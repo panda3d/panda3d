@@ -20,11 +20,10 @@
 #include "lvecBase3.h"
 #include "lquaternion.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CConstrainHprInterval
-// Description : A constraint interval that will constrain the
-//               orientation of one node to the orientation of another.
-////////////////////////////////////////////////////////////////////
+/**
+ * A constraint interval that will constrain the orientation of one node to the
+ * orientation of another.
+ */
 class EXPCL_DIRECT CConstrainHprInterval : public CConstraintInterval {
 PUBLISHED:
   CConstrainHprInterval(const string &name, double duration,
@@ -64,4 +63,3 @@ private:
 #include "cConstrainHprInterval.I"
 
 #endif
-

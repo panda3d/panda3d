@@ -24,4 +24,3 @@ extern EXPCL_PANDA_TEXT const int default_font_size;
 #endif  // HAVE_FREETYPE && COMPILE_IN_DEFAULT_FONT && !CPPPARSER
 
 #endif
-

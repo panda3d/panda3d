@@ -28,11 +28,10 @@
 class GtkStatsServer;
 class GtkStatsChartMenu;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsMonitor
-// Description : This class represents a connection to a PStatsClient
-//               and manages the data exchange with the client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class represents a connection to a PStatsClient and manages the data
+ * exchange with the client.
+ */
 class GtkStatsMonitor : public PStatMonitor {
 public:
   class MenuDef {
@@ -73,15 +72,15 @@ public:
   void set_time_units(int unit_mask);
   void set_scroll_speed(double scroll_speed);
   void set_pause(bool pause);
-  
+
 private:
   void add_graph(GtkStatsGraph *graph);
   void remove_graph(GtkStatsGraph *graph);
 
   void create_window();
   void shutdown();
-  static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event, 
-				      gpointer data);
+  static gboolean window_delete_event(GtkWidget *widget, GdkEvent *event,
+              gpointer data);
   static void window_destroy(GtkWidget *widget, gpointer data);
   void setup_frame_rate_label();
 

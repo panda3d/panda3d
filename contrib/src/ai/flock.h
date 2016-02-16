@@ -19,11 +19,10 @@
 
 class AICharacter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Flock
-// Description : This class is used to define the flock attributes and the AI characters
-//               which are part of the flock.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to define the flock attributes and the AI characters which
+ * are part of the flock.
+ */
 class EXPCL_PANDAAI Flock {
 private:
   unsigned int _flock_id;

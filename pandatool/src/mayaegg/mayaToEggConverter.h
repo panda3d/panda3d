@@ -51,16 +51,12 @@ class MFnMesh;
 class MPointArray;
 class MFloatArray;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from a single Maya file, or from the data
-//               already in the global Maya model space.
-//
-//               Note that since the Maya API presents just one global
-//               model space, it is not possible to simultaneously
-//               load two distinct Maya files.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from a single
+ * Maya file, or from the data already in the global Maya model space.  Note
+ * that since the Maya API presents just one global model space, it is not
+ * possible to simultaneously load two distinct Maya files.
+ */
 class MayaToEggConverter : public SomethingToEggConverter {
 public:
   MayaToEggConverter(const string &program_name = "");
@@ -103,11 +99,11 @@ public:
   void close_api();
 
 private:
-  bool convert_flip(double start_frame, double end_frame, 
+  bool convert_flip(double start_frame, double end_frame,
                     double frame_inc, double output_frame_rate);
 
   bool convert_char_model();
-  bool convert_char_chan(double start_frame, double end_frame, 
+  bool convert_char_chan(double start_frame, double end_frame,
                          double frame_inc, double output_frame_rate);
   bool convert_hierarchy(EggGroupNode *egg_root);
   bool process_model_node(MayaNodeDesc *node_desc);
@@ -123,14 +119,14 @@ private:
   //  void make_tex_names(const MFnMesh &mesh, const MObject &mesh_object);
 
   void make_nurbs_surface(MayaNodeDesc *node_desc,
-                          const MDagPath &dag_path, 
+                          const MDagPath &dag_path,
                           MFnNurbsSurface &surface,
                           EggGroup *group);
   EggNurbsCurve *make_trim_curve(const MFnNurbsCurve &curve,
                                  const string &nurbs_name,
                                  EggGroupNode *egg_group,
                                  int trim_curve_index);
-  void make_nurbs_curve(const MDagPath &dag_path, 
+  void make_nurbs_curve(const MDagPath &dag_path,
                         const MFnNurbsCurve &curve,
                         EggGroup *group);
   void make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
@@ -146,15 +142,15 @@ private:
                           pvector<EggGroup *> &joints, MFloatArray &weights);
   bool get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
                           pvector<EggGroup *> &joints, MFloatArray &weights);
-  void apply_texture_uvprops(EggTexture &tex, 
+  void apply_texture_uvprops(EggTexture &tex,
                              const MayaShaderColorDef &color_def);
-  void apply_texture_blendtype(EggTexture &tex, 
+  void apply_texture_blendtype(EggTexture &tex,
                                const MayaShaderColorDef &color_def);
-  void apply_texture_filename(EggTexture &tex, 
+  void apply_texture_filename(EggTexture &tex,
                               const MayaShaderColorDef &color_def);
-  void apply_texture_alpha_filename(EggTexture &tex, 
+  void apply_texture_alpha_filename(EggTexture &tex,
                                     const MayaShaderColorDef &color_def);
-  bool compare_texture_uvprops(EggTexture &tex, 
+  bool compare_texture_uvprops(EggTexture &tex,
                                const MayaShaderColorDef &color_def);
   bool reparent_decals(EggGroupNode *egg_parent);
   void set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
@@ -183,7 +179,7 @@ private:
   Globs _force_joints;
 
   MayaNodeTree _tree;
-  
+
 public:
   MayaShaders _shaders;
   EggTextureCollection _textures;

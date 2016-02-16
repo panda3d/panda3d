@@ -11,21 +11,17 @@
  * @date 2008-03-10
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainHprInterval::get_node
-//       Access: Published
-//  Description: Returns the "source" node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "source" node.
+ */
 INLINE const NodePath &CConstrainHprInterval::
 get_node() const {
   return _node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainHprInterval::get_target
-//       Access: Published
-//  Description: Returns the "target" node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "target" node.
+ */
 INLINE const NodePath &CConstrainHprInterval::
 get_target() const {
   return _target;

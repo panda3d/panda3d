@@ -18,7 +18,7 @@
 TypeHandle OdeWorld::_type_handle;
 
 OdeWorld::
-OdeWorld() : 
+OdeWorld() :
   _id(dWorldCreate()) {
   odeworld_cat.debug() << get_type() << "(" << _id << ")" << "\n";
   _num_surfaces = 0;
@@ -47,7 +47,7 @@ destroy() {
 }
 
 /*
-void OdeWorld:: 
+void OdeWorld::
 assign_surface_body(OdeBody& body, int surface) {
   // odeworld_cat.debug() << "assign_surface_body body.Id =" << body.get_id() << " surface=" << surface << "\n";
   _body_dampen_map[body.get_id()].surfaceType = surface;
@@ -55,7 +55,7 @@ assign_surface_body(OdeBody& body, int surface) {
 }
 */
 
-void OdeWorld:: 
+void OdeWorld::
 add_body_dampening(OdeBody& body, int surface) {
   _body_dampen_map[body.get_id()].dampen = 0.0f;
 }
@@ -105,12 +105,12 @@ get_surface(PN_uint8 surface1, PN_uint8 surface2) {
   return _surface_table[true_pos];
 }
 
-void OdeWorld:: 
-set_surface_entry(PN_uint8 pos1, PN_uint8 pos2, 
+void OdeWorld::
+set_surface_entry(PN_uint8 pos1, PN_uint8 pos2,
                   dReal mu,
-                  dReal bounce, 
-                  dReal bounce_vel, 
-                  dReal soft_erp, 
+                  dReal bounce,
+                  dReal bounce_vel,
+                  dReal soft_erp,
                   dReal soft_cfm,
                   dReal slip,
                   dReal dampen) {
@@ -143,7 +143,7 @@ set_surface_entry(PN_uint8 pos1, PN_uint8 pos2,
   new_params.dampen = dampen;
   //todo: a bit of wasted space here
   set_surface(pos1, pos2, new_params);
-  
+
   if(pos1 >= pos2) {
     set_surface(pos1, pos2, new_params);
   } else {
@@ -163,7 +163,7 @@ set_dampen_on_bodies(dBodyID id1, dBodyID id2,dReal damp) {
   }
 }
 
-float OdeWorld:: 
+float OdeWorld::
 apply_dampening(float dt, OdeBody& body) {
   dBodyID bodyId = body.get_id();
   dReal damp = _body_dampen_map[bodyId].dampen;

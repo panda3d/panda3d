@@ -11,11 +11,9 @@
  * @date 2008-10-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutexHolder::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LightMutexHolder::
 LightMutexHolder(const LightMutex &mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
@@ -24,17 +22,13 @@ LightMutexHolder(const LightMutex &mutex) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutexHolder::Constructor
-//       Access: Public
-//  Description: If the LightMutexHolder constructor is given a pointer to
-//               a LightMutex object (instead of an actual object), it will
-//               first check to see if the pointer is NULL, and
-//               allocate a new LightMutex if it is.  This is intended as a
-//               convenience for functions that may need to reference
-//               a LightMutex at static init time, when it is impossible to
-//               guarantee ordering of initializers.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the LightMutexHolder constructor is given a pointer to a LightMutex object
+ * (instead of an actual object), it will first check to see if the pointer is
+ * NULL, and allocate a new LightMutex if it is.  This is intended as a
+ * convenience for functions that may need to reference a LightMutex at static
+ * init time, when it is impossible to guarantee ordering of initializers.
+ */
 INLINE LightMutexHolder::
 LightMutexHolder(LightMutex *&mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
@@ -46,11 +40,9 @@ LightMutexHolder(LightMutex *&mutex) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutexHolder::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LightMutexHolder::
 ~LightMutexHolder() {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
@@ -58,21 +50,17 @@ INLINE LightMutexHolder::
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutexHolder::Copy Constructor
-//       Access: Private
-//  Description: Do not attempt to copy LightMutexHolders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy LightMutexHolders.
+ */
 INLINE LightMutexHolder::
 LightMutexHolder(const LightMutexHolder &copy) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightMutexHolder::Copy Assignment Operator
-//       Access: Private
-//  Description: Do not attempt to copy LightMutexHolders.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy LightMutexHolders.
+ */
 INLINE void LightMutexHolder::
 operator = (const LightMutexHolder &copy) {
   nassertv(false);

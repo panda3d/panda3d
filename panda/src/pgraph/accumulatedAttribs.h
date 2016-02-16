@@ -22,21 +22,19 @@
 
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AccumulatedAttribs
-// Description : This class is used by the SceneGraphReducer to
-//               maintain and accumulate the set of attributes we have
-//               encountered on each node that might eventually be
-//               applied to the vertices at the leaves.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used by the SceneGraphReducer to maintain and accumulate the
+ * set of attributes we have encountered on each node that might eventually be
+ * applied to the vertices at the leaves.
+ */
 class EXPCL_PANDA_PGRAPH AccumulatedAttribs {
 public:
   AccumulatedAttribs();
   AccumulatedAttribs(const AccumulatedAttribs &copy);
   void operator = (const AccumulatedAttribs &copy);
-  
+
   void write(ostream &out, int attrib_types, int indent_level) const;
-  
+
   void collect(PandaNode *node, int attrib_types);
   CPT(RenderState) collect(const RenderState *state, int attrib_types);
   void apply_to_node(PandaNode *node, int attrib_types);
@@ -60,5 +58,3 @@ public:
 #include "accumulatedAttribs.I"
 
 #endif
-
-

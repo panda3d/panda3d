@@ -19,18 +19,13 @@
 #include "config_util.h"
 #include "weakPointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakKeyHashMap
-// Description : This is a variation on WeakKeyHashMap that stores
-//               weak pointers as keys, and automatically frees up
-//               entries from the map when the associated key has
-//               been deleted.
-//
-//               This is more efficient than using a naive map of
-//               WeakPointerTo keys since that would incur the cost
-//               of constructing a weak reference every time a find
-//               operation is used.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a variation on WeakKeyHashMap that stores weak pointers as keys, and
+ * automatically frees up entries from the map when the associated key has been
+ * deleted.  This is more efficient than using a naive map of WeakPointerTo keys
+ * since that would incur the cost of constructing a weak reference every time a
+ * find operation is used.
+ */
 template<class Key, class Value>
 class WeakKeyHashMap {
 public:

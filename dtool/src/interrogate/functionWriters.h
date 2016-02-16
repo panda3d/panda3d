@@ -19,13 +19,11 @@
 
 #include <set>
 
-////////////////////////////////////////////////////////////////////
-//       Class : FunctionWriters
-// Description : A set of zero or more FunctionWriter pointers
-//               accumulated by the various InterfaceMaker objects
-//               that are generating code for one particular output
-//               source file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A set of zero or more FunctionWriter pointers accumulated by the various
+ * InterfaceMaker objects that are generating code for one particular output
+ * source file.
+ */
 class FunctionWriters {
 public:
   FunctionWriters();

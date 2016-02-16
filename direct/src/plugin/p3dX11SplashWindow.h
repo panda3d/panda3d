@@ -24,11 +24,9 @@
 
 #include <vector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DX11SplashWindow
-// Description : This is the Windows implementation of the
-//               initial-download window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the Windows implementation of the initial-download window.
+ */
 class P3DX11SplashWindow : public P3DSplashWindow {
 public:
   P3DX11SplashWindow(P3DInstance *inst, bool make_visible);

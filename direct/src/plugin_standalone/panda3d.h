@@ -27,11 +27,9 @@
 #include "pset.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Panda3D
-// Description : A standalone program that invokes the Panda3D plugin
-//               to launch .p3d files.
-////////////////////////////////////////////////////////////////////
+/**
+ * A standalone program that invokes the Panda3D plugin to launch .p3d files.
+ */
 class Panda3D : public Panda3DBase {
 public:
   Panda3D(bool console_environment);
@@ -59,7 +57,7 @@ protected:
   string _super_mirror_url_prefix;
   typedef pvector<string> Mirrors;
   Mirrors _mirrors;
-  
+
   string _coreapi_set_ver;
   FileSpec _coreapi_dll;
 };
@@ -67,4 +65,3 @@ protected:
 #include "panda3d.I"
 
 #endif
-

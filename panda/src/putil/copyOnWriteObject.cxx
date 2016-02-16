@@ -18,16 +18,11 @@
 TypeHandle CopyOnWriteObject::_type_handle;
 
 #ifdef COW_THREADED
-////////////////////////////////////////////////////////////////////
-//     Function: CopyOnWriteObject::unref
-//       Access: Public, Virtual
-//  Description: Explicitly decrements the reference count.  See
-//               ReferenceCount::unref().
-//
-//               In the case of a CopyOnWriteObject, when the
-//               reference count decrements down to the cache
-//               reference count, the object is implicitly unlocked.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly decrements the reference count.  See ReferenceCount::unref().  In
+ * the case of a CopyOnWriteObject, when the reference count decrements down to
+ * the cache reference count, the object is implicitly unlocked.
+ */
 bool CopyOnWriteObject::
 unref() const {
   MutexHolder holder(_lock_mutex);

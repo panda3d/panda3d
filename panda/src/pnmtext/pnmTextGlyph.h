@@ -19,10 +19,9 @@
 #include "pnmImage.h"
 #include "vector_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMTextGlyph
-// Description : A single glyph in a PNMTextMaker.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single glyph in a PNMTextMaker.
+ */
 class EXPCL_PANDA_PNMTEXT PNMTextGlyph {
 PUBLISHED:
   PNMTextGlyph(double advance);
@@ -30,9 +29,9 @@ PUBLISHED:
 
   INLINE int get_advance() const;
 
-  void place(PNMImage &dest_image, int xp, int yp, 
+  void place(PNMImage &dest_image, int xp, int yp,
              const LColor &fg);
-  void place(PNMImage &dest_image, int xp, int yp, 
+  void place(PNMImage &dest_image, int xp, int yp,
              const LColor &fg, const LColor &interior);
 
   INLINE int get_left() const;

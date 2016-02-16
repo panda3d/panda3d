@@ -18,18 +18,13 @@
 
 #include "lens.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OSphereLens
-// Description : A OSphereLens is a special nonlinear lens that
-//               doesn't correspond to any real physical lenses.  It's
-//               primarily useful for generating 360-degree wraparound
-//               images while avoiding the distortion associated with
-//               fisheye images.
-//
-//               A OSphereLens is similar to a Cylindrical lens and
-//               PSphereLens, except that it is orthographic in the
-//               vertical direction.
-////////////////////////////////////////////////////////////////////
+/**
+ * A OSphereLens is a special nonlinear lens that doesn't correspond to any real
+ * physical lenses.  It's primarily useful for generating 360-degree wraparound
+ * images while avoiding the distortion associated with fisheye images.  A
+ * OSphereLens is similar to a Cylindrical lens and PSphereLens, except that it
+ * is orthographic in the vertical direction.
+ */
 class EXPCL_PANDAFX OSphereLens : public Lens {
 PUBLISHED:
   INLINE OSphereLens();
@@ -42,9 +37,9 @@ public:
   virtual PT(Lens) make_copy() const;
 
 protected:
-  virtual bool do_extrude(const Lens::CData *lens_cdata, const LPoint3 &point2d, 
+  virtual bool do_extrude(const Lens::CData *lens_cdata, const LPoint3 &point2d,
                           LPoint3 &near_point, LPoint3 &far_point) const;
-  virtual bool do_project(const Lens::CData *lens_cdata, 
+  virtual bool do_project(const Lens::CData *lens_cdata,
                           const LPoint3 &point3d, LPoint3 &point2d) const;
 
   virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;

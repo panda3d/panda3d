@@ -17,7 +17,7 @@
 //****** HACK allert ***
 // this code is intended to tell interigate to not expand this class definition past basic names
 //    It drops the interigate memory foot pront and user time by a bunch
-// on pc cygwin from  3 minutes to 17 seconds ?? really need to explore interigate to figure out what is 
+// on pc cygwin from  3 minutes to 17 seconds ?? really need to explore interigate to figure out what is
 // going on ..
 //
 template<class Key, class Compare = less<int>, class Vector = pvector<Key> > class ov_multiset
@@ -68,42 +68,25 @@ template<class Key, class Compare = less<int>, class Vector = pvector<Key> > cla
 #define DIFFERENCE_TYPE difference_type_0
 #define SIZE_TYPE size_type_0
 
-////////////////////////////////////////////////////////////////////
-//       Class : ordered_vector
-// Description : This template class presents an interface similar to
-//               the STL set or multiset (and ov_set and ov_multiset
-//               are implemented specifically, below), but it is
-//               implemented using a vector that is kept always in
-//               sorted order.
-//
-//               In most cases, an ov_set or ov_multiset may be
-//               dropped in transparently in place of a set or
-//               multiset, but the implementation difference has a few
-//               implications:
-//
-//               (1) The ov_multiset will maintain stability of order
-//               between elements that sort equally: they are stored
-//               in the order in which they were added, from back to
-//               front.
-//
-//               (2) Insert and erase operations into the middle of
-//               the set can be slow, just as inserting into the
-//               middle of a vector can be slow.  In fact, building up
-//               an ov_set by inserting elements one at a time is an
-//               n^2 operation.  On the other hand, building up an
-//               ov_set by adding elements to the end, one at time, is
-//               somewhat faster than building up a traditional set;
-//               and you can even add unsorted elements with
-//               push_back() and then call sort() when you're done,
-//               for a log(n) operation.
-//
-//               (3) Iterators may not be valid for the life of the
-//               ordered_vector.  If the vector reallocates itself,
-//               all iterators are invalidated.
-//
-//               (4) Random access into the set is easy with the []
-//               operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class presents an interface similar to the STL set or multiset
+ * (and ov_set and ov_multiset are implemented specifically, below), but it is
+ * implemented using a vector that is kept always in sorted order.  In most
+ * cases, an ov_set or ov_multiset may be dropped in transparently in place of a
+ * set or multiset, but the implementation difference has a few implications:
+ * (1) The ov_multiset will maintain stability of order between elements that
+ * sort equally: they are stored in the order in which they were added, from
+ * back to front.  (2) Insert and erase operations into the middle of the set
+ * can be slow, just as inserting into the middle of a vector can be slow.  In
+ * fact, building up an ov_set by inserting elements one at a time is an n^2
+ * operation.  On the other hand, building up an ov_set by adding elements to
+ * the end, one at time, is somewhat faster than building up a traditional set;
+ * and you can even add unsorted elements with push_back() and then call sort()
+ * when you're done, for a log(n) operation.  (3) Iterators may not be valid for
+ * the life of the ordered_vector.  If the vector reallocates itself, all
+ * iterators are invalidated.  (4) Random access into the set is easy with the
+ * [] operator.
+ */
 template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
 class ordered_vector {
 public:
@@ -223,9 +206,9 @@ public:
 
 private:
   INLINE ITERATOR nci(CONST_ITERATOR i);
-  INLINE ITERATOR find_insert_position(ITERATOR first, ITERATOR last, 
+  INLINE ITERATOR find_insert_position(ITERATOR first, ITERATOR last,
                                        const KEY_TYPE &key);
-  ITERATOR r_find_insert_position(ITERATOR first, ITERATOR last, 
+  ITERATOR r_find_insert_position(ITERATOR first, ITERATOR last,
                                   const KEY_TYPE &key);
   CONST_ITERATOR r_find(CONST_ITERATOR first, CONST_ITERATOR last,
                         CONST_ITERATOR not_found,
@@ -265,12 +248,10 @@ private:
   Vector _vector;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ov_set
-// Description : A specialization of ordered_vector that emulates a
-//               standard STL set: one copy of each element is
-//               allowed.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization of ordered_vector that emulates a standard STL set: one copy
+ * of each element is allowed.
+ */
 template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
 class ov_set : public ordered_vector<Key, Compare, Vector> {
 public:
@@ -290,12 +271,10 @@ public:
   INLINE bool verify_list() const;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ov_multiset
-// Description : A specialization of ordered_vector that emulates a
-//               standard STL set: many copies of each element are
-//               allowed.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization of ordered_vector that emulates a standard STL set: many
+ * copies of each element are allowed.
+ */
 template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
 class ov_multiset : public ordered_vector<Key, Compare, Vector> {
 public:

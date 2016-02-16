@@ -11,10 +11,9 @@
  * @date 2000-06-23
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LRotation
-// Description : This is a unit quaternion representing a rotation.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a unit quaternion representing a rotation.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LRotation) : public FLOATNAME(LQuaternion) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LRotation)();

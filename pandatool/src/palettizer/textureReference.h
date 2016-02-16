@@ -32,13 +32,11 @@ class EggGroupNode;
 class EggPrimitive;
 class TexturePlacement;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureReference
-// Description : This is the particular reference of a texture
-//               filename by an egg file.  It also includes
-//               information about the way in which the egg file uses
-//               the texture; e.g. does it repeat.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the particular reference of a texture filename by an egg file.  It
+ * also includes information about the way in which the egg file uses the
+ * texture; e.g.  does it repeat.
+ */
 class TextureReference : public TypedWritable {
 public:
   TextureReference();
@@ -143,5 +141,3 @@ operator << (ostream &out, const TextureReference &ref) {
 }
 
 #endif
-
-

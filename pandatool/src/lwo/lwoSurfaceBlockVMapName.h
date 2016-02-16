@@ -18,11 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockVMapName
-// Description : Specifies the name of a set of UV's defined on the
-//               polygons that use this model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the name of a set of UV's defined on the polygons that use this
+ * model.
+ */
 class LwoSurfaceBlockVMapName : public LwoChunk {
 public:
   string _name;
@@ -50,5 +49,3 @@ private:
 };
 
 #endif
-
-

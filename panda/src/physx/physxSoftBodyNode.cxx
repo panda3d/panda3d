@@ -23,11 +23,9 @@
 
 TypeHandle PhysxSoftBodyNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::allocate
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxSoftBodyNode::
 allocate(PhysxSoftBody *softbody) {
 
@@ -63,15 +61,12 @@ allocate(PhysxSoftBody *softbody) {
   _softbody->ptr()->setMeshData(_mesh);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::set_from_geom
-//       Access: Published
-//  Description: Reads the vertices and indices from an existing
-//               Geom and makes a decomposed copy of the data.
-//               Then computes links between the owning soft body
-//               tetrahedron mesh in order to render an updated
-//               geometry every simulation frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the vertices and indices from an existing Geom and makes a decomposed
+ * copy of the data.  Then computes links between the owning soft body
+ * tetrahedron mesh in order to render an updated geometry every simulation
+ * frame.
+ */
 void PhysxSoftBodyNode::
 set_from_geom(const Geom *geom) {
 
@@ -123,11 +118,9 @@ set_from_geom(const Geom *geom) {
   build_tetra_links();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::build_tetra_links
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxSoftBodyNode::
 build_tetra_links() {
 
@@ -216,11 +209,9 @@ build_tetra_links() {
   delete hash;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::remove_tris_related_to_vertex
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxSoftBodyNode::
 remove_tris_related_to_vertex(const int vertexIndex) {
 
@@ -244,11 +235,9 @@ remove_tris_related_to_vertex(const int vertexIndex) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::update_bounds
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxSoftBodyNode::
 update_bounds() {
 
@@ -262,18 +251,16 @@ update_bounds() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::update_normals
-//       Access: Public
-//  Description:_bounds.include(mVertices[i]);
-////////////////////////////////////////////////////////////////////
+/**
+ * _bounds.include(mVertices[i]);
+ */
 void PhysxSoftBodyNode::
 update_normals() {
 
   _normals.resize(_vdata->get_num_rows());
 
   int i;
-  for (i=0; i<(int)_normals.size(); i++) { 
+  for (i=0; i<(int)_normals.size(); i++) {
     _normals[i] = LVector3f::zero();
   }
 
@@ -298,22 +285,20 @@ update_normals() {
     _normals[idx2] += n;
   }
 
-  for (i=0; i<(int)_normals.size(); i++) { 
+  for (i=0; i<(int)_normals.size(); i++) {
     _normals[i].normalize();
   }
 
   GeomVertexWriter nwriter = GeomVertexWriter(_vdata, InternalName::get_normal());
-  for (i=0; i<(int)_normals.size(); i++) { 
+  for (i=0; i<(int)_normals.size(); i++) {
     n = _normals[i];
     nwriter.add_data3f(n.get_x(), n.get_y(), n.get_z());
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::compute_bary_coords
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxVec3 PhysxSoftBodyNode::
 compute_bary_coords(NxVec3 vertex, NxVec3 p0, NxVec3 p1, NxVec3 p2, NxVec3 p3) const {
 
@@ -349,22 +334,18 @@ compute_bary_coords(NxVec3 vertex, NxVec3 p0, NxVec3 p1, NxVec3 p2, NxVec3 p3) c
   return baryCoords;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::update
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxSoftBodyNode::
 update() {
 
   update_tetra_links();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSoftBodyNode::update_tetra_links
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxSoftBodyNode::
 update_tetra_links() {
 
@@ -410,4 +391,3 @@ update_tetra_links() {
 
   return true;
 }
-

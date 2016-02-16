@@ -17,7 +17,7 @@
 TypeHandle OdeSurfaceParameters::_type_handle;
 
 OdeSurfaceParameters::
-OdeSurfaceParameters(int mode, dReal mu) : 
+OdeSurfaceParameters(int mode, dReal mu) :
   _surface_parameters() {
   if (mu < 0) {
     mu = 0;
@@ -39,7 +39,7 @@ OdeSurfaceParameters(int mode, dReal mu) :
 }
 
 OdeSurfaceParameters::
-OdeSurfaceParameters(const dSurfaceParameters &surface_parameters) : 
+OdeSurfaceParameters(const dSurfaceParameters &surface_parameters) :
   _surface_parameters() {
   _surface_parameters.mode = surface_parameters.mode;
   _surface_parameters.mu = surface_parameters.mu;

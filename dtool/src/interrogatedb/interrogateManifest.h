@@ -20,10 +20,9 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateManifest
-// Description : An internal representation of a manifest constant.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a manifest constant.
+ */
 class EXPCL_INTERROGATEDB InterrogateManifest : public InterrogateComponent {
 public:
   INLINE InterrogateManifest(InterrogateModuleDef *def = NULL);

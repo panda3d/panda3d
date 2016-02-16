@@ -22,12 +22,11 @@ class Thread;
 
 #ifndef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//       Class : MutexDirect
-// Description : This class implements a standard mutex by making
-//               direct calls to the underlying implementation layer.
-//               It doesn't perform any debugging operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements a standard mutex by making direct calls to the
+ * underlying implementation layer.  It doesn't perform any debugging
+ * operations.
+ */
 class EXPCL_PANDA_PIPELINE MutexDirect {
 protected:
   INLINE MutexDirect();

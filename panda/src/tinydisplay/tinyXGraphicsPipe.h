@@ -24,12 +24,10 @@
 #include "lightMutex.h"
 #include "lightReMutex.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyXGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating TinyPanda graphics windows on an X11-based
-//               (e.g. Unix) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating TinyPanda graphics
+ * windows on an X11-based (e.g.  Unix) client.
+ */
 class EXPCL_TINYDISPLAY TinyXGraphicsPipe : public x11GraphicsPipe {
 public:
   TinyXGraphicsPipe(const string &display = string());

@@ -18,11 +18,10 @@
 
 #include "assimp/Logger.hpp"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaLogger
-// Description : Custom implementation of Assimp::Logger.  It
-//               simply wraps around the assimp_cat methods.
-////////////////////////////////////////////////////////////////////
+/**
+ * Custom implementation of Assimp::Logger.  It simply wraps around the
+ * assimp_cat methods.
+ */
 class PandaLogger : public Assimp::Logger {
 public:
   static void set_default();

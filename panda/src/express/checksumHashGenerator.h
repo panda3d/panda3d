@@ -18,12 +18,10 @@
 
 #include "hashGeneratorBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ChecksumHashGenerator
-// Description : This is a specific kind of HashGenerator that simply
-//               adds up all of the ints.  Nothing fancy, and pretty
-//               quick.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specific kind of HashGenerator that simply adds up all of the ints.
+ * Nothing fancy, and pretty quick.
+ */
 class EXPCL_PANDAEXPRESS ChecksumHashGenerator : public HashGeneratorBase {
 public:
   INLINE void add_int(long num);

@@ -17,10 +17,10 @@
 #include "PPInstance.h"
 #include "wstring_encode.h"
 
-bool PPDownloadRequest::Begin( ) 
+bool PPDownloadRequest::Begin( )
 {
-	m_instance.m_eventStop.ResetEvent( );
-	m_instance.m_eventDownloadStopped.ResetEvent( );
+  m_instance.m_eventStop.ResetEvent( );
+  m_instance.m_eventDownloadStopped.ResetEvent( );
     return true;
 }
 
@@ -40,12 +40,12 @@ bool PPDownloadRequest::DataNotify( size_t expectedDataSize, const void* data, s
         {
             if ( m_p3dRequest )
             {
-                ret = P3D_instance_feed_url_stream_ptr( m_p3dRequest->_instance, 
-                    m_p3dRequest->_request._get_url._unique_id, 
-                    P3D_RC_in_progress, 
-                    0, 
-                    expectedDataSize, 
-                    data, 
+                ret = P3D_instance_feed_url_stream_ptr( m_p3dRequest->_instance,
+                    m_p3dRequest->_request._get_url._unique_id,
+                    P3D_RC_in_progress,
+                    0,
+                    expectedDataSize,
+                    data,
                     dataSize );
             }
         }
@@ -87,17 +87,17 @@ void PPDownloadRequest::ProgressNotify( size_t progress, size_t maxProgress )
 {
     if ( ::IsWindow( m_instance.m_parentWnd ) )
     {
-        SendMessage( m_instance.m_parentWnd, WM_PROGRESS, (WPARAM)(progress * 100.0 / maxProgress), 0 ); 
+        SendMessage( m_instance.m_parentWnd, WM_PROGRESS, (WPARAM)(progress * 100.0 / maxProgress), 0 );
     }
 }
 
-bool PPDownloadRequest::End( ) 
+bool PPDownloadRequest::End( )
 {
     if ( m_hFile != INVALID_HANDLE_VALUE )
     {
         ::CloseHandle( m_hFile );
         m_hFile = INVALID_HANDLE_VALUE;
     }
-	m_instance.m_eventDownloadStopped.SetEvent( );
+  m_instance.m_eventDownloadStopped.SetEvent( );
     return true;
 }

@@ -16,11 +16,10 @@
 
 #include "baseForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearForce
-// Description : A force that acts on a PhysicsObject by way of an
-//               Integrator.  This is a pure virtual base class.
-////////////////////////////////////////////////////////////////////
+/**
+ * A force that acts on a PhysicsObject by way of an Integrator.  This is a pure
+ * virtual base class.
+ */
 class EXPCL_PANDAPHYSICS LinearForce : public BaseForce {
 PUBLISHED:
   ~LinearForce();
@@ -39,7 +38,7 @@ PUBLISHED:
   virtual LinearForce *make_copy() = 0;
 
   virtual bool is_linear() const;
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

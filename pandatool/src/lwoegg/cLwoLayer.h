@@ -22,12 +22,10 @@
 
 class LwoToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLwoLayer
-// Description : This class is a wrapper around LwoLayer and stores
-//               additional information useful during the
-//               conversion-to-egg process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a wrapper around LwoLayer and stores additional information
+ * useful during the conversion-to-egg process.
+ */
 class CLwoLayer {
 public:
   INLINE CLwoLayer(LwoToEggConverter *converter, const LwoLayer *layer);
@@ -44,5 +42,3 @@ public:
 #include "cLwoLayer.I"
 
 #endif
-
-

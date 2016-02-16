@@ -26,15 +26,12 @@ class Filename;
 class PNMImage;
 class PNMTextGlyph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMTextMaker
-// Description : This object uses the Freetype library to generate
-//               text directly into an image.  It is different from
-//               the TextNode/DynamicTextFont interface, which use the
-//               Freetype library to generate text in the scene graph,
-//               to be rendered onscreen via the Panda render
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object uses the Freetype library to generate text directly into an
+ * image.  It is different from the TextNode/DynamicTextFont interface, which
+ * use the Freetype library to generate text in the scene graph, to be rendered
+ * onscreen via the Panda render traversal.
+ */
 class EXPCL_PANDA_PNMTEXT PNMTextMaker : public FreetypeFont {
 PUBLISHED:
   PNMTextMaker(const Filename &font_filename, int face_index);

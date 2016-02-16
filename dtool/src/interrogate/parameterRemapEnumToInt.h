@@ -18,11 +18,10 @@
 
 #include "parameterRemap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapEnumToInt
-// Description : A ParameterRemap class that handles remapping an
-//               enumerated type to an integer parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ParameterRemap class that handles remapping an enumerated type to an
+ * integer parameter.
+ */
 class ParameterRemapEnumToInt : public ParameterRemap {
 public:
   ParameterRemapEnumToInt(CPPType *orig_type);

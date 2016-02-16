@@ -20,11 +20,9 @@
 class EggVertex;
 class EggPrimitive;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileVertex
-// Description : This represents a single vertex associated with an
-//               XFileFace.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single vertex associated with an XFileFace.
+ */
 class XFileVertex {
 public:
   XFileVertex();
@@ -39,4 +37,3 @@ public:
 };
 
 #endif
-

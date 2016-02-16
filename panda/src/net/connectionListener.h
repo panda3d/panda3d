@@ -20,17 +20,13 @@
 
 class NetAddress;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConnectionListener
-// Description : This is a special kind of ConnectionReader that waits
-//               for activity on a rendezvous port and accepts a TCP
-//               connection (instead of attempting to read a datagram
-//               from the rendezvous port).
-//
-//               It is itself an abstract class, as it doesn't define
-//               what to do with the established connection.  See
-//               QueuedConnectionListener.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special kind of ConnectionReader that waits for activity on a
+ * rendezvous port and accepts a TCP connection (instead of attempting to read a
+ * datagram from the rendezvous port).  It is itself an abstract class, as it
+ * doesn't define what to do with the established connection.  See
+ * QueuedConnectionListener.
+ */
 class EXPCL_PANDA_NET ConnectionListener : public ConnectionReader {
 PUBLISHED:
   ConnectionListener(ConnectionManager *manager, int num_threads,

@@ -11,21 +11,17 @@
  * @date 2014-10-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::GetIPAdddressRaw
-//       Access: Public
-//  Description: Return a RAW sockaddr_in
-////////////////////////////////////////////////////////////////////
+/**
+ * Return a RAW sockaddr_in
+ */
 INLINE unsigned long Socket_Address::
 GetIPAddressRaw() const {
   return _addr.sin_addr.s_addr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address
-//       Access: Published
-//  Description: Constructor that lets us set a port value
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor that lets us set a port value
+ */
 INLINE Socket_Address::
 Socket_Address(unsigned short port) {
   _addr.sin_family = AF_INET;
@@ -33,11 +29,9 @@ Socket_Address(unsigned short port) {
   _addr.sin_port = htons(port);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::Copy constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Socket_Address::
 Socket_Address(const Socket_Address &inaddr) {
   _addr.sin_family = inaddr._addr.sin_family;
@@ -45,11 +39,9 @@ Socket_Address(const Socket_Address &inaddr) {
   _addr.sin_port = inaddr._addr.sin_port;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Socket_Address::
 Socket_Address(const AddressType &inaddr) {
   _addr.sin_family = inaddr.sin_family;
@@ -57,20 +49,16 @@ Socket_Address(const AddressType &inaddr) {
   _addr.sin_port = inaddr.sin_port;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::~Destructor
-//       Access: Published
-//  Description: Normal Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Normal Destructor
+ */
 INLINE Socket_Address::
 ~Socket_Address() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::operator ==
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool Socket_Address::
 operator == (const Socket_Address &in) const {
   return ((_addr.sin_family == in._addr.sin_family) &&
@@ -78,11 +66,9 @@ operator == (const Socket_Address &in) const {
           (_addr.sin_port == in._addr.sin_port));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::operator !=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool Socket_Address::
 operator != (const Socket_Address &in) const {
   return ((_addr.sin_family != in._addr.sin_family) ||
@@ -90,11 +76,9 @@ operator != (const Socket_Address &in) const {
           (_addr.sin_port != in._addr.sin_port));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::set_broadcast
-//       Access: Published
-//  Description: Set to the broadcast address and a specified port
-////////////////////////////////////////////////////////////////////
+/**
+ * Set to the broadcast address and a specified port
+ */
 INLINE bool Socket_Address::
 set_broadcast(unsigned short port) {
   _addr.sin_family = AF_INET;
@@ -103,11 +87,9 @@ set_broadcast(unsigned short port) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::set_any_IP
-//       Access: Published
-//  Description: Set to any address and a specified port
-////////////////////////////////////////////////////////////////////
+/**
+ * Set to any address and a specified port
+ */
 INLINE bool Socket_Address::
 set_any_IP(unsigned short port) {
   _addr.sin_family = AF_INET;
@@ -116,22 +98,18 @@ set_any_IP(unsigned short port) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::set_port
-//       Access: Published
-//  Description: Set to a specified port
-////////////////////////////////////////////////////////////////////
+/**
+ * Set to a specified port
+ */
 INLINE bool Socket_Address::
 set_port(unsigned short port) {
   _addr.sin_port = htons(port);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::clear
-//       Access: Published
-//  Description: Set the internal values to a suitable known value
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the internal values to a suitable known value
+ */
 INLINE void Socket_Address::
 clear() {
   _addr.sin_family = AF_INET;
@@ -139,31 +117,25 @@ clear() {
   _addr.sin_port = htons(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::get_port
-//       Access: Published
-//  Description: Get the port portion as an integer
-////////////////////////////////////////////////////////////////////
+/**
+ * Get the port portion as an integer
+ */
 INLINE unsigned short Socket_Address::
 get_port() const {
   return ntohs(_addr.sin_port);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::get_ip
-//       Access: Published
-//  Description: Return the IP address portion in dot notation string
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the IP address portion in dot notation string
+ */
 INLINE std::string Socket_Address::
 get_ip() const {
   return std::string(inet_ntoa(_addr.sin_addr));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::get_ip_port
-//       Access: Published
-//  Description: Return the ip address/port in dot notation string
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the ip address/port in dot notation string
+ */
 INLINE std::string Socket_Address::
 get_ip_port() const {
   char buf1[100];  // 100 is more than enough for any ip address:port combo..
@@ -171,14 +143,11 @@ get_ip_port() const {
   return std::string(buf1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::set_host
-//       Access: Published
-//  Description: This function will take a port and string-based
-//               TCP address and initialize the address with this
-//               information.  Returns true on success; on failure,
-//               it returns false and the address may be undefined.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will take a port and string-based TCP address and initialize
+ * the address with this information.  Returns true on success; on failure, it
+ * returns false and the address may be undefined.
+ */
 INLINE bool Socket_Address::
 set_host(const std::string &hostname, unsigned short port) {
   struct hostent *hp = NULL;
@@ -210,11 +179,9 @@ set_host(const std::string &hostname, unsigned short port) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::set_host
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool Socket_Address::
 set_host(const std::string &hostname) {
   std::string::size_type pos = hostname.find(':');
@@ -228,11 +195,9 @@ set_host(const std::string &hostname) {
   return set_host(host, port_dig);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_Address::set_host
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool Socket_Address::
 set_host(PN_uint32 in_hostname, unsigned short port) {
   memcpy(&_addr.sin_addr, &in_hostname, sizeof(in_hostname));
@@ -241,11 +206,9 @@ set_host(PN_uint32 in_hostname, unsigned short port) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: <
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool Socket_Address::
 operator < (const Socket_Address &in) const {
   if (_addr.sin_port < in._addr.sin_port)
@@ -263,11 +226,9 @@ operator < (const Socket_Address &in) const {
   return (_addr.sin_family < in._addr.sin_family);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_mcast_range
-//       Access: Published
-//  Description: True if the address is in the multicast range.
-////////////////////////////////////////////////////////////////////
+/**
+ * True if the address is in the multicast range.
+ */
 INLINE bool Socket_Address::
 is_mcast_range(void) const {
   PN_uint32 address = ntohl(_addr.sin_addr.s_addr);

@@ -22,17 +22,12 @@
 #include "buttonEventList.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseSubregion
-// Description : The MouseSubregion object scales the mouse inputs
-//               from within a rectangular region of the screen, as if
-//               they were the full-screen inputs.
-//
-//               If you choose your MouseSubregion coordinates to
-//               exactly match a DisplayRegion within your window, you
-//               end up with a virtual mouse within your
-//               DisplayRegion.
-////////////////////////////////////////////////////////////////////
+/**
+ * The MouseSubregion object scales the mouse inputs from within a rectangular
+ * region of the screen, as if they were the full-screen inputs.  If you choose
+ * your MouseSubregion coordinates to exactly match a DisplayRegion within your
+ * window, you end up with a virtual mouse within your DisplayRegion.
+ */
 class EXPCL_PANDA_TFORM MouseSubregion : public MouseInterfaceNode {
 PUBLISHED:
   MouseSubregion(const string &name);

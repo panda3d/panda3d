@@ -11,24 +11,19 @@
  * @date 2007-08-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandler::wants_all_potential_collidees
-//       Access: Private
-//  Description: Returns true if handler wants to know about all
-//               solids that are within the collider's bounding
-//               volume
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if handler wants to know about all solids that are within the
+ * collider's bounding volume
+ */
 INLINE bool CollisionHandler::
 wants_all_potential_collidees() const {
   return _wants_all_potential_collidees;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandler::set_root
-//       Access: Private
-//  Description: Sets the root of the collision traversal. Only set
-//               if wants_all_potential_collidees is true
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the root of the collision traversal.  Only set if
+ * wants_all_potential_collidees is true
+ */
 INLINE void CollisionHandler::
 set_root(const NodePath &root) {
   _root = &root;

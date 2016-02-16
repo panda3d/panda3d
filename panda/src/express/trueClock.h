@@ -20,20 +20,14 @@
 #include "mutexImpl.h"
 #include "config_express.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TrueClock
-// Description : An interface to whatever real-time clock we might
-//               have available in the current environment.  There is
-//               only one TrueClock in existence, and it constructs
-//               itself.
-//
-//               The TrueClock returns elapsed real time in seconds
-//               since some undefined epoch.  Since it is not defined
-//               at what time precisely the clock indicates zero, this
-//               value can only be meaningfully used to measure
-//               elapsed time, by sampling it at two different times
-//               and subtracting.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to whatever real-time clock we might have available in the
+ * current environment.  There is only one TrueClock in existence, and it
+ * constructs itself.  The TrueClock returns elapsed real time in seconds since
+ * some undefined epoch.  Since it is not defined at what time precisely the
+ * clock indicates zero, this value can only be meaningfully used to measure
+ * elapsed time, by sampling it at two different times and subtracting.
+ */
 class EXPCL_PANDAEXPRESS TrueClock {
 PUBLISHED:
   // get_long_time() returns the most accurate timer we have over a

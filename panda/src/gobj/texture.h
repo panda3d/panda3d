@@ -55,24 +55,17 @@ class CullTraverserData;
 class TexturePeeker;
 struct DDSHeader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Texture
-// Description : Represents a texture object, which is typically a
-//               single 2-d image but may also represent a 1-d or 3-d
-//               texture image, or the six 2-d faces of a cube map
-//               texture.
-//
-//               A texture's image data might be stored in system RAM
-//               (see get_ram_image()) or its image may be represented
-//               in texture memory on one or more
-//               GraphicsStateGuardians (see prepare()), or both.  The
-//               typical usage pattern is that a texture is loaded
-//               from an image file on disk, which copies its image
-//               data into system RAM; then the first time the texture
-//               is rendered its image data is copied to texture
-//               memory (actually, to the graphics API), and the
-//               system RAM image is automatically freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a texture object, which is typically a single 2-d image but may
+ * also represent a 1-d or 3-d texture image, or the six 2-d faces of a cube map
+ * texture.  A texture's image data might be stored in system RAM (see
+ * get_ram_image()) or its image may be represented in texture memory on one or
+ * more GraphicsStateGuardians (see prepare()), or both.  The typical usage
+ * pattern is that a texture is loaded from an image file on disk, which copies
+ * its image data into system RAM; then the first time the texture is rendered
+ * its image data is copied to texture memory (actually, to the graphics API),
+ * and the system RAM image is automatically freed.
+ */
 class EXPCL_PANDA_GOBJ Texture : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   typedef PT(Texture) MakeTextureFunc();

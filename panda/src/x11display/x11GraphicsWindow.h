@@ -25,10 +25,9 @@ typedef unsigned short Rotation;
 typedef unsigned short SizeID;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : x11GraphicsWindow
-// Description : Interfaces to the X11 window system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interfaces to the X11 window system.
+ */
 class x11GraphicsWindow : public GraphicsWindow {
 public:
   x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,

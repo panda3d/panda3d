@@ -21,12 +21,10 @@
 #include "memoryUsage.h"
 #include "config_express.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointerToBase
-// Description : This is the base class for PointerTo and
-//               ConstPointerTo.  Don't try to use it directly; use
-//               either derived class instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for PointerTo and ConstPointerTo.  Don't try to use it
+ * directly; use either derived class instead.
+ */
 template <class T>
 class PointerToBase : public PointerToVoid {
 public:

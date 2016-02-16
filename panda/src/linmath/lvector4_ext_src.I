@@ -21,11 +21,9 @@
 #define PY_FROM_FLOATTYPE PyFloat_FromDouble
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVector4::__repr__
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE_LINMATH string Extension<FLOATNAME(LVector4)>::
 __repr__() const {
   ostringstream out;
@@ -37,11 +35,9 @@ __repr__() const {
   return out.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVector4::__getattr__
-//       Access: Published
-//  Description: This is used to implement swizzle masks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement swizzle masks.
+ */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVector4)>::
 __getattr__(PyObject *self, const string &attr_name) const {
 #ifndef CPPPARSER
@@ -91,11 +87,9 @@ __getattr__(PyObject *self, const string &attr_name) const {
   return Dtool_Raise_AttributeError(self, attr_name.c_str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVector4::__setattr__
-//       Access: Published
-//  Description: This is used to implement write masks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to implement write masks.
+ */
 INLINE_LINMATH int Extension<FLOATNAME(LVector4)>::
 __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
   // Upcall to LVecBase4.

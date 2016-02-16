@@ -25,12 +25,10 @@
 
 class DisplayRegion;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SceneSetup
-// Description : This object holds the camera position, etc., and
-//               other general setup information for rendering a
-//               particular scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object holds the camera position, etc., and other general setup
+ * information for rendering a particular scene.
+ */
 class EXPCL_PANDA_PGRAPH SceneSetup : public TypedReferenceCount {
 public:
   INLINE SceneSetup();

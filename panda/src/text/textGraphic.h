@@ -19,26 +19,18 @@
 #include "config_text.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextGraphic
-// Description : This defines a special model that has been
-//               constructed for the purposes of embedding an
-//               arbitrary graphic image within a text paragraph.
-//
-//               It can be any arbitrary model, though it should be
-//               built along the same scale as the text, and it should
-//               probably be at least mostly two-dimensional.
-//               Typically, this means it should be constructed in the
-//               X-Z plane, and it should have a maximum vertical (Z)
-//               height of 1.0.
-//
-//               The frame specifies an arbitrary bounding volume in
-//               the form (left, right, bottom, top).  This indicates
-//               the amount of space that will be reserved within the
-//               paragraph.  The actual model is not actually required
-//               to fit within this rectangle, but if it does not, it
-//               may visually overlap with nearby text.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a special model that has been constructed for the purposes of
+ * embedding an arbitrary graphic image within a text paragraph.  It can be any
+ * arbitrary model, though it should be built along the same scale as the text,
+ * and it should probably be at least mostly two-dimensional.  Typically, this
+ * means it should be constructed in the X-Z plane, and it should have a maximum
+ * vertical (Z) height of 1.0.  The frame specifies an arbitrary bounding volume
+ * in the form (left, right, bottom, top).  This indicates the amount of space
+ * that will be reserved within the paragraph.  The actual model is not actually
+ * required to fit within this rectangle, but if it does not, it may visually
+ * overlap with nearby text.
+ */
 class EXPCL_PANDA_TEXT TextGraphic {
 PUBLISHED:
   INLINE TextGraphic();

@@ -25,14 +25,11 @@ class EggGroup;
 class EggTable;
 class EggXfmSAnim;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileAnimationSet
-// Description : This represents a tree of EggTables, corresponding to
-//               Animation entries in the X file.  There is one
-//               EggTable for each joint in the character's joint
-//               set, and the whole tree is structured as a
-//               mirror of the joint set.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a tree of EggTables, corresponding to Animation entries in
+ * the X file.  There is one EggTable for each joint in the character's joint
+ * set, and the whole tree is structured as a mirror of the joint set.
+ */
 class XFileAnimationSet : public Namable {
 public:
   XFileAnimationSet();
@@ -67,7 +64,7 @@ public:
     FrameEntries _entries;
     int _flags;
   };
-  
+
   FrameData &create_frame_data(const string &joint_name);
 
 public:
@@ -93,4 +90,3 @@ private:
 #include "xFileAnimationSet.I"
 
 #endif
-

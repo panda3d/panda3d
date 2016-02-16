@@ -17,46 +17,37 @@
 
 const string HTTPBasicAuthorization::_mechanism = "basic";
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPBasicAuthorization::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HTTPBasicAuthorization::
-HTTPBasicAuthorization(const HTTPAuthorization::Tokens &tokens, 
-                       const URLSpec &url, bool is_proxy) : 
+HTTPBasicAuthorization(const HTTPAuthorization::Tokens &tokens,
+                       const URLSpec &url, bool is_proxy) :
   HTTPAuthorization(tokens, url, is_proxy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPBasicAuthorization::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HTTPBasicAuthorization::
 ~HTTPBasicAuthorization() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPBasicAuthorization::get_mechanism
-//       Access: Public, Virtual
-//  Description: Returns the type of authorization mechanism,
-//               represented as a string, e.g. "basic".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type of authorization mechanism, represented as a string, e.g.
+ * "basic".
+ */
 const string &HTTPBasicAuthorization::
 get_mechanism() const {
   return _mechanism;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPBasicAuthorization::generate
-//       Access: Public, Virtual
-//  Description: Generates a suitable authorization string to send
-//               to the server, based on the data stored within this
-//               object, for retrieving the indicated URL with the
-//               given username:password.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a suitable authorization string to send to the server, based on the
+ * data stored within this object, for retrieving the indicated URL with the
+ * given username:password.
+ */
 string HTTPBasicAuthorization::
 generate(HTTPEnum::Method, const string &,
          const string &username, const string &) {

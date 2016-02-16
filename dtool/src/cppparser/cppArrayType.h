@@ -20,10 +20,9 @@
 
 class CPPExpression;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPArrayType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPArrayType : public CPPType {
 public:
   CPPArrayType(CPPType *element_type, CPPExpression *bounds);

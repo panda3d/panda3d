@@ -19,18 +19,14 @@
 #include "memoryUsage.h"
 #include "config_express.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodePointerToBase
-// Description : This is similar to PointerToBase, but it manages
-//               objects of type NodeReferenceCount or
-//               NodeCachedReferenceCount, and it updates the
-//               node_ref_count instead of the regular ref_count.  It
-//               is intended for use only in PandaNode, to hold a
-//               pointer to RenderState and TransformState, although
-//               it could be used by any object that wanted to
-//               maintain a separate reference count for reporting
-//               purposes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to PointerToBase, but it manages objects of type
+ * NodeReferenceCount or NodeCachedReferenceCount, and it updates the
+ * node_ref_count instead of the regular ref_count.  It is intended for use only
+ * in PandaNode, to hold a pointer to RenderState and TransformState, although
+ * it could be used by any object that wanted to maintain a separate reference
+ * count for reporting purposes.
+ */
 template <class T>
 class NodePointerToBase : public PointerToVoid {
 public:

@@ -13,42 +13,33 @@
 
 #include "p3dNoneObject.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneObject::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DNoneObject::
 P3DNoneObject() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneObject::get_type
-//       Access: Public, Virtual
-//  Description: Returns the fundamental type of this kind of object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the fundamental type of this kind of object.
+ */
 P3D_object_type P3DNoneObject::
 get_type() {
   return P3D_OT_none;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneObject::get_bool
-//       Access: Public, Virtual
-//  Description: Returns the object value coerced to a boolean, if
-//               possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the object value coerced to a boolean, if possible.
+ */
 bool P3DNoneObject::
 get_bool() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneObject::make_string
-//       Access: Public, Virtual
-//  Description: Fills the indicated C++ string object with the value
-//               of this object coerced to a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated C++ string object with the value of this object coerced
+ * to a string.
+ */
 void P3DNoneObject::
 make_string(string &value) {
   value = "None";

@@ -22,12 +22,11 @@ class Thread;
 
 #ifndef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//       Class : LightReMutexDirect
-// Description : This class implements a standard lightReMutex by making
-//               direct calls to the underlying implementation layer.
-//               It doesn't perform any debugging operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements a standard lightReMutex by making direct calls to the
+ * underlying implementation layer.  It doesn't perform any debugging
+ * operations.
+ */
 class EXPCL_PANDA_PIPELINE LightReMutexDirect {
 protected:
   INLINE LightReMutexDirect();

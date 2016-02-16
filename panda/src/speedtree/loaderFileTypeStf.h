@@ -18,12 +18,10 @@
 
 #include "loaderFileType.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypeStf
-// Description : This defines the Loader interface to read SpeedTree
-//               STF files--a simple text file that describes a forest
-//               of trees (references to SRT files).
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the Loader interface to read SpeedTree STF files--a simple text
+ * file that describes a forest of trees (references to SRT files).
+ */
 class EXPCL_PANDASPEEDTREE LoaderFileTypeStf : public LoaderFileType {
 public:
   LoaderFileTypeStf();
@@ -54,4 +52,3 @@ private:
 };
 
 #endif
-

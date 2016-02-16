@@ -54,16 +54,12 @@
 class DrawableRegion;
 class GraphicsEngine;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsStateGuardian
-// Description : Encapsulates all the communication with a particular
-//               instance of a given rendering backend.  Tries to
-//               guarantee that redundant state-change requests are
-//               not issued (hence "state guardian").
-//
-//               There will be one of these objects for each different
-//               graphics context active in the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates all the communication with a particular instance of a given
+ * rendering backend.  Tries to guarantee that redundant state-change requests
+ * are not issued (hence "state guardian").  There will be one of these objects
+ * for each different graphics context active in the system.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsStateGuardian : public GraphicsStateGuardianBase {
   //
   // Interfaces all GSGs should have

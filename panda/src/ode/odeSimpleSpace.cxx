@@ -34,4 +34,3 @@ OdeSimpleSpace(OdeSpace &space) :
 OdeSimpleSpace::
 ~OdeSimpleSpace() {
 }
-

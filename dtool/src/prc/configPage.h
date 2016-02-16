@@ -21,14 +21,12 @@
 class ConfigDeclaration;
 class ConfigVariableCore;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigPage
-// Description : A page of ConfigDeclarations that may be loaded or
-//               unloaded.  Typically this represents a single .prc
-//               file that is read from disk at runtime, but it may
-//               also represent a list of declarations built up
-//               by application code and explicitly loaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * A page of ConfigDeclarations that may be loaded or unloaded.  Typically this
+ * represents a single .prc file that is read from disk at runtime, but it may
+ * also represent a list of declarations built up by application code and
+ * explicitly loaded.
+ */
 class EXPCL_DTOOLCONFIG ConfigPage {
 private:
   ConfigPage(const string &name, bool implicit_load, int page_seq);

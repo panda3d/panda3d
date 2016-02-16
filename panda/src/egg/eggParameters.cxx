@@ -19,11 +19,9 @@ static EggParameters default_egg_parameters;
 EggParameters *egg_parameters = &default_egg_parameters;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggParameters::Constructor
-//       Access: Public
-//  Description: Initializes all the parameters with default values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes all the parameters with default values.
+ */
 EggParameters::
 EggParameters() {
   _pos_threshold = 0.0001;
@@ -35,11 +33,9 @@ EggParameters() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggParameters::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggParameters::
 EggParameters(const EggParameters &other) {
   memcpy(this, &other, sizeof(EggParameters));

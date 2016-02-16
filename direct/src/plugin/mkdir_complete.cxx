@@ -26,12 +26,10 @@
 #include <unistd.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_dirname
-//  Description: Returns the directory component of the indicated
-//               pathname, or the empty string if there is no
-//               directory prefix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the directory component of the indicated pathname, or the empty
+ * string if there is no directory prefix.
+ */
 static string
 get_dirname(const string &filename) {
   size_t p = filename.length();
@@ -46,11 +44,10 @@ get_dirname(const string &filename) {
 }
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: get_dirname_w
-//  Description: The wide-character implementation of get_dirname().
-//               Only implemented (and needed) on Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * The wide-character implementation of get_dirname(). Only implemented (and
+ * needed) on Windows.
+ */
 static wstring
 get_dirname_w(const wstring &filename) {
   size_t p = filename.length();
@@ -67,13 +64,10 @@ get_dirname_w(const wstring &filename) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: mkdir_complete
-//  Description: Creates a new directory, with normal access
-//               privileges.  Returns true on success, false on
-//               failure.  Will create intervening directories if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new directory, with normal access privileges.  Returns true on
+ * success, false on failure.  Will create intervening directories if necessary.
+ */
 bool
 mkdir_complete(const string &dirname, ostream &logfile) {
 #ifdef _WIN32
@@ -105,7 +99,7 @@ mkdir_complete(const string &dirname, ostream &logfile) {
         return true;
       }
       // Couldn't create the directory. :(
-      logfile 
+      logfile
         << "Couldn't create " << dirname << ": " << strerror(errno) << "\n";
     }
   }
@@ -114,13 +108,10 @@ mkdir_complete(const string &dirname, ostream &logfile) {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: mkfile_complete
-//  Description: Creates a new file with normal access
-//               priviledges.  Returns true on success, false on
-//               failure.  This will create intervening directories if
-//               needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new file with normal access priviledges.  Returns true on success,
+ * false on failure.  This will create intervening directories if needed.
+ */
 bool
 mkfile_complete(const string &filename, ostream &logfile) {
 #ifdef _WIN32
@@ -155,12 +146,10 @@ mkfile_complete(const string &filename, ostream &logfile) {
 
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: mkdir_complete_w
-//  Description: The wide-character implementation of
-//               mkdir_complete().  Only implemented (and needed) on
-//               Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * The wide-character implementation of mkdir_complete().  Only implemented (and
+ * needed) on Windows.
+ */
 bool
 mkdir_complete_w(const wstring &dirname, ostream &logfile) {
   if (CreateDirectoryW(dirname.c_str(), NULL) != 0) {
@@ -184,7 +173,7 @@ mkdir_complete_w(const wstring &dirname, ostream &logfile) {
         // Got it!
         return true;
       }
-      logfile 
+      logfile
         << "Couldn't create " << dirname << "\n";
     }
   }
@@ -193,12 +182,10 @@ mkdir_complete_w(const wstring &dirname, ostream &logfile) {
 #endif  // _WIN32
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: mkfile_complete_w
-//  Description: The wide-character implementation of
-//               mkfile_complete().  Only implemented (and needed) on
-//               Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * The wide-character implementation of mkfile_complete().  Only implemented
+ * (and needed) on Windows.
+ */
 bool
 mkfile_complete_w(const wstring &filename, ostream &logfile) {
   // Make sure we delete any previously-existing file first.

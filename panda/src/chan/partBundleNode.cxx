@@ -20,11 +20,9 @@
 
 TypeHandle PartBundleNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PartBundleNode::
 ~PartBundleNode() {
   Bundles::iterator bi;
@@ -33,18 +31,13 @@ PartBundleNode::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::apply_attribs_to_vertices
-//       Access: Public, Virtual
-//  Description: Applies whatever attributes are specified in the
-//               AccumulatedAttribs object (and by the attrib_types
-//               bitmask) to the vertices on this node, if
-//               appropriate.  If this node uses geom arrays like a
-//               GeomNode, the supplied GeomTransformer may be used to
-//               unify shared arrays across multiple different nodes.
-//
-//               This is a generalization of xform().
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies whatever attributes are specified in the AccumulatedAttribs object
+ * (and by the attrib_types bitmask) to the vertices on this node, if
+ * appropriate.  If this node uses geom arrays like a GeomNode, the supplied
+ * GeomTransformer may be used to unify shared arrays across multiple different
+ * nodes.  This is a generalization of xform().
+ */
 void PartBundleNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
@@ -63,13 +56,10 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this PandaNode by the
-//               indicated matrix, if it means anything to do so.  For
-//               most kinds of PandaNodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this PandaNode by the indicated matrix, if it
+ * means anything to do so.  For most kinds of PandaNodes, this does nothing.
+ */
 void PartBundleNode::
 xform(const LMatrix4 &mat) {
   // With plain xform(), we can't attempt to share bundles across
@@ -94,22 +84,18 @@ xform(const LMatrix4 &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::add_bundle
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PartBundleNode::
 add_bundle(PartBundle *bundle) {
   PT(PartBundleHandle) handle = new PartBundleHandle(bundle);
   add_bundle_handle(handle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::add_bundle_handle
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PartBundleNode::
 add_bundle_handle(PartBundleHandle *handle) {
   Bundles::iterator bi = find(_bundles.begin(), _bundles.end(), handle);
@@ -122,12 +108,9 @@ add_bundle_handle(PartBundleHandle *handle) {
   handle->get_bundle()->add_node(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::steal_bundles
-//       Access: Protected
-//  Description: Moves the PartBundles from the other node onto this
-//               one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the PartBundles from the other node onto this one.
+ */
 void PartBundleNode::
 steal_bundles(PartBundleNode *other) {
   if (other == this) {
@@ -143,13 +126,10 @@ steal_bundles(PartBundleNode *other) {
   other->_bundles.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::update_bundle
-//       Access: Protected, Virtual
-//  Description: Replaces the contents of the indicated
-//               PartBundleHandle (presumably stored within this node)
-//               with new_bundle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the contents of the indicated PartBundleHandle (presumably stored
+ * within this node) with new_bundle.
+ */
 void PartBundleNode::
 update_bundle(PartBundleHandle *old_bundle_handle, PartBundle *new_bundle) {
   PartBundle *old_bundle = old_bundle_handle->get_bundle();
@@ -158,12 +138,10 @@ update_bundle(PartBundleHandle *old_bundle_handle, PartBundle *new_bundle) {
   new_bundle->add_node(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void PartBundleNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
@@ -175,13 +153,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int PartBundleNode::
 complete_pointers(TypedWritable **p_list, BamReader* manager) {
   int pi = PandaNode::complete_pointers(p_list, manager);
@@ -196,13 +171,10 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new PandaNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new PandaNode.
+ */
 void PartBundleNode::
 fillin(DatagramIterator &scan, BamReader* manager) {
   PandaNode::fillin(scan, manager);

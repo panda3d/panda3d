@@ -36,11 +36,10 @@ AINode::AINode(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h)
 AINode::~AINode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: contains
-//  Description: This is a handy function which returns true if the
-//               passed position is within the node's dimensions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a handy function which returns true if the passed position is within
+ * the node's dimensions.
+ */
 bool AINode::contains(float x, float y) {
   if (_position.get_x() - _width / 2 <= x && _position.get_x() + _width / 2 >= x &&
     _position.get_y() - _length / 2 <= y && _position.get_y() + _length / 2 >= y) {

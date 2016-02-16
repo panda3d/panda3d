@@ -22,10 +22,9 @@
 
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltMaterial
-// Description : Represents a single material in the material palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single material in the material palette.
+ */
 class FltMaterial : public FltRecord {
 public:
   FltMaterial(FltHeader *header);
@@ -73,5 +72,3 @@ private:
 };
 
 #endif
-
-

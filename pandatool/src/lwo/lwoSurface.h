@@ -18,12 +18,10 @@
 
 #include "lwoGroupChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurface
-// Description : Describes the shading attributes of a surface.  This
-//               is similar to the concept usually called a "material"
-//               or "shader" in other file formats.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes the shading attributes of a surface.  This is similar to the
+ * concept usually called a "material" or "shader" in other file formats.
+ */
 class LwoSurface : public LwoGroupChunk {
 public:
   string _name;
@@ -54,7 +52,3 @@ private:
 };
 
 #endif
-
-
-
-

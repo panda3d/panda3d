@@ -19,11 +19,9 @@
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapEnumToInt::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParameterRemapEnumToInt::
 ParameterRemapEnumToInt(CPPType *orig_type) :
   ParameterRemap(orig_type)
@@ -32,36 +30,28 @@ ParameterRemapEnumToInt(CPPType *orig_type) :
   _enum_type = unwrap_type(_orig_type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapEnumToInt::pass_parameter
-//       Access: Public, Virtual
-//  Description: Outputs an expression that converts the indicated
-//               variable from the new type to the original type, for
-//               passing into the actual C++ function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs an expression that converts the indicated variable from the new type
+ * to the original type, for passing into the actual C++ function.
+ */
 void ParameterRemapEnumToInt::
 pass_parameter(ostream &out, const string &variable_name) {
   out << "(" << _enum_type->get_local_name(&parser) << ")" << variable_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapEnumToInt::get_return_expr
-//       Access: Public, Virtual
-//  Description: Returns an expression that evalutes to the
-//               appropriate value type for returning from the
-//               function, given an expression of the original type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an expression that evalutes to the appropriate value type for
+ * returning from the function, given an expression of the original type.
+ */
 string ParameterRemapEnumToInt::
 get_return_expr(const string &expression) {
   return "(int)(" + expression + ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapEnumToInt::unwrap_type
-//       Access: Private
-//  Description: Recursively walks through the type definition,
-//               and finds the enum definition under all the wrappers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks through the type definition, and finds the enum definition
+ * under all the wrappers.
+ */
 CPPType *ParameterRemapEnumToInt::
 unwrap_type(CPPType *source_type) const {
   switch (source_type->get_subtype()) {

@@ -33,11 +33,9 @@
 
 LoaderOptions PandaFramework::_loader_options;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PandaFramework::
 PandaFramework() :
   _event_handler(*EventHandler::get_global_event_handler()),
@@ -59,11 +57,9 @@ PandaFramework() :
   _exit_flag = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PandaFramework::
 ~PandaFramework() {
   if (_is_open) {
@@ -71,15 +67,12 @@ PandaFramework::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::open_framework
-//       Access: Public
-//  Description: Should be called once at the beginning of the
-//               application to initialize Panda (and the framework)
-//               for use.  The command-line arguments should be passed
-//               in so Panda can remove any arguments that it
-//               recognizes as special control parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called once at the beginning of the application to initialize Panda
+ * (and the framework) for use.  The command-line arguments should be passed in
+ * so Panda can remove any arguments that it recognizes as special control
+ * parameters.
+ */
 void PandaFramework::
 open_framework(int &argc, char **&argv) {
   if (_is_open) {
@@ -163,13 +156,10 @@ open_framework(int &argc, char **&argv) {
   _event_handler.add_hook("window-event", event_window_event, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::close_framework
-//       Access: Public
-//  Description: Should be called at the end of an application to
-//               close Panda.  This is optional, as the destructor
-//               will do the same thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be called at the end of an application to close Panda.  This is
+ * optional, as the destructor will do the same thing.
+ */
 void PandaFramework::
 close_framework() {
   if (!_is_open) {
@@ -202,21 +192,13 @@ close_framework() {
   Thread::prepare_for_exit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::get_default_pipe
-//       Access: Public
-//  Description: Returns the default pipe.  This is the GraphicsPipe
-//               that all windows in the framework will be created on,
-//               unless otherwise specified in open_window().  It is
-//               usually the primary graphics interface on the local
-//               machine.
-//
-//               If the default pipe has not yet been created, this
-//               creates it.
-//
-//               The return value is the default pipe, or NULL if no
-//               default pipe could be created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default pipe.  This is the GraphicsPipe that all windows in the
+ * framework will be created on, unless otherwise specified in open_window().
+ * It is usually the primary graphics interface on the local machine.  If the
+ * default pipe has not yet been created, this creates it.  The return value is
+ * the default pipe, or NULL if no default pipe could be created.
+ */
 GraphicsPipe *PandaFramework::
 get_default_pipe() {
   nassertr(_is_open, NULL);
@@ -227,18 +209,13 @@ get_default_pipe() {
   return _default_pipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::get_mouse
-//       Access: Public
-//  Description: Returns a NodePath to the MouseAndKeyboard associated
-//               with the indicated GraphicsWindow object.  If there's
-//               not yet a mouse associated with the window, creates
-//               one.
-//
-//               This allows multiple WindowFramework objects that
-//               represent different display regions of the same
-//               GraphicsWindow to share the same mouse.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a NodePath to the MouseAndKeyboard associated with the indicated
+ * GraphicsWindow object.  If there's not yet a mouse associated with the
+ * window, creates one.  This allows multiple WindowFramework objects that
+ * represent different display regions of the same GraphicsWindow to share the
+ * same mouse.
+ */
 NodePath PandaFramework::
 get_mouse(GraphicsOutput *window) {
   Mouses::iterator mi = _mouses.find(window);
@@ -268,12 +245,10 @@ get_mouse(GraphicsOutput *window) {
   return mouse;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::remove_mouse
-//       Access: Public
-//  Description: Removes the mouse that may have been created by an
-//               earlier call to get_mouse().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the mouse that may have been created by an earlier call to
+ * get_mouse().
+ */
 void PandaFramework::
 remove_mouse(const GraphicsOutput *window) {
   Mouses::iterator mi = _mouses.find(window);
@@ -283,14 +258,11 @@ remove_mouse(const GraphicsOutput *window) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::define_key
-//       Access: Public
-//  Description: Sets up a handler for the indicated key.  When the
-//               key is pressed in a window, the given callback will
-//               be called.  The description is a one-line description
-//               of the function of the key, for display to the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up a handler for the indicated key.  When the key is pressed in a
+ * window, the given callback will be called.  The description is a one-line
+ * description of the function of the key, for display to the user.
+ */
 void PandaFramework::
 define_key(const string &event_name, const string &description,
            EventHandler::EventCallbackFunction *function,
@@ -321,13 +293,10 @@ define_key(const string &event_name, const string &description,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::get_default_window_props
-//       Access: Public, Virtual
-//  Description: Fills in the indicated window properties structure
-//               according to the normal window properties for this
-//               application.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the indicated window properties structure according to the normal
+ * window properties for this application.
+ */
 void PandaFramework::
 get_default_window_props(WindowProperties &props) {
   // This function is largely vestigial and will be removed soon.  We
@@ -340,16 +309,12 @@ get_default_window_props(WindowProperties &props) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::open_window
-//       Access: Public
-//  Description: Opens a window on the default graphics pipe.  If the
-//               default graphics pipe can't open a window for some
-//               reason, automatically fails over to the next
-//               available graphics pipe, and updates _default_pipe
-//               accordingly.  Returns NULL only if all graphics pipes
-//               fail.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a window on the default graphics pipe.  If the default graphics pipe
+ * can't open a window for some reason, automatically fails over to the next
+ * available graphics pipe, and updates _default_pipe accordingly.  Returns NULL
+ * only if all graphics pipes fail.
+ */
 WindowFramework *PandaFramework::
 open_window() {
   GraphicsPipe *pipe = get_default_pipe();
@@ -387,13 +352,10 @@ open_window() {
   return wf;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::open_window
-//       Access: Public
-//  Description: Opens a new window on the indicated pipe, using the
-//               default parameters.  Returns the new WindowFramework
-//               if successful, or NULL if not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a new window on the indicated pipe, using the default parameters.
+ * Returns the new WindowFramework if successful, or NULL if not.
+ */
 WindowFramework *PandaFramework::
 open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   nassertr(_is_open, NULL);
@@ -409,16 +371,11 @@ open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   return open_window(props, flags, pipe, gsg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::open_window
-//       Access: Public
-//  Description: Opens a new window using the indicated properties.
-//               (You may initialize the properties to their default
-//               values by calling get_default_window_props() first.)
-//
-//               Returns the new WindowFramework if successful, or
-//               NULL if not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a new window using the indicated properties.  (You may initialize the
+ * properties to their default values by calling get_default_window_props()
+ * first.)  Returns the new WindowFramework if successful, or NULL if not.
+ */
 WindowFramework *PandaFramework::
 open_window(const WindowProperties &props, int flags,
             GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
@@ -460,13 +417,10 @@ open_window(const WindowProperties &props, int flags,
   return wf;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::find_window
-//       Access: Public
-//  Description: Returns the index of the first WindowFramework object
-//               found that references the indicated GraphicsOutput
-//               pointer, or -1 if none do.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the first WindowFramework object found that references
+ * the indicated GraphicsOutput pointer, or -1 if none do.
+ */
 int PandaFramework::
 find_window(const GraphicsOutput *win) const {
   int n;
@@ -479,13 +433,10 @@ find_window(const GraphicsOutput *win) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::find_window
-//       Access: Public
-//  Description: Returns the index of the given WindowFramework
-//               object, or -1 if the object does not represent a
-//               window opened with this PandaFramework.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index of the given WindowFramework object, or -1 if the object
+ * does not represent a window opened with this PandaFramework.
+ */
 int PandaFramework::
 find_window(const WindowFramework *wf) const {
   int n;
@@ -499,11 +450,9 @@ find_window(const WindowFramework *wf) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::close_window
-//       Access: Public
-//  Description: Closes the nth window and removes it from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the nth window and removes it from the list.
+ */
 void PandaFramework::
 close_window(int n) {
   nassertv(n >= 0 && n < (int)_windows.size());
@@ -518,12 +467,9 @@ close_window(int n) {
   _windows.erase(_windows.begin() + n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::close_all_windows
-//       Access: Public
-//  Description: Closes all currently open windows and empties the
-//               list of windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes all currently open windows and empties the list of windows.
+ */
 void PandaFramework::
 close_all_windows() {
   Windows::iterator wi;
@@ -547,12 +493,10 @@ close_all_windows() {
   _mouses.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::all_windows_closed
-//       Access: Public
-//  Description: Returns true if all of the opened windows have been
-//               closed by the user, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the opened windows have been closed by the user, false
+ * otherwise.
+ */
 bool PandaFramework::
 all_windows_closed() const {
   Windows::const_iterator wi;
@@ -566,14 +510,11 @@ all_windows_closed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::get_models
-//       Access: Public
-//  Description: Returns the root of the scene graph normally reserved
-//               for parenting models and such.  This scene graph may
-//               be instanced to each window's render tree as the
-//               window is created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the root of the scene graph normally reserved for parenting models
+ * and such.  This scene graph may be instanced to each window's render tree as
+ * the window is created.
+ */
 NodePath &PandaFramework::
 get_models() {
   if (_models.is_empty()) {
@@ -582,12 +523,9 @@ get_models() {
   return _models;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::report_frame_rate
-//       Access: Public
-//  Description: Reports the currently measured average frame rate to
-//               the indicated ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports the currently measured average frame rate to the indicated ostream.
+ */
 void PandaFramework::
 report_frame_rate(ostream &out) const {
   double now = ClockObject::get_global_clock()->get_frame_time();
@@ -602,22 +540,18 @@ report_frame_rate(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::reset_frame_rate
-//       Access: Public
-//  Description: Resets the frame rate computation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the frame rate computation.
+ */
 void PandaFramework::
 reset_frame_rate() {
   _start_time = ClockObject::get_global_clock()->get_frame_time();
   _frame_count = ClockObject::get_global_clock()->get_frame_count();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::set_wireframe
-//       Access: Public
-//  Description: Sets the wireframe state on all windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the wireframe state on all windows.
+ */
 void PandaFramework::
 set_wireframe(bool enable) {
   Windows::iterator wi;
@@ -629,11 +563,9 @@ set_wireframe(bool enable) {
   _wireframe_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::set_texture
-//       Access: Public
-//  Description: Sets the texture state on all windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the texture state on all windows.
+ */
 void PandaFramework::
 set_texture(bool enable) {
   Windows::iterator wi;
@@ -645,11 +577,9 @@ set_texture(bool enable) {
   _texture_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::set_two_sided
-//       Access: Public
-//  Description: Sets the two_sided state on all windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the two_sided state on all windows.
+ */
 void PandaFramework::
 set_two_sided(bool enable) {
   Windows::iterator wi;
@@ -661,11 +591,9 @@ set_two_sided(bool enable) {
   _two_sided_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::set_lighting
-//       Access: Public
-//  Description: Sets the lighting state on all windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the lighting state on all windows.
+ */
 void PandaFramework::
 set_lighting(bool enable) {
   Windows::iterator wi;
@@ -677,11 +605,9 @@ set_lighting(bool enable) {
   _lighting_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::set_perpixel
-//       Access: Public
-//  Description: Sets the perpixel state on all windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the perpixel state on all windows.
+ */
 void PandaFramework::
 set_perpixel(bool enable) {
   Windows::iterator wi;
@@ -693,11 +619,9 @@ set_perpixel(bool enable) {
   _perpixel_enabled = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BackgroundFramework::set_background_type
-//       Access: Public
-//  Description: Sets the background type of all windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the background type of all windows.
+ */
 void PandaFramework::
 set_background_type(WindowFramework::BackgroundType type) {
   Windows::iterator wi;
@@ -709,13 +633,10 @@ set_background_type(WindowFramework::BackgroundType type) {
   _background_type = type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::hide_collision_solids
-//       Access: Public
-//  Description: Hides any collision solids, or occluders, which are
-//               visible in the indicated scene graph.  Returns the
-//               number of nodes hidden.
-////////////////////////////////////////////////////////////////////
+/**
+ * Hides any collision solids, or occluders, which are visible in the indicated
+ * scene graph.  Returns the number of nodes hidden.
+ */
 int PandaFramework::
 hide_collision_solids(NodePath node) {
   int num_changed = 0;
@@ -736,13 +657,10 @@ hide_collision_solids(NodePath node) {
   return num_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::show_collision_solids
-//       Access: Public
-//  Description: Shows any collision solids, or occluders, which are
-//               directly hidden in the indicated scene graph.
-//               Returns the number of nodes shown.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows any collision solids, or occluders, which are directly hidden in the
+ * indicated scene graph.  Returns the number of nodes shown.
+ */
 int PandaFramework::
 show_collision_solids(NodePath node) {
   int num_changed = 0;
@@ -763,13 +681,10 @@ show_collision_solids(NodePath node) {
   return num_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::set_highlight
-//       Access: Public
-//  Description: Sets the indicated node (normally a node within the
-//               get_models() tree) up as the highlighted node.
-//               Certain operations affect the highlighted node only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated node (normally a node within the get_models() tree) up as
+ * the highlighted node.  Certain operations affect the highlighted node only.
+ */
 void PandaFramework::
 set_highlight(const NodePath &node) {
   clear_highlight();
@@ -781,11 +696,9 @@ set_highlight(const NodePath &node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::clear_highlight
-//       Access: Public
-//  Description: Unhighlights the currently highlighted node, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unhighlights the currently highlighted node, if any.
+ */
 void PandaFramework::
 clear_highlight() {
   if (!_highlight.is_empty()) {
@@ -795,13 +708,10 @@ clear_highlight() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::enable_default_keys
-//       Access: Public
-//  Description: Sets callbacks on the event handler to handle all of
-//               the normal viewer keys, like t to toggle texture, ESC
-//               or q to quit, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets callbacks on the event handler to handle all of the normal viewer keys,
+ * like t to toggle texture, ESC or q to quit, etc.
+ */
 void PandaFramework::
 enable_default_keys() {
   if (!_default_keys_enabled) {
@@ -810,14 +720,11 @@ enable_default_keys() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::do_frame
-//       Access: Public, Virtual
-//  Description: Renders one frame and performs all associated
-//               processing.  Returns true if we should continue
-//               rendering, false if we should exit.  This is normally
-//               called only from main_loop().
-////////////////////////////////////////////////////////////////////
+/**
+ * Renders one frame and performs all associated processing.  Returns true if we
+ * should continue rendering, false if we should exit.  This is normally called
+ * only from main_loop().
+ */
 bool PandaFramework::
 do_frame(Thread *current_thread) {
   nassertr(_is_open, false);
@@ -827,13 +734,10 @@ do_frame(Thread *current_thread) {
   return !_exit_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::main_loop
-//       Access: Public
-//  Description: Called to yield control to the panda framework.  This
-//               function does not return until set_exit_flag() has
-//               been called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to yield control to the panda framework.  This function does not
+ * return until set_exit_flag() has been called.
+ */
 void PandaFramework::
 main_loop() {
   Thread *current_thread = Thread::get_current_thread();
@@ -841,24 +745,19 @@ main_loop() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::make_window_framework
-//       Access: Protected, Virtual
-//  Description: Creates a new WindowFramework object.  This is
-//               provided as a hook so derived PandaFramework classes
-//               can create custom WindowFramework objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new WindowFramework object.  This is provided as a hook so derived
+ * PandaFramework classes can create custom WindowFramework objects.
+ */
 PT(WindowFramework) PandaFramework::
 make_window_framework() {
   return new WindowFramework(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::make_default_pipe
-//       Access: Protected, Virtual
-//  Description: Creates the default GraphicsPipe that will contain
-//               all windows that are not opened on a specific pipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the default GraphicsPipe that will contain all windows that are not
+ * opened on a specific pipe.
+ */
 void PandaFramework::
 make_default_pipe() {
   // This depends on the shared library or libraries (DLL's to you
@@ -875,11 +774,9 @@ make_default_pipe() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::do_enable_default_keys
-//       Access: Protected, Virtual
-//  Description: The implementation of enable_default_keys().
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of enable_default_keys().
+ */
 void PandaFramework::
 do_enable_default_keys() {
   define_key("escape", "close window", event_esc, this);
@@ -909,13 +806,10 @@ do_enable_default_keys() {
   define_key("shift-/", "", event_question, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::clear_text
-//       Access: Protected
-//  Description: Removes any onscreen text (like help text or
-//               screenshot filename).  Returns true if there was any
-//               text in the first place, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any onscreen text (like help text or screenshot filename).  Returns
+ * true if there was any text in the first place, false otherwise.
+ */
 bool PandaFramework::
 clear_text() {
   bool any_text = false;
@@ -932,13 +826,10 @@ clear_text() {
   return any_text;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_esc
-//       Access: Public, Static
-//  Description: Default handler for ESC or q key: close the current
-//               window (and exit the application if that was the last
-//               window).
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for ESC or q key: close the current window (and exit the
+ * application if that was the last window).
+ */
 void PandaFramework::
 event_esc(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
@@ -971,12 +862,9 @@ event_esc(const Event *event, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_f
-//       Access: Public, Static
-//  Description: Default handler for f key: report and reset frame
-//               rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for f key: report and reset frame rate.
+ */
 void PandaFramework::
 event_f(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -984,11 +872,9 @@ event_f(const Event *, void *data) {
   self->reset_frame_rate();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_w
-//       Access: Public, Static
-//  Description: Default handler for w key: toggle wireframe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for w key: toggle wireframe.
+ */
 void PandaFramework::
 event_w(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
@@ -1006,11 +892,9 @@ event_w(const Event *event, void *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_t
-//       Access: Public, Static
-//  Description: Default handler for t key: toggle texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for t key: toggle texture.
+ */
 void PandaFramework::
 event_t(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
@@ -1022,12 +906,9 @@ event_t(const Event *event, void *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_b
-//       Access: Public, Static
-//  Description: Default handler for b key: toggle backface (two-sided
-//               rendering).
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for b key: toggle backface (two-sided rendering).
+ */
 void PandaFramework::
 event_b(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
@@ -1039,11 +920,9 @@ event_b(const Event *event, void *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_i
-//       Access: Public, Static
-//  Description: Default handler for i key: invert one-sided faces.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for i key: invert one-sided faces.
+ */
 void PandaFramework::
 event_i(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
@@ -1055,11 +934,9 @@ event_i(const Event *event, void *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_l
-//       Access: Public, Static
-//  Description: Default handler for l key: toggle lighting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for l key: toggle lighting.
+ */
 void PandaFramework::
 event_l(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
@@ -1071,11 +948,9 @@ event_l(const Event *event, void *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_p
-//       Access: Public, Static
-//  Description: Default handler for p key: toggle per-pixel lighting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for p key: toggle per-pixel lighting.
+ */
 void PandaFramework::
 event_p(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
@@ -1087,12 +962,10 @@ event_p(const Event *event, void *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_c
-//       Access: Public, Static
-//  Description: Default handler for c key: center the trackball over
-//               the scene, or over the highlighted part of the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for c key: center the trackball over the scene, or over the
+ * highlighted part of the scene.
+ */
 void PandaFramework::
 event_c(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
@@ -1110,12 +983,9 @@ event_c(const Event *event, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_a
-//       Access: Public, Static
-//  Description: Default handler for a key: toggle the animation
-//               controls.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for a key: toggle the animation controls.
+ */
 void PandaFramework::
 event_a(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
@@ -1127,12 +997,9 @@ event_a(const Event *event, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_C
-//       Access: Public, Static
-//  Description: Default handler for shift-C key: toggle the showing
-//               of collision solids.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for shift-C key: toggle the showing of collision solids.
+ */
 void PandaFramework::
 event_C(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1147,13 +1014,10 @@ event_C(const Event *, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_B
-//       Access: Public, Static
-//  Description: Default handler for shift-B key: describe the
-//               bounding volume of the currently selected object, or
-//               the entire scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for shift-B key: describe the bounding volume of the
+ * currently selected object, or the entire scene.
+ */
 void PandaFramework::
 event_B(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1166,12 +1030,10 @@ event_B(const Event *, void *data) {
   node.get_bounds()->write(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_L
-//       Access: Public, Static
-//  Description: Default handler for shift-L key: list the contents of
-//               the scene graph, or the highlighted node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for shift-L key: list the contents of the scene graph, or the
+ * highlighted node.
+ */
 void PandaFramework::
 event_L(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1184,12 +1046,10 @@ event_L(const Event *, void *data) {
   node.ls();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_A
-//       Access: Public, Static
-//  Description: Default handler for shift-A key: analyze the contents
-//               of the scene graph, or the highlighted node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for shift-A key: analyze the contents of the scene graph, or
+ * the highlighted node.
+ */
 void PandaFramework::
 event_A(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1204,13 +1064,10 @@ event_A(const Event *, void *data) {
   sga.write(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_h
-//       Access: Public, Static
-//  Description: Default handler for h key: toggle highlight mode.  In
-//               this mode, you can walk the scene graph with the
-//               arrow keys to highlight different nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for h key: toggle highlight mode.  In this mode, you can walk
+ * the scene graph with the arrow keys to highlight different nodes.
+ */
 void PandaFramework::
 event_h(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1222,12 +1079,10 @@ event_h(const Event *, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_arrow_up
-//       Access: Public, Static
-//  Description: Default handler for up arrow key: in highlight mode,
-//               move the highlight to the node's parent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for up arrow key: in highlight mode, move the highlight to
+ * the node's parent.
+ */
 void PandaFramework::
 event_arrow_up(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1240,12 +1095,10 @@ event_arrow_up(const Event *, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_arrow_down
-//       Access: Public, Static
-//  Description: Default handler for up arrow key: in highlight mode,
-//               move the highlight to the node's first child.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for up arrow key: in highlight mode, move the highlight to
+ * the node's first child.
+ */
 void PandaFramework::
 event_arrow_down(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1258,13 +1111,10 @@ event_arrow_down(const Event *, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_arrow_left
-//       Access: Public, Static
-//  Description: Default handler for up arrow key: in highlight mode,
-//               move the highlight to the node's nearest sibling on
-//               the left.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for up arrow key: in highlight mode, move the highlight to
+ * the node's nearest sibling on the left.
+ */
 void PandaFramework::
 event_arrow_left(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1283,13 +1133,10 @@ event_arrow_left(const Event *, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_arrow_right
-//       Access: Public, Static
-//  Description: Default handler for up arrow key: in highlight mode,
-//               move the highlight to the node's nearest sibling on
-//               the right.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for up arrow key: in highlight mode, move the highlight to
+ * the node's nearest sibling on the right.
+ */
 void PandaFramework::
 event_arrow_right(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1309,11 +1156,9 @@ event_arrow_right(const Event *, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_S
-//       Access: Public, Static
-//  Description: Default handler for shift-S key: activate stats.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for shift-S key: activate stats.
+ */
 void PandaFramework::
 event_S(const Event *, void *) {
 #ifdef DO_PSTATS
@@ -1324,11 +1169,9 @@ event_S(const Event *, void *) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_f9
-//       Access: Public, Static
-//  Description: Default handler for f9 key: take screenshot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for f9 key: take screenshot.
+ */
 void PandaFramework::
 event_f9(const Event *event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1373,11 +1216,9 @@ event_f9(const Event *event, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_comma
-//       Access: Public, Static
-//  Description: Default handler for comma key: rotate background color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for comma key: rotate background color.
+ */
 void PandaFramework::
 event_comma(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
@@ -1400,11 +1241,9 @@ event_comma(const Event *event, void *) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_question
-//       Access: Public, Static
-//  Description: Default handler for ? key: show the available keys.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for ? key: show the available keys.
+ */
 void PandaFramework::
 event_question(const Event *event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1455,12 +1294,9 @@ event_question(const Event *event, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::event_window_event
-//       Access: Public, Static
-//  Description: Default handler for window events: window resized or
-//               closed, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Default handler for window events: window resized or closed, etc.
+ */
 void PandaFramework::
 event_window_event(const Event *event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1508,12 +1344,10 @@ event_window_event(const Event *event, void *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::task_data_loop
-//       Access: Public, Static
-//  Description: Called once per frame to process the data graph (which
-//               handles user input via the mouse and keyboard, etc.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once per frame to process the data graph (which handles user input via
+ * the mouse and keyboard, etc.)
+ */
 AsyncTask::DoneStatus PandaFramework::
 task_data_loop(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1524,11 +1358,9 @@ task_data_loop(GenericAsyncTask *task, void *data) {
   return AsyncTask::DS_cont;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::task_event
-//       Access: Public, Static
-//  Description: Called once per frame to process the pending events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once per frame to process the pending events.
+ */
 AsyncTask::DoneStatus PandaFramework::
 task_event(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1539,11 +1371,9 @@ task_event(GenericAsyncTask *task, void *data) {
   return AsyncTask::DS_cont;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::task_igloop
-//       Access: Public, Static
-//  Description: Called once per frame to render the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once per frame to render the scene.
+ */
 AsyncTask::DoneStatus PandaFramework::
 task_igloop(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1555,12 +1385,10 @@ task_igloop(GenericAsyncTask *task, void *data) {
   return AsyncTask::DS_cont;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::task_record_frame
-//       Access: Public, Static
-//  Description: Called once per frame to ask the recorder to record
-//               the user input data, if enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once per frame to ask the recorder to record the user input data, if
+ * enabled.
+ */
 AsyncTask::DoneStatus PandaFramework::
 task_record_frame(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1572,12 +1400,10 @@ task_record_frame(GenericAsyncTask *task, void *data) {
   return AsyncTask::DS_cont;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::task_play_frame
-//       Access: Public, Static
-//  Description: Called once per frame to ask the recorder to play back
-//               the user input data, if enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once per frame to ask the recorder to play back the user input data,
+ * if enabled.
+ */
 AsyncTask::DoneStatus PandaFramework::
 task_play_frame(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1589,11 +1415,9 @@ task_play_frame(GenericAsyncTask *task, void *data) {
   return AsyncTask::DS_cont;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::task_clear_text
-//       Access: Public, Static
-//  Description: Called once to remove the screenshot text from onscreen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to remove the screenshot text from onscreen.
+ */
 AsyncTask::DoneStatus PandaFramework::
 task_clear_text(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
@@ -1602,14 +1426,11 @@ task_clear_text(GenericAsyncTask *task, void *data) {
   return AsyncTask::DS_cont;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaFramework::task_garbage_collect
-//       Access: Public, Static
-//  Description: This task is created automatically if
-//               garbage_collect_states is true.  It calls the needed
-//               TransformState::garbage_collect() and
-//               RenderState::garbage_collect() methods each frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This task is created automatically if garbage_collect_states is true.  It
+ * calls the needed TransformState::garbage_collect() and
+ * RenderState::garbage_collect() methods each frame.
+ */
 AsyncTask::DoneStatus PandaFramework::
 task_garbage_collect(GenericAsyncTask *task, void *data) {
   TransformState::garbage_collect();

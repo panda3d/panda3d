@@ -19,11 +19,10 @@
 
 class WavAudioCursor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WavAudio
-// Description : A native PCM .wav loader.  Supported formats
-//               are linear PCM, IEEE float, A-law and mu-law.
-////////////////////////////////////////////////////////////////////
+/**
+ * A native PCM .wav loader.  Supported formats are linear PCM, IEEE float,
+ * A-law and mu-law.
+ */
 class EXPCL_PANDA_MOVIES WavAudio : public MovieAudio {
 PUBLISHED:
   WavAudio(const Filename &name);
@@ -34,7 +33,7 @@ PUBLISHED:
 
 private:
   friend class WavAudioCursor;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

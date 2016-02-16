@@ -27,14 +27,12 @@ class PhysxTriangleMesh;
 class PhysxClothMesh;
 class PhysxSoftBodyMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxMeshPool
-// Description : This class unifies all references to the same
-//               filename, so that multiple attempts to load the
-//               same mesh will return the same pointer.
-//               The mesh filename is automatically resolved before
-//               an attempt to load the mesh is made.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class unifies all references to the same filename, so that multiple
+ * attempts to load the same mesh will return the same pointer.  The mesh
+ * filename is automatically resolved before an attempt to load the mesh is
+ * made.
+ */
 class EXPCL_PANDAPHYSX PhysxMeshPool {
 
 PUBLISHED:

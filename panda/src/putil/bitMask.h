@@ -24,12 +24,10 @@
 #include "checksumHashGenerator.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : BitMask
-// Description : A general bitmask class.  This stores an array of
-//               bits of some length that must fit within a given word
-//               of the indicated type.  See also BitArray.
-////////////////////////////////////////////////////////////////////
+/**
+ * A general bitmask class.  This stores an array of bits of some length that
+ * must fit within a given word of the indicated type.  See also BitArray.
+ */
 template<class WType, int nbits>
 class BitMask {
 public:

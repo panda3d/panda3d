@@ -25,13 +25,11 @@ class PhysxShape;
 
 class PhysxUserEntityReport : public NxUserEntityReport<NxShape *> {};
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxOverlapReport
-// Description : Objects of this class are returned by the 'overlap
-//               shape' methods, for example overlapSphereShapes.
-//               They contain an iterable list of all sshapes that
-//               the raycast query produced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Objects of this class are returned by the 'overlap shape' methods, for
+ * example overlapSphereShapes.  They contain an iterable list of all sshapes
+ * that the raycast query produced.
+ */
 class EXPCL_PANDAPHYSX PhysxOverlapReport : public PhysxUserEntityReport {
 
 PUBLISHED:

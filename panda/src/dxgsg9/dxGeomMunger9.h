@@ -20,14 +20,12 @@
 #include "weakPointerTo.h"
 #include "weakPointerCallback.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXGeomMunger9
-// Description : This specialization on GeomMunger finesses vertices
-//               for DirectX rendering.  In particular, it makes sure
-//               colors are stored in DirectX's packed_argb format,
-//               and that all relevant components are packed into a
-//               single array, in the correct order.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on GeomMunger finesses vertices for DirectX rendering.
+ * In particular, it makes sure colors are stored in DirectX's packed_argb
+ * format, and that all relevant components are packed into a single array, in
+ * the correct order.
+ */
 class EXPCL_PANDADX DXGeomMunger9 : public StandardMunger, public WeakPointerCallback {
 public:
   INLINE DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state);
@@ -79,4 +77,3 @@ private:
 #include "dxGeomMunger9.I"
 
 #endif
-

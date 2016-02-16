@@ -20,4 +20,3 @@ bool MayaLoadEggData(EggData *data,    bool merge, bool model, bool anim, bool r
 bool MayaLoadEggFile(const char *name, bool merge, bool model, bool anim, bool respect_normals);
 
 #endif
-

@@ -15,5 +15,3 @@
 // something to compile when making libdtoolconfig.so in NO_DEFER mode,
 // which generates an empty library that itself links with all the
 // other shared libraries that make up libdtoolconfig.
-
-

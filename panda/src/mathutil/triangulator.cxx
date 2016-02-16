@@ -14,33 +14,26 @@
 #include "triangulator.h"
 #include "randomizer.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Triangulator::
 Triangulator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::clear
-//       Access: Published
-//  Description: Removes all vertices and polygon specifications from
-//               the Triangulator, and prepares it to start over.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all vertices and polygon specifications from the Triangulator, and
+ * prepares it to start over.
+ */
 void Triangulator::
 clear() {
   _vertices.clear();
   clear_polygon();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::add_vertex
-//       Access: Published
-//  Description: Adds a new vertex to the vertex pool.  Returns the
-//               vertex index number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new vertex to the vertex pool.  Returns the vertex index number.
+ */
 int Triangulator::
 add_vertex(const LPoint2d &point) {
   int index = (int)_vertices.size();
@@ -48,71 +41,53 @@ add_vertex(const LPoint2d &point) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::clear_polygon
-//       Access: Published
-//  Description: Removes the current polygon definition (and its set
-//               of holes), but does not clear the vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the current polygon definition (and its set of holes), but does not
+ * clear the vertex pool.
+ */
 void Triangulator::
 clear_polygon() {
   _polygon.clear();
   _holes.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::add_polygon_vertex
-//       Access: Published
-//  Description: Adds the next consecutive vertex of the polygon.
-//               This vertex should index into the vertex pool
-//               established by repeated calls to add_vertex().
-//
-//               The vertices may be listed in either clockwise or
-//               counterclockwise order.  Vertices should not be
-//               repeated.  In particular, do not repeat the first
-//               vertex at the end.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the next consecutive vertex of the polygon.  This vertex should index
+ * into the vertex pool established by repeated calls to add_vertex().  The
+ * vertices may be listed in either clockwise or counterclockwise order.
+ * Vertices should not be repeated.  In particular, do not repeat the first
+ * vertex at the end.
+ */
 void Triangulator::
 add_polygon_vertex(int index) {
   _polygon.push_back(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::begin_hole
-//       Access: Published
-//  Description: Finishes the previous hole, if any, and prepares to
-//               add a new hole.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finishes the previous hole, if any, and prepares to add a new hole.
+ */
 void Triangulator::
 begin_hole() {
   _holes.push_back(vector_int());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::add_hole_vertex
-//       Access: Published
-//  Description: Adds the next consecutive vertex of the current hole.
-//               This vertex should index into the vertex pool
-//               established by repeated calls to add_vertex().
-//
-//               The vertices may be listed in either clockwise or
-//               counterclockwise order.  Vertices should not be
-//               repeated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the next consecutive vertex of the current hole.  This vertex should
+ * index into the vertex pool established by repeated calls to add_vertex().
+ * The vertices may be listed in either clockwise or counterclockwise order.
+ * Vertices should not be repeated.
+ */
 void Triangulator::
 add_hole_vertex(int index) {
   nassertv(!_holes.empty());
   _holes.back().push_back(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::triangulate
-//       Access: Published
-//  Description: Does the work of triangulating the specified polygon.
-//               After this call, you may retrieve the new triangles
-//               one at a time by iterating through
-//               get_triangle_v0/1/2().
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the work of triangulating the specified polygon.  After this call, you
+ * may retrieve the new triangles one at a time by iterating through
+ * get_triangle_v0/1/2().
+ */
 void Triangulator::
 triangulate() {
   _result.clear();
@@ -220,67 +195,51 @@ triangulate() {
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::get_num_triangles
-//       Access: Published
-//  Description: Returns the number of triangles generated by the
-//               previous call to triangulate().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of triangles generated by the previous call to
+ * triangulate().
+ */
 int Triangulator::
 get_num_triangles() const {
   return _result.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::get_triangle_v0
-//       Access: Published
-//  Description: Returns vertex 0 of the nth triangle generated by the
-//               previous call to triangulate().
-//
-//               This is a zero-based index into the vertices added by
-//               repeated calls to add_vertex().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns vertex 0 of the nth triangle generated by the previous call to
+ * triangulate().  This is a zero-based index into the vertices added by
+ * repeated calls to add_vertex().
+ */
 int Triangulator::
 get_triangle_v0(int n) const {
   nassertr(n >= 0 && n < (int)_result.size(), -1);
   return _result[n]._v0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::get_triangle_v1
-//       Access: Published
-//  Description: Returns vertex 1 of the nth triangle generated by the
-//               previous call to triangulate().
-//
-//               This is a zero-based index into the vertices added by
-//               repeated calls to add_vertex().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns vertex 1 of the nth triangle generated by the previous call to
+ * triangulate().  This is a zero-based index into the vertices added by
+ * repeated calls to add_vertex().
+ */
 int Triangulator::
 get_triangle_v1(int n) const {
   nassertr(n >= 0 && n < (int)_result.size(), -1);
   return _result[n]._v1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::get_triangle_v2
-//       Access: Published
-//  Description: Returns vertex 2 of the nth triangle generated by the
-//               previous call to triangulate().
-//
-//               This is a zero-based index into the vertices added by
-//               repeated calls to add_vertex().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns vertex 2 of the nth triangle generated by the previous call to
+ * triangulate().  This is a zero-based index into the vertices added by
+ * repeated calls to add_vertex().
+ */
 int Triangulator::
 get_triangle_v2(int n) const {
   nassertr(n >= 0 && n < (int)_result.size(), -1);
   return _result[n]._v2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::cleanup_polygon_indices
-//       Access: Protected
-//  Description: Removes any invalid index numbers from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any invalid index numbers from the list.
+ */
 void Triangulator::
 cleanup_polygon_indices(vector_int &polygon) {
   // First, check for index bounds.
@@ -322,7 +281,7 @@ cleanup_polygon_indices(vector_int &polygon) {
 #define T_SINK  3
 
 
-#define FIRSTPT 1               /* checking whether pt. is inserted */ 
+#define FIRSTPT 1               /* checking whether pt. is inserted */
 #define LASTPT  2
 
 
@@ -370,12 +329,10 @@ cleanup_polygon_indices(vector_int &polygon) {
 #define LENGTH(v0) (sqrt((v0).x * (v0).x + (v0).y * (v0).y))
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::check_left_winding
-//       Access: Private
-//  Description: Returns true if the list of vertices is
-//               counter-clockwise, false if it is clockwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the list of vertices is counter-clockwise, false if it is
+ * clockwise.
+ */
 bool Triangulator::
 check_left_winding(const vector_int &range) const {
   // We do this by computing the polygon's signed area.  If it comes
@@ -393,14 +350,11 @@ check_left_winding(const vector_int &range) const {
   return area >= 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Triangulator::make_segment
-//       Access: Private
-//  Description: Converts a linear list of integer vertices to a list
-//               of segment_t.  If want_left_winding is true, the list
-//               is reversed if necessary to make it left-winding;
-//               otherwise, it is reversed to make it right-winding.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a linear list of integer vertices to a list of segment_t.  If
+ * want_left_winding is true, the list is reversed if necessary to make it left-
+ * winding; otherwise, it is reversed to make it right-winding.
+ */
 void Triangulator::
 make_segment(const vector_int &range, bool want_left_winding) {
   int num_points = (int)range.size();
@@ -413,15 +367,15 @@ make_segment(const vector_int &range, bool want_left_winding) {
     // Keep it in its natural order.
     int first = (int)seg.size();
     int last = first + num_points - 1;
-    
+
     seg.push_back(segment_t(this, range[0], range[1],
                             last, first + 1));
-    
+
     for (int i = 1; i < num_points - 1; ++i) {
       seg.push_back(segment_t(this, range[i], range[i + 1],
                               first + i - 1, first + i + 1));
     }
-    
+
     seg.push_back(segment_t(this, range[num_points - 1], range[0],
                             last - 1, first));
 
@@ -429,18 +383,18 @@ make_segment(const vector_int &range, bool want_left_winding) {
     // Reverse it.
     seg.push_back(segment_t(this, range[0], range[num_points - 1],
                             last, first + 1));
-    
+
     for (int i = 1; i < num_points - 1; ++i) {
       seg.push_back(segment_t(this, range[num_points - i], range[num_points - i - 1],
                               first + i - 1, first + i + 1));
     }
-    
+
     seg.push_back(segment_t(this, range[1], range[0],
                             last - 1, first));
 
   }
 }
-  
+
 /* Return the next segment in the generated random ordering of all the */
 /* segments in S */
 int Triangulator::
@@ -462,13 +416,13 @@ int Triangulator::
 math_logstar_n(int n) {
   int i;
   double v;
-  
+
   for (i = 0, v = (double) n; v >= 1; i++)
     v = math_log2(v);
-  
+
   return (i - 1);
 }
-  
+
 
 int Triangulator::
 math_N(int n, int h) {
@@ -477,7 +431,7 @@ math_N(int n, int h) {
 
   for (i = 0, v = (int) n; i < h; i++)
     v = math_log2(v);
-  
+
   return (int) ceil((double) 1.0*n/v);
 }
 
@@ -515,7 +469,7 @@ int Triangulator::_max(point_t *yval, point_t *v0, point_t *v1) {
     }
   else
     *yval = *v1;
-  
+
   return 0;
 }
 
@@ -533,7 +487,7 @@ int Triangulator::_min(point_t *yval, point_t *v0, point_t *v1) {
     }
   else
     *yval = *v1;
-  
+
   return 0;
 }
 
@@ -575,10 +529,10 @@ _less_than(point_t *v0, point_t *v1) {
 }
 
 
-/* Initilialise the query structure (Q) and the trapezoid table (T) 
+/* Initilialise the query structure (Q) and the trapezoid table (T)
  * when the first segment is added to start the trapezoidation. The
  * query-tree starts out with 4 trapezoids, one S-node and 2 Y-nodes
- *    
+ *
  *                4
  *   -----------------------------------
  *                \
@@ -617,18 +571,18 @@ init_query_structure(int segnum) {
   qs[i3].nodetype = T_Y;
   _min(&qs[i3].yval, &s->v0, &s->v1); /* root */
   qs[i3].parent = i1;
-  
+
   i4 = newnode();
   qs[i3].left = i4;
   qs[i4].nodetype = T_SINK;
   qs[i4].parent = i3;
-  
+
   i5 = newnode();
   qs[i3].right = i5;
   qs[i5].nodetype = T_X;
   qs[i5].segnum = segnum;
   qs[i5].parent = i3;
-  
+
   i6 = newnode();
   qs[i5].left = i6;
   qs[i6].nodetype = T_SINK;
@@ -664,7 +618,7 @@ init_query_structure(int segnum) {
   tr[t4].d0 = t1;
   tr[t3].u1 = t2;
   tr[t4].d1 = t2;
-  
+
   tr[t1].sink = i6;
   tr[t2].sink = i7;
   tr[t3].sink = i4;
@@ -694,7 +648,7 @@ int Triangulator::
 is_left_of(int segnum, point_t *v) {
   segment_t *s = &seg[segnum];
   double area;
-  
+
   if (_greater_than(&s->v1, &s->v0)) /* seg. going upwards */
     {
       if (FP_EQUAL(s->v1.y, v->y))
@@ -733,10 +687,10 @@ is_left_of(int segnum, point_t *v) {
       else
         area = CROSS(s->v1, s->v0, (*v));
     }
-  
+
   if (area > 0.0)
     return true;
-  else 
+  else
     return false;
 }
 
@@ -754,20 +708,20 @@ inserted(int segnum, int whichpt) {
     return seg[seg[segnum].next].is_inserted;
 }
 
-/* This is query routine which determines which trapezoid does the 
- * point v lie in. The return value is the trapezoid number. 
+/* This is query routine which determines which trapezoid does the
+ * point v lie in. The return value is the trapezoid number.
  */
 
 int Triangulator::
 locate_endpoint(point_t *v, point_t *vo, int r) {
   //  cerr << "locate_endpoint(" << v->x << " " << v->y << ", " << vo->x << " " << vo->y << ", " << r << ")\n";
   node_t *rptr = &qs[r];
-  
+
   switch (rptr->nodetype)
     {
     case T_SINK:
       return rptr->trnum;
-      
+
     case T_Y:
       if (_greater_than(v, &rptr->yval)) /* above */
         return locate_endpoint(v, vo, rptr->right);
@@ -775,14 +729,14 @@ locate_endpoint(point_t *v, point_t *vo, int r) {
         {                                 /* inserted. */
           if (_greater_than(vo, &rptr->yval)) /* above */
             return locate_endpoint(v, vo, rptr->right);
-          else 
+          else
             return locate_endpoint(v, vo, rptr->left); /* below */
         }
       else
         return locate_endpoint(v, vo, rptr->left); /* below */
 
     case T_X:
-      if (_equal_to(v, &seg[rptr->segnum].v0) || 
+      if (_equal_to(v, &seg[rptr->segnum].v0) ||
                _equal_to(v, &seg[rptr->segnum].v1))
         {
           if (FP_EQUAL(v->y, vo->y)) /* horizontal segment */
@@ -811,7 +765,7 @@ locate_endpoint(point_t *v, point_t *vo, int r) {
 }
 
 
-/* Thread in the segment into the existing trapezoidation. The 
+/* Thread in the segment into the existing trapezoidation. The
  * limiting trapezoids are given by tfirst and tlast (which are the
  * trapezoids containing the two endpoints of the segment. Merges all
  * possible trapezoids which flank this segment and have been recently
@@ -835,7 +789,7 @@ merge_trapezoids(int segnum, int tfirst, int tlast, int side) {
       else
         cond = ((((tnext = tr[t].d0) > 0) && (tr[tnext].lseg == segnum)) ||
                 (((tnext = tr[t].d1) > 0) && (tr[tnext].lseg == segnum)));
-      
+
       if (cond)
         {
           if ((tr[t].lseg == tr[tnext].lseg) &&
@@ -878,9 +832,9 @@ merge_trapezoids(int segnum, int tfirst, int tlast, int side) {
         }
       else                  /* do not satisfy the outer if */
         t = tnext;
-      
+
     } /* end-while */
-       
+
   return 0;
 }
 
@@ -930,7 +884,7 @@ add_segment(int segnum) {
       tr[tu].lo.y = s.v0.y;
       tr[tl].hi.x = s.v0.x;
       tr[tu].lo.x = s.v0.x;
-      tr[tu].d0 = tl;      
+      tr[tu].d0 = tl;
       tr[tu].d1 = 0;
       tr[tl].u0 = tu;
       tr[tl].u1 = 0;
@@ -946,12 +900,12 @@ add_segment(int segnum) {
         tr[tmp_d].u1 = tl;
 
       /* Now update the query structure and obtain the sinks for the */
-      /* two trapezoids */ 
-      
+      /* two trapezoids */
+
       i1 = newnode();           /* Upper trapezoid sink */
       i2 = newnode();           /* Lower trapezoid sink */
       sk = tr[tu].sink;
-      
+
       qs[sk].nodetype = T_Y;
       qs[sk].yval = s.v0;
       qs[sk].segnum = segnum;   /* not really reqd ... maybe later */
@@ -991,7 +945,7 @@ add_segment(int segnum) {
       tr[tu].lo.y = s.v1.y;
       tr[tl].hi.x = s.v1.x;
       tr[tu].lo.x = s.v1.x;
-      tr[tu].d0 = tl;      
+      tr[tu].d0 = tl;
       tr[tu].d1 = 0;
       tr[tl].u0 = tu;
       tr[tl].u1 = 0;
@@ -1005,14 +959,14 @@ add_segment(int segnum) {
         tr[tmp_d].u0 = tl;
       if (((tmp_d = tr[tl].d1) > 0) && (tr[tmp_d].u1 == tu))
         tr[tmp_d].u1 = tl;
-      
+
       /* Now update the query structure and obtain the sinks for the */
-      /* two trapezoids */ 
-      
+      /* two trapezoids */
+
       i1 = newnode();           /* Upper trapezoid sink */
       i2 = newnode();           /* Lower trapezoid sink */
       sk = tr[tu].sink;
-      
+
       qs[sk].nodetype = T_Y;
       qs[sk].yval = s.v1;
       qs[sk].segnum = segnum;   /* not really reqd ... maybe later */
@@ -1036,14 +990,14 @@ add_segment(int segnum) {
       tlast = locate_endpoint(&s.v1, &s.v0, s.root1);
       tribot = 1;
     }
-  
+
   /* Thread the segment into the query tree creating a new X-node */
   /* First, split all the trapezoids which are intersected by s into */
   /* two */
 
   t = tfirst;                   /* topmost trapezoid */
-  
-  while ((t > 0) && 
+
+  while ((t > 0) &&
          _greater_than_equal_to(&tr[t].lo, &tr[tlast].lo))
                                 /* traverse from top to bot */
     {
@@ -1051,7 +1005,7 @@ add_segment(int segnum) {
       sk = tr[t].sink;
       i1 = newnode();           /* left trapezoid sink */
       i2 = newnode();           /* right trapezoid sink */
-      
+
       qs[sk].nodetype = T_X;
       qs[sk].segnum = segnum;
       qs[sk].left = i1;
@@ -1086,11 +1040,11 @@ add_segment(int segnum) {
           fprintf(stderr, "add_segment: error\n");
           return 1;
         }
-      
+
       /* only one trapezoid below. partition t into two and make the */
       /* two resulting trapezoids t and tn as the upper neighbours of */
       /* the sole lower trapezoid */
-      
+
       else if ((tr[t].d0 > 0) && (tr[t].d1 <= 0))
         {                       /* Only one trapezoid below */
           if ((tr[t].u0 > 0) && (tr[t].u1 > 0))
@@ -1129,11 +1083,11 @@ add_segment(int segnum) {
                   tr[tr[tn].u0].d0 = tn;
                 }
             }
-          else 
+          else
             {                   /* fresh seg. or upward cusp */
               int tmp_u = tr[t].u0;
               int td0, td1;
-              if (((td0 = tr[tmp_u].d0) > 0) && 
+              if (((td0 = tr[tmp_u].d0) > 0) &&
                   ((td1 = tr[tmp_u].d1) > 0))
                 {               /* upward cusp */
                   if ((tr[td0].rseg > 0) &&
@@ -1145,7 +1099,7 @@ add_segment(int segnum) {
                       tr[tr[tn].u0].d1 = tn;
                     }
                   else          /* cusp going leftwards */
-                    { 
+                    {
                       tr[t].u1 = -1;
                       tr[tn].u1 = -1;
                       tr[tn].u0 = -1;
@@ -1159,7 +1113,7 @@ add_segment(int segnum) {
                 }
             }
 
-          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
+          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) &&
               FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
             {           /* bottom forms a triangle */
 
@@ -1245,11 +1199,11 @@ add_segment(int segnum) {
                   tr[tr[tn].u0].d0 = tn;
                 }
             }
-          else 
+          else
             {                   /* fresh seg. or upward cusp */
               int tmp_u = tr[t].u0;
               int td0, td1;
-              if (((td0 = tr[tmp_u].d0) > 0) && 
+              if (((td0 = tr[tmp_u].d0) > 0) &&
                   ((td1 = tr[tmp_u].d1) > 0))
                 {               /* upward cusp */
                   if ((tr[td0].rseg > 0) &&
@@ -1260,7 +1214,7 @@ add_segment(int segnum) {
                       tr[t].u0 = -1;
                       tr[tr[tn].u0].d1 = tn;
                     }
-                  else 
+                  else
                     {
                       tr[t].u1 = -1;
                       tr[tn].u1 = -1;
@@ -1275,7 +1229,7 @@ add_segment(int segnum) {
                 }
             }
 
-          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
+          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) &&
               FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
             {           /* bottom forms a triangle */
               if (is_swapped)
@@ -1322,7 +1276,7 @@ add_segment(int segnum) {
 
       /* two trapezoids below. Find out which one is intersected by */
       /* this segment and proceed down that one */
-      
+
       else
         {
           //      int tmpseg = tr[tr[t].d0].rseg;
@@ -1392,11 +1346,11 @@ add_segment(int segnum) {
                   tr[tr[tn].u0].d0 = tn;
                 }
             }
-          else 
+          else
             {                   /* fresh seg. or upward cusp */
               int tmp_u = tr[t].u0;
               int td0, td1;
-              if (((td0 = tr[tmp_u].d0) > 0) && 
+              if (((td0 = tr[tmp_u].d0) > 0) &&
                   ((td1 = tr[tmp_u].d1) > 0))
                 {               /* upward cusp */
                   if ((tr[td0].rseg > 0) &&
@@ -1407,7 +1361,7 @@ add_segment(int segnum) {
                       tr[t].u0 = -1;
                       tr[tr[tn].u0].d1 = tn;
                     }
-                  else 
+                  else
                     {
                       tr[t].u1 = -1;
                       tr[tn].u1 = -1;
@@ -1422,7 +1376,7 @@ add_segment(int segnum) {
                 }
             }
 
-          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
+          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) &&
               FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
             {
               /* this case arises only at the lowest trapezoid.. i.e.
@@ -1473,17 +1427,17 @@ add_segment(int segnum) {
 
           t = tnext;
         }
-      
+
       tr[tn_sav].lseg  = segnum;
       tr[t_sav].rseg = segnum;
     } /* end-while */
-  
+
   /* Now combine those trapezoids which share common segments. We can */
   /* use the pointers to the parent to connect these together. This */
   /* works only because all these new trapezoids have been formed */
   /* due to splitting by the segment, and hence have only one parent */
 
-  tfirstl = tfirst; 
+  tfirstl = tfirst;
   tlastl = tlast;
   merge_trapezoids(segnum, tfirstl, tlastl, S_LEFT);
   merge_trapezoids(segnum, tfirstr, tlastr, S_RIGHT);
@@ -1501,7 +1455,7 @@ int Triangulator::
 find_new_roots(int segnum) {
   //  cerr << "find_new_roots(" << segnum << ")\n";
   segment_t *s = &seg[segnum];
-  
+
   if (s->is_inserted)
     return 0;
 
@@ -1509,7 +1463,7 @@ find_new_roots(int segnum) {
   s->root0 = tr[s->root0].sink;
 
   s->root1 = locate_endpoint(&s->v1, &s->v0, s->root1);
-  s->root1 = tr[s->root1].sink;  
+  s->root1 = tr[s->root1].sink;
   return 0;
 }
 
@@ -1520,7 +1474,7 @@ construct_trapezoids(int nseg) {
   //cerr << "construct_trapezoids(" << nseg << ")\n";
   int i;
   int root, h;
-  
+
   /* Add the first segment and get the query structure and trapezoid */
   /* list initialised */
 
@@ -1530,7 +1484,7 @@ construct_trapezoids(int nseg) {
     seg[i].root1 = root;
     seg[i].root0 = root;
   }
-  
+
   for (h = 1; h <= math_logstar_n(nseg); h++)
     {
       for (i = math_N(nseg, h -1) + 1; i <= math_N(nseg, h); i++) {
@@ -1539,12 +1493,12 @@ construct_trapezoids(int nseg) {
           return 1;
         }
       }
-      
+
       /* Find a new root for each of the segment endpoints */
       for (i = 1; i <= nseg; i++)
         find_new_roots(i);
     }
-  
+
   for (i = math_N(nseg, math_logstar_n(nseg)) + 1; i <= nseg; i++)
     add_segment(choose_segment());
 
@@ -1563,11 +1517,11 @@ inside_polygon(trap_t *t) {
 
   if ((t->lseg <= 0) || (t->rseg <= 0))
     return 0;
-  
-  if (((t->u0 <= 0) && (t->u1 <= 0)) || 
+
+  if (((t->u0 <= 0) && (t->u1 <= 0)) ||
       ((t->d0 <= 0) && (t->d1 <= 0))) /* triangle */
     return (_greater_than(&seg[rseg].v1, &seg[rseg].v0));
-  
+
   return 0;
 }
 
@@ -1595,7 +1549,7 @@ new_chain_element() {
 double Triangulator::
 get_angle(point_t *vp0, point_t *vpnext, point_t *vp1) {
   point_t v0, v1;
-  
+
   v0.x = vpnext->x - vp0->x;
   v0.y = vpnext->y - vp0->y;
 
@@ -1610,7 +1564,7 @@ get_angle(point_t *vp0, point_t *vpnext, point_t *vp1) {
 
 
 /* (v0, v1) is the new diagonal to be added to the polygon. Find which */
-/* chain to use and return the positions of v0 and v1 in p and q */ 
+/* chain to use and return the positions of v0 and v1 in p and q */
 int Triangulator::
 get_vertex_positions(int v0, int v1, int *ip, int *iq) {
   vertexchain_t *vp0, *vp1;
@@ -1620,17 +1574,17 @@ get_vertex_positions(int v0, int v1, int *ip, int *iq) {
 
   vp0 = &vert[v0];
   vp1 = &vert[v1];
-  
+
   /* p is identified as follows. Scan from (v0, v1) rightwards till */
   /* you hit the first segment starting from v0. That chain is the */
   /* chain of our interest */
-  
+
   angle = -4.0;
   for (i = 0; i < 4; i++)
     {
       if (vp0->vnext[i] <= 0)
         continue;
-      if ((temp = get_angle(&vp0->pt, &(vert[vp0->vnext[i]].pt), 
+      if ((temp = get_angle(&vp0->pt, &(vert[vp0->vnext[i]].pt),
                             &vp1->pt)) > angle)
         {
           angle = temp;
@@ -1646,8 +1600,8 @@ get_vertex_positions(int v0, int v1, int *ip, int *iq) {
   for (i = 0; i < 4; i++)
     {
       if (vp1->vnext[i] <= 0)
-        continue;      
-      if ((temp = get_angle(&vp1->pt, &(vert[vp1->vnext[i]].pt), 
+        continue;
+      if ((temp = get_angle(&vp1->pt, &(vert[vp1->vnext[i]].pt),
                             &vp0->pt)) > angle)
         {
           angle = temp;
@@ -1660,10 +1614,10 @@ get_vertex_positions(int v0, int v1, int *ip, int *iq) {
   return 0;
 }
 
-  
-/* v0 and v1 are specified in anti-clockwise order with respect to 
- * the current monotone polygon mcur. Split the current polygon into 
- * two polygons using the diagonal (v0, v1) 
+
+/* v0 and v1 are specified in anti-clockwise order with respect to
+ * the current monotone polygon mcur. Split the current polygon into
+ * two polygons using the diagonal (v0, v1)
  */
 int Triangulator::
 make_new_monotone_poly(int mcur, int v0, int v1) {
@@ -1675,7 +1629,7 @@ make_new_monotone_poly(int mcur, int v0, int v1) {
   if (v0 <= 0 || v1 <= 0) {
     return -1;
   }
-  
+
   vp0 = &vert[v0];
   vp1 = &vert[v1];
 
@@ -1717,7 +1671,7 @@ make_new_monotone_poly(int mcur, int v0, int v1) {
   vp1->nextfree++;
 
 #ifdef DEBUG
-  fprintf(stderr, "make_poly: mcur = %d, (v0, v1) = (%d, %d)\n", 
+  fprintf(stderr, "make_poly: mcur = %d, (v0, v1) = (%d, %d)\n",
           mcur, v0, v1);
   fprintf(stderr, "next posns = (p, q) = (%d, %d)\n", p, q);
 #endif
@@ -1727,7 +1681,7 @@ make_new_monotone_poly(int mcur, int v0, int v1) {
   return mnew;
 }
 
-/* Main routine to get monotone polygons from the trapezoidation of 
+/* Main routine to get monotone polygons from the trapezoidation of
  * the polygon.
  */
 
@@ -1745,7 +1699,7 @@ monotonate_trapezoids(int n) {
   mchain.insert(mchain.begin(), n + 1, monchain_t());
 
   visited.insert(visited.begin(), tr.size(), 0);
-  
+
   /* First locate a trapezoid which lies inside the polygon */
   /* and which is triangular */
   for (i = 1; i < (int)tr.size(); i++)
@@ -1757,7 +1711,7 @@ monotonate_trapezoids(int n) {
   }
   //  printf("start = %d\n", i);
   tr_start = i;
-  
+
   /* Initialise the mon data-structure and start spanning all the */
   /* trapezoids within the polygon */
 
@@ -1798,13 +1752,13 @@ monotonate_trapezoids(int n) {
                     /* chain  */
 
 #endif
-  
+
   /* traverse the polygon */
   if (tr[tr_start].u0 > 0)
     traverse_polygon(0, tr_start, tr[tr_start].u0, TR_FROM_UP);
   else if (tr[tr_start].d0 > 0)
     traverse_polygon(0, tr_start, tr[tr_start].d0, TR_FROM_DN);
-  
+
   /* return the number of polygons created */
   return newmon();
 }
@@ -1831,7 +1785,7 @@ traverse_polygon(int mcur, int trnum, int from, int dir) {
   //  printf("visited size = %d, visited[trnum] = %d\n", visited.size(), visited[trnum]);
 
   visited[trnum] = true;
-  
+
   /* We have much more information available here. */
   /* rseg: goes upwards   */
   /* lseg: goes downwards */
@@ -1871,7 +1825,7 @@ traverse_polygon(int mcur, int trnum, int from, int dir) {
           traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
         }
     }
-  
+
   else if ((t->d0 <= 0) && (t->d1 <= 0))
     {
       if ((t->u0 > 0) && (t->u1 > 0)) /* upward opening triangle */
@@ -1901,8 +1855,8 @@ traverse_polygon(int mcur, int trnum, int from, int dir) {
           traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
         }
     }
-  
-  else if ((t->u0 > 0) && (t->u1 > 0)) 
+
+  else if ((t->u0 > 0) && (t->u1 > 0))
     {
       if ((t->d0 > 0) && (t->d1 > 0)) /* downward + upward cusps */
         {
@@ -2155,7 +2109,7 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
            }
           else
             mchain[p].marked = true;
-          
+
           if (_greater_than(&vert[v].pt, &ymax))
             {
               ymax = vert[v].pt;
@@ -2172,7 +2126,7 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
 
       if (processed)            /* Go to next polygon */
         continue;
-      
+
       if (vcount == 3)          /* already a triangle */
         {
           _result.push_back(Triangle(this, mchain[p].vnum,
@@ -2193,7 +2147,7 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
 }
 
 
-/* A greedy corner-cutting algorithm to triangulate a y-monotone 
+/* A greedy corner-cutting algorithm to triangulate a y-monotone
  * polygon in O(n) time.
  * Joseph O-Rourke, Computational Geometry in C.
  */
@@ -2212,10 +2166,10 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
       tmp = mchain[posmax].next;
       rc.push_back(mchain[tmp].vnum);
       ri = 1;
-      
+
       vpos = mchain[tmp].next;
       v = mchain[vpos].vnum;
-      
+
       if ((endv = mchain[mchain[posmax].prev].vnum) == 0)
         endv = nvert;
     }
@@ -2232,7 +2186,7 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
 
       endv = mchain[posmax].vnum;
     }
-  
+
   while ((v != endv) || (ri > 1))
     {
       //cerr << " v = " << v << " ri = " << ri << " rc = " << rc.size() << " _result = " << _result.size() << "\n";
@@ -2271,10 +2225,8 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
           v = mchain[vpos].vnum;
         }
     } /* end-while */
-  
+
   /* reached the bottom vertex. Add in the triangle formed */
-  _result.push_back(Triangle(this, rc[ri - 1], rc[ri], v));  
+  _result.push_back(Triangle(this, rc[ri - 1], rc[ri], v));
   ri--;
 }
-
-

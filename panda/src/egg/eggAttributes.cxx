@@ -21,31 +21,25 @@
 TypeHandle EggAttributes::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggAttributes::
 EggAttributes() {
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::Copy constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggAttributes::
 EggAttributes(const EggAttributes &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::Copy assignment operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggAttributes &EggAttributes::
 operator = (const EggAttributes &copy) {
   _flags = copy._flags;
@@ -56,22 +50,17 @@ operator = (const EggAttributes &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggAttributes::
 ~EggAttributes() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::write
-//       Access: Published
-//  Description: Writes the attributes to the indicated output stream in
-//               Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the attributes to the indicated output stream in Egg format.
+ */
 void EggAttributes::
 write(ostream &out, int indent_level) const {
   if (has_normal()) {
@@ -99,13 +88,10 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::compare_to
-//       Access: Published
-//  Description: An ordering operator to compare two vertices for
-//               sorting order.  This imposes an arbitrary ordering
-//               useful to identify unique vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordering operator to compare two vertices for sorting order.  This imposes
+ * an arbitrary ordering useful to identify unique vertices.
+ */
 int EggAttributes::
 compare_to(const EggAttributes &other) const {
   if (_flags != other._flags) {
@@ -139,12 +125,9 @@ compare_to(const EggAttributes &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAttributes::transform
-//       Access: Published, Virtual
-//  Description: Applies the indicated transformation matrix to the
-//               attributes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transformation matrix to the attributes.
+ */
 void EggAttributes::
 transform(const LMatrix4d &mat) {
   if (has_normal()) {

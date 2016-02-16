@@ -11,11 +11,9 @@
  * @date 2011-06-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: TemporaryFile::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TemporaryFile::
 TemporaryFile(const Filename &filename) : FileReference(filename) {
 }

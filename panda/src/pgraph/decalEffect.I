@@ -11,12 +11,9 @@
  * @date 2002-03-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DecalEffect::Constructor
-//       Access: Private
-//  Description: Use DecalEffect::make() to construct a new
-//               DecalEffect object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use DecalEffect::make() to construct a new DecalEffect object.
+ */
 INLINE DecalEffect::
 DecalEffect() {
 }

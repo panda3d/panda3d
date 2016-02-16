@@ -29,12 +29,10 @@
 #include "textureAttrib.h"
 #include "texturePool.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::render
-//       Access: Public
-//  Description: Called by RocketNode in cull_callback.  Invokes
-//               context->Render() and culls the result.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by RocketNode in cull_callback.  Invokes context->Render() and culls
+ * the result.
+ */
 void RocketRenderInterface::
 render(Rocket::Core::Context* context, CullTraverser *trav) {
   nassertv(context != NULL);
@@ -61,11 +59,9 @@ render(Rocket::Core::Context* context, CullTraverser *trav) {
   _net_state = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::make_geom
-//       Access: Protected
-//  Description: Called internally to make a Geom from Rocket data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally to make a Geom from Rocket data.
+ */
 PT(Geom) RocketRenderInterface::
 make_geom(Rocket::Core::Vertex* vertices,
           int num_vertices, int* indices, int num_indices,
@@ -107,11 +103,9 @@ make_geom(Rocket::Core::Vertex* vertices,
   return geom;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::render_geom
-//       Access: Protected
-//  Description: Only call this during render().  Culls a geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Only call this during render().  Culls a geom.
+ */
 void RocketRenderInterface::
 render_geom(const Geom* geom, const RenderState* state, const Rocket::Core::Vector2f& translation) {
   LVector3 offset = LVector3::right() * translation.x + LVector3::up() * translation.y;
@@ -138,12 +132,10 @@ render_geom(const Geom* geom, const RenderState* state, const Rocket::Core::Vect
   _trav->get_cull_handler()->record_object(object, _trav);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::RenderGeometry
-//       Access: Protected
-//  Description: Called by Rocket when it wants to render geometry
-//               that the application does not wish to optimize.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when it wants to render geometry that the application does
+ * not wish to optimize.
+ */
 void RocketRenderInterface::
 RenderGeometry(Rocket::Core::Vertex* vertices,
                int num_vertices, int* indices, int num_indices,
@@ -170,12 +162,10 @@ RenderGeometry(Rocket::Core::Vertex* vertices,
   render_geom(geom, state, translation);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::CompileGeometry
-//       Access: Protected
-//  Description: Called by Rocket when it wants to compile geometry
-//               it believes will be static for the forseeable future.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when it wants to compile geometry it believes will be static
+ * for the forseeable future.
+ */
 Rocket::Core::CompiledGeometryHandle RocketRenderInterface::
 CompileGeometry(Rocket::Core::Vertex* vertices,
                 int num_vertices, int* indices, int num_indices,
@@ -214,12 +204,9 @@ CompileGeometry(Rocket::Core::Vertex* vertices,
   return (Rocket::Core::CompiledGeometryHandle) c;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::RenderCompiledGeometry
-//       Access: Protected
-//  Description: Called by Rocket when it wants to render
-//               application-compiled geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when it wants to render application-compiled geometry.
+ */
 void RocketRenderInterface::
 RenderCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry, const Rocket::Core::Vector2f& translation) {
 
@@ -227,23 +214,17 @@ RenderCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry, const Rock
   render_geom(c->_geom, c->_state, translation);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::ReleaseCompiledGeometry
-//       Access: Protected
-//  Description: Called by Rocket when it wants to release
-//               application-compiled geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when it wants to release application-compiled geometry.
+ */
 void RocketRenderInterface::
 ReleaseCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry) {
   delete (CompiledGeometry*) geometry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::LoadTexture
-//       Access: Protected
-//  Description: Called by Rocket when a texture is required by the
-//               library.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when a texture is required by the library.
+ */
 bool RocketRenderInterface::
 LoadTexture(Rocket::Core::TextureHandle& texture_handle,
             Rocket::Core::Vector2i& texture_dimensions,
@@ -289,12 +270,10 @@ LoadTexture(Rocket::Core::TextureHandle& texture_handle,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::GenerateTexture
-//       Access: Protected
-//  Description: Called by Rocket when a texture is required to be
-//               built from an internally-generated sequence of pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when a texture is required to be built from an internally-
+ * generated sequence of pixels.
+ */
 bool RocketRenderInterface::
 GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
                 const Rocket::Core::byte* source,
@@ -337,12 +316,9 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::ReleaseTexture
-//       Access: Protected
-//  Description: Called by Rocket when a loaded texture is no longer
-//               required.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when a loaded texture is no longer required.
+ */
 void RocketRenderInterface::
 ReleaseTexture(Rocket::Core::TextureHandle texture_handle) {
   Texture *tex = (Texture *)texture_handle;
@@ -351,23 +327,18 @@ ReleaseTexture(Rocket::Core::TextureHandle texture_handle) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::EnableScissorRegion
-//       Access: Protected
-//  Description: Called by Rocket when it wants to enable or disable
-//               scissoring to clip content.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when it wants to enable or disable scissoring to clip
+ * content.
+ */
 void RocketRenderInterface::
 EnableScissorRegion(bool enable) {
   _enable_scissor = enable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRenderInterface::SetScissorRegion
-//       Access: Protected
-//  Description: Called by Rocket when it wants to change the
-//               scissor region.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Rocket when it wants to change the scissor region.
+ */
 void RocketRenderInterface::
 SetScissorRegion(int x, int y, int width, int height) {
   _scissor[0] = x / (PN_stdfloat) _dimensions.x;

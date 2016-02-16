@@ -16,11 +16,10 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBinEnums
-// Description : Provides scoping for the enumerated type shared by
-//               CullBin and CullBinManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides scoping for the enumerated type shared by CullBin and
+ * CullBinManager.
+ */
 class EXPCL_PANDA_PGRAPH CullBinEnums {
 PUBLISHED:
   enum BinType {
@@ -34,4 +33,3 @@ PUBLISHED:
 };
 
 #endif
-

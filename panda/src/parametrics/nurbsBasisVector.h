@@ -21,18 +21,13 @@
 
 class NurbsVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsBasisVector
-// Description : This encapsulates a series of matrices that are used
-//               to represent the sequential segments of a
-//               NurbsCurveEvaluator.
-//
-//               This is not related to NurbsCurve, CubicCurveseg or
-//               any of the ParametricCurve-derived objects in this
-//               module.  It is a completely parallel implementation
-//               of NURBS curves, and will probably eventually replace
-//               the whole ParametricCurve class hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This encapsulates a series of matrices that are used to represent the
+ * sequential segments of a NurbsCurveEvaluator.  This is not related to
+ * NurbsCurve, CubicCurveseg or any of the ParametricCurve-derived objects in
+ * this module.  It is a completely parallel implementation of NURBS curves, and
+ * will probably eventually replace the whole ParametricCurve class hierarchy.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsBasisVector {
 public:
   INLINE NurbsBasisVector();
@@ -56,7 +51,7 @@ public:
   void transpose();
 
 private:
-  static LVecBase4 nurbs_blending_function(int order, int i, int j, 
+  static LVecBase4 nurbs_blending_function(int order, int i, int j,
                                             const PN_stdfloat knots[]);
 
 private:
@@ -77,4 +72,3 @@ private:
 #include "nurbsBasisVector.I"
 
 #endif
-

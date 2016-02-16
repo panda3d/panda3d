@@ -19,14 +19,12 @@
 #include "pointerToArray.h"
 #include "vector_uchar.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_uchar
-// Description : A pta of uchars.  This class is defined once here,
-//               and exported to PANDAEXPRESS.DLL; other packages that
-//               want to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of uchars.  This class is defined once here, and exported to
+ * PANDAEXPRESS.DLL; other packages that want to use a pta of this type (whether
+ * they need to export it or not) should include this header file, rather than
+ * defining the pta again.
+ */
 
 #if !defined(__clang__) && __GNUC__ == 4 && __GNUC_MINOR__ < 7
 // GCC 4.6 has a weird bug related to this type.

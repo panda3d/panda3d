@@ -18,10 +18,9 @@
 
 #include "lwoGroupChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockHeader
-// Description : The header chunk within a LwoSurfaceBlock chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * The header chunk within a LwoSurfaceBlock chunk.
+ */
 class LwoSurfaceBlockHeader : public LwoGroupChunk {
 public:
   string _ordinal;
@@ -51,7 +50,3 @@ private:
 };
 
 #endif
-
-
-
-

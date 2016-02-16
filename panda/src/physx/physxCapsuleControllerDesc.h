@@ -19,10 +19,9 @@
 #include "physxControllerDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxCapsuleControllerDesc
-// Description : Descriptor class for PhysxCapsuleController.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxCapsuleController.
+ */
 class EXPCL_PANDAPHYSX PhysxCapsuleControllerDesc : public PhysxControllerDesc {
 
 PUBLISHED:

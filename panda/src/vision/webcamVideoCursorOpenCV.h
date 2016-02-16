@@ -23,10 +23,9 @@
 
 class WebcamVideoOpenCV;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideoCursorOpenCV
-// Description : The Video4Linux implementation of webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Video4Linux implementation of webcams.
+ */
 class WebcamVideoCursorOpenCV : public MovieVideoCursor {
 public:
   WebcamVideoCursorOpenCV(WebcamVideoOpenCV *src);

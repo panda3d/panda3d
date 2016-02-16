@@ -24,11 +24,10 @@ namespace Rocket {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//       Class : RocketInputHandler
-// Description : DataNode that listens for keyboard and mouse
-//               events and passes them to libRocket.
-////////////////////////////////////////////////////////////////////
+/**
+ * DataNode that listens for keyboard and mouse events and passes them to
+ * libRocket.
+ */
 class EXPCL_ROCKET RocketInputHandler : public DataNode {
 PUBLISHED:
   RocketInputHandler(const string &name = string());

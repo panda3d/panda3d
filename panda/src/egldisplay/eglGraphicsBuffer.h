@@ -19,14 +19,12 @@
 #include "eglGraphicsPipe.h"
 #include "graphicsBuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsBuffer
-// Description : An offscreen buffer in the EGL environment.  This
-//               creates an EGL pbuffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen buffer in the EGL environment.  This creates an EGL pbuffer.
+ */
 class eglGraphicsBuffer : public GraphicsBuffer {
 public:
-  eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  eglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

@@ -18,12 +18,10 @@
 
 #include "eggFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggConverter
-// Description : This is a general base class for programs that
-//               convert between egg files and some other format.  See
-//               EggToSomething and SomethingToEgg.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a general base class for programs that convert between egg files and
+ * some other format.  See EggToSomething and SomethingToEgg.
+ */
 class EggConverter : public EggFilter {
 public:
   EggConverter(const string &format_name,
@@ -36,5 +34,3 @@ protected:
 };
 
 #endif
-
-

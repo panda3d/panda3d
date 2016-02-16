@@ -18,19 +18,14 @@
 
 #include "clientDevice.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientDialDevice
-// Description : A device, attached to the ClientBase by a
-//               DialNode, that records the data from a single
-//               named dial device.  The named device can contain
-//               any number of dials, numbered in sequence beginning
-//               at zero.
-//
-//               A dial is a rotating device that does not have
-//               stops--it can keep rotating any number of times.
-//               Therefore it does not have a specific position at any
-//               given time, unlike an AnalogDevice.
-////////////////////////////////////////////////////////////////////
+/**
+ * A device, attached to the ClientBase by a DialNode, that records the data
+ * from a single named dial device.  The named device can contain any number of
+ * dials, numbered in sequence beginning at zero.  A dial is a rotating device
+ * that does not have stops--it can keep rotating any number of times.
+ * Therefore it does not have a specific position at any given time, unlike an
+ * AnalogDevice.
+ */
 class EXPCL_PANDA_DEVICE ClientDialDevice : public ClientDevice {
 protected:
   INLINE ClientDialDevice(ClientBase *client, const string &device_name);

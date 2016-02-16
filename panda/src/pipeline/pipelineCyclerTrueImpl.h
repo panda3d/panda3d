@@ -29,21 +29,14 @@
 
 class Pipeline;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PipelineCyclerTrueImpl
-// Description : This is the true, threaded implementation of
-//               PipelineCyclerBase.  It is only compiled when
-//               threading is available and DO_PIPELINING is defined.
-//
-//               This implementation is designed to do the actual work
-//               of cycling the data through a pipeline, and returning
-//               the actual CycleData appropriate to the current
-//               thread's pipeline stage.
-//
-//               This is defined as a struct instead of a class,
-//               mainly to be consistent with
-//               PipelineCyclerTrivialImpl.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the true, threaded implementation of PipelineCyclerBase.  It is only
+ * compiled when threading is available and DO_PIPELINING is defined.  This
+ * implementation is designed to do the actual work of cycling the data through
+ * a pipeline, and returning the actual CycleData appropriate to the current
+ * thread's pipeline stage.  This is defined as a struct instead of a class,
+ * mainly to be consistent with PipelineCyclerTrivialImpl.
+ */
 struct EXPCL_PANDA_PIPELINE PipelineCyclerTrueImpl : public PipelineCyclerLinks {
 private:
   PipelineCyclerTrueImpl();
@@ -75,11 +68,11 @@ public:
   INLINE const CycleData *read_stage(int pipeline_stage, Thread *current_thread) const;
   INLINE void release_read_stage(int pipeline_stage, const CycleData *pointer) const;
   CycleData *write_stage(int pipeline_stage, Thread *current_thread);
-  CycleData *write_stage_upstream(int pipeline_stage, bool force_to_0, 
+  CycleData *write_stage_upstream(int pipeline_stage, bool force_to_0,
                                   Thread *current_thread);
-  INLINE CycleData *elevate_read_stage(int pipeline_stage, const CycleData *pointer, 
+  INLINE CycleData *elevate_read_stage(int pipeline_stage, const CycleData *pointer,
                                        Thread *current_thread);
-  INLINE CycleData *elevate_read_stage_upstream(int pipeline_stage, const CycleData *pointer, 
+  INLINE CycleData *elevate_read_stage_upstream(int pipeline_stage, const CycleData *pointer,
                                                 bool force_to_0, Thread *current_thread);
   INLINE void release_write_stage(int pipeline_stage, CycleData *pointer);
 
@@ -138,4 +131,3 @@ private:
 #endif  // THREADED_PIPELINE
 
 #endif
-

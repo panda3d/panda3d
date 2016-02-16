@@ -18,13 +18,11 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockAxis
-// Description : Indicates the axis for this particular shader's
-//               projection.  This works in conjunction with
-//               LwoSurfaceBlockProjection.  This is a subchunk of
-//               LwoSurfaceBlock.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the axis for this particular shader's projection.  This works in
+ * conjunction with LwoSurfaceBlockProjection.  This is a subchunk of
+ * LwoSurfaceBlock.
+ */
 class LwoSurfaceBlockAxis : public LwoChunk {
 public:
   enum Axis {
@@ -57,5 +55,3 @@ private:
 };
 
 #endif
-
-

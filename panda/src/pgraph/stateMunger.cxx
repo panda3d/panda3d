@@ -15,20 +15,16 @@
 
 TypeHandle StateMunger::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: StateMunger::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 StateMunger::
 ~StateMunger() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StateMunger::munge_state
-//       Access: Public
-//  Description: Given an input state, returns the munged state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an input state, returns the munged state.
+ */
 CPT(RenderState) StateMunger::
 munge_state(const RenderState *state) {
   int mi = _state_map.find(state);
@@ -44,11 +40,9 @@ munge_state(const RenderState *state) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StateMunger::munge_state_impl
-//       Access: Protected, Virtual
-//  Description: Given an input state, returns the munged state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an input state, returns the munged state.
+ */
 CPT(RenderState) StateMunger::
 munge_state_impl(const RenderState *state) {
   return state;

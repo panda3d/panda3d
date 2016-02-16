@@ -18,12 +18,10 @@
 
 #include "eggMultiFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPalettize
-// Description : This is the program wrapper for egg-palettize, but it
-//               mainly serves to read in all the command-line
-//               parameters and then invoke the Palettizer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the program wrapper for egg-palettize, but it mainly serves to read
+ * in all the command-line parameters and then invoke the Palettizer.
+ */
 class EggPalettize : public EggMultiFilter {
 public:
   EggPalettize();

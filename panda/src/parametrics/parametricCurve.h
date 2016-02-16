@@ -50,12 +50,10 @@ class NurbsCurve;
 class NurbsCurveInterface;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParametricCurve
-// Description : A virtual base class for parametric curves.
-//               This encapsulates all curves in 3-d space defined
-//               for a single parameter t in the range [0,get_max_t()].
-////////////////////////////////////////////////////////////////////
+/**
+ * A virtual base class for parametric curves.  This encapsulates all curves in
+ * 3-d space defined for a single parameter t in the range [0,get_max_t()].
+ */
 class EXPCL_PANDA_PARAMETRICS ParametricCurve : public PandaNode {
 PUBLISHED:
   ParametricCurve();

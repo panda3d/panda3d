@@ -17,11 +17,9 @@
 
 #include "mutexSpinlockImpl.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSpinlockImpl::do_lock
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MutexSpinlockImpl::
 do_lock() {
   while (AtomicAdjust::compare_and_exchange(_lock, 0, 1) != 0) {

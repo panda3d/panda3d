@@ -20,4 +20,3 @@ using namespace std;
 bool parse_color(int &r, int &g, int &b, const string &color);
 
 #endif
-

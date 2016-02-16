@@ -56,4 +56,3 @@ int main(int argc, char* argv[])
    stream.close();
    return 0;
 }
-

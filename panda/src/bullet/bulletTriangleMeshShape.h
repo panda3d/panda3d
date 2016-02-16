@@ -23,10 +23,9 @@
 
 class BulletTriangleMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletTriangleMeshShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletTriangleMeshShape : public BulletShape {
 private:
   INLINE BulletTriangleMeshShape();
@@ -71,7 +70,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletTriangleMeshShape", 
+    register_type(_type_handle, "BulletTriangleMeshShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

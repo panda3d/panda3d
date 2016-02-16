@@ -37,25 +37,17 @@ class VertexBufferContext;
 class IndexBufferContext;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PreparedGraphicsObjects
-// Description : A table of objects that are saved within the graphics
-//               context for reference by handle later.  Generally,
-//               this represents things like OpenGL texture objects or
-//               display lists (or their equivalent on other
-//               platforms).
-//
-//               This object simply records the pointers to the
-//               context objects created by the individual GSG's;
-//               these context objects will contain enough information
-//               to reference or release the actual object stored
-//               within the graphics context.
-//
-//               These tables may potentially be shared between
-//               related graphics contexts, hence their storage here
-//               in a separate object rather than as a part of the
-//               GraphicsStateGuardian.
-////////////////////////////////////////////////////////////////////
+/**
+ * A table of objects that are saved within the graphics context for reference
+ * by handle later.  Generally, this represents things like OpenGL texture
+ * objects or display lists (or their equivalent on other platforms).  This
+ * object simply records the pointers to the context objects created by the
+ * individual GSG's; these context objects will contain enough information to
+ * reference or release the actual object stored within the graphics context.
+ * These tables may potentially be shared between related graphics contexts,
+ * hence their storage here in a separate object rather than as a part of the
+ * GraphicsStateGuardian.
+ */
 class EXPCL_PANDA_GOBJ PreparedGraphicsObjects : public ReferenceCount {
 public:
   PreparedGraphicsObjects();

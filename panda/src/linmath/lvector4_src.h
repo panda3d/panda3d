@@ -11,10 +11,9 @@
  * @date 2000-03-08
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVector4
-// Description : This is a four-component vector distance.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a four-component vector distance.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector4) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector4)() DEFAULT_CTOR;

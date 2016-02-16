@@ -18,13 +18,11 @@
 
 #include "cppType.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPTypeProxy
-// Description : This is a special kind of type that is a placeholder
-//               for some type, currently unknown, that will be filled
-//               in later.  It's used when a type that references
-//               itself must instantiate.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special kind of type that is a placeholder for some type, currently
+ * unknown, that will be filled in later.  It's used when a type that references
+ * itself must instantiate.
+ */
 class CPPTypeProxy : public CPPType {
 public:
   CPPTypeProxy();

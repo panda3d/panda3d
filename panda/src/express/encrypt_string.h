@@ -24,21 +24,21 @@ BEGIN_PUBLISH
 
 EXPCL_PANDAEXPRESS string
 encrypt_string(const string &source, const string &password,
-               const string &algorithm = string(), int key_length = -1, 
+               const string &algorithm = string(), int key_length = -1,
                int iteration_count = -1);
 EXPCL_PANDAEXPRESS string
 decrypt_string(const string &source, const string &password);
 
 EXPCL_PANDAEXPRESS bool
 encrypt_file(const Filename &source, const Filename &dest, const string &password,
-             const string &algorithm = string(), int key_length = -1, 
+             const string &algorithm = string(), int key_length = -1,
              int iteration_count = -1);
 EXPCL_PANDAEXPRESS bool
 decrypt_file(const Filename &source, const Filename &dest, const string &password);
 
 EXPCL_PANDAEXPRESS bool
 encrypt_stream(istream &source, ostream &dest, const string &password,
-               const string &algorithm = string(), int key_length = -1, 
+               const string &algorithm = string(), int key_length = -1,
                int iteration_count = -1);
 EXPCL_PANDAEXPRESS bool
 decrypt_stream(istream &source, ostream &dest, const string &password);

@@ -18,11 +18,9 @@
 TypeHandle PhysxWheel::_type_handle;
 
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheel::get_wheel_shape
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxWheelShape *PhysxWheel::
 get_wheel_shape() const {
 
@@ -31,16 +29,11 @@ get_wheel_shape() const {
 */
 
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheel::attach_node_path
-//       Access: Published
-//  Description: Attaches a node path to this wheel. The node
-//               path's transform will be updated automatically.
-//
-//               Note: any non-uniform scale or shear set on the
-//               NodePath's transform will be overwritten at the
-//               time of the first update.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attaches a node path to this wheel.  The node path's transform will be
+ * updated automatically.  Note: any non-uniform scale or shear set on the
+ * NodePath's transform will be overwritten at the time of the first update.
+ */
 void PhysxWheel::
 attach_node_path(const NodePath &np) {
 
@@ -49,13 +42,10 @@ attach_node_path(const NodePath &np) {
   _np = NodePath(np);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheel::detach_node_path
-//       Access: Published
-//  Description: Detaches a previously assigned NodePath from this
-//               wheel. The NodePath's transform will no longer
-//               be updated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detaches a previously assigned NodePath from this wheel.  The NodePath's
+ * transform will no longer be updated.
+ */
 void PhysxWheel::
 detach_node_path() {
 
@@ -63,13 +53,10 @@ detach_node_path() {
   _np = NodePath();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheel::get_node_path
-//       Access: Published
-//  Description: Retrieves a previously attached NodePath. An empty
-//               NodePath will be returned if no NodePath has been
-//               attached to this wheel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves a previously attached NodePath.  An empty NodePath will be returned
+ * if no NodePath has been attached to this wheel.
+ */
 NodePath PhysxWheel::
 get_node_path() const {
 
@@ -77,4 +64,3 @@ get_node_path() const {
   return _np;
 }
 */
-

@@ -36,5 +36,3 @@ INLINE_LINMATH LMatrix4d cast_to_double(const LMatrix4f &source);
 #include "cast_to_double.I"
 
 #endif
-
-

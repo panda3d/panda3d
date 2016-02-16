@@ -22,25 +22,17 @@
 #include "linmath_events.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnalogNode
-// Description : This is the primary interface to analog controls like
-//               sliders and joysticks associated with a ClientBase.
-//               This creates a node that connects to the named analog
-//               device, if it exists, and provides hooks to the user
-//               to read the state of any of the sequentially numbered
-//               controls associated with that device.
-//
-//               Each control can return a value ranging from -1 to 1,
-//               reflecting the current position of the control within
-//               its total range of motion.
-//
-//               The user may choose up to two analog controls to
-//               place on the data graph as the two channels of an
-//               xy datagram, similarly to the way a mouse places its
-//               position data.  In this way, an AnalogNode may be
-//               used in place of a mouse.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary interface to analog controls like sliders and joysticks
+ * associated with a ClientBase.  This creates a node that connects to the named
+ * analog device, if it exists, and provides hooks to the user to read the state
+ * of any of the sequentially numbered controls associated with that device.
+ * Each control can return a value ranging from -1 to 1, reflecting the current
+ * position of the control within its total range of motion.  The user may
+ * choose up to two analog controls to place on the data graph as the two
+ * channels of an xy datagram, similarly to the way a mouse places its position
+ * data.  In this way, an AnalogNode may be used in place of a mouse.
+ */
 class EXPCL_PANDA_DEVICE AnalogNode : public DataNode {
 PUBLISHED:
   AnalogNode(ClientBase *client, const string &device_name);

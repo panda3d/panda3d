@@ -24,12 +24,10 @@
 
 class VirtualFileMountHTTP;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileHTTP
-// Description : This maps a document retrieved from an HTTPClient
-//               into the VirtualFileSystem, allowing models etc. to
-//               be loaded directly from a web page.
-////////////////////////////////////////////////////////////////////
+/**
+ * This maps a document retrieved from an HTTPClient into the VirtualFileSystem,
+ * allowing models etc.  to be loaded directly from a web page.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileHTTP : public VirtualFile {
 public:
   VirtualFileHTTP(VirtualFileMountHTTP *mount,
@@ -90,4 +88,3 @@ private:
 #endif // HAVE_OPENSSL
 
 #endif
-

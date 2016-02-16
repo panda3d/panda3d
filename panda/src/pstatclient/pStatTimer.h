@@ -20,16 +20,13 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatTimer
-// Description : A lightweight class that can be used to automatically
-//               start and stop a PStatCollector around a section of
-//               code.  It's intended to be used in the following way:
-//               create a local PStatTimer variable to start the
-//               Collector, and when the PStatTimer variable goes out
-//               of scope (for instance, at the end of the function),
-//               it will automatically stop the Collector.
-////////////////////////////////////////////////////////////////////
+/**
+ * A lightweight class that can be used to automatically start and stop a
+ * PStatCollector around a section of code.  It's intended to be used in the
+ * following way: create a local PStatTimer variable to start the Collector, and
+ * when the PStatTimer variable goes out of scope (for instance, at the end of
+ * the function), it will automatically stop the Collector.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatTimer {
 public:
 #ifdef DO_PSTATS
@@ -52,4 +49,3 @@ protected:
 #include "pStatTimer.I"
 
 #endif
-

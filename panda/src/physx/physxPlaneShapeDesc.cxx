@@ -14,13 +14,10 @@
 #include "physxPlaneShapeDesc.h"
 #include "physxManager.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPlaneShapeDesc::set_plane
-//       Access: Published
-//  Description: Sets the parameters of the plane equation.
-//               normal: Plane normal.
-//               d: The distance from the origin. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the parameters of the plane equation.  normal: Plane normal.  d: The
+ * distance from the origin.
+ */
 void PhysxPlaneShapeDesc::
 set_plane(const LVector3f &normal, float d) {
 
@@ -29,4 +26,3 @@ set_plane(const LVector3f &normal, float d) {
   _desc.normal = PhysxManager::vec3_to_nxVec3(normal);
   _desc.d = d;
 }
-

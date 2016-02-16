@@ -41,22 +41,19 @@ PGItem *PGItem::_focus_item = (PGItem *)NULL;
 PGItem::BackgroundFocus PGItem::_background_focus;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_right
-//  Description: Returns true if the 2-d v1 is to the right of v2.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the 2-d v1 is to the right of v2.
+ */
 INLINE bool
 is_right(const LVector2 &v1, const LVector2 &v2) {
   return (v1[0] * v2[1] - v1[1] * v2[0]) > 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGItem::
-PGItem(const string &name) : 
+PGItem(const string &name) :
   PandaNode(name),
   _lock(name)
 {
@@ -70,11 +67,9 @@ PGItem(const string &name) :
   _flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGItem::
 ~PGItem() {
   if (_notify != (PGItemNotify *)NULL) {
@@ -91,11 +86,9 @@ PGItem::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGItem::
 PGItem(const PGItem &copy) :
   PandaNode(copy),
@@ -109,7 +102,7 @@ PGItem(const PGItem &copy) :
 {
   _notify = NULL;
   _region = new PGMouseWatcherRegion(this);
-  
+
   // We give our region the same name as the region for the PGItem
   // we're copying--so that this PGItem will generate the same event
   // names when the user interacts with it.
@@ -134,27 +127,21 @@ PGItem(const PGItem &copy) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::make_copy
-//       Access: Protected, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PGItem::
 make_copy() const {
   LightReMutexHolder holder(_lock);
   return new PGItem(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::transform_changed
-//       Access: Protected, Virtual
-//  Description: Called after the node's transform has been changed
-//               for any reason, this just provides a hook so derived
-//               classes can do something special in this case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the node's transform has been changed for any reason, this just
+ * provides a hook so derived classes can do something special in this case.
+ */
 void PGItem::
 transform_changed() {
   LightReMutexHolder holder(_lock);
@@ -164,13 +151,10 @@ transform_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::draw_mask_changed
-//       Access: Protected, Virtual
-//  Description: Called after the node's draw_mask has been changed
-//               for any reason, this just provides a hook so derived
-//               classes can do something special in this case.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the node's draw_mask has been changed for any reason, this just
+ * provides a hook so derived classes can do something special in this case.
+ */
 void PGItem::
 draw_mask_changed() {
   LightReMutexHolder holder(_lock);
@@ -180,31 +164,20 @@ draw_mask_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool PGItem::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LightReMutexHolder holder(_lock);
@@ -259,7 +232,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // which only provides one.
       sort = (bin_sort << 16) | ((sort + 0x8000) & 0xffff);
 
-      if (activate_region(transform, sort, 
+      if (activate_region(transform, sort,
                           DCAST(ClipPlaneAttrib, data._state->get_attrib(ClipPlaneAttrib::get_class_slot())),
                           DCAST(ScissorAttrib, data._state->get_attrib(ScissorAttrib::get_class_slot())))) {
         pg_trav->_top->add_region(get_region());
@@ -279,29 +252,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool PGItem::
 is_renderable() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Called when needed to recompute the node's
-//               _internal_bound object.  Nodes that contain anything
-//               of substance should redefine this to do the right
-//               thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when needed to recompute the node's _internal_bound object.  Nodes
+ * that contain anything of substance should redefine this to do the right
+ * thing.
+ */
 void PGItem::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -349,14 +315,10 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   internal_vertices = num_vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::r_prepare_scene
-//       Access: Protected, Virtual
-//  Description: The recursive implementation of prepare_scene().
-//               Don't call this directly; call
-//               PandaNode::prepare_scene() or
-//               NodePath::prepare_scene() instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of prepare_scene(). Don't call this directly;
+ * call PandaNode::prepare_scene() or NodePath::prepare_scene() instead.
+ */
 void PGItem::
 r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
                 GeomTransformer &transformer, Thread *current_thread) {
@@ -370,17 +332,14 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
       child->r_prepare_scene(gsg, child_state, transformer, current_thread);
     }
   }
-  
+
   PandaNode::r_prepare_scene(gsg, node_state, transformer, current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this node by the indicated matrix, if it means
+ * anything to do so.  For most kinds of nodes, this does nothing.
+ */
 void PGItem::
 xform(const LMatrix4 &mat) {
   LightReMutexHolder holder(_lock);
@@ -410,15 +369,11 @@ xform(const LMatrix4 &mat) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::activate_region
-//       Access: Public
-//  Description: Applies the indicated scene graph transform and order
-//               as determined by the traversal from PGTop.
-//
-//               The return value is true if the region is valid, or
-//               false if it is empty or completely clipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated scene graph transform and order as determined by the
+ * traversal from PGTop.  The return value is true if the region is valid, or
+ * false if it is empty or completely clipped.
+ */
 bool PGItem::
 activate_region(const LMatrix4 &transform, int sort,
                 const ClipPlaneAttrib *cpa,
@@ -457,7 +412,7 @@ activate_region(const LMatrix4 &transform, int sort,
   if (cpa != (ClipPlaneAttrib *)NULL && cpa->get_num_on_planes() != 0) {
     // Apply the clip plane(s) and/or scissor region now that we are
     // here in world space.
-    
+
     ClipPoints points;
     points.reserve(4);
     points.push_back(LPoint2(ll[right_axis], ll[up_axis]));
@@ -470,13 +425,13 @@ activate_region(const LMatrix4 &transform, int sort,
       NodePath plane_path = cpa->get_on_plane(i);
       LPlane plane = DCAST(PlaneNode, plane_path.node())->get_plane();
       plane.xform(plane_path.get_net_transform()->get_mat());
-      
+
       // We ignore the forward axis, assuming the frame is still in
       // the right-up plane after being transformed.  Not sure if we really
       // need to support general 3-D transforms on 2-D objects.
       clip_frame(points, plane);
     }
-    
+
     if (points.empty()) {
       // Turns out it's completely clipped after all.
       return false;
@@ -516,26 +471,23 @@ activate_region(const LMatrix4 &transform, int sort,
   }
 
   _region->set_frame(frame);
-                     
+
   _region->set_sort(sort);
   _region->set_active(true);
 
-  // calculate the inverse of this transform, which is needed to 
+  // calculate the inverse of this transform, which is needed to
   // go back to the frame space.
   _frame_inv_xform.invert_from(transform);
 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::enter_region
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               mouse enters the region.  The mouse is only
-//               considered to be "entered" in one region at a time;
-//               in the case of nested regions, it exits the outer
-//               region before entering the inner one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the mouse enters the
+ * region.  The mouse is only considered to be "entered" in one region at a
+ * time; in the case of nested regions, it exits the outer region before
+ * entering the inner one.
+ */
 void PGItem::
 enter_region(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -554,15 +506,12 @@ enter_region(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::exit_region
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               mouse exits the region.  The mouse is only considered
-//               to be "entered" in one region at a time; in the case
-//               of nested regions, it exits the outer region before
-//               entering the inner one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the mouse exits the region.
+ * The mouse is only considered to be "entered" in one region at a time; in the
+ * case of nested regions, it exits the outer region before entering the inner
+ * one.
+ */
 void PGItem::
 exit_region(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -583,16 +532,12 @@ exit_region(const MouseWatcherParameter &param) {
   //pgui_cat.info() << get_name() << "::exit()" << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::within_region
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               mouse moves within the boundaries of the region, even
-//               if it is also within the boundaries of a nested
-//               region.  This is different from "enter", which is
-//               only called whenever the mouse is within only that
-//               region.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the mouse moves within the
+ * boundaries of the region, even if it is also within the boundaries of a
+ * nested region.  This is different from "enter", which is only called whenever
+ * the mouse is within only that region.
+ */
 void PGItem::
 within_region(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -611,13 +556,10 @@ within_region(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::without_region
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               mouse moves completely outside the boundaries of the
-//               region.  See within().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the mouse moves completely
+ * outside the boundaries of the region.  See within().
+ */
 void PGItem::
 without_region(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -636,12 +578,10 @@ without_region(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::focus_in
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               widget gets the keyboard focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the widget gets the
+ * keyboard focus.
+ */
 void PGItem::
 focus_in() {
   LightReMutexHolder holder(_lock);
@@ -659,12 +599,10 @@ focus_in() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::focus_out
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               widget loses the keyboard focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the widget loses the
+ * keyboard focus.
+ */
 void PGItem::
 focus_out() {
   LightReMutexHolder holder(_lock);
@@ -682,13 +620,10 @@ focus_out() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::press
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse or keyboard button is depressed while the mouse
-//               is within the region.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard button
+ * is depressed while the mouse is within the region.
+ */
 void PGItem::
 press(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -714,13 +649,10 @@ press(const MouseWatcherParameter &param, bool background) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::release
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse or keyboard button previously depressed with
-//               press() is released.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard button
+ * previously depressed with press() is released.
+ */
 void PGItem::
 release(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -741,12 +673,9 @@ release(const MouseWatcherParameter &param, bool background) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::keystroke
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever
-//               the user presses a key.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user presses a key.
+ */
 void PGItem::
 keystroke(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -767,12 +696,10 @@ keystroke(const MouseWatcherParameter &param, bool background) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::candidate
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever
-//               the user highlights an option in the IME window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user highlights an
+ * option in the IME window.
+ */
 void PGItem::
 candidate(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -789,12 +716,10 @@ candidate(const MouseWatcherParameter &param, bool background) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::move
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse is moved while within the region.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse is moved while
+ * within the region.
+ */
 void PGItem::
 move(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -808,12 +733,9 @@ move(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::background_press
-//       Access: Public, Static
-//  Description: Calls press() on all the PGItems with background
-//               focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls press() on all the PGItems with background focus.
+ */
 void PGItem::
 background_press(const MouseWatcherParameter &param) {
   BackgroundFocus::const_iterator fi;
@@ -825,12 +747,9 @@ background_press(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::background_release
-//       Access: Public, Static
-//  Description: Calls release() on all the PGItems with background
-//               focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls release() on all the PGItems with background focus.
+ */
 void PGItem::
 background_release(const MouseWatcherParameter &param) {
   BackgroundFocus::const_iterator fi;
@@ -842,12 +761,9 @@ background_release(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::background_keystroke
-//       Access: Public, Static
-//  Description: Calls keystroke() on all the PGItems with background
-//               focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls keystroke() on all the PGItems with background focus.
+ */
 void PGItem::
 background_keystroke(const MouseWatcherParameter &param) {
   BackgroundFocus::const_iterator fi;
@@ -859,12 +775,9 @@ background_keystroke(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::background_candidate
-//       Access: Public, Static
-//  Description: Calls candidate() on all the PGItems with background
-//               focus.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls candidate() on all the PGItems with background focus.
+ */
 void PGItem::
 background_candidate(const MouseWatcherParameter &param) {
   BackgroundFocus::const_iterator fi;
@@ -876,15 +789,12 @@ background_candidate(const MouseWatcherParameter &param) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::set_active
-//       Access: Published, Virtual
-//  Description: Sets whether the PGItem is active for mouse watching.
-//               This is not necessarily related to the
-//               active/inactive appearance of the item, which is
-//               controlled by set_state(), but it does affect whether
-//               it responds to mouse events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether the PGItem is active for mouse watching.  This is not
+ * necessarily related to the active/inactive appearance of the item, which is
+ * controlled by set_state(), but it does affect whether it responds to mouse
+ * events.
+ */
 void PGItem::
 set_active(bool active) {
   LightReMutexHolder holder(_lock);
@@ -899,19 +809,13 @@ set_active(bool active) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::set_focus
-//       Access: Published, Virtual
-//  Description: Sets whether the PGItem currently has keyboard focus.
-//               This simply means that the item may respond to
-//               keyboard events as well as to mouse events; precisely
-//               what this means is up to the individual item.  
-//
-//               Only one PGItem in the world is allowed to have focus
-//               at any given time.  Setting the focus on any other
-//               item automatically disables the focus from the
-//               previous item.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets whether the PGItem currently has keyboard focus.  This simply means that
+ * the item may respond to keyboard events as well as to mouse events; precisely
+ * what this means is up to the individual item.  Only one PGItem in the world
+ * is allowed to have focus at any given time.  Setting the focus on any other
+ * item automatically disables the focus from the previous item.
+ */
 void PGItem::
 set_focus(bool focus) {
   LightReMutexHolder holder(_lock);
@@ -948,15 +852,12 @@ set_focus(bool focus) {
   _region->set_keyboard(focus);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::set_background_focus
-//       Access: Published
-//  Description: Sets the background_focus flag for this item.  When
-//               background_focus is enabled, the item will receive
-//               keypress events even if it is not in focus; in fact,
-//               even if it is not onscreen.  Unlike normal focus,
-//               many items may have background_focus simultaneously.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the background_focus flag for this item.  When background_focus is
+ * enabled, the item will receive keypress events even if it is not in focus; in
+ * fact, even if it is not onscreen.  Unlike normal focus, many items may have
+ * background_focus simultaneously.
+ */
 void PGItem::
 set_background_focus(bool focus) {
   LightReMutexHolder holder(_lock);
@@ -976,30 +877,23 @@ set_background_focus(bool focus) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::get_num_state_defs
-//       Access: Published
-//  Description: Returns one more than the highest-numbered state def
-//               that was ever assigned to the PGItem.  The complete
-//               set of state defs assigned may then be retrieved by
-//               indexing from 0 to (get_num_state_defs() - 1).
-//
-//               This is only an upper limit on the actual number of
-//               state defs, since there may be holes in the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns one more than the highest-numbered state def that was ever assigned
+ * to the PGItem.  The complete set of state defs assigned may then be retrieved
+ * by indexing from 0 to (get_num_state_defs() - 1).  This is only an upper
+ * limit on the actual number of state defs, since there may be holes in the
+ * list.
+ */
 int PGItem::
 get_num_state_defs() const {
   LightReMutexHolder holder(_lock);
   return _state_defs.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::has_state_def
-//       Access: Published
-//  Description: Returns true if get_state_def() has ever been called
-//               for the indicated state (thus defining a render
-//               subgraph for this state index), false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if get_state_def() has ever been called for the indicated state
+ * (thus defining a render subgraph for this state index), false otherwise.
+ */
 bool PGItem::
 has_state_def(int state) const {
   LightReMutexHolder holder(_lock);
@@ -1009,13 +903,10 @@ has_state_def(int state) const {
   return (!_state_defs[state]._root.is_empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::clear_state_def
-//       Access: Published
-//  Description: Resets the NodePath assigned to the indicated state
-//               to its initial default, with only a frame
-//               representation if appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the NodePath assigned to the indicated state to its initial default,
+ * with only a frame representation if appropriate.
+ */
 void PGItem::
 clear_state_def(int state) {
   LightReMutexHolder holder(_lock);
@@ -1030,14 +921,11 @@ clear_state_def(int state) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::get_state_def
-//       Access: Published
-//  Description: Returns the Node that is the root of the subgraph
-//               that will be drawn when the PGItem is in the
-//               indicated state.  The first time this is called for a
-//               particular state index, it may create the Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Node that is the root of the subgraph that will be drawn when the
+ * PGItem is in the indicated state.  The first time this is called for a
+ * particular state index, it may create the Node.
+ */
 NodePath &PGItem::
 get_state_def(int state) {
   LightReMutexHolder holder(_lock);
@@ -1057,12 +945,10 @@ get_state_def(int state) {
   return _state_defs[state]._root;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::instance_to_state_def
-//       Access: Published
-//  Description: Parents an instance of the bottom node of the
-//               indicated NodePath to the indicated state index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parents an instance of the bottom node of the indicated NodePath to the
+ * indicated state index.
+ */
 NodePath PGItem::
 instance_to_state_def(int state, const NodePath &path) {
   LightReMutexHolder holder(_lock);
@@ -1076,12 +962,10 @@ instance_to_state_def(int state, const NodePath &path) {
   return path.instance_to(get_state_def(state));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::get_frame_style
-//       Access: Published
-//  Description: Returns the kind of frame that will be drawn behind
-//               the item when it is in the indicated state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the kind of frame that will be drawn behind the item when it is in
+ * the indicated state.
+ */
 PGFrameStyle PGItem::
 get_frame_style(int state) {
   LightReMutexHolder holder(_lock);
@@ -1091,12 +975,10 @@ get_frame_style(int state) {
   return _state_defs[state]._frame_style;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::set_frame_style
-//       Access: Published
-//  Description: Changes the kind of frame that will be drawn behind
-//               the item when it is in the indicated state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the kind of frame that will be drawn behind the item when it is in
+ * the indicated state.
+ */
 void PGItem::
 set_frame_style(int state, const PGFrameStyle &style) {
   LightReMutexHolder holder(_lock);
@@ -1104,44 +986,36 @@ set_frame_style(int state, const PGFrameStyle &style) {
   // slotted and listed as having been defined.
   NodePath &root = get_state_def(state);
   nassertv(!root.is_empty());
-  
+
   _state_defs[state]._frame_style = style;
   _state_defs[state]._frame_stale = true;
-    
+
   mark_internal_bounds_stale();
 }
 
 #ifdef HAVE_AUDIO
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::set_sound
-//       Access: Published
-//  Description: Sets the sound that will be played whenever the
-//               indicated event occurs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the sound that will be played whenever the indicated event occurs.
+ */
 void PGItem::
 set_sound(const string &event, AudioSound *sound) {
   LightReMutexHolder holder(_lock);
   _sounds[event] = sound;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::clear_sound
-//       Access: Published
-//  Description: Removes the sound associated with the indicated
-//               event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the sound associated with the indicated event.
+ */
 void PGItem::
 clear_sound(const string &event) {
   LightReMutexHolder holder(_lock);
   _sounds.erase(event);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::get_sound
-//       Access: Published
-//  Description: Returns the sound associated with the indicated
-//               event, or NULL if there is no associated sound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the sound associated with the indicated event, or NULL if there is no
+ * associated sound.
+ */
 AudioSound *PGItem::
 get_sound(const string &event) const {
   LightReMutexHolder holder(_lock);
@@ -1152,12 +1026,10 @@ get_sound(const string &event) const {
   return (AudioSound *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::has_sound
-//       Access: Published
-//  Description: Returns true if there is a sound associated with the
-//               indicated event, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a sound associated with the indicated event, or
+ * false otherwise.
+ */
 bool PGItem::
 has_sound(const string &event) const {
   LightReMutexHolder holder(_lock);
@@ -1165,13 +1037,11 @@ has_sound(const string &event) const {
 }
 #endif  // HAVE_AUDIO
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::get_text_node
-//       Access: Published, Static
-//  Description: Returns the TextNode object that will be used by all
-//               PGItems to generate default labels given a string.
-//               This can be loaded with the default font, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TextNode object that will be used by all PGItems to generate
+ * default labels given a string.  This can be loaded with the default font,
+ * etc.
+ */
 TextNode *PGItem::
 get_text_node() {
   if (_text_node == (TextNode *)NULL) {
@@ -1185,12 +1055,9 @@ get_text_node() {
   return _text_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::play_sound
-//       Access: Protected
-//  Description: Plays the sound associated with the indicated event,
-//               if there is one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Plays the sound associated with the indicated event, if there is one.
+ */
 void PGItem::
 play_sound(const string &event) {
 #ifdef HAVE_AUDIO
@@ -1203,22 +1070,15 @@ play_sound(const string &event) {
 #endif  // HAVE_AUDIO
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::reduce_region
-//       Access: Protected
-//  Description: The frame parameter is an in/out parameter.  This
-//               function adjusts frame so that it represents the
-//               largest part of the rectangular region passed in,
-//               that does not overlap with the rectangular region of
-//               the indicated obscurer.  If the obscurer is NULL, or
-//               is a hidden node, it is not considered and the frame
-//               is left unchanged.
-//
-//               This is used by slider bars and scroll frames, which
-//               have to automatically figure out how much space they
-//               have to work with after allowing space for scroll
-//               bars and buttons.
-////////////////////////////////////////////////////////////////////
+/**
+ * The frame parameter is an in/out parameter.  This function adjusts frame so
+ * that it represents the largest part of the rectangular region passed in, that
+ * does not overlap with the rectangular region of the indicated obscurer.  If
+ * the obscurer is NULL, or is a hidden node, it is not considered and the frame
+ * is left unchanged.  This is used by slider bars and scroll frames, which have
+ * to automatically figure out how much space they have to work with after
+ * allowing space for scroll bars and buttons.
+ */
 void PGItem::
 reduce_region(LVecBase4 &frame, PGItem *obscurer) const {
   if (obscurer != (PGItem *)NULL && !obscurer->is_overall_hidden()) {
@@ -1242,23 +1102,20 @@ reduce_region(LVecBase4 &frame, PGItem *obscurer) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::get_relative_frame
-//       Access: Protected
-//  Description: Returns the LVecBase4 frame of the indicated item,
-//               converted into this item's coordinate space.
-//               Presumably, item is a child of this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the LVecBase4 frame of the indicated item, converted into this item's
+ * coordinate space.  Presumably, item is a child of this node.
+ */
 LVecBase4 PGItem::
 get_relative_frame(PGItem *item) const {
   NodePath this_np = NodePath::any_path((PGItem *)this);
   NodePath item_np = this_np.find_path_to(item);
-  if (item_np.is_empty()) { 
+  if (item_np.is_empty()) {
     item_np = NodePath::any_path(item);
   }
   const LVecBase4 &orig_frame = item->get_frame();
   LMatrix4 transform = item_np.get_mat(this_np);
-  
+
   // Transform the item's frame into the PGScrollFrame's
   // coordinate space.  Transform all four vertices, and get the
   // new bounding box.  This way the region works (mostly) even if
@@ -1271,19 +1128,17 @@ get_relative_frame(PGItem *item) const {
   lr = lr * transform;
   ul = ul * transform;
   ur = ur * transform;
-  
+
   return LVecBase4(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
                     max(max(ll[0], lr[0]), max(ul[0], ur[0])),
                     min(min(ll[2], lr[2]), min(ul[2], ur[2])),
                     max(max(ll[2], lr[2]), max(ul[2], ur[2])));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::mouse_to_local
-//       Access: Protected
-//  Description: Converts from the 2-d mouse coordinates into the
-//               coordinate space of the item.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts from the 2-d mouse coordinates into the coordinate space of the
+ * item.
+ */
 LPoint3 PGItem::
 mouse_to_local(const LPoint2 &mouse_point) const {
   // This is ambiguous if the PGItem has multiple instances.  Why
@@ -1293,11 +1148,9 @@ mouse_to_local(const LPoint2 &mouse_point) const {
   return inv_transform->get_mat().xform_point(LVector3::rfu(mouse_point[0], 0, mouse_point[1]));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::frame_changed
-//       Access: Protected, Virtual
-//  Description: Called when the user changes the frame size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user changes the frame size.
+ */
 void PGItem::
 frame_changed() {
   mark_frames_stale();
@@ -1306,12 +1159,9 @@ frame_changed() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::slot_state_def
-//       Access: Private
-//  Description: Ensures there is a slot in the array for the given
-//               state definition.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures there is a slot in the array for the given state definition.
+ */
 void PGItem::
 slot_state_def(int state) {
   while (state >= (int)_state_defs.size()) {
@@ -1319,12 +1169,9 @@ slot_state_def(int state) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::update_frame
-//       Access: Private
-//  Description: Generates a new instance of the frame geometry for
-//               the indicated state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a new instance of the frame geometry for the indicated state.
+ */
 void PGItem::
 update_frame(int state) {
   // First, remove the old frame geometry, if any.
@@ -1340,18 +1187,15 @@ update_frame(int state) {
   // Now create new frame geometry.
   if (has_frame()) {
     NodePath &root = get_state_def(state);
-    _state_defs[state]._frame = 
+    _state_defs[state]._frame =
       _state_defs[state]._frame_style.generate_into(root, _frame);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::mark_frames_stale
-//       Access: Private
-//  Description: Marks all the frames in all states stale, so that
-//               they will be regenerated the next time each state is
-//               requested.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks all the frames in all states stale, so that they will be regenerated
+ * the next time each state is requested.
+ */
 void PGItem::
 mark_frames_stale() {
   StateDefs::iterator di;
@@ -1363,17 +1207,12 @@ mark_frames_stale() {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGItem::clip_frame
-//       Access: Private
-//  Description: Clips the four corners of the item's frame by the
-//               indicated clipping plane, and modifies the points to
-//               reflect the new set of clipped points.
-//
-//               The return value is true if the set of points is
-//               unmodified (all points are behind the clip plane), or
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clips the four corners of the item's frame by the indicated clipping plane,
+ * and modifies the points to reflect the new set of clipped points.  The return
+ * value is true if the set of points is unmodified (all points are behind the
+ * clip plane), or false otherwise.
+ */
 bool PGItem::
 clip_frame(ClipPoints &source_points, const LPlane &plane) const {
   if (source_points.empty()) {
@@ -1431,11 +1270,11 @@ clip_frame(ClipPoints &source_points, const LPlane &plane) const {
       if (denom != 0.0) {
         PN_stdfloat t = -(a * last_point[0] + b * last_point[1] + c) / denom;
         LPoint2 p = last_point + t * d;
-        
+
         new_points.push_back(p);
         last_is_in = this_is_in;
       }
-    } 
+    }
 
     if (this_is_in) {
       // We are behind the clipping line.  Keep the point.

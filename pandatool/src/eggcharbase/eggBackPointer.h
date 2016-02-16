@@ -18,19 +18,14 @@
 
 #include "typedObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggBackPointer
-// Description : This stores a pointer from an EggJointData or
-//               EggSliderData object back to the referencing data in
-//               an egg file.  One of these objects corresponds to
-//               each model appearing in an egg file, and may
-//               reference either a single node, or a table, or a slew
-//               of vertices and primitives, depending on the type of
-//               data stored.
-//
-//               This is just an abstract base class.  The actual
-//               details are stored in the various subclasses.
-////////////////////////////////////////////////////////////////////
+/**
+ * This stores a pointer from an EggJointData or EggSliderData object back to
+ * the referencing data in an egg file.  One of these objects corresponds to
+ * each model appearing in an egg file, and may reference either a single node,
+ * or a table, or a slew of vertices and primitives, depending on the type of
+ * data stored.  This is just an abstract base class.  The actual details are
+ * stored in the various subclasses.
+ */
 class EggBackPointer : public TypedObject {
 public:
   EggBackPointer();
@@ -61,5 +56,3 @@ private:
 };
 
 #endif
-
-

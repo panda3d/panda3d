@@ -18,12 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockEnabled
-// Description : Indicates whether this particular layer or shader
-//               should be rendered or not.  This is a subchunk of
-//               LwoSurfaceBlockHeader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates whether this particular layer or shader should be rendered or not.
+ * This is a subchunk of LwoSurfaceBlockHeader.
+ */
 class LwoSurfaceBlockEnabled : public LwoChunk {
 public:
   bool _enabled;
@@ -51,5 +49,3 @@ private:
 };
 
 #endif
-
-

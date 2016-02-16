@@ -101,14 +101,12 @@ ConfigVariableDouble ae_undershift_factor_32
           "maximum pixel shift when applying a displacement map, in a 32-bit project file.  This is used "
           "to control PfmVizzer::make_displacement()."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libgrutil
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libgrutil() {
   static bool initialized = false;

@@ -22,16 +22,12 @@
 #include "pmap.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextFont
-// Description : An encapsulation of a font; i.e. a set of glyphs that
-//               may be assembled together by a TextNode to represent
-//               a string of text.
-//
-//               This is just an abstract interface; see
-//               StaticTextFont or DynamicTextFont for an actual
-//               implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * An encapsulation of a font; i.e.  a set of glyphs that may be assembled
+ * together by a TextNode to represent a string of text.  This is just an
+ * abstract interface; see StaticTextFont or DynamicTextFont for an actual
+ * implementation.
+ */
 class EXPCL_PANDA_TEXT TextFont : public TypedReferenceCount, public Namable {
 public:
   TextFont();

@@ -11,12 +11,10 @@
  * @date 2013-09-13
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<LVecBase4>
-// Description : This class defines the extension methods for
-//               LVecBase4, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for LVecBase4, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<FLOATNAME(LVecBase4)> : public ExtensionBase<FLOATNAME(LVecBase4)> {
 public:

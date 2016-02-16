@@ -17,7 +17,7 @@
 #include "pandabase.h"
 #include "p3d_plugin_config.h"
 
-#ifdef HAVE_X11 
+#ifdef HAVE_X11
 // This header file is designed to help work around some of the
 // namespace spamming that X11 causes, by renaming the symbols that
 // X11 declares that are known to conflict with other library names

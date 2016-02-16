@@ -20,20 +20,16 @@
 #include "pointerTo.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLerpAnimEffectInterval
-// Description : This interval lerps between different amounts of
-//               control effects for various AnimControls that might
-//               be playing on an actor.  It's used to change the
-//               blending amount between multiple animations.
-//
-//               The idea is to start all the animations playing
-//               first, then use a CLerpAnimEffectInterval to adjust
-//               the degree to which each animation affects the actor.
-////////////////////////////////////////////////////////////////////
+/**
+ * This interval lerps between different amounts of control effects for various
+ * AnimControls that might be playing on an actor.  It's used to change the
+ * blending amount between multiple animations.  The idea is to start all the
+ * animations playing first, then use a CLerpAnimEffectInterval to adjust the
+ * degree to which each animation affects the actor.
+ */
 class EXPCL_DIRECT CLerpAnimEffectInterval : public CLerpInterval {
 PUBLISHED:
-  INLINE CLerpAnimEffectInterval(const string &name, double duration, 
+  INLINE CLerpAnimEffectInterval(const string &name, double duration,
                                  BlendType blend_type);
 
   INLINE void add_control(AnimControl *control, const string &name,
@@ -53,10 +49,10 @@ private:
     float _begin_effect;
     float _end_effect;
   };
-    
+
   typedef pvector<ControlDef> Controls;
   Controls _controls;
-  
+
 
 public:
   static TypeHandle get_class_type() {
@@ -79,4 +75,3 @@ private:
 #include "cLerpAnimEffectInterval.I"
 
 #endif
-

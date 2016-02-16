@@ -11,11 +11,9 @@
  * @date 2012-05-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeletonDesc::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxCcdSkeletonDesc::
 PhysxCcdSkeletonDesc() {
 
@@ -29,11 +27,9 @@ PhysxCcdSkeletonDesc() {
   _triangles = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeletonDesc::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxCcdSkeletonDesc::
 ~PhysxCcdSkeletonDesc() {
 
@@ -46,14 +42,11 @@ INLINE PhysxCcdSkeletonDesc::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeletonDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxCcdSkeletonDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

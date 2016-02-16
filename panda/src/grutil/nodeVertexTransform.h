@@ -20,18 +20,15 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodeVertexTransform
-// Description : This VertexTransform gets its matrix from the
-//               Transform stored on a node.  It can also compose its
-//               node's transform with another VertexTransform,
-//               allowing you to build up a chain of
-//               NodeVertexTransforms that represent a list of
-//               composed matrices.
-////////////////////////////////////////////////////////////////////
+/**
+ * This VertexTransform gets its matrix from the Transform stored on a node.  It
+ * can also compose its node's transform with another VertexTransform, allowing
+ * you to build up a chain of NodeVertexTransforms that represent a list of
+ * composed matrices.
+ */
 class EXPCL_PANDA_GRUTIL NodeVertexTransform : public VertexTransform {
 PUBLISHED:
-  NodeVertexTransform(const PandaNode *node, 
+  NodeVertexTransform(const PandaNode *node,
                       const VertexTransform *prev = NULL);
 
   INLINE const PandaNode *get_node() const;

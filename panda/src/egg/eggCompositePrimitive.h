@@ -18,13 +18,11 @@
 
 #include "eggPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCompositePrimitive
-// Description : The base class for primitives such as triangle strips
-//               and triangle fans, which include several component
-//               triangles, each of which might have its own color
-//               and/or normal.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for primitives such as triangle strips and triangle fans,
+ * which include several component triangles, each of which might have its own
+ * color and/or normal.
+ */
 class EXPCL_PANDAEGG EggCompositePrimitive : public EggPrimitive {
 PUBLISHED:
   INLINE EggCompositePrimitive(const string &name = "");

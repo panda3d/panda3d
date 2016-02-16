@@ -26,13 +26,11 @@
 #include "pdeque.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ProgramBase
-// Description : This is intended to be the base class for most
-//               general-purpose utility programs in the PANDATOOL
-//               tree.  It automatically handles things like
-//               command-line arguments in a portable way.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is intended to be the base class for most general-purpose utility
+ * programs in the PANDATOOL tree.  It automatically handles things like
+ * command-line arguments in a portable way.
+ */
 class ProgramBase {
 public:
   ProgramBase(const string &name = string());
@@ -165,5 +163,3 @@ private:
 #include "programBase.I"
 
 #endif
-
-

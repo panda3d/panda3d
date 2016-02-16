@@ -29,14 +29,11 @@ TypeHandle MilesAudioSequence::_type_handle;
 #define miles_audio_debug(x) ((void)0)
 #endif //]
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::Constructor
-//       Access: Private
-//  Description: This constructor is called only by the
-//               MilesAudioManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor is called only by the MilesAudioManager.
+ */
 MilesAudioSequence::
-MilesAudioSequence(MilesAudioManager *manager, MilesAudioManager::SoundData *sd, 
+MilesAudioSequence(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
                  const string &file_name) :
   MilesAudioSound(manager, file_name),
   _sd(sd)
@@ -49,11 +46,9 @@ MilesAudioSequence(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
   _sequence_index = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MilesAudioSequence::
 ~MilesAudioSequence() {
   miles_audio_debug("~MilesAudioSequence()");
@@ -62,17 +57,15 @@ MilesAudioSequence::
   miles_audio_debug("~MilesAudioSequence() done");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::play
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioSequence::
 play() {
   miles_audio_debug("play()");
   if (_active) {
     stop();
-    
+
     if (_sd->_raw_data.empty()) {
       milesAudio_cat.warning()
         << "Could not play " << _file_name << ": no data\n";
@@ -81,7 +74,7 @@ play() {
       nassertv(_sequence == 0);
 
       GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
-      if (!mgr->get_sequence(_sequence, _sequence_index, this)){ 
+      if (!mgr->get_sequence(_sequence, _sequence_index, this)){
         milesAudio_cat.warning()
           << "Could not play " << _file_name << ": too many open sequences\n";
         _sequence = 0;
@@ -111,11 +104,9 @@ play() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::stop
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioSequence::
 stop() {
   miles_audio_debug("stop()");
@@ -138,11 +129,9 @@ stop() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::get_time
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat MilesAudioSequence::
 get_time() const {
   if (_sequence == 0) {
@@ -159,11 +148,9 @@ get_time() const {
   return time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::set_volume
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioSequence::
 set_volume(PN_stdfloat volume) {
   miles_audio_debug("set_volume(volume="<<volume<<")");
@@ -177,21 +164,19 @@ set_volume(PN_stdfloat volume) {
 
   if (_sequence != 0) {
     volume *= _manager->get_volume();
-    
+
     // Change to Miles volume, range 0 to 127:
     S32 milesVolume = (S32)(volume * 127.0f);
     milesVolume = min(milesVolume, 127);
     milesVolume = max(milesVolume, 0);
-    
+
     AIL_set_sequence_volume(_sequence, milesVolume, 0);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::set_balance
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioSequence::
 set_balance(PN_stdfloat balance_right) {
   miles_audio_debug("set_balance(balance_right="<<balance_right<<")");
@@ -200,11 +185,9 @@ set_balance(PN_stdfloat balance_right) {
   // Balance has no effect on a MIDI file.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::set_play_rate
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MilesAudioSequence::
 set_play_rate(PN_stdfloat play_rate) {
   miles_audio_debug("set_play_rate(play_rate="<<play_rate<<")");
@@ -220,11 +203,9 @@ set_play_rate(PN_stdfloat play_rate) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::length
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat MilesAudioSequence::
 length() const {
   if (_sequence == 0) {
@@ -235,7 +216,7 @@ length() const {
       // determine its length.
       ((MilesAudioSequence *)this)->determine_length();
     }
-     
+
     return _sd->get_length();
   }
 
@@ -247,11 +228,9 @@ length() const {
   return time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::status
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AudioSound::SoundStatus MilesAudioSequence::
 status() const {
   if (_sequence == 0) {
@@ -272,37 +251,29 @@ status() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::cleanup
-//       Access: Public, Virtual
-//  Description: Stops the sound from playing and releases any
-//               associated resources, in preparation for releasing
-//               the sound or shutting down the sound system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stops the sound from playing and releases any associated resources, in
+ * preparation for releasing the sound or shutting down the sound system.
+ */
 void MilesAudioSequence::
 cleanup() {
   stop();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::internal_stop
-//       Access: Private
-//  Description: Called by the GlobalMilesManager when it is detected
-//               that this particular sound has already stopped, and
-//               its sequence handle will be recycled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the GlobalMilesManager when it is detected that this particular
+ * sound has already stopped, and its sequence handle will be recycled.
+ */
 void MilesAudioSequence::
 internal_stop() {
   _sequence = 0;
   _sequence_index = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::finish_callback
-//       Access: Private, Static
-//  Description: This callback is made by Miles (possibly in a
-//               sub-thread) when the sequence finishes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback is made by Miles (possibly in a sub-thread) when the sequence
+ * finishes.
+ */
 void AILCALLBACK MilesAudioSequence::
 finish_callback(HSEQUENCE sequence) {
   MilesAudioSequence *self = (MilesAudioSequence *)AIL_sequence_user_data(sequence, 0);
@@ -313,11 +284,9 @@ finish_callback(HSEQUENCE sequence) {
   self->_manager->_sounds_finished = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::do_set_time
-//       Access: Private
-//  Description: Sets the start time of an already allocated stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the start time of an already allocated stream.
+ */
 void MilesAudioSequence::
 do_set_time(PN_stdfloat time) {
   miles_audio_debug("do_set_time(time="<<time<<")");
@@ -330,23 +299,21 @@ do_set_time(PN_stdfloat time) {
   S32 length_ms;
   AIL_sequence_ms_position(_sequence, &length_ms, NULL);
   time_ms = min(time_ms, length_ms);
-  
+
   AIL_set_sequence_ms_position(_sequence, time_ms);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::determine_length
-//       Access: Private
-//  Description: Temporarily loads the sequence to determine its
-//               length.  Stores the result on the _sd.
-////////////////////////////////////////////////////////////////////
+/**
+ * Temporarily loads the sequence to determine its length.  Stores the result on
+ * the _sd.
+ */
 void MilesAudioSequence::
 determine_length() {
   nassertv(_sequence == 0);
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
-  if (!mgr->get_sequence(_sequence, _sequence_index, this)){ 
+  if (!mgr->get_sequence(_sequence, _sequence_index, this)){
     milesAudio_cat.warning()
       << "Could not determine length of " << _file_name << ": too many open sequences\n";
     _sequence = 0;
@@ -358,7 +325,7 @@ determine_length() {
     mgr->release_sequence(_sequence_index, this);
     _sequence = 0;
     _sequence_index = 0;
-    
+
     _sd->set_length(time);
   }
 }

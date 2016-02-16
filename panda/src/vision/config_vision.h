@@ -22,4 +22,3 @@ NotifyCategoryDecl(vision, EXPCL_VISION, EXPTP_VISION);
 extern EXPCL_VISION void init_libvision();
 
 #endif
-

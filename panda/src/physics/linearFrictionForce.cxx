@@ -16,52 +16,42 @@
 
 TypeHandle LinearFrictionForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearFrictionForce
-//       Access: Public
-//  Description: Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor
+ */
 LinearFrictionForce::
 LinearFrictionForce(PN_stdfloat coef, PN_stdfloat a, bool m) :
   LinearForce(a, m) {
   set_coef(coef);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearFrictionForce
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 LinearFrictionForce::
 LinearFrictionForce(const LinearFrictionForce &copy) :
   LinearForce(copy) {
   _coef = copy._coef;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearFrictionForce
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 LinearFrictionForce::
 ~LinearFrictionForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 LinearForce *LinearFrictionForce::
 make_copy() {
   return new LinearFrictionForce(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearFrictionForce
-//       Access: Public
-//  Description: Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor
+ */
 LVector3 LinearFrictionForce::
 get_child_vector(const PhysicsObject* po) {
   LVector3 v = po->get_velocity();
@@ -80,12 +70,9 @@ get_child_vector(const PhysicsObject* po) {
   return friction;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearFrictionForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -93,12 +80,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearFrictionForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

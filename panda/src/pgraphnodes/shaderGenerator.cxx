@@ -49,14 +49,11 @@ TypeHandle ShaderGenerator::_type_handle;
 
 #ifdef HAVE_CG
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::Constructor
-//       Access: Published
-//  Description: Create a ShaderGenerator.  This has no state,
-//               except possibly to cache certain results.
-//               The parameter that must be passed is the GSG to
-//               which the shader generator belongs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a ShaderGenerator.  This has no state, except possibly to cache
+ * certain results.  The parameter that must be passed is the GSG to which the
+ * shader generator belongs.
+ */
 ShaderGenerator::
 ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host) :
   _gsg(gsg), _host(host) {
@@ -71,22 +68,17 @@ ShaderGenerator(GraphicsStateGuardianBase *gsg, GraphicsOutputBase *host) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::Destructor
-//       Access: Published, Virtual
-//  Description: Destroy a ShaderGenerator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroy a ShaderGenerator.
+ */
 ShaderGenerator::
 ~ShaderGenerator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::reset_register_allocator
-//       Access: Protected
-//  Description: Clears the register allocator.  Initially, the pool
-//               of available registers is empty.  You have to add
-//               some if you want there to be any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Clears the register allocator.  Initially, the pool of available registers is
+ * empty.  You have to add some if you want there to be any.
+ */
 void ShaderGenerator::
 reset_register_allocator() {
   _vtregs_used = 0;
@@ -95,11 +87,9 @@ reset_register_allocator() {
   _fcregs_used = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::alloc_vreg
-//       Access: Protected
-//  Description: Allocate a vreg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocate a vreg.
+ */
 const char *ShaderGenerator::
 alloc_vreg() {
   if (_use_generic_attr) {
@@ -154,11 +144,9 @@ alloc_vreg() {
   return "UNKNOWN";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::alloc_freg
-//       Access: Protected
-//  Description: Allocate a freg.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocate a freg.
+ */
 const char *ShaderGenerator::
 alloc_freg() {
   switch (_ftregs_used) {
@@ -192,13 +180,10 @@ alloc_freg() {
   return "UNKNOWN";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::analyze_renderstate
-//       Access: Protected
-//  Description: Analyzes the RenderState prior to shader generation.
-//               The results of the analysis are stored in instance
-//               variables of the Shader Generator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Analyzes the RenderState prior to shader generation.  The results of the
+ * analysis are stored in instance variables of the Shader Generator.
+ */
 void ShaderGenerator::
 analyze_renderstate(const RenderState *rs) {
   clear_analysis();
@@ -473,13 +458,10 @@ analyze_renderstate(const RenderState *rs) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::clear_analysis
-//       Access: Protected
-//  Description: Called after analyze_renderstate to discard all
-//               the results of the analysis.  This is generally done
-//               after shader generation is complete.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after analyze_renderstate to discard all the results of the analysis.
+ * This is generally done after shader generation is complete.
+ */
 void ShaderGenerator::
 clear_analysis() {
   _vertex_colors = false;
@@ -525,13 +507,10 @@ clear_analysis() {
   _lights_np.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::create_shader_attrib
-//       Access: Protected
-//  Description: Creates a ShaderAttrib given a generated shader's
-//               body.  Also inserts the lights into the shader
-//               attrib.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a ShaderAttrib given a generated shader's body.  Also inserts the
+ * lights into the shader attrib.
+ */
 CPT(RenderAttrib) ShaderGenerator::
 create_shader_attrib(const string &txt) {
   PT(Shader) shader = Shader::make(txt, Shader::SL_Cg);
@@ -543,40 +522,19 @@ create_shader_attrib(const string &txt) {
   return shattr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::synthesize_shader
-//       Access: Published, Virtual
-//  Description: This is the routine that implements the next-gen
-//               fixed function pipeline by synthesizing a shader.
-//               It also takes care of setting up any buffers
-//               needed to produce the requested effects.
-//
-//               Currently supports:
-//               - flat colors
-//               - vertex colors
-//               - lighting
-//               - normal maps, but not multiple
-//               - gloss maps, but not multiple
-//               - glow maps, but not multiple
-//               - materials, but not updates to materials
-//               - 2D textures
-//               - all texture stage modes, including combine modes
-//               - color scale attrib
-//               - light ramps (for cartoon shading)
-//               - shadow mapping
-//               - most texgen modes
-//               - texmatrix
-//               - 1D/2D/3D textures, cube textures, 2D tex arrays
-//               - linear/exp/exp2 fog
-//               - animation
-//
-//               Not yet supported:
-//               - dot3_rgb and dot3_rgba combine modes
-//
-//               Potential optimizations
-//               - omit attenuation calculations if attenuation off
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the routine that implements the next-gen fixed function pipeline by
+ * synthesizing a shader.  It also takes care of setting up any buffers needed
+ * to produce the requested effects.  Currently supports: - flat colors - vertex
+ * colors - lighting - normal maps, but not multiple - gloss maps, but not
+ * multiple - glow maps, but not multiple - materials, but not updates to
+ * materials - 2D textures - all texture stage modes, including combine modes -
+ * color scale attrib - light ramps (for cartoon shading) - shadow mapping -
+ * most texgen modes - texmatrix - 1D/2D/3D textures, cube textures, 2D tex
+ * arrays - linear/exp/exp2 fog - animation  Not yet supported: - dot3_rgb and
+ * dot3_rgba combine modes  Potential optimizations - omit attenuation
+ * calculations if attenuation off
+ */
 CPT(ShaderAttrib) ShaderGenerator::
 synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   analyze_renderstate(rs);
@@ -1491,11 +1449,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   return DCAST(ShaderAttrib, shattr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::combine_mode_as_string
-//       Access: Protected, Static
-//  Description: This 'synthesizes' a combine mode into a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * This 'synthesizes' a combine mode into a string.
+ */
 const string ShaderGenerator::
 combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
   ostringstream text;
@@ -1548,11 +1504,9 @@ combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode
   return text.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::combine_source_as_string
-//       Access: Protected, Static
-//  Description: This 'synthesizes' a combine source into a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * This 'synthesizes' a combine source into a string.
+ */
 const string ShaderGenerator::
 combine_source_as_string(CPT(TextureStage) stage, short num, bool alpha, bool single_value, short texindex) {
   TextureStage::CombineSource c_src = TextureStage::CS_undefined;
@@ -1633,12 +1587,9 @@ combine_source_as_string(CPT(TextureStage) stage, short num, bool alpha, bool si
   return csource.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::texture_type_as_string
-//       Access: Protected, Static
-//  Description: Returns 1D, 2D, 3D or CUBE, depending on the given
-//               texture type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 1D, 2D, 3D or CUBE, depending on the given texture type.
+ */
 const string ShaderGenerator::
 texture_type_as_string(Texture::TextureType ttype) {
   switch (ttype) {

@@ -28,11 +28,10 @@
 class WinStatsServer;
 class WinStatsChartMenu;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsMonitor
-// Description : This class represents a connection to a PStatsClient
-//               and manages the data exchange with the client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class represents a connection to a PStatsClient and manages the data
+ * exchange with the client.
+ */
 class WinStatsMonitor : public PStatMonitor {
 public:
   class MenuDef {
@@ -73,7 +72,7 @@ public:
   void set_time_units(int unit_mask);
   void set_scroll_speed(double scroll_speed);
   void set_pause(bool pause);
-  
+
 private:
   void add_graph(WinStatsGraph *graph);
   void remove_graph(WinStatsGraph *graph);

@@ -14,41 +14,33 @@
 #include "textureCollection.h"
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureCollection::
 TextureCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureCollection::
 TextureCollection(const TextureCollection &copy) :
   _textures(copy._textures)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextureCollection::
 operator = (const TextureCollection &copy) {
   _textures = copy._textures;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::add_texture
-//       Access: Published
-//  Description: Adds a new Texture to the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new Texture to the collection.
+ */
 void TextureCollection::
 add_texture(Texture *texture) {
   // If the pointer to our internal array is shared by any other
@@ -65,13 +57,10 @@ add_texture(Texture *texture) {
   _textures.push_back(texture);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::remove_texture
-//       Access: Published
-//  Description: Removes the indicated Texture from the collection.
-//               Returns true if the texture was removed, false if it was
-//               not a member of the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated Texture from the collection.  Returns true if the
+ * texture was removed, false if it was not a member of the collection.
+ */
 bool TextureCollection::
 remove_texture(Texture *texture) {
   int texture_index = -1;
@@ -101,14 +90,11 @@ remove_texture(Texture *texture) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::add_textures_from
-//       Access: Published
-//  Description: Adds all the Textures indicated in the other
-//               collection to this texture.  The other textures are simply
-//               appended to the end of the textures in this list;
-//               duplicates are not automatically removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all the Textures indicated in the other collection to this texture.  The
+ * other textures are simply appended to the end of the textures in this list;
+ * duplicates are not automatically removed.
+ */
 void TextureCollection::
 add_textures_from(const TextureCollection &other) {
   int other_num_textures = other.get_num_textures();
@@ -118,12 +104,10 @@ add_textures_from(const TextureCollection &other) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::remove_textures_from
-//       Access: Published
-//  Description: Removes from this collection all of the Textures
-//               listed in the other collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes from this collection all of the Textures listed in the other
+ * collection.
+ */
 void TextureCollection::
 remove_textures_from(const TextureCollection &other) {
   Textures new_textures;
@@ -137,14 +121,11 @@ remove_textures_from(const TextureCollection &other) {
   _textures = new_textures;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::remove_duplicate_textures
-//       Access: Published
-//  Description: Removes any duplicate entries of the same Textures
-//               on this collection.  If a Texture appears multiple
-//               times, the first appearance is retained; subsequent
-//               appearances are removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes any duplicate entries of the same Textures on this collection.  If a
+ * Texture appears multiple times, the first appearance is retained; subsequent
+ * appearances are removed.
+ */
 void TextureCollection::
 remove_duplicate_textures() {
   Textures new_textures;
@@ -166,12 +147,10 @@ remove_duplicate_textures() {
   _textures = new_textures;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::has_texture
-//       Access: Published
-//  Description: Returns true if the indicated Texture appears in
-//               this collection, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated Texture appears in this collection, false
+ * otherwise.
+ */
 bool TextureCollection::
 has_texture(Texture *texture) const {
   for (int i = 0; i < get_num_textures(); i++) {
@@ -182,35 +161,27 @@ has_texture(Texture *texture) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::clear
-//       Access: Published
-//  Description: Removes all Textures from the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all Textures from the collection.
+ */
 void TextureCollection::
 clear() {
   _textures.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::reserve
-//       Access: Published
-//  Description: This is a hint to Panda to allocate enough memory
-//               to hold the given number of NodePaths, if you know
-//               ahead of time how many you will be adding.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a hint to Panda to allocate enough memory to hold the given number of
+ * NodePaths, if you know ahead of time how many you will be adding.
+ */
 void TextureCollection::
 reserve(size_t num) {
   _textures.reserve(num);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::find_texture
-//       Access: Published
-//  Description: Returns the texture in the collection with the
-//               indicated name, if any, or NULL if no texture has
-//               that name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the texture in the collection with the indicated name, if any, or
+ * NULL if no texture has that name.
+ */
 Texture *TextureCollection::
 find_texture(const string &name) const {
   int num_textures = get_num_textures();
@@ -223,21 +194,17 @@ find_texture(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::get_num_textures
-//       Access: Published
-//  Description: Returns the number of Textures in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of Textures in the collection.
+ */
 int TextureCollection::
 get_num_textures() const {
   return _textures.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::get_texture
-//       Access: Published
-//  Description: Returns the nth Texture in the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth Texture in the collection.
+ */
 Texture *TextureCollection::
 get_texture(int index) const {
   nassertr(index >= 0 && index < (int)_textures.size(), NULL);
@@ -245,13 +212,10 @@ get_texture(int index) const {
   return _textures[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::operator []
-//       Access: Published
-//  Description: Returns the nth Texture in the collection.  This is
-//               the same as get_texture(), but it may be a more
-//               convenient way to access it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth Texture in the collection.  This is the same as
+ * get_texture(), but it may be a more convenient way to access it.
+ */
 Texture *TextureCollection::
 operator [] (int index) const {
   nassertr(index >= 0 && index < (int)_textures.size(), NULL);
@@ -259,23 +223,19 @@ operator [] (int index) const {
   return _textures[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::size
-//       Access: Published
-//  Description: Returns the number of textures in the collection.  This
-//               is the same thing as get_num_textures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of textures in the collection.  This is the same thing as
+ * get_num_textures().
+ */
 int TextureCollection::
 size() const {
   return _textures.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::output
-//       Access: Published
-//  Description: Writes a brief one-line description of the
-//               TextureCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief one-line description of the TextureCollection to the indicated
+ * output stream.
+ */
 void TextureCollection::
 output(ostream &out) const {
   if (get_num_textures() == 1) {
@@ -285,12 +245,10 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::write
-//       Access: Published
-//  Description: Writes a complete multi-line description of the
-//               TextureCollection to the indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a complete multi-line description of the TextureCollection to the
+ * indicated output stream.
+ */
 void TextureCollection::
 write(ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_textures(); i++) {

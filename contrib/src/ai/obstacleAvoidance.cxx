@@ -23,11 +23,10 @@ ObstacleAvoidance::
 ~ObstacleAvoidance() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: obstacle_detection
-//  Description: This function checks if an obstacle is near to the AICharacter and
-//               if an obstacle is detected returns true
-////////////////////////////////////////////////////////////////////
+/**
+ * This function checks if an obstacle is near to the AICharacter and if an
+ * obstacle is detected returns true
+ */
 bool ObstacleAvoidance::
 obstacle_detection() {
   // Calculate the volume of the AICharacter with respect to render
@@ -65,11 +64,9 @@ obstacle_detection() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: obstacle_avoidance_activate
-//  Description: This function activates obstacle_avoidance if a obstacle
-//               is detected
-////////////////////////////////////////////////////////////////////
+/**
+ * This function activates obstacle_avoidance if a obstacle is detected
+ */
 void ObstacleAvoidance::
 obstacle_avoidance_activate() {
   if (obstacle_detection()) {
@@ -78,13 +75,11 @@ obstacle_avoidance_activate() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: do_obstacle_avoidance
-//  Description: This function returns the force necessary by the AICharacter to
-//               avoid the nearest obstacle detected by obstacle_detection
-//               function
-// NOTE : This assumes the obstacles are spherical
-////////////////////////////////////////////////////////////////////
+/**
+ * This function returns the force necessary by the AICharacter to avoid the
+ * nearest obstacle detected by obstacle_detection function NOTE : This assumes
+ * the obstacles are spherical
+ */
 LVecBase3 ObstacleAvoidance::
 do_obstacle_avoidance() {
   LVecBase3 offset = _ai_char->get_node_path().get_pos() - _nearest_obstacle.get_pos();

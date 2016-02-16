@@ -24,12 +24,10 @@ class IPhoneGraphicsStateGuardian;
 class IPhoneGraphicsWindow;
 class PNMImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IPhoneGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL graphics windows on the various
-//               IPHONE's.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL graphics
+ * windows on the various IPHONE's.
+ */
 class EXPCL_MISC IPhoneGraphicsPipe : public GraphicsPipe {
 public:
   IPhoneGraphicsPipe();
@@ -53,7 +51,7 @@ protected:
                                          bool &precertify);
 
 public:
-  UIWindow *_window; 
+  UIWindow *_window;
   ControllerDemoViewController *_view_controller;
 
   typedef pset<IPhoneGraphicsWindow *> GraphicsWindows;

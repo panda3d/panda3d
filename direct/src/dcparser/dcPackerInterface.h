@@ -57,16 +57,12 @@ enum DCPackType {
 };
 END_PUBLISH
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCPackerInterface
-// Description : This defines the internal interface for packing
-//               values into a DCField.  The various different DC
-//               objects inherit from this.  
-//
-//               Normally these methods are called only by the
-//               DCPacker object; the user wouldn't normally call
-//               these directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the internal interface for packing values into a DCField.  The
+ * various different DC objects inherit from this.  Normally these methods are
+ * called only by the DCPacker object; the user wouldn't normally call these
+ * directly.
+ */
 class EXPCL_DIRECT DCPackerInterface {
 public:
   DCPackerInterface(const string &name = string());
@@ -118,19 +114,19 @@ public:
                            bool &pack_error, bool &range_error) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
-  virtual void unpack_double(const char *data, size_t length, size_t &p, 
+  virtual void unpack_double(const char *data, size_t length, size_t &p,
                              double &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_int(const char *data, size_t length, size_t &p, 
+  virtual void unpack_int(const char *data, size_t length, size_t &p,
                           int &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_uint(const char *data, size_t length, size_t &p, 
+  virtual void unpack_uint(const char *data, size_t length, size_t &p,
                            unsigned int &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_int64(const char *data, size_t length, size_t &p, 
+  virtual void unpack_int64(const char *data, size_t length, size_t &p,
                             PN_int64 &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_uint64(const char *data, size_t length, size_t &p, 
+  virtual void unpack_uint64(const char *data, size_t length, size_t &p,
                              PN_uint64 &value, bool &pack_error, bool &range_error) const;
-  virtual void unpack_string(const char *data, size_t length, size_t &p, 
+  virtual void unpack_string(const char *data, size_t length, size_t &p,
                              string &value, bool &pack_error, bool &range_error) const;
-  virtual bool unpack_validate(const char *data, size_t length, size_t &p, 
+  virtual bool unpack_validate(const char *data, size_t length, size_t &p,
                                bool &pack_error, bool &range_error) const;
   virtual bool unpack_skip(const char *data, size_t length, size_t &p,
                            bool &pack_error) const;
@@ -158,13 +154,13 @@ public:
   INLINE static PN_uint64 do_unpack_uint64(const char *buffer);
   INLINE static double do_unpack_float64(const char *buffer);
 
-  INLINE static void validate_int_limits(int value, int num_bits, 
+  INLINE static void validate_int_limits(int value, int num_bits,
                                          bool &range_error);
-  INLINE static void validate_int64_limits(PN_int64 value, int num_bits, 
+  INLINE static void validate_int64_limits(PN_int64 value, int num_bits,
                                            bool &range_error);
-  INLINE static void validate_uint_limits(unsigned int value, int num_bits, 
+  INLINE static void validate_uint_limits(unsigned int value, int num_bits,
                                           bool &range_error);
-  INLINE static void validate_uint64_limits(PN_uint64 value, int num_bits, 
+  INLINE static void validate_uint64_limits(PN_uint64 value, int num_bits,
                                             bool &range_error);
 
   const DCPackerCatalog *get_catalog() const;

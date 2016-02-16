@@ -19,18 +19,14 @@
 #include "typedWritable.h"
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypedWritableReferenceCount
-// Description : A base class for things which need to inherit from
-//               both TypedWritable and from ReferenceCount.  It's
-//               convenient to define this intermediate base class
-//               instead of multiply inheriting from the two classes
-//               each time they are needed, so that we can sensibly
-//               pass around pointers to things which are both
-//               TypedWritables and ReferenceCounters.
-//               
-//               See also TypedObject for detailed instructions.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for things which need to inherit from both TypedWritable and
+ * from ReferenceCount.  It's convenient to define this intermediate base class
+ * instead of multiply inheriting from the two classes each time they are
+ * needed, so that we can sensibly pass around pointers to things which are both
+ * TypedWritables and ReferenceCounters.  See also TypedObject for detailed
+ * instructions.
+ */
 class EXPCL_PANDA_PUTIL TypedWritableReferenceCount : public TypedWritable, public ReferenceCount {
 public:
   INLINE TypedWritableReferenceCount();

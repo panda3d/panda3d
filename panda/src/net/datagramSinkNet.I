@@ -11,23 +11,18 @@
  * @date 2009-02-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramSinkNet::set_target
-//       Access: Published
-//  Description: Specifies the Connection that will receive all future
-//               Datagrams sent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the Connection that will receive all future Datagrams sent.
+ */
 INLINE void DatagramSinkNet::
 set_target(Connection *connection) {
   _target = connection;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramSinkNet::get_target
-//       Access: Published
-//  Description: Returns the current target Connection, or NULL if the
-//               target has not yet been set.  See set_target().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current target Connection, or NULL if the target has not yet been
+ * set.  See set_target().
+ */
 INLINE Connection *DatagramSinkNet::
 get_target() const {
   return _target;

@@ -36,4 +36,3 @@ run_p3dpython(const char *program_name, const char *archive_file,
               const char *log_pathname, bool interactive_console);
 
 #endif
-

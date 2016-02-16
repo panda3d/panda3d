@@ -18,15 +18,11 @@
 #include "mutexDebug.h"
 #include "lightReMutexDirect.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LightReMutex
-// Description : A lightweight reentrant mutex.  See LightMutex and
-//               ReMutex.
-//
-//               This class inherits its implementation either from
-//               MutexDebug or LightReMutexDirect, depending on the
-//               definition of DEBUG_THREADS.
-////////////////////////////////////////////////////////////////////
+/**
+ * A lightweight reentrant mutex.  See LightMutex and ReMutex.  This class
+ * inherits its implementation either from MutexDebug or LightReMutexDirect,
+ * depending on the definition of DEBUG_THREADS.
+ */
 #ifdef DEBUG_THREADS
 class EXPCL_PANDA_PIPELINE LightReMutex : public MutexDebug
 #else

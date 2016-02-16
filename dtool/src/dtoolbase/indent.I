@@ -11,14 +11,12 @@
  * @date 1999-02-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_long_list
-//  Description: Writes a list of things to the indicated output
-//               stream, with a space separating each item.  One or
-//               more lines will be written, and the lines will
-//               automatically be broken such that no line exceeds
-//               max_col columns if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of things to the indicated output stream, with a space
+ * separating each item.  One or more lines will be written, and the lines will
+ * automatically be broken such that no line exceeds max_col columns if
+ * possible.
+ */
 template<class InputIterator>
 void
 write_long_list(ostream &out, int indent_level,

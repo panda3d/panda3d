@@ -15,30 +15,25 @@
 #ifndef WRITABLECONFIGURABLE_H
 #define WRITABLECONFIGURABLE_H
 //
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+/*
+ * Includes
+ */
 
 #include "pandabase.h"
 
 #include "typedWritable.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+/*
+ * Defines
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : WritableConfigurable
-// Description : Defined as a fix to allow creating Configurable and
-//               Writable objects.  Otherwise the compiler gets
-//               confused since both TypedWritable and Configurable
-//               inherit from TypedObject.
-//
-//               An object that has data or parameters that are set
-//               less frequently (at least occasionally) than every
-//               frame.  We can cache the configuration info by
-//               by using the "dirty" flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defined as a fix to allow creating Configurable and Writable objects.
+ * Otherwise the compiler gets confused since both TypedWritable and
+ * Configurable inherit from TypedObject.  An object that has data or parameters
+ * that are set less frequently (at least occasionally) than every frame.  We
+ * can cache the configuration info by by using the "dirty" flag.
+ */
 class EXPCL_PANDA_PUTIL WritableConfigurable : public TypedWritable {
 
 public:

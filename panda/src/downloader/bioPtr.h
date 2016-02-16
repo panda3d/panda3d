@@ -29,15 +29,12 @@
 
 class URLSpec;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BioPtr
-// Description : A wrapper around an OpenSSL BIO object to make a
-//               reference-counting pointer to it.  It appears that
-//               the OpenSSL library already uses reference counts on
-//               these things internally, but the interface doesn't
-//               appear to be public; so we might as well wrap the
-//               whole thing at the high level.
-////////////////////////////////////////////////////////////////////
+/**
+ * A wrapper around an OpenSSL BIO object to make a reference-counting pointer
+ * to it.  It appears that the OpenSSL library already uses reference counts on
+ * these things internally, but the interface doesn't appear to be public; so we
+ * might as well wrap the whole thing at the high level.
+ */
 class EXPCL_PANDAEXPRESS BioPtr : public ReferenceCount {
 public:
   INLINE BioPtr(BIO *bio);
@@ -53,7 +50,7 @@ public:
 
   INLINE const string &get_server_name() const;
   INLINE int get_port() const;
-  
+
 private:
   BIO *_bio;
   string _server_name;
@@ -66,5 +63,3 @@ private:
 
 
 #endif
-
-

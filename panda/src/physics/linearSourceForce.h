@@ -16,10 +16,9 @@
 
 #include "linearDistanceForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearSourceForce
-// Description : Repellant force.
-////////////////////////////////////////////////////////////////////
+/**
+ * Repellant force.
+ */
 class EXPCL_PANDAPHYSICS LinearSourceForce : public LinearDistanceForce {
 PUBLISHED:
   LinearSourceForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a = 1.0f,
@@ -27,7 +26,7 @@ PUBLISHED:
   LinearSourceForce();
   LinearSourceForce(const LinearSourceForce &copy);
   virtual ~LinearSourceForce();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

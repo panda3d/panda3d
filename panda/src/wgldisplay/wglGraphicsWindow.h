@@ -17,14 +17,12 @@
 #include "pandabase.h"
 #include "winGraphicsWindow.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsWindow
-// Description : A single graphics window for rendering OpenGL under
-//               Microsoft Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single graphics window for rendering OpenGL under Microsoft Windows.
+ */
 class EXPCL_PANDAGL wglGraphicsWindow : public WinGraphicsWindow {
 public:
-  wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

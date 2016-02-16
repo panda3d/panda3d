@@ -20,12 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColorBlendAttrib
-// Description : This specifies how colors are blended into the frame
-//               buffer, for special effects.  This overrides
-//               transparency if transparency is also specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specifies how colors are blended into the frame buffer, for special
+ * effects.  This overrides transparency if transparency is also specified.
+ */
 class EXPCL_PANDA_PGRAPH ColorBlendAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -119,7 +117,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

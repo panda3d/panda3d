@@ -22,10 +22,9 @@
 
 class PhysxBounds3;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSceneDesc
-// Description : Descriptor for PhysxScene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for PhysxScene.
+ */
 class EXPCL_PANDAPHYSX PhysxSceneDesc : public PhysxEnums {
 
 PUBLISHED:

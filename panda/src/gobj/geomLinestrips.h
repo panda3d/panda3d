@@ -17,10 +17,9 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomLinestrips
-// Description : Defines a series of line strips.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of line strips.
+ */
 class EXPCL_PANDA_GOBJ GeomLinestrips : public GeomPrimitive {
 PUBLISHED:
   GeomLinestrips(UsageHint usage_hint);
@@ -44,7 +43,7 @@ protected:
   virtual CPT(GeomPrimitive) decompose_impl() const;
   virtual CPT(GeomVertexArrayData) rotate_impl() const;
   virtual bool requires_unused_vertices() const;
-  virtual void append_unused_vertices(GeomVertexArrayData *vertices, 
+  virtual void append_unused_vertices(GeomVertexArrayData *vertices,
                                       int vertex);
 
 public:

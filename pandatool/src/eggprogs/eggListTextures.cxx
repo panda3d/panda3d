@@ -16,11 +16,9 @@
 #include "pnmImageHeader.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggListTextures::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggListTextures::
 EggListTextures() {
   set_program_brief("list textures referenced by an .egg file");
@@ -31,11 +29,9 @@ EggListTextures() {
      "format is crafted to be compatible with that file's input format.");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggListTextures::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggListTextures::
 run() {
   if (!do_reader_options()) {

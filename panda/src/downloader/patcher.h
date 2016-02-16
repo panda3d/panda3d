@@ -22,10 +22,9 @@
 #include "buffer.h"
 #include "patchfile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Patcher
-// Description : Applies a patch synchronously
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies a patch synchronously
+ */
 class EXPCL_PANDAEXPRESS Patcher {
 PUBLISHED:
   Patcher();

@@ -21,13 +21,11 @@
 
 class NurbsVertex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsSurfaceResult
-// Description : The result of a NurbsSurfaceEvaluator.  This object
-//               represents a surface in a particular coordinate space.
-//               It can return the point and/or normal to the surface
-//               at any point.
-////////////////////////////////////////////////////////////////////
+/**
+ * The result of a NurbsSurfaceEvaluator.  This object represents a surface in a
+ * particular coordinate space.  It can return the point and/or normal to the
+ * surface at any point.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsSurfaceResult : public ReferenceCount {
 public:
   NurbsSurfaceResult(const NurbsBasisVector &u_basis,
@@ -98,4 +96,3 @@ private:
 #include "nurbsSurfaceResult.I"
 
 #endif
-

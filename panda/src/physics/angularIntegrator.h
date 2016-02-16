@@ -18,12 +18,10 @@
 #include "angularForce.h"
 #include "configVariableDouble.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BaseAngularIntegrator
-// Description : Pure virtual base class for physical modeling.
-//               Takes physically modelable objects and applies
-//               forces to them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pure virtual base class for physical modeling.  Takes physically modelable
+ * objects and applies forces to them.
+ */
 class EXPCL_PANDAPHYSICS AngularIntegrator : public BaseIntegrator {
 PUBLISHED:
   virtual ~AngularIntegrator();
@@ -32,7 +30,7 @@ public:
   void integrate(Physical *physical, AngularForceVector &forces,
                  PN_stdfloat dt);
 
-PUBLISHED:  
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

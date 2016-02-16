@@ -22,11 +22,9 @@
 
 class PhysxCapsuleForceFieldShapeDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxCapsuleForceFieldShape
-// Description : A capsule shaped region used to define a force
-//               field.
-////////////////////////////////////////////////////////////////////
+/**
+ * A capsule shaped region used to define a force field.
+ */
 class EXPCL_PANDAPHYSX PhysxCapsuleForceFieldShape : public PhysxForceFieldShape {
 
 PUBLISHED:
@@ -56,7 +54,7 @@ public:
   }
   static void init_type() {
     PhysxForceFieldShape::init_type();
-    register_type(_type_handle, "PhysxCapsuleForceFieldShape", 
+    register_type(_type_handle, "PhysxCapsuleForceFieldShape",
                   PhysxForceFieldShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

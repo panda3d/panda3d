@@ -11,35 +11,29 @@
  * @date 2002-10-09
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: IIdentityStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IIdentityStream::
 IIdentityStream() : ISocketStream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IIdentityStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IIdentityStream::
 IIdentityStream(BioStreamPtr *source, HTTPChannel *doc,
-                bool has_content_length, size_t content_length) : 
-  ISocketStream(&_buf) 
+                bool has_content_length, size_t content_length) :
+  ISocketStream(&_buf)
 {
   open(source, doc, has_content_length, content_length);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IIdentityStream::open
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IIdentityStream &IIdentityStream::
-open(BioStreamPtr *source, HTTPChannel *doc, 
+open(BioStreamPtr *source, HTTPChannel *doc,
      bool has_content_length, size_t content_length) {
   clear((ios_iostate)0);
   _buf.open_read(source, doc, has_content_length, content_length);

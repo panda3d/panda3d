@@ -24,10 +24,9 @@
 #include "geomVertexWriter.h"
 #include "geomNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PtsToBam
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class PtsToBam : public ProgramBase, public WithOutputFile {
 public:
   PtsToBam();

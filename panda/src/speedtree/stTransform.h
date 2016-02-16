@@ -19,12 +19,10 @@
 #include "speedtree_api.h"
 #include "deg_2_rad.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : STTransform
-// Description : Represents a transform that may be applied to a
-//               particular instance of a tree when added to the
-//               SpeedTreeNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a transform that may be applied to a particular instance of a tree
+ * when added to the SpeedTreeNode.
+ */
 class EXPCL_PANDASPEEDTREE STTransform {
 PUBLISHED:
   INLINE STTransform();

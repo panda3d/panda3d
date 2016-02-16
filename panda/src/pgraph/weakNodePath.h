@@ -20,19 +20,13 @@
 #include "nodePathComponent.h"
 #include "weakPointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WeakNodePath
-// Description : This class is a wrapper around a NodePath that,
-//               unlike the actual NodePath class, doesn't hold a
-//               reference count to the node.  Thus the node may be
-//               detached from the scene graph and destructed at any
-//               time.
-//
-//               You can call is_valid() or was_deleted() at any time
-//               to determine whether the node is still around; if it
-//               is, get_node_path() will return the associated
-//               NodePath.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a wrapper around a NodePath that, unlike the actual NodePath
+ * class, doesn't hold a reference count to the node.  Thus the node may be
+ * detached from the scene graph and destructed at any time.  You can call
+ * is_valid() or was_deleted() at any time to determine whether the node is
+ * still around; if it is, get_node_path() will return the associated NodePath.
+ */
 class EXPCL_PANDA_PGRAPH WeakNodePath {
 public:
   INLINE WeakNodePath(const NodePath &node_path);

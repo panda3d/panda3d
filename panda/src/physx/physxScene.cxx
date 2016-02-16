@@ -35,11 +35,9 @@ PStatCollector PhysxScene::_pcollector_simulate("App:PhysX:Simulate");
 PStatCollector PhysxScene::_pcollector_cloth("App:PhysX:Cloth");
 PStatCollector PhysxScene::_pcollector_softbody("App:PhysX:Softbody");
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxScene::
 link(NxScene *scenePtr) {
 
@@ -64,11 +62,9 @@ link(NxScene *scenePtr) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxScene::
 unlink() {
 
@@ -167,11 +163,9 @@ unlink() {
   PhysxManager::get_global_ptr()->_scenes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::release
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxScene::
 release() {
 
@@ -183,18 +177,13 @@ release() {
   _ptr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::simulate
-//       Access: Published
-//  Description: Advances the simulation by an elapsedTime time.
-//               The elapsed time has to be in the range (0, inf).
-//
-//               It is not allowed to modify the physics scene in
-//               between the simulate(dt) and the fetch_results
-//               calls!  But it is allowed to read from the scene
-//               and do additional computations, e. g. AI, in
-//               between these calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the simulation by an elapsedTime time.  The elapsed time has to be
+ * in the range (0, inf).  It is not allowed to modify the physics scene in
+ * between the simulate(dt) and the fetch_results calls!  But it is allowed to
+ * read from the scene and do additional computations, e.  g.  AI, in between
+ * these calls.
+ */
 void PhysxScene::
 simulate(float dt) {
 
@@ -224,19 +213,13 @@ simulate(float dt) {
   _pcollector_simulate.stop();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::fetch_results
-//       Access: Published
-//  Description: Waits until the simulation has finished, and then
-//               updates the scene graph with with simulation
-//               results.
-//
-//               It is not allowed to modify the physics scene in
-//               between the simulate(dt) and the fetch_results
-//               calls!  But it is allowed to read from the scene
-//               and do additional computations, e. g. AI, in
-//               between these calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits until the simulation has finished, and then updates the scene graph
+ * with with simulation results.  It is not allowed to modify the physics scene
+ * in between the simulate(dt) and the fetch_results calls!  But it is allowed
+ * to read from the scene and do additional computations, e.  g.  AI, in between
+ * these calls.
+ */
 void PhysxScene::
 fetch_results() {
 
@@ -298,11 +281,9 @@ fetch_results() {
   _pcollector_softbody.stop();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_timing_variable
-//       Access: Published
-//  Description: Sets simulation timing parameters used in simulate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets simulation timing parameters used in simulate.
+ */
 void PhysxScene::
 set_timing_variable() {
 
@@ -310,23 +291,16 @@ set_timing_variable() {
   _ptr->setTiming(0, 0, NX_TIMESTEP_VARIABLE);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_timing_fixed
-//       Access: Published
-//  Description: Sets simulation timing parameters used in simulate.
-//               The elapsed time (parameter "dt" in simulate()) is
-//               internally subdivided into up to maxIter substeps
-//               no larger than maxTimestep. If the elapsed time is
-//               not a multiple of maxTimestep then any remaining
-//               time is accumulated to be added onto the elapsed
-//               time for the next time step. If more sub steps than
-//               maxIter are needed to advance the simulation by
-//               elapsed time, then the remaining time is also
-//               accumulated for the next call to simulate().
-//
-//               This timing method is strongly preferred for
-//               stable, reproducible simulation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets simulation timing parameters used in simulate.  The elapsed time
+ * (parameter "dt" in simulate()) is internally subdivided into up to maxIter
+ * substeps no larger than maxTimestep.  If the elapsed time is not a multiple
+ * of maxTimestep then any remaining time is accumulated to be added onto the
+ * elapsed time for the next time step.  If more sub steps than maxIter are
+ * needed to advance the simulation by elapsed time, then the remaining time is
+ * also accumulated for the next call to simulate().  This timing method is
+ * strongly preferred for stable, reproducible simulation.
+ */
 void PhysxScene::
 set_timing_fixed(float maxTimestep, unsigned int maxIter) {
 
@@ -334,11 +308,9 @@ set_timing_fixed(float maxTimestep, unsigned int maxIter) {
   _ptr->setTiming(maxTimestep, maxIter, NX_TIMESTEP_FIXED);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_gravity
-//       Access: Published
-//  Description: Sets a constant gravity for the entire scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets a constant gravity for the entire scene.
+ */
 void PhysxScene::
 set_gravity(const LVector3f &gravity) {
 
@@ -348,11 +320,9 @@ set_gravity(const LVector3f &gravity) {
   _ptr->setGravity(PhysxManager::vec3_to_nxVec3(gravity));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_gravity
-//       Access: Published
-//  Description: Retrieves the current gravity setting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the current gravity setting.
+ */
 LVector3f PhysxScene::
 get_gravity() const {
 
@@ -363,11 +333,9 @@ get_gravity() const {
   return PhysxManager::nxVec3_to_vec3(gravity);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_actors
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxScene::
 get_num_actors() const {
 
@@ -376,11 +344,9 @@ get_num_actors() const {
   return _ptr->getNbActors();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_actor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxActor *PhysxScene::
 create_actor(PhysxActorDesc &desc) {
 
@@ -398,11 +364,9 @@ create_actor(PhysxActorDesc &desc) {
   return actor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_actor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxActor *PhysxScene::
 get_actor(unsigned int idx) const {
 
@@ -415,20 +379,14 @@ get_actor(unsigned int idx) const {
   return actor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_debug_node
-//       Access: Published
-//  Description: Retrieves the debug geom node for this scene. The
-//               debug geom node is used to visualize information
-//               about the physical scene which can be useful for
-//               debugging an application.
-//
-//               The debug geom node geometry is generated in global
-//               coordinates. In order to see correct information
-//               it is important not to dislocate the debug node.
-//               Reparent it to render and leave position at
-//               (0,0,0).
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the debug geom node for this scene.  The debug geom node is used to
+ * visualize information about the physical scene which can be useful for
+ * debugging an application.  The debug geom node geometry is generated in
+ * global coordinates.  In order to see correct information it is important not
+ * to dislocate the debug node.  Reparent it to render and leave position at
+ * (0,0,0).
+ */
 PhysxDebugGeomNode *PhysxScene::
 get_debug_geom_node() {
 
@@ -436,11 +394,9 @@ get_debug_geom_node() {
   return _debugNode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::enable_contact_reporting
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxScene::
 enable_contact_reporting(bool enabled) {
 
@@ -456,11 +412,9 @@ enable_contact_reporting(bool enabled) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::is_contact_reporting_enabled
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxScene::
 is_contact_reporting_enabled() const {
 
@@ -469,11 +423,9 @@ is_contact_reporting_enabled() const {
   return _contact_report.is_enabled();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::enable_trigger_reporting
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxScene::
 enable_trigger_reporting(bool enabled) {
 
@@ -489,11 +441,9 @@ enable_trigger_reporting(bool enabled) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::is_trigger_reporting_enabled
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxScene::
 is_trigger_reporting_enabled() const {
 
@@ -502,11 +452,9 @@ is_trigger_reporting_enabled() const {
   return _trigger_report.is_enabled();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::enable_controller_reporting
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxScene::
 enable_controller_reporting(bool enabled) {
 
@@ -520,11 +468,9 @@ enable_controller_reporting(bool enabled) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::is_controller_reporting_enabled
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxScene::
 is_controller_reporting_enabled() const {
 
@@ -533,18 +479,12 @@ is_controller_reporting_enabled() const {
   return _controller_report.is_enabled();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_materials
-//       Access: Published
-//  Description: Return the number of materials in the scene.
-//
-//               Note that the returned value is not related to
-//               material indices. Those may not be allocated
-//               continuously, and its values may be higher than
-//               get_num_materials(). This will also include the
-//               default material which exists without having to
-//               be created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the number of materials in the scene.  Note that the returned value is
+ * not related to material indices.  Those may not be allocated continuously,
+ * and its values may be higher than get_num_materials(). This will also include
+ * the default material which exists without having to be created.
+ */
 unsigned int PhysxScene::
 get_num_materials() const {
 
@@ -552,17 +492,12 @@ get_num_materials() const {
   return _ptr->getNbMaterials();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_material
-//       Access: Published
-//  Description: Creates a new PhysxMaterial.
-//
-//               The material library consists of an array of
-//               material objects. Each material has a well defined
-//               index that can be used to refer to it. If an object
-//               references an undefined material, the default
-//               material with index 0 is used instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new PhysxMaterial.  The material library consists of an array of
+ * material objects.  Each material has a well defined index that can be used to
+ * refer to it.  If an object references an undefined material, the default
+ * material with index 0 is used instead.
+ */
 PhysxMaterial *PhysxScene::
 create_material(PhysxMaterialDesc &desc) {
 
@@ -580,12 +515,9 @@ create_material(PhysxMaterialDesc &desc) {
   return material;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_material
-//       Access: Published
-//  Description: Creates a new PhysxMaterial using the default
-//               settings of PhysxMaterialDesc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new PhysxMaterial using the default settings of PhysxMaterialDesc.
+ */
 PhysxMaterial *PhysxScene::
 create_material() {
 
@@ -604,15 +536,10 @@ create_material() {
   return material;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_hightest_material_index
-//       Access: Published
-//  Description: Returns current highest valid material index.
-//
-//               Note that not all indices below this are valid if
-//               some of them belong to meshes that have beed
-//               freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns current highest valid material index.  Note that not all indices
+ * below this are valid if some of them belong to meshes that have beed freed.
+ */
 unsigned int PhysxScene::
 get_hightest_material_index() const {
 
@@ -620,19 +547,13 @@ get_hightest_material_index() const {
   return _ptr->getHighestMaterialIndex();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_material_from_index
-//       Access: Published
-//  Description: Retrieves the material with the given material
-//               index.
-//
-//               There is always at least one material in the Scene,
-//               the default material (index 0). If the specified
-//               material index is out of range (larger than
-//               get_hightest_material_index) or belongs to a
-//               material that has been released, then the default
-//               material is returned, but no error is reported.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the material with the given material index.  There is always at
+ * least one material in the Scene, the default material (index 0). If the
+ * specified material index is out of range (larger than
+ * get_hightest_material_index) or belongs to a material that has been released,
+ * then the default material is returned, but no error is reported.
+ */
 PhysxMaterial *PhysxScene::
 get_material_from_index(unsigned int idx) const {
 
@@ -643,13 +564,10 @@ get_material_from_index(unsigned int idx) const {
   return (PhysxMaterial *)(materialPtr->userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_material
-//       Access: Published
-//  Description: Retrieves the n-th material from the array of
-//               materials. See also get_material_from_index,
-//               which retrieves a material by it's material index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the n-th material from the array of materials.  See also
+ * get_material_from_index, which retrieves a material by it's material index.
+ */
 PhysxMaterial *PhysxScene::
 get_material(unsigned int idx) const {
 
@@ -670,11 +588,9 @@ get_material(unsigned int idx) const {
   return (PhysxMaterial *)(materialPtr->userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_controllers
-//       Access: Published
-//  Description: Return the number of controllers in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the number of controllers in the scene.
+ */
 unsigned int PhysxScene::
 get_num_controllers() const {
 
@@ -683,11 +599,9 @@ get_num_controllers() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_controller
-//       Access: Published
-//  Description: Creates a new character controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new character controller.
+ */
 PhysxController *PhysxScene::
 create_controller(PhysxControllerDesc &desc) {
 
@@ -709,11 +623,9 @@ create_controller(PhysxControllerDesc &desc) {
   return controller;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_controller
-//       Access: Published
-//  Description: Retrieves the n-th controller within the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the n-th controller within the scene.
+ */
 PhysxController *PhysxScene::
 get_controller(unsigned int idx) const {
 
@@ -726,13 +638,10 @@ get_controller(unsigned int idx) const {
   return controller;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_joints
-//       Access: Published
-//  Description: Returns the number of joints in the scene
-//               (excluding "dead" joints). Note that this includes
-//               compartments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of joints in the scene (excluding "dead" joints). Note
+ * that this includes compartments.
+ */
 unsigned int PhysxScene::
 get_num_joints() const {
 
@@ -740,11 +649,9 @@ get_num_joints() const {
   return _ptr->getNbJoints();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_joint
-//       Access: Published
-//  Description: Creates a joint in this scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a joint in this scene.
+ */
 PhysxJoint *PhysxScene::
 create_joint(PhysxJointDesc &desc) {
 
@@ -762,12 +669,9 @@ create_joint(PhysxJointDesc &desc) {
   return joint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_joint
-//       Access: Published
-//  Description: Retrieve the n-th joint from the array of all the
-//               joints in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieve the n-th joint from the array of all the joints in the scene.
+ */
 PhysxJoint *PhysxScene::
 get_joint(unsigned int idx) const {
 
@@ -785,11 +689,9 @@ get_joint(unsigned int idx) const {
   return (PhysxJoint *)(jointPtr->userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_force_fields
-//       Access: Published
-//  Description: Gets the number of force fields in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the number of force fields in the scene.
+ */
 unsigned int PhysxScene::
 get_num_force_fields() const {
 
@@ -797,11 +699,9 @@ get_num_force_fields() const {
   return _ptr->getNbForceFields();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_force_field
-//       Access: Published
-//  Description: Creates a force field in this scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a force field in this scene.
+ */
 PhysxForceField *PhysxScene::
 create_force_field(PhysxForceFieldDesc &desc) {
 
@@ -823,12 +723,10 @@ create_force_field(PhysxForceFieldDesc &desc) {
   return field;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_force_field
-//       Access: Published
-//  Description: Returns the n-th force field from the array of
-//               all the force fields in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the n-th force field from the array of all the force fields in the
+ * scene.
+ */
 PhysxForceField *PhysxScene::
 get_force_field(unsigned int idx) const {
 
@@ -841,12 +739,9 @@ get_force_field(unsigned int idx) const {
   return (PhysxForceField *)(fieldPtr->userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_force_field_shape_groups
-//       Access: Published
-//  Description: Gets the number of force field shape groups in
-//               the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the number of force field shape groups in the scene.
+ */
 unsigned int PhysxScene::
 get_num_force_field_shape_groups() const {
 
@@ -854,12 +749,9 @@ get_num_force_field_shape_groups() const {
   return _ptr->getNbForceFieldShapeGroups();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_force_field_shape_group
-//       Access: Published
-//  Description: Creates a new force field shape group in this
-//               scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new force field shape group in this scene.
+ */
 PhysxForceFieldShapeGroup *PhysxScene::
 create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc) {
 
@@ -876,12 +768,9 @@ create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc) {
   return group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_force_field_shape_group
-//       Access: Published
-//  Description: Returns the n-th force field shape group in this
-//               scene
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the n-th force field shape group in this scene
+ */
 PhysxForceFieldShapeGroup *PhysxScene::
 get_force_field_shape_group(unsigned int idx) const {
 
@@ -898,11 +787,9 @@ get_force_field_shape_group(unsigned int idx) const {
   return groupPtr ? (PhysxForceFieldShapeGroup *)groupPtr->userData : NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_cloths
-//       Access: Published
-//  Description: Gets the number of cloths in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the number of cloths in the scene.
+ */
 unsigned int PhysxScene::
 get_num_cloths() const {
 
@@ -910,11 +797,9 @@ get_num_cloths() const {
   return _ptr->getNbCloths();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_cloth
-//       Access: Published
-//  Description: Creates a cloth in this scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a cloth in this scene.
+ */
 PhysxCloth *PhysxScene::
 create_cloth(PhysxClothDesc &desc) {
 
@@ -931,12 +816,9 @@ create_cloth(PhysxClothDesc &desc) {
   return cloth;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_cloth
-//       Access: Published
-//  Description: Returns the n-th cloth from the array of
-//               all the cloths in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the n-th cloth from the array of all the cloths in the scene.
+ */
 PhysxCloth *PhysxScene::
 get_cloth(unsigned int idx) const {
 
@@ -949,11 +831,9 @@ get_cloth(unsigned int idx) const {
   return (PhysxCloth *)(clothPtr->userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_soft_bodies
-//       Access: Published
-//  Description: Gets the number of soft bodies in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the number of soft bodies in the scene.
+ */
 unsigned int PhysxScene::
 get_num_soft_bodies() const {
 
@@ -961,11 +841,9 @@ get_num_soft_bodies() const {
   return _ptr->getNbSoftBodies();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_soft_body
-//       Access: Published
-//  Description: Creates a soft body in this scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a soft body in this scene.
+ */
 PhysxSoftBody *PhysxScene::
 create_soft_body(PhysxSoftBodyDesc &desc) {
 
@@ -982,12 +860,10 @@ create_soft_body(PhysxSoftBodyDesc &desc) {
   return softbody;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_soft_body
-//       Access: Published
-//  Description: Returns the n-th soft body from the array of
-//               all the soft bodies in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the n-th soft body from the array of all the soft bodies in the
+ * scene.
+ */
 PhysxSoftBody *PhysxScene::
 get_soft_body(unsigned int idx) const {
 
@@ -1000,11 +876,9 @@ get_soft_body(unsigned int idx) const {
   return (PhysxSoftBody *)(softbodyPtr->userData);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_num_vehicles
-//       Access: Published
-//  Description: Returns the number of vehicles in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of vehicles in the scene.
+ */
 unsigned int PhysxScene::
 get_num_vehicles() const {
 
@@ -1012,11 +886,9 @@ get_num_vehicles() const {
   return _vehicles.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::create_vehicle
-//       Access: Published
-//  Description: Creates a vehicle in this scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a vehicle in this scene.
+ */
 PhysxVehicle *PhysxScene::
 create_vehicle(PhysxVehicleDesc &desc) {
 
@@ -1031,12 +903,9 @@ create_vehicle(PhysxVehicleDesc &desc) {
   return vehicle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_vehicle
-//       Access: Published
-//  Description: Returns the n-th vehicle from the array of all
-//               the vehicles in the scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the n-th vehicle from the array of all the vehicles in the scene.
+ */
 PhysxVehicle *PhysxScene::
 get_vehicle(unsigned int idx) const {
 
@@ -1046,11 +915,9 @@ get_vehicle(unsigned int idx) const {
   return _vehicles[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_stats2
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxSceneStats2 PhysxScene::
 get_stats2() const {
 
@@ -1058,12 +925,9 @@ get_stats2() const {
   return PhysxSceneStats2(_ptr->getStats2());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::raycast_any_shape
-//       Access: Published
-//  Description: Returns true if any shape is intersected by the
-//               ray.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any shape is intersected by the ray.
+ */
 bool PhysxScene::
 raycast_any_shape(const PhysxRay &ray,
                         PhysxShapesType shapesType,
@@ -1078,13 +942,10 @@ raycast_any_shape(const PhysxRay &ray,
                                mask.get_mask(), ray._length, groupsPtr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::raycast_closest_shape
-//       Access: Published
-//  Description: Returns the first shape that is hit along the ray.
-//               If not shape is hit then an empty raycast hit
-//               is returned (is_empty() == true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first shape that is hit along the ray.  If not shape is hit then
+ * an empty raycast hit is returned (is_empty() == true).
+ */
 PhysxRaycastHit PhysxScene::
 raycast_closest_shape(const PhysxRay &ray,
                             PhysxShapesType shapesType,
@@ -1112,13 +973,10 @@ raycast_closest_shape(const PhysxRay &ray,
   return PhysxRaycastHit(hit);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::raycast_all_shapes
-//       Access: Published
-//  Description: Returns a PhysxRaycastReport object which can be
-//               used to iterate over all shapes that have been
-//               hit by the ray.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PhysxRaycastReport object which can be used to iterate over all
+ * shapes that have been hit by the ray.
+ */
 PhysxRaycastReport PhysxScene::
 raycast_all_shapes(const PhysxRay &ray,
                    PhysxShapesType shapesType,
@@ -1145,12 +1003,10 @@ raycast_all_shapes(const PhysxRay &ray,
   return report;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::raycast_any_bounds
-//       Access: Published
-//  Description: Returns true if any axis aligned bounding box
-//               enclosing a shape is intersected by the ray.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any axis aligned bounding box enclosing a shape is
+ * intersected by the ray.
+ */
 bool PhysxScene::
 raycast_any_bounds(const PhysxRay &ray,
                          PhysxShapesType shapesType,
@@ -1165,14 +1021,11 @@ raycast_any_bounds(const PhysxRay &ray,
                                 mask.get_mask(), ray._length, groupsPtr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::raycast_closest_bounds
-//       Access: Published
-//  Description: Returns the first axis aligned bounding box
-//               enclosing a shape that is hit along the ray.
-//               If not shape is hit then an empty raycast hit
-//               is returned (is_empty() == true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first axis aligned bounding box enclosing a shape that is hit
+ * along the ray.  If not shape is hit then an empty raycast hit is returned
+ * (is_empty() == true).
+ */
 PhysxRaycastHit PhysxScene::
 raycast_closest_bounds(const PhysxRay &ray, PhysxShapesType shapesType, PhysxMask mask, PhysxGroupsMask *groups, bool smoothNormal) const {
 
@@ -1197,14 +1050,10 @@ raycast_closest_bounds(const PhysxRay &ray, PhysxShapesType shapesType, PhysxMas
   return PhysxRaycastHit(hit);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::raycast_all_bounds
-//       Access: Published
-//  Description: Returns a PhysxRaycastReport object which can be
-//               used to iterate over all shapes that have been
-//               enclosed by axis aligned bounding boxes hit by
-//               the ray.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PhysxRaycastReport object which can be used to iterate over all
+ * shapes that have been enclosed by axis aligned bounding boxes hit by the ray.
+ */
 PhysxRaycastReport PhysxScene::
 raycast_all_bounds(const PhysxRay &ray,
                          PhysxShapesType shapesType,
@@ -1231,14 +1080,10 @@ raycast_all_bounds(const PhysxRay &ray,
   return report;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::overlap_sphere_shapes
-//       Access: Published
-//  Description: Returns the set of shapes overlapped by the
-//               world-space sphere.
-//               You can test against static and/or dynamic objects
-//               by adjusting 'shapeType'.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of shapes overlapped by the world-space sphere.  You can test
+ * against static and/or dynamic objects by adjusting 'shapeType'.
+ */
 PhysxOverlapReport PhysxScene::
 overlap_sphere_shapes(const LPoint3f &center, float radius,
                       PhysxShapesType shapesType,
@@ -1256,14 +1101,10 @@ overlap_sphere_shapes(const LPoint3f &center, float radius,
   return report;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::overlap_capsule_shapes
-//       Access: Published
-//  Description: Returns the set of shapes overlapped by the
-//               world-space capsule.
-//               You can test against static and/or dynamic objects
-//               by adjusting 'shapeType'.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of shapes overlapped by the world-space capsule.  You can
+ * test against static and/or dynamic objects by adjusting 'shapeType'.
+ */
 PhysxOverlapReport PhysxScene::
 overlap_capsule_shapes(const LPoint3f &p0, const LPoint3f &p1, float radius,
                        PhysxShapesType shapesType,
@@ -1283,21 +1124,14 @@ overlap_capsule_shapes(const LPoint3f &p0, const LPoint3f &p1, float radius,
   return report;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_actor_pair_flag
-//       Access: Published
-//  Description: Sets the pair flags for the given pair of actors.
-//
-//               Calling this on an actor that has no shape(s) has
-//               no effect. The two actor references must not
-//               reference the same actor.
-//
-//               It is important to note that the engine stores
-//               pair flags per shape, even for actor pair flags.
-//               This means that shapes should be created before
-//               actor pair flags are set, otherwise the pair flags
-//               will be ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the pair flags for the given pair of actors.  Calling this on an actor
+ * that has no shape(s) has no effect.  The two actor references must not
+ * reference the same actor.  It is important to note that the engine stores
+ * pair flags per shape, even for actor pair flags.  This means that shapes
+ * should be created before actor pair flags are set, otherwise the pair flags
+ * will be ignored.
+ */
 void PhysxScene::
 set_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB,
                     PhysxContactPairFlag flag, bool value) {
@@ -1318,15 +1152,10 @@ set_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB,
   _ptr->setActorPairFlags(*ptrA, *ptrB, flags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_actor_pair_flag
-//       Access: Published
-//  Description: Retrieves a single flag for the given pair of
-//               actors.
-//
-//               The two actor references must not reference the
-//               same actor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves a single flag for the given pair of actors.  The two actor
+ * references must not reference the same actor.
+ */
 bool PhysxScene::
 get_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB,
                     PhysxContactPairFlag flag) {
@@ -1340,15 +1169,10 @@ get_actor_pair_flag(PhysxActor &actorA, PhysxActor &actorB,
   return (flags && flag) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_shape_pair_flag
-//       Access: Published
-//  Description: Disables or enables contact generation for a pair
-//               of shapes.
-//
-//               The two shape references must not reference the
-//               same shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables or enables contact generation for a pair of shapes.  The two shape
+ * references must not reference the same shape.
+ */
 void PhysxScene::
 set_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB, bool value) {
 
@@ -1368,16 +1192,11 @@ set_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB, bool value) {
   _ptr->setShapePairFlags(*ptrA, *ptrB, flags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_shape_pair_flag
-//       Access: Published
-//  Description: Returns /true/ if contact generation between a pair
-//               of shapes is enabled, and /false/ if contact
-//               generation is disables.
-//
-//               The two shape references must not reference the
-//               same shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns /true/ if contact generation between a pair of shapes is enabled, and
+ * /false/ if contact generation is disables.  The two shape references must not
+ * reference the same shape.
+ */
 bool PhysxScene::
 get_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB) {
 
@@ -1390,32 +1209,18 @@ get_shape_pair_flag(PhysxShape &shapeA, PhysxShape &shapeB) {
   return (flags && NX_IGNORE_PAIR) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_actor_group_pair_flag
-//       Access: Published
-//  Description: With this method one can set contact reporting
-//               flags between actors belonging to a pair of groups.
-//
-//               It is possible to assign each actor to a group
-//               using PhysxActor::set_group(). This is a different
-//               set of groups from the shape groups despite the
-//               similar name. Here up to 0xffff different groups
-//               are permitted, With this method one can set
-//               contact reporting flags between actors belonging
-//               to a pair of groups.
-//
-//               The following flags are permitted:
-//               - CPF_start_touch
-//               - CPF_end_touch
-//               - CPF_touch
-//               - CPF_start_touch_treshold
-//               - CPF_end_touch_treshold
-//               - CPF_touch_treshold
-//
-//               Note that finer grain control of pairwise flags is
-//               possible using the function
-//               PhysxScene::set_actor_pair_flags().
-////////////////////////////////////////////////////////////////////
+/**
+ * With this method one can set contact reporting flags between actors belonging
+ * to a pair of groups.  It is possible to assign each actor to a group using
+ * PhysxActor::set_group(). This is a different set of groups from the shape
+ * groups despite the similar name.  Here up to 0xffff different groups are
+ * permitted, With this method one can set contact reporting flags between
+ * actors belonging to a pair of groups.  The following flags are permitted: -
+ * CPF_start_touch - CPF_end_touch - CPF_touch - CPF_start_touch_treshold -
+ * CPF_end_touch_treshold - CPF_touch_treshold  Note that finer grain control of
+ * pairwise flags is possible using the function
+ * PhysxScene::set_actor_pair_flags().
+ */
 void PhysxScene::
 set_actor_group_pair_flag(unsigned int g1, unsigned int g2,
                           PhysxContactPairFlag flag, bool value) {
@@ -1432,12 +1237,9 @@ set_actor_group_pair_flag(unsigned int g1, unsigned int g2,
   _ptr->setActorGroupPairFlags(g1, g2, flags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_actor_group_pair_flag
-//       Access: Published
-//  Description: Retrieves a single flag set with
-//               PhysxScene::set_actor_group_pair_flag()
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves a single flag set with PhysxScene::set_actor_group_pair_flag()
+ */
 bool PhysxScene::
 get_actor_group_pair_flag(unsigned int g1, unsigned int g2,
                           PhysxContactPairFlag flag) {
@@ -1447,11 +1249,9 @@ get_actor_group_pair_flag(unsigned int g1, unsigned int g2,
   return (flags && flag) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_filter_ops
-//       Access: Published
-//  Description: Setups filtering operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Setups filtering operations.
+ */
 void PhysxScene::
 set_filter_ops(PhysxFilterOp op0, PhysxFilterOp op1, PhysxFilterOp op2) {
 
@@ -1459,11 +1259,9 @@ set_filter_ops(PhysxFilterOp op0, PhysxFilterOp op1, PhysxFilterOp op2) {
   _ptr->setFilterOps((NxFilterOp)op0, (NxFilterOp)op1, (NxFilterOp)op2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_filter_bool
-//       Access: Published
-//  Description: Setups filtering's boolean value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Setups filtering's boolean value.
+ */
 void PhysxScene::
 set_filter_bool(bool flag) {
 
@@ -1471,11 +1269,9 @@ set_filter_bool(bool flag) {
   _ptr->setFilterBool(flag);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_filter_constant0
-//       Access: Published
-//  Description: Setups filtering's K0 value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Setups filtering's K0 value.
+ */
 void PhysxScene::
 set_filter_constant0(const PhysxGroupsMask &mask) {
 
@@ -1483,11 +1279,9 @@ set_filter_constant0(const PhysxGroupsMask &mask) {
   _ptr->setFilterConstant0(mask.get_mask());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_filter_constant1
-//       Access: Published
-//  Description: Setups filtering's K1 value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Setups filtering's K1 value.
+ */
 void PhysxScene::
 set_filter_constant1(const PhysxGroupsMask &mask) {
 
@@ -1495,11 +1289,9 @@ set_filter_constant1(const PhysxGroupsMask &mask) {
   _ptr->setFilterConstant1(mask.get_mask());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_filter_bool
-//       Access: Published
-//  Description: Retrieves filtering's boolean value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves filtering's boolean value.
+ */
 bool PhysxScene::
 get_filter_bool() const {
 
@@ -1507,11 +1299,9 @@ get_filter_bool() const {
   return _ptr->getFilterBool();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_filter_constant0
-//       Access: Published
-//  Description: Gets filtering constant K0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets filtering constant K0.
+ */
 PhysxGroupsMask PhysxScene::
 get_filter_constant0() const {
 
@@ -1525,11 +1315,9 @@ get_filter_constant0() const {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_filter_constant1
-//       Access: Published
-//  Description: Gets filtering constant K1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets filtering constant K1.
+ */
 PhysxGroupsMask PhysxScene::
 get_filter_constant1() const {
 
@@ -1543,11 +1331,9 @@ get_filter_constant1() const {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_filter_op0
-//       Access: Published
-//  Description: Retrieves the op0 filtering operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the op0 filtering operation.
+ */
 PhysxEnums::PhysxFilterOp PhysxScene::
 get_filter_op0() const {
 
@@ -1562,11 +1348,9 @@ get_filter_op0() const {
   return (PhysxFilterOp)op0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_filter_op1
-//       Access: Published
-//  Description: Retrieves the op1 filtering operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the op1 filtering operation.
+ */
 PhysxEnums::PhysxFilterOp PhysxScene::
 get_filter_op1() const {
 
@@ -1581,11 +1365,9 @@ get_filter_op1() const {
   return (PhysxFilterOp)op1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_filter_op2
-//       Access: Published
-//  Description: Retrieves the op2 filtering operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retrieves the op2 filtering operation.
+ */
 PhysxEnums::PhysxFilterOp PhysxScene::
 get_filter_op2() const {
 
@@ -1600,22 +1382,14 @@ get_filter_op2() const {
   return (PhysxFilterOp)op2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_group_collision_flag
-//       Access: Published
-//  Description: Specifies if collision should be performed by a
-//               pair of shape groups.
-//
-//               It is possible to assign each shape to a collision
-//               groups using PhysxShape::set_group(). With this
-//               method one can set whether collisions should be
-//               detected between shapes belonging to a given pair
-//               of groups. Initially all pairs are enabled.
-//
-//               Fluids can be assigned to collision groups as well.
-//
-//               Collision groups are integers between 0 and 31.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies if collision should be performed by a pair of shape groups.  It is
+ * possible to assign each shape to a collision groups using
+ * PhysxShape::set_group(). With this method one can set whether collisions
+ * should be detected between shapes belonging to a given pair of groups.
+ * Initially all pairs are enabled.  Fluids can be assigned to collision groups
+ * as well.  Collision groups are integers between 0 and 31.
+ */
 void PhysxScene::
 set_group_collision_flag(unsigned int g1, unsigned int g2, bool enable) {
 
@@ -1626,13 +1400,10 @@ set_group_collision_flag(unsigned int g1, unsigned int g2, bool enable) {
   _ptr->setGroupCollisionFlag((NxCollisionGroup)g1, (NxCollisionGroup)g2, enable);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_group_collision_flag
-//       Access: Published
-//  Description: Determines if collision detection is performed
-//               between a pair of groups. Collision groups are
-//               integers between 0 and 31.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines if collision detection is performed between a pair of groups.
+ * Collision groups are integers between 0 and 31.
+ */
 bool PhysxScene::
 get_group_collision_flag(unsigned int g1, unsigned int g2) {
 
@@ -1643,11 +1414,9 @@ get_group_collision_flag(unsigned int g1, unsigned int g2) {
   return _ptr->getGroupCollisionFlag((NxCollisionGroup)g1, (NxCollisionGroup)g2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_flag
-//       Access: Published
-//  Description: Return the specified scene flag flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the specified scene flag flag.
+ */
 bool PhysxScene::
 get_flag(PhysxSceneFlag flag) const {
 
@@ -1655,13 +1424,10 @@ get_flag(PhysxSceneFlag flag) const {
   return (_ptr->getFlags() & flag) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::is_hardware_scene
-//       Access: Published
-//  Description: Returns TRUE if the the scene is simulated in
-//               hardware. FALSE if the scene is simulated in
-//               software.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns TRUE if the the scene is simulated in hardware.  FALSE if the scene
+ * is simulated in software.
+ */
 bool PhysxScene::
 is_hardware_scene() const {
 
@@ -1669,59 +1435,33 @@ is_hardware_scene() const {
   return (_ptr->getSimType() & NX_SIMULATION_HW) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::set_dominance_group_pair
-//       Access: Published
-//  Description: Specifies the dominance behavior of constraints
-//               between two actors with two certain dominance
-//               groups.
-//
-//               It is possible to assign each actor to a dominance
-//               groups using PhysxActor::set_dominance_group().
-//
-//               With dominance groups one can have all constraints
-//               (contacts and joints) created between actors act in
-//               one direction only. This is useful if you want to
-//               make sure that the movement of the rider of a
-//               vehicle or the pony tail of a character doesn't
-//               influence the object it is attached to, while
-//               keeping the motion of both inherently physical.
-//
-//               Whenever a constraint (i.e. joint or contact)
-//               between two actors (a0, a1) needs to be solved, the
-//               groups (g0, g1) of both actors are retrieved. Then
-//               the constraint dominance setting for this group
-//               pair is retrieved.
-//
-//               In the constraint, PhysxConstraintDominance::get_0()
-//               becomes the dominance setting for a0, and
-//               PhysxConstraintDominance::get_1() becomes the
-//               dominance setting for a1. A dominance setting of
-//               1.0f, the default, will permit the actor to be
-//               pushed or pulled by the other actor. A dominance
-//               setting of 0.0f will however prevent the actor to
-//               be pushed or pulled by the other actor. Thus, a
-//               PhysxConstraintDominance of (1.0f, 0.0f) makes the
-//               interaction one-way.
-//
-//               The dominance matrix is initialised by default such
-//               that:
-//               - if g1 == g2, then (1.0f, 1.0f) is returned
-//               - if g1 < g2, then (0.0f, 1.0f) is returned
-//               - if g1 > g2, then (1.0f, 0.0f) is returned
-//
-//               In other words, actors in higher groups can be
-//               pushed around by actors in lower groups by default.
-//
-//               These settings should cover most applications, and
-//               in fact not overriding these settings may likely
-//               result in higher performance.
-//
-//               Dominance settings are currently specified as
-//               floats 0.0f or 1.0f because in the future PhysX may
-//               permit arbitrary fractional settings to express
-//               'partly-one-way' interactions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the dominance behavior of constraints between two actors with two
+ * certain dominance groups.  It is possible to assign each actor to a dominance
+ * groups using PhysxActor::set_dominance_group().  With dominance groups one
+ * can have all constraints (contacts and joints) created between actors act in
+ * one direction only.  This is useful if you want to make sure that the
+ * movement of the rider of a vehicle or the pony tail of a character doesn't
+ * influence the object it is attached to, while keeping the motion of both
+ * inherently physical.  Whenever a constraint (i.e.  joint or contact) between
+ * two actors (a0, a1) needs to be solved, the groups (g0, g1) of both actors
+ * are retrieved.  Then the constraint dominance setting for this group pair is
+ * retrieved.  In the constraint, PhysxConstraintDominance::get_0() becomes the
+ * dominance setting for a0, and PhysxConstraintDominance::get_1() becomes the
+ * dominance setting for a1. A dominance setting of 1.0f, the default, will
+ * permit the actor to be pushed or pulled by the other actor.  A dominance
+ * setting of 0.0f will however prevent the actor to be pushed or pulled by the
+ * other actor.  Thus, a PhysxConstraintDominance of (1.0f, 0.0f) makes the
+ * interaction one-way.  The dominance matrix is initialised by default such
+ * that: - if g1 == g2, then (1.0f, 1.0f) is returned - if g1 < g2, then (0.0f,
+ * 1.0f) is returned - if g1 > g2, then (1.0f, 0.0f) is returned  In other
+ * words, actors in higher groups can be pushed around by actors in lower groups
+ * by default.  These settings should cover most applications, and in fact not
+ * overriding these settings may likely result in higher performance.  Dominance
+ * settings are currently specified as floats 0.0f or 1.0f because in the future
+ * PhysX may permit arbitrary fractional settings to express 'partly-one-way'
+ * interactions.
+ */
 void PhysxScene::
 set_dominance_group_pair(unsigned int g1, unsigned int g2, PhysxConstraintDominance dominance ) {
 
@@ -1733,11 +1473,9 @@ set_dominance_group_pair(unsigned int g1, unsigned int g2, PhysxConstraintDomina
   _ptr->setDominanceGroupPair((NxDominanceGroup)g1, (NxDominanceGroup)g2, d);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_dominance_group_pair
-//       Access: Published
-//  Description: Samples the dominance matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Samples the dominance matrix.
+ */
 PhysxConstraintDominance PhysxScene::
 get_dominance_group_pair(unsigned int g1, unsigned int g2) {
 
@@ -1751,17 +1489,12 @@ get_dominance_group_pair(unsigned int g1, unsigned int g2) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxScene::get_wheel_shape_material
-//       Access: Published
-//  Description: Gets the shared material for all wheel shapes.
-//
-//               If this material is not already created then
-//               calling this method will create the material.
-//
-//               Normally users don't need to call this method. It
-//               is used internally by PhysWheel::create_wheel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the shared material for all wheel shapes.  If this material is not
+ * already created then calling this method will create the material.  Normally
+ * users don't need to call this method.  It is used internally by
+ * PhysWheel::create_wheel.
+ */
 PhysxMaterial *PhysxScene::
 get_wheel_shape_material() {
 
@@ -1775,4 +1508,3 @@ get_wheel_shape_material() {
 
   return _wheelShapeMaterial;
 }
-

@@ -11,11 +11,9 @@
  * @date 2009-06-30
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline P3DObject::
 P3DObject() {
   _class = &_object_class;
@@ -24,11 +22,9 @@ P3DObject() {
   _ref_count = 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline P3DObject::
 P3DObject(const P3DObject &copy) {
   assert(copy._class == &_object_class);

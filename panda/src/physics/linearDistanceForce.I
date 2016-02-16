@@ -11,71 +11,57 @@
  * @date 2000-06-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_falloff_type
-//       Access: Public
-//  Description: falloff_type encapsulating wrap
-////////////////////////////////////////////////////////////////////
+/**
+ * falloff_type encapsulating wrap
+ */
 INLINE void LinearDistanceForce::
 set_falloff_type(FalloffType ft) {
   _falloff = ft;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_radius
-//       Access: Public
-//  Description: set the radius
-////////////////////////////////////////////////////////////////////
+/**
+ * set the radius
+ */
 INLINE void LinearDistanceForce::
 set_radius(PN_stdfloat r) {
   _radius = r;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_force_center
-//       Access: Public
-//  Description: set the force center
-////////////////////////////////////////////////////////////////////
+/**
+ * set the force center
+ */
 INLINE void LinearDistanceForce::
 set_force_center(const LPoint3& p) {
   _force_center = p;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_falloff_type
-//       Access: Public
-//  Description: falloff_type query
-////////////////////////////////////////////////////////////////////
+/**
+ * falloff_type query
+ */
 INLINE LinearDistanceForce::FalloffType LinearDistanceForce::
 get_falloff_type() const {
   return _falloff;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_radius
-//       Access: Public
-//  Description: radius query
-////////////////////////////////////////////////////////////////////
+/**
+ * radius query
+ */
 INLINE PN_stdfloat LinearDistanceForce::
 get_radius() const {
   return _radius;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_force_center
-//       Access: Public
-//  Description: force_center query
-////////////////////////////////////////////////////////////////////
+/**
+ * force_center query
+ */
 INLINE LPoint3 LinearDistanceForce::
 get_force_center() const {
   return _force_center;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_scalar_term
-//       Access: Private
-//  Description: calculate the term based on falloff
-////////////////////////////////////////////////////////////////////
+/**
+ * calculate the term based on falloff
+ */
 INLINE PN_stdfloat LinearDistanceForce::
 get_scalar_term() const {
   PN_stdfloat r = _radius;

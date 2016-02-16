@@ -19,10 +19,9 @@
 #include "clockObject.h"
 #include "pStatCollector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TimerQueryContext
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_GOBJ TimerQueryContext : public QueryContext {
 public:
   INLINE TimerQueryContext(int pstats_index);

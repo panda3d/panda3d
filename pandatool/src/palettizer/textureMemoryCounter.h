@@ -25,13 +25,11 @@ class TexturePlacement;
 #include "pmap.h"
 #include "pset.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureMemoryCounter
-// Description : This class is used to gather statistics on texture
-//               memory usage, etc.  It adds up the total texture
-//               memory required by a number of image files, and
-//               reports it at the end.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to gather statistics on texture memory usage, etc.  It
+ * adds up the total texture memory required by a number of image files, and
+ * reports it at the end.
+ */
 class TextureMemoryCounter {
 public:
   TextureMemoryCounter();

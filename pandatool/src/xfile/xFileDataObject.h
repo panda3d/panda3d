@@ -23,12 +23,10 @@
 class XFile;
 class XFileDataDef;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObject
-// Description : The abstract base class for a number of different
-//               types of data elements that may be stored in the X
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for a number of different types of data elements that
+ * may be stored in the X file.
+ */
 class XFileDataObject : virtual public ReferenceCount {
 public:
   INLINE XFileDataObject(const XFileDataDef *data_def = NULL);
@@ -82,7 +80,7 @@ public:
 
   XFileDataObject &add_Vector(XFile *x_file, const LVecBase3d &vector);
   XFileDataObject &add_MeshFace(XFile *x_file);
-  XFileDataObject &add_IndexedColor(XFile *x_file, int index, 
+  XFileDataObject &add_IndexedColor(XFile *x_file, int index,
                                     const LColor &color);
   XFileDataObject &add_Coords2d(XFile *x_file, const LVecBase2d &coords);
 
@@ -133,6 +131,3 @@ INLINE ostream &operator << (ostream &out, const XFileDataObject &data_object);
 #include "xFileDataObject.I"
 
 #endif
-  
-
-

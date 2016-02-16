@@ -13,13 +13,10 @@
 
 #include "bulletSoftBodyMaterial.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyMaterial::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletSoftBodyMaterial::
 BulletSoftBodyMaterial(btSoftBody::Material &material) : _material(material) {
 
 }
-

@@ -23,11 +23,9 @@
 DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
 DCClassParameter *DCSimpleParameter::_uint32uint8_type = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSimpleParameter::
 DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
   _type(type),
@@ -105,7 +103,7 @@ DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
     _bytes_per_element = 1;
     break;
 
-  case ST_string: 
+  case ST_string:
     _pack_type = PT_string;
     _nested_type = ST_char;
     _has_nested_fields = true;
@@ -194,11 +192,9 @@ DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSimpleParameter::
 DCSimpleParameter(const DCSimpleParameter &copy) :
   DCParameter(copy),
@@ -220,123 +216,91 @@ DCSimpleParameter(const DCSimpleParameter &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::as_simple_parameter
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCSimpleParameter *DCSimpleParameter::
 as_simple_parameter() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::as_simple_parameter
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const DCSimpleParameter *DCSimpleParameter::
 as_simple_parameter() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::make_copy
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DCParameter *DCSimpleParameter::
 make_copy() const {
   return new DCSimpleParameter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::is_valid
-//       Access: Published, Virtual
-//  Description: Returns false if the type is an invalid type
-//               (e.g. declared from an undefined typedef), true if
-//               it is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns false if the type is an invalid type (e.g.  declared from an
+ * undefined typedef), true if it is valid.
+ */
 bool DCSimpleParameter::
 is_valid() const {
   return _type != ST_invalid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::get_type
-//       Access: Published
-//  Description: Returns the particular subatomic type represented by
-//               this instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the particular subatomic type represented by this instance.
+ */
 DCSubatomicType DCSimpleParameter::
 get_type() const {
   return _type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::has_modulus
-//       Access: Published
-//  Description: Returns true if there is a modulus associated, false
-//               otherwise.,
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is a modulus associated, false otherwise.,
+ */
 bool DCSimpleParameter::
 has_modulus() const {
   return _has_modulus;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::get_modulus
-//       Access: Published
-//  Description: Returns the modulus associated with this type, if
-//               any.  It is an error to call this if has_modulus()
-//               returned false.
-//
-//               If present, this is the modulus that is used to
-//               constrain the numeric value of the field before it is
-//               packed (and range-checked).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the modulus associated with this type, if any.  It is an error to
+ * call this if has_modulus() returned false.  If present, this is the modulus
+ * that is used to constrain the numeric value of the field before it is packed
+ * (and range-checked).
+ */
 double DCSimpleParameter::
 get_modulus() const {
   return _orig_modulus;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::get_divisor
-//       Access: Published
-//  Description: Returns the divisor associated with this type.  This
-//               is 1 by default, but if this is other than one it
-//               represents the scale to apply when packing and
-//               unpacking numeric values (to store fixed-point values
-//               in an integer field).  It is only meaningful for
-//               numeric-type fields.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the divisor associated with this type.  This is 1 by default, but if
+ * this is other than one it represents the scale to apply when packing and
+ * unpacking numeric values (to store fixed-point values in an integer field).
+ * It is only meaningful for numeric-type fields.
+ */
 int DCSimpleParameter::
 get_divisor() const {
   return _divisor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::is_numeric_type
-//       Access: Public
-//  Description: Returns true if the type is a numeric type (and
-//               therefore can accept a divisor and/or a modulus), or
-//               false if it is some string-based type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is a numeric type (and therefore can accept a
+ * divisor and/or a modulus), or false if it is some string-based type.
+ */
 bool DCSimpleParameter::
 is_numeric_type() const {
   return !(_pack_type == PT_string || _pack_type == PT_blob);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::set_modulus
-//       Access: Public
-//  Description: Assigns the indicated modulus to the simple type.
-//               Any packed value will be constrained to be within [0,
-//               modulus).
-//
-//               Returns true if assigned, false if this type cannot
-//               accept a modulus or if the modulus is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the indicated modulus to the simple type.  Any packed value will be
+ * constrained to be within [0, modulus).  Returns true if assigned, false if
+ * this type cannot accept a modulus or if the modulus is invalid.
+ */
 bool DCSimpleParameter::
 set_modulus(double modulus) {
   if (_pack_type == PT_string || _pack_type == PT_blob || modulus <= 0.0) {
@@ -368,7 +332,7 @@ set_modulus(double modulus) {
   case ST_int32array:
     validate_uint64_limits(_uint64_modulus - 1, 31, range_error);
     break;
-    
+
   case ST_int64:
     validate_uint64_limits(_uint64_modulus - 1, 63, range_error);
     break;
@@ -388,7 +352,7 @@ set_modulus(double modulus) {
   case ST_uint32array:
     validate_uint64_limits(_uint64_modulus - 1, 32, range_error);
     break;
-    
+
   case ST_uint64:
   case ST_float64:
     break;
@@ -400,13 +364,10 @@ set_modulus(double modulus) {
   return !range_error;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::set_divisor
-//       Access: Public
-//  Description: Assigns the indicated divisor to the simple type.
-//               Returns true if assigned, false if this type cannot
-//               accept a divisor or if the divisor is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns the indicated divisor to the simple type.  Returns true if assigned,
+ * false if this type cannot accept a divisor or if the divisor is invalid.
+ */
 bool DCSimpleParameter::
 set_divisor(unsigned int divisor) {
   if (_pack_type == PT_string || _pack_type == PT_blob || divisor == 0) {
@@ -430,16 +391,12 @@ set_divisor(unsigned int divisor) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::set_range
-//       Access: Public
-//  Description: Sets the parameter with the indicated range.  A
-//               DCDoubleRange is used for specification, since this
-//               is the most generic type; but it is converted to the
-//               appropriate type internally.  The return value is
-//               true if successful, or false if the range is
-//               inappropriate for the type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the parameter with the indicated range.  A DCDoubleRange is used for
+ * specification, since this is the most generic type; but it is converted to
+ * the appropriate type internally.  The return value is true if successful, or
+ * false if the range is inappropriate for the type.
+ */
 bool DCSimpleParameter::
 set_range(const DCDoubleRange &range) {
   bool range_error = false;
@@ -461,7 +418,7 @@ set_range(const DCDoubleRange &range) {
       _int_range.add_range((int)min, (int)max);
     }
     break;
-    
+
   case ST_int16:
   case ST_int16array:
     _int_range.clear();
@@ -473,7 +430,7 @@ set_range(const DCDoubleRange &range) {
       _int_range.add_range((int)min, (int)max);
     }
     break;
-    
+
   case ST_int32:
   case ST_int32array:
     _int_range.clear();
@@ -485,7 +442,7 @@ set_range(const DCDoubleRange &range) {
       _int_range.add_range((int)min, (int)max);
     }
     break;
-    
+
   case ST_int64:
     _int64_range.clear();
     for (i = 0; i < num_ranges; i++) {
@@ -494,7 +451,7 @@ set_range(const DCDoubleRange &range) {
       _int64_range.add_range(min, max);
     }
     break;
-    
+
   case ST_char:
   case ST_uint8:
   case ST_uint8array:
@@ -507,7 +464,7 @@ set_range(const DCDoubleRange &range) {
       _uint_range.add_range((unsigned int)min, (unsigned int)max);
     }
     break;
-    
+
   case ST_uint16:
   case ST_uint16array:
     _uint_range.clear();
@@ -519,7 +476,7 @@ set_range(const DCDoubleRange &range) {
       _uint_range.add_range((unsigned int)min, (unsigned int)max);
     }
     break;
-    
+
   case ST_uint32:
   case ST_uint32array:
     _uint_range.clear();
@@ -531,7 +488,7 @@ set_range(const DCDoubleRange &range) {
       _uint_range.add_range((unsigned int)min, (unsigned int)max);
     }
     break;
-    
+
   case ST_uint64:
     _uint64_range.clear();
     for (i = 0; i < num_ranges; i++) {
@@ -604,16 +561,12 @@ set_range(const DCDoubleRange &range) {
   return !range_error;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::calc_num_nested_fields
-//       Access: Public, Virtual
-//  Description: This flavor of get_num_nested_fields is used during
-//               unpacking.  It returns the number of nested fields to
-//               expect, given a certain length in bytes (as read from
-//               the _num_length_bytes stored in the stream on the
-//               push).  This will only be called if _num_length_bytes
-//               is nonzero.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of get_num_nested_fields is used during unpacking.  It returns
+ * the number of nested fields to expect, given a certain length in bytes (as
+ * read from the _num_length_bytes stored in the stream on the push).  This will
+ * only be called if _num_length_bytes is nonzero.
+ */
 int DCSimpleParameter::
 calc_num_nested_fields(size_t length_bytes) const {
   if (_bytes_per_element != 0) {
@@ -622,25 +575,19 @@ calc_num_nested_fields(size_t length_bytes) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::get_nested_field
-//       Access: Public, Virtual
-//  Description: Returns the DCPackerInterface object that represents
-//               the nth nested field.  This may return NULL if there
-//               is no such field (but it shouldn't do this if n is in
-//               the range 0 <= n < get_num_nested_fields()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCPackerInterface object that represents the nth nested field.
+ * This may return NULL if there is no such field (but it shouldn't do this if n
+ * is in the range 0 <= n < get_num_nested_fields()).
+ */
 DCPackerInterface *DCSimpleParameter::
 get_nested_field(int) const {
   return _nested_field;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::pack_double
-//       Access: Published, Virtual
-//  Description: Packs the indicated numeric or string value into the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
 void DCSimpleParameter::
 pack_double(DCPackData &pack_data, double value,
             bool &pack_error, bool &range_error) const {
@@ -674,7 +621,7 @@ pack_double(DCPackData &pack_data, double value,
       do_pack_int16(pack_data.get_write_pointer(2), int_value);
     }
     break;
-    
+
   case ST_int32:
     {
       int int_value = (int)floor(real_value + 0.5);
@@ -682,7 +629,7 @@ pack_double(DCPackData &pack_data, double value,
       do_pack_int32(pack_data.get_write_pointer(4), int_value);
     }
     break;
-    
+
   case ST_int64:
     {
       PN_int64 int64_value = (PN_int64)floor(real_value + 0.5);
@@ -690,7 +637,7 @@ pack_double(DCPackData &pack_data, double value,
       do_pack_int64(pack_data.get_write_pointer(8), int64_value);
     }
     break;
-    
+
   case ST_char:
   case ST_uint8:
     {
@@ -700,7 +647,7 @@ pack_double(DCPackData &pack_data, double value,
       do_pack_uint8(pack_data.get_write_pointer(1), int_value);
     }
     break;
-    
+
   case ST_uint16:
     {
       unsigned int int_value = (unsigned int)floor(real_value + 0.5);
@@ -709,7 +656,7 @@ pack_double(DCPackData &pack_data, double value,
       do_pack_uint16(pack_data.get_write_pointer(2), int_value);
     }
     break;
-    
+
   case ST_uint32:
     {
       unsigned int int_value = (unsigned int)floor(real_value + 0.5);
@@ -717,7 +664,7 @@ pack_double(DCPackData &pack_data, double value,
       do_pack_uint32(pack_data.get_write_pointer(4), int_value);
     }
     break;
-    
+
   case ST_uint64:
     {
       PN_uint64 int64_value = (PN_uint64)floor(real_value + 0.5);
@@ -736,12 +683,9 @@ pack_double(DCPackData &pack_data, double value,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::pack_int
-//       Access: Published, Virtual
-//  Description: Packs the indicated numeric or string value into the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
 void DCSimpleParameter::
 pack_int(DCPackData &pack_data, int value,
          bool &pack_error, bool &range_error) const {
@@ -830,12 +774,9 @@ pack_int(DCPackData &pack_data, int value,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::pack_uint
-//       Access: Published, Virtual
-//  Description: Packs the indicated numeric or string value into the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
 void DCSimpleParameter::
 pack_uint(DCPackData &pack_data, unsigned int value,
           bool &pack_error, bool &range_error) const {
@@ -912,12 +853,9 @@ pack_uint(DCPackData &pack_data, unsigned int value,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::pack_int64
-//       Access: Published, Virtual
-//  Description: Packs the indicated numeric or string value into the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
 void DCSimpleParameter::
 pack_int64(DCPackData &pack_data, PN_int64 value,
             bool &pack_error, bool &range_error) const {
@@ -1000,12 +938,9 @@ pack_int64(DCPackData &pack_data, PN_int64 value,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::pack_uint64
-//       Access: Published, Virtual
-//  Description: Packs the indicated numeric or string value into the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
 void DCSimpleParameter::
 pack_uint64(DCPackData &pack_data, PN_uint64 value,
             bool &pack_error, bool &range_error) const {
@@ -1084,12 +1019,9 @@ pack_uint64(DCPackData &pack_data, PN_uint64 value,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::pack_string
-//       Access: Published, Virtual
-//  Description: Packs the indicated numeric or string value into the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
 void DCSimpleParameter::
 pack_string(DCPackData &pack_data, const string &value,
             bool &pack_error, bool &range_error) const {
@@ -1133,15 +1065,12 @@ pack_string(DCPackData &pack_data, const string &value,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::pack_default_value
-//       Access: Public, Virtual
-//  Description: Packs the simpleParameter's specified default value (or a
-//               sensible default if no value is specified) into the
-//               stream.  Returns true if the default value is packed,
-//               false if the simpleParameter doesn't know how to pack its
-//               default value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Packs the simpleParameter's specified default value (or a sensible default if
+ * no value is specified) into the stream.  Returns true if the default value is
+ * packed, false if the simpleParameter doesn't know how to pack its default
+ * value.
+ */
 bool DCSimpleParameter::
 pack_default_value(DCPackData &pack_data, bool &pack_error) const {
   if (has_default_value()) {
@@ -1157,7 +1086,7 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
     if (!_uint_range.is_empty()) {
       minimum_length = _uint_range.get_min(0);
     }
-    
+
     DCPacker packer;
     packer.begin_pack(this);
     packer.push();
@@ -1167,7 +1096,7 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
     packer.pop();
     if (!packer.end_pack()) {
       pack_error = true;
-      
+
     } else {
       pack_data.append_data(packer.get_data(), packer.get_length());
     }
@@ -1212,7 +1141,7 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
         pack_uint64(pack_data, _uint64_range.get_min(0), pack_error, pack_error);
       }
       break;
-      
+
     case ST_float64:
       if (_double_range.is_in_range(0.0)) {
         pack_double(pack_data, 0.0, pack_error, pack_error);
@@ -1220,7 +1149,7 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
         pack_double(pack_data, _double_range.get_min(0), pack_error, pack_error);
       }
       break;
-      
+
     default:
       pack_error = true;
     }
@@ -1230,12 +1159,9 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::unpack_double
-//       Access: Public, Virtual
-//  Description: Unpacks the current numeric or string value from the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
 void DCSimpleParameter::
 unpack_double(const char *data, size_t length, size_t &p, double &value,
               bool &pack_error, bool &range_error) const {
@@ -1369,12 +1295,9 @@ unpack_double(const char *data, size_t length, size_t &p, double &value,
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::unpack_int
-//       Access: Public, Virtual
-//  Description: Unpacks the current numeric or string value from the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
 void DCSimpleParameter::
 unpack_int(const char *data, size_t length, size_t &p, int &value,
            bool &pack_error, bool &range_error) const {
@@ -1510,12 +1433,9 @@ unpack_int(const char *data, size_t length, size_t &p, int &value,
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::unpack_uint
-//       Access: Public, Virtual
-//  Description: Unpacks the current numeric or string value from the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
 void DCSimpleParameter::
 unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
               bool &pack_error, bool &range_error) const {
@@ -1659,12 +1579,9 @@ unpack_uint(const char *data, size_t length, size_t &p, unsigned int &value,
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::unpack_int64
-//       Access: Public, Virtual
-//  Description: Unpacks the current numeric or string value from the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
 void DCSimpleParameter::
 unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value,
               bool &pack_error, bool &range_error) const {
@@ -1799,12 +1716,9 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value,
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::unpack_uint64
-//       Access: Public, Virtual
-//  Description: Unpacks the current numeric or string value from the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
 void DCSimpleParameter::
 unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
               bool &pack_error, bool &range_error) const {
@@ -1948,12 +1862,9 @@ unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::unpack_string
-//       Access: Public, Virtual
-//  Description: Unpacks the current numeric or string value from the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
 void DCSimpleParameter::
 unpack_string(const char *data, size_t length, size_t &p, string &value,
               bool &pack_error, bool &range_error) const {
@@ -1994,7 +1905,7 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
       string_length = do_unpack_uint16(data + p);
       p += 2;
       break;
-      
+
     case ST_blob32:
       if (p + 4 > length) {
         pack_error = true;
@@ -2003,7 +1914,7 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
       string_length = do_unpack_uint32(data + p);
       p += 4;
       break;
-      
+
     default:
       pack_error = true;
       return;
@@ -2022,18 +1933,15 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
   return;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::unpack_validate
-//       Access: Public, Virtual
-//  Description: Internally unpacks the current numeric or string
-//               value and validates it against the type range limits,
-//               but does not return the value.  Returns true on
-//               success, false on failure (e.g. we don't know how to
-//               validate this field).
-////////////////////////////////////////////////////////////////////
+/**
+ * Internally unpacks the current numeric or string value and validates it
+ * against the type range limits, but does not return the value.  Returns true
+ * on success, false on failure (e.g.  we don't know how to validate this
+ * field).
+ */
 bool DCSimpleParameter::
 unpack_validate(const char *data, size_t length, size_t &p,
-                bool &pack_error, bool &range_error) const { 
+                bool &pack_error, bool &range_error) const {
   if (!_has_range_limits) {
     return unpack_skip(data, length, p, pack_error);
   }
@@ -2185,16 +2093,13 @@ unpack_validate(const char *data, size_t length, size_t &p,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::unpack_skip
-//       Access: Public, Virtual
-//  Description: Increments p to the end of the current field without
-//               actually unpacking any data or performing any range
-//               validation.  Returns true on success, false on
-//               failure (e.g. we don't know how to skip this field).
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments p to the end of the current field without actually unpacking any
+ * data or performing any range validation.  Returns true on success, false on
+ * failure (e.g.  we don't know how to skip this field).
+ */
 bool DCSimpleParameter::
-unpack_skip(const char *data, size_t length, size_t &p, 
+unpack_skip(const char *data, size_t length, size_t &p,
             bool &pack_error) const {
   size_t string_length;
 
@@ -2259,12 +2164,9 @@ unpack_skip(const char *data, size_t length, size_t &p,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::output_instance
-//       Access: Public, Virtual
-//  Description: Formats the parameter in the C++-like dc syntax as a
-//               typename and identifier.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the parameter in the C++-like dc syntax as a typename and identifier.
+ */
 void DCSimpleParameter::
 output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
@@ -2290,7 +2192,7 @@ output_instance(ostream &out, bool brief, const string &prename,
         out << ")";
       }
       break;
-    
+
     case ST_int64:
       if (!_int64_range.is_empty()) {
         out << "(";
@@ -2298,7 +2200,7 @@ output_instance(ostream &out, bool brief, const string &prename,
         out << ")";
       }
       break;
-    
+
     case ST_uint8:
     case ST_uint16:
     case ST_uint32:
@@ -2316,7 +2218,7 @@ output_instance(ostream &out, bool brief, const string &prename,
         out << ")";
       }
       break;
-    
+
     case ST_uint64:
       if (!_uint64_range.is_empty()) {
         out << "(";
@@ -2350,12 +2252,9 @@ output_instance(ostream &out, bool brief, const string &prename,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::generate_hash
-//       Access: Public, Virtual
-//  Description: Accumulates the properties of this type into the
-//               hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Accumulates the properties of this type into the hash.
+ */
 void DCSimpleParameter::
 generate_hash(HashGenerator &hashgen) const {
   DCParameter::generate_hash(hashgen);
@@ -2373,25 +2272,20 @@ generate_hash(HashGenerator &hashgen) const {
   _double_range.generate_hash(hashgen);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::do_check_match
-//       Access: Protected, Virtual
-//  Description: Returns true if the other interface is bitwise the
-//               same as this one--that is, a uint32 only matches a
-//               uint32, etc. Names of components, and range limits,
-//               are not compared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the other interface is bitwise the same as this one--that is,
+ * a uint32 only matches a uint32, etc.  Names of components, and range limits,
+ * are not compared.
+ */
 bool DCSimpleParameter::
 do_check_match(const DCPackerInterface *other) const {
   return other->do_check_match_simple_parameter(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::do_check_match_simple_parameter
-//       Access: Protected, Virtual
-//  Description: Returns true if this field matches the indicated
-//               simple parameter, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this field matches the indicated simple parameter, false
+ * otherwise.
+ */
 bool DCSimpleParameter::
 do_check_match_simple_parameter(const DCSimpleParameter *other) const {
   if (_divisor != other->_divisor) {
@@ -2434,12 +2328,10 @@ do_check_match_simple_parameter(const DCSimpleParameter *other) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::do_check_match_array_parameter
-//       Access: Protected, Virtual
-//  Description: Returns true if this field matches the indicated
-//               array parameter, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this field matches the indicated array parameter, false
+ * otherwise.
+ */
 bool DCSimpleParameter::
 do_check_match_array_parameter(const DCArrayParameter *other) const {
   if (other->get_array_size() != -1) {
@@ -2454,13 +2346,10 @@ do_check_match_array_parameter(const DCArrayParameter *other) const {
   return _nested_field->check_match(other->get_element_type());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::create_nested_field
-//       Access: Private, Static
-//  Description: Creates the one instance of the DCSimpleParameter
-//               corresponding to this combination of type and divisor
-//               if it is not already created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the one instance of the DCSimpleParameter corresponding to this
+ * combination of type and divisor if it is not already created.
+ */
 DCSimpleParameter *DCSimpleParameter::
 create_nested_field(DCSubatomicType type, unsigned int divisor) {
   DivisorMap &divisor_map = _nested_field_map[type];
@@ -2475,12 +2364,10 @@ create_nested_field(DCSubatomicType type, unsigned int divisor) {
   return nested_field;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleParameter::create_uint32uint8_type
-//       Access: Private, Static
-//  Description: Creates the one instance of the Uint32Uint8Type
-//               object if it is not already created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the one instance of the Uint32Uint8Type object if it is not already
+ * created.
+ */
 DCPackerInterface *DCSimpleParameter::
 create_uint32uint8_type() {
   if (_uint32uint8_type == NULL) {

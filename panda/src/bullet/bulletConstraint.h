@@ -22,10 +22,9 @@
 
 class BulletRigidBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletConstraint
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletConstraint : public TypedReferenceCount {
 
 PUBLISHED:
@@ -64,7 +63,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "BulletConstraint", 
+    register_type(_type_handle, "BulletConstraint",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

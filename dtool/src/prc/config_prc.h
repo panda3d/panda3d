@@ -25,4 +25,3 @@ NotifyCategoryDecl(prc, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
 extern ALIGN_16BYTE ConfigVariableBool assert_abort;
 
 #endif
-

@@ -19,12 +19,10 @@
 #include "luse.h"
 #include "configVariableDouble.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysicsObject
-// Description : A body on which physics will be applied.  If you're
-//               looking to add physical motion to your class, do
-//               NOT derive from this.  Derive from Physical instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * A body on which physics will be applied.  If you're looking to add physical
+ * motion to your class, do NOT derive from this.  Derive from Physical instead.
+ */
 class EXPCL_PANDAPHYSICS PhysicsObject : public TypedReferenceCount {
 public:
   typedef pvector<PT(PhysicsObject)> Vector;
@@ -87,7 +85,7 @@ PUBLISHED:
   virtual LMatrix4 get_inertial_tensor() const;
   virtual LMatrix4 get_lcs() const;
   virtual PhysicsObject *make_copy() const;
-  
+
   #ifndef NDEBUG
     void set_name(const string &name) {
       _name = name;
@@ -96,7 +94,7 @@ PUBLISHED:
       return _name;
     }
   #endif
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
@@ -115,7 +113,7 @@ private:
 
   bool _process_me;
   bool _oriented;
-  
+
   #ifndef NDEBUG
     string _name;
   #endif

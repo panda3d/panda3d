@@ -22,11 +22,9 @@ const FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::_unit_y =
 const FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::_unit_z =
   FLOATNAME(LVecBase3)(0, 0, 1);
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LVecBase3)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -34,4 +32,3 @@ init_type() {
     register_type(_type_handle, FLOATNAME_STR(LVecBase3));
   }
 }
-

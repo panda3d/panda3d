@@ -22,10 +22,9 @@
 
 #include <stdlib.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : BaseParticleFactory
-// Description : Pure Virtual base class for creating particles
-////////////////////////////////////////////////////////////////////
+/**
+ * Pure Virtual base class for creating particles
+ */
 class EXPCL_PANDAPHYSICS BaseParticleFactory : public ReferenceCount {
 PUBLISHED:
   virtual ~BaseParticleFactory();

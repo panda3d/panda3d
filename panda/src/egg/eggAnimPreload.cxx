@@ -18,12 +18,10 @@
 
 TypeHandle EggAnimPreload::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggAnimPreload::write
-//       Access: Public, Virtual
-//  Description: Writes the table and all of its children to the
-//               indicated output stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the table and all of its children to the indicated output stream in
+ * Egg format.
+ */
 void EggAnimPreload::
 write(ostream &out, int indent_level) const {
   test_under_integrity();

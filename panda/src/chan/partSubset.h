@@ -17,13 +17,11 @@
 #include "pandabase.h"
 #include "globPattern.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PartSubset
-// Description : This class is used to define a subset of part names
-//               to apply to the PartBundle::bind_anim() operation.
-//               Only those part names within the subset will be
-//               included in the bind.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to define a subset of part names to apply to the
+ * PartBundle::bind_anim() operation.  Only those part names within the subset
+ * will be included in the bind.
+ */
 class EXPCL_PANDA_CHAN PartSubset {
 PUBLISHED:
   PartSubset();
@@ -55,4 +53,3 @@ INLINE ostream &operator << (ostream &out, const PartSubset &subset) {
 #include "partSubset.I"
 
 #endif
-

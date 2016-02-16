@@ -23,11 +23,9 @@ class GtkStatsLabel;
 class GtkStatsMonitor;
 class GtkStatsGraph;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GtkStatsLabelStack
-// Description : A widget that contains a stack of labels from bottom
-//               to top.
-////////////////////////////////////////////////////////////////////
+/**
+ * A widget that contains a stack of labels from bottom to top.
+ */
 class GtkStatsLabelStack {
 public:
   GtkStatsLabelStack();
@@ -55,4 +53,3 @@ private:
 };
 
 #endif
-

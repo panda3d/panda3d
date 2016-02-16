@@ -40,5 +40,3 @@ INLINE PN_stdfloat PhysicsCollisionHandler::
 get_dynamic_friction_coef() {
   return _dynamic_friction_coef;
 }
-
-

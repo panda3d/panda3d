@@ -20,4 +20,3 @@
 EXPCL_PANDA void init_libpanda();
 
 #endif
-

@@ -18,11 +18,10 @@
 
 #include "eggPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPatch
-// Description : A single "patch", a special primitive to be rendered
-//               only with a tessellation shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single "patch", a special primitive to be rendered only with a tessellation
+ * shader.
+ */
 class EXPCL_PANDAEGG EggPatch : public EggPrimitive {
 PUBLISHED:
   INLINE EggPatch(const string &name = "");

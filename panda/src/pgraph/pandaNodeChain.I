@@ -11,11 +11,9 @@
  * @date 2006-04-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNodeChain::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PandaNodeChain::
 PandaNodeChain(const char *lock_name) :
   LinkedListNode(true),  // This object is the root of a list of PandaNodes.
@@ -23,11 +21,9 @@ PandaNodeChain(const char *lock_name) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaNodeChain::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PandaNodeChain::
 ~PandaNodeChain() {
   _next = NULL;

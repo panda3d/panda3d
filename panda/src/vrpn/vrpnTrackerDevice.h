@@ -21,19 +21,13 @@
 class VrpnClient;
 class VrpnTracker;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnTrackerDevice
-// Description : The Panda interface to a VRPN tracker.  This object
-//               will be returned by VrpnClient::make_device(), for
-//               attaching to a TrackerNode.
-//
-//               It represents the data from just one particular
-//               sensor of a named VRPN tracker, and may reflect
-//               either the sensor's position, its velocity, or its
-//               acceleration.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Panda interface to a VRPN tracker.  This object will be returned by
+ * VrpnClient::make_device(), for attaching to a TrackerNode.  It represents the
+ * data from just one particular sensor of a named VRPN tracker, and may reflect
+ * either the sensor's position, its velocity, or its acceleration.  This class
+ * does not need to be exported from the DLL.
+ */
 class VrpnTrackerDevice : public ClientTrackerDevice {
 public:
   enum DataType {

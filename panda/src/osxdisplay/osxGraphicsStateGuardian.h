@@ -25,11 +25,10 @@
 
 class osxGraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : wglGraphicsStateGuardian
-// Description : A tiny specialization on GLGraphicsStateGuardian to
-//               add some wgl-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLGraphicsStateGuardian to add some wgl-specific
+ * information.
+ */
 class osxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,

@@ -15,11 +15,9 @@
 
 PStatCollector PhysxControllerReport::_pcollector("App:PhysX:Controller Reporting");
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllerReport::enable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxControllerReport::
 enable() {
 
@@ -29,33 +27,27 @@ enable() {
   _controller_hit_cbobj = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllerReport::disable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxControllerReport::
 disable() {
 
   _enabled = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllerReport::is_enabled
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxControllerReport::
 is_enabled() const {
 
   return _enabled;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllerReport::onShapeHit
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxControllerAction PhysxControllerReport::
 onShapeHit( const NxControllerShapeHit& hit ) {
 
@@ -69,7 +61,7 @@ onShapeHit( const NxControllerShapeHit& hit ) {
     // Callback
     PhysxControllerShapeHit cbdata(hit);
     _shape_hit_cbobj->do_callback(&cbdata);
-  } 
+  }
   else {
     // Default implementation
     if (1 && hit.shape) {
@@ -89,11 +81,9 @@ onShapeHit( const NxControllerShapeHit& hit ) {
   return NX_ACTION_NONE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxControllerReport::onControllerHit
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxControllerAction PhysxControllerReport::
 onControllerHit(const NxControllersHit& hit) {
 
@@ -107,7 +97,7 @@ onControllerHit(const NxControllersHit& hit) {
     // Callback
     PhysxControllersHit cbdata(hit);
     _controller_hit_cbobj->do_callback(&cbdata);
-  } 
+  }
   else {
     // Default implementation
     if (1 && hit.other) {
@@ -120,4 +110,3 @@ onControllerHit(const NxControllersHit& hit) {
 
   return NX_ACTION_NONE;
 }
-

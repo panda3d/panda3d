@@ -27,13 +27,11 @@ class EggGroupNode;
 class EggRenderMode;
 class EggTextureCollection;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggNode
-// Description : A base class for things that may be directly added
-//               into the egg hierarchy.  This includes groups,
-//               joints, polygons, vertex pools, etc., but does not
-//               include things like vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for things that may be directly added into the egg hierarchy.
+ * This includes groups, joints, polygons, vertex pools, etc., but does not
+ * include things like vertices.
+ */
 class EXPCL_PANDAEGG EggNode : public EggNamedObject {
 PUBLISHED:
   INLINE EggNode(const string &name = "");

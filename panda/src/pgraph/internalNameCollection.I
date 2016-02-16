@@ -11,31 +11,25 @@
  * @date 2002-03-16
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalNameCollection::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE InternalNameCollection::
 ~InternalNameCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalNameCollection::operator +=
-//       Access: Published
-//  Description: Appends the other list onto the end of this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends the other list onto the end of this one.
+ */
 INLINE void InternalNameCollection::
 operator += (const InternalNameCollection &other) {
   add_names_from(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalNameCollection::operator +
-//       Access: Published
-//  Description: Returns a InternalNameCollection representing the
-//               concatenation of the two lists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a InternalNameCollection representing the concatenation of the two
+ * lists.
+ */
 INLINE InternalNameCollection InternalNameCollection::
 operator + (const InternalNameCollection &other) const {
   InternalNameCollection a(*this);

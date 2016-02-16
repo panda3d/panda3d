@@ -24,16 +24,13 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureStage
-// Description : Defines the properties of a named stage of the
-//               multitexture pipeline.  The TextureAttrib will
-//               associated a number of these stages with Texture
-//               objects, and the GSG will render geometry by sorting
-//               all of the currently active TextureStages in order
-//               and then issuing the appropriate rendering calls to
-//               activate them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the properties of a named stage of the multitexture pipeline.  The
+ * TextureAttrib will associated a number of these stages with Texture objects,
+ * and the GSG will render geometry by sorting all of the currently active
+ * TextureStages in order and then issuing the appropriate rendering calls to
+ * activate them.
+ */
 class EXPCL_PANDA_GOBJ TextureStage : public TypedWritableReferenceCount {
 PUBLISHED:
   explicit TextureStage(const string &name);
@@ -135,12 +132,12 @@ PUBLISHED:
   INLINE void set_tex_view_offset(int tex_view_offset);
   INLINE int get_tex_view_offset() const;
 
-  INLINE void set_combine_rgb(CombineMode mode, 
+  INLINE void set_combine_rgb(CombineMode mode,
                               CombineSource source0, CombineOperand operand0);
-  INLINE void set_combine_rgb(CombineMode mode, 
+  INLINE void set_combine_rgb(CombineMode mode,
                               CombineSource source0, CombineOperand operand0,
                               CombineSource source1, CombineOperand operand1);
-  INLINE void set_combine_rgb(CombineMode mode, 
+  INLINE void set_combine_rgb(CombineMode mode,
                               CombineSource source0, CombineOperand operand0,
                               CombineSource source1, CombineOperand operand1,
                               CombineSource source2, CombineOperand operand2);
@@ -153,12 +150,12 @@ PUBLISHED:
   INLINE CombineSource get_combine_rgb_source2() const;
   INLINE CombineOperand get_combine_rgb_operand2() const;
 
-  INLINE void set_combine_alpha(CombineMode mode, 
+  INLINE void set_combine_alpha(CombineMode mode,
                                 CombineSource source0, CombineOperand operand0);
-  INLINE void set_combine_alpha(CombineMode mode, 
+  INLINE void set_combine_alpha(CombineMode mode,
                                 CombineSource source0, CombineOperand operand0,
                                 CombineSource source1, CombineOperand operand1);
-  INLINE void set_combine_alpha(CombineMode mode, 
+  INLINE void set_combine_alpha(CombineMode mode,
                                 CombineSource source0, CombineOperand operand0,
                                 CombineSource source1, CombineOperand operand1,
                                 CombineSource source2, CombineOperand operand2);

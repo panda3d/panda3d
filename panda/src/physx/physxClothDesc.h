@@ -22,10 +22,9 @@
 
 class PhysxClothMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxClothDesc
-// Description : Descriptor for PhysxCloth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for PhysxCloth.
+ */
 class EXPCL_PANDAPHYSX PhysxClothDesc : public PhysxEnums {
 
 PUBLISHED:
@@ -70,7 +69,7 @@ public:
   NxClothDesc _desc;
 
 private:
-  string _name;  
+  string _name;
 };
 
 #include "physxClothDesc.I"

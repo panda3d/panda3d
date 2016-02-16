@@ -89,28 +89,21 @@ extern int GLOBAL_ARGC;
 
 ExecutionEnvironment *ExecutionEnvironment::_global_ptr = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::Constructor
-//       Access: Private
-//  Description: You shouldn't need to construct one of these; there's
-//               only one and it constructs itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * You shouldn't need to construct one of these; there's only one and it
+ * constructs itself.
+ */
 ExecutionEnvironment::
 ExecutionEnvironment() {
   read_environment_variables();
   read_args();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnviroment::expand_string
-//       Access: Public, Static
-//  Description: Reads the string, looking for environment variable
-//               names marked by a $.  Expands all such variable
-//               names.  A repeated dollar sign ($$) is mapped to a
-//               single dollar sign.
-//
-//               Returns the expanded string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the string, looking for environment variable names marked by a $.
+ * Expands all such variable names.  A repeated dollar sign ($$) is mapped to a
+ * single dollar sign.  Returns the expanded string.
+ */
 string ExecutionEnvironment::
 expand_string(const string &str) {
   string result;
@@ -160,11 +153,9 @@ expand_string(const string &str) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnviroment::get_cwd
-//       Access: Public, Static
-//  Description: Returns the name of the current working directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the current working directory.
+ */
 Filename ExecutionEnvironment::
 get_cwd() {
 #ifdef WIN32_VC
@@ -218,12 +209,10 @@ get_cwd() {
 #endif  // WIN32_VC
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_has_environment_variable
-//       Access: Private
-//  Description: Returns true if the indicated environment variable
-//               is defined.  The nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated environment variable is defined.  The nonstatic
+ * implementation.
+ */
 bool ExecutionEnvironment::
 ns_has_environment_variable(const string &var) const {
 #ifdef PREREAD_ENVIRONMENT
@@ -233,13 +222,10 @@ ns_has_environment_variable(const string &var) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_environment_variable
-//       Access: Private
-//  Description: Returns the definition of the indicated environment
-//               variable, or the empty string if the variable is
-//               undefined.  The nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the definition of the indicated environment variable, or the empty
+ * string if the variable is undefined.  The nonstatic implementation.
+ */
 string ExecutionEnvironment::
 ns_get_environment_variable(const string &var) const {
   EnvironmentVariables::const_iterator evi;
@@ -361,12 +347,10 @@ ns_get_environment_variable(const string &var) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_set_environment_variable
-//       Access: Private
-//  Description: Changes the definition of the indicated environment
-//               variable.  The nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the definition of the indicated environment variable.  The nonstatic
+ * implementation.
+ */
 void ExecutionEnvironment::
 ns_set_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
@@ -378,22 +362,18 @@ ns_set_environment_variable(const string &var, const string &value) {
   putenv(put);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_shadow_environment_variable
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ExecutionEnvironment::
 ns_shadow_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
   string putstr = var + "=" + value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_clear_shadow
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ExecutionEnvironment::
 ns_clear_shadow(const string &var) {
   EnvironmentVariables::iterator vi = _variables.find(var);
@@ -412,40 +392,30 @@ ns_clear_shadow(const string &var) {
 #endif  // PREREAD_ENVIRONMENT
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_num_args
-//       Access: Private
-//  Description: Returns the number of command-line arguments
-//               available, not counting arg 0, the binary name.  The
-//               nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of command-line arguments available, not counting arg 0,
+ * the binary name.  The nonstatic implementation.
+ */
 size_t ExecutionEnvironment::
 ns_get_num_args() const {
   return _args.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_arg
-//       Access: Private
-//  Description: Returns the nth command-line argument.  The index n
-//               must be in the range [0 .. get_num_args()).  The
-//               first parameter, n == 0, is the first actual
-//               parameter, not the binary name.  The nonstatic
-//               implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth command-line argument.  The index n must be in the range [0
+ * .. get_num_args()).  The first parameter, n == 0, is the first actual
+ * parameter, not the binary name.  The nonstatic implementation.
+ */
 string ExecutionEnvironment::
 ns_get_arg(size_t n) const {
   assert(n < ns_get_num_args());
   return _args[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_binary_name
-//       Access: Private
-//  Description: Returns the name of the binary executable that
-//               started this program, if it can be determined.  The
-//               nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the binary executable that started this program, if it
+ * can be determined.  The nonstatic implementation.
+ */
 string ExecutionEnvironment::
 ns_get_binary_name() const {
   if (_binary_name.empty()) {
@@ -454,13 +424,10 @@ ns_get_binary_name() const {
   return _binary_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::ns_get_dtool_name
-//       Access: Private
-//  Description: Returns the name of the libp3dtool DLL that
-//               is used in this program, if it can be determined.  The
-//               nonstatic implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the libp3dtool DLL that is used in this program, if it
+ * can be determined.  The nonstatic implementation.
+ */
 string ExecutionEnvironment::
 ns_get_dtool_name() const {
   if (_dtool_name.empty()) {
@@ -469,12 +436,10 @@ ns_get_dtool_name() const {
   return _dtool_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::get_ptr
-//       Access: Private, Static
-//  Description: Returns a static pointer that may be used to access
-//               the global ExecutionEnvironment object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a static pointer that may be used to access the global
+ * ExecutionEnvironment object.
+ */
 ExecutionEnvironment *ExecutionEnvironment::
 get_ptr() {
   if (_global_ptr == (ExecutionEnvironment *)NULL) {
@@ -484,13 +449,10 @@ get_ptr() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::read_environment_variables
-//       Access: Private
-//  Description: Fills up the internal table of existing environment
-//               variables, if we are in PREREAD_ENVIRONMENT mode.
-//               Otherwise, does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the internal table of existing environment variables, if we are in
+ * PREREAD_ENVIRONMENT mode.  Otherwise, does nothing.
+ */
 void ExecutionEnvironment::
 read_environment_variables() {
 #ifdef PREREAD_ENVIRONMENT
@@ -557,12 +519,10 @@ read_environment_variables() {
 #endif // PREREAD_ENVIRONMENT
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ExecutionEnvironment::read_args
-//       Access: Private
-//  Description: Reads all the command-line arguments and the name of
-//               the binary file, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads all the command-line arguments and the name of the binary file, if
+ * possible.
+ */
 void ExecutionEnvironment::
 read_args() {
 #ifndef ANDROID

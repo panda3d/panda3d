@@ -15,12 +15,9 @@
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamWriter::append_data
-//       Access: Published
-//  Description: Appends some more raw data to the end of the
-//               StreamWriter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends some more raw data to the end of the StreamWriter.
+ */
 void Extension<StreamWriter>::
 append_data(PyObject *data) {
   Py_buffer view;

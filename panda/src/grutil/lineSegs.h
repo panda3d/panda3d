@@ -24,14 +24,12 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LineSegs
-// Description : Encapsulates creation of a series of connected or
-//               disconnected line segments or points, for drawing
-//               paths or rays.  This class doesn't attempt to be the
-//               smartest it could possibly be; it's intended
-//               primarily as a visualization and editing tool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates creation of a series of connected or disconnected line segments
+ * or points, for drawing paths or rays.  This class doesn't attempt to be the
+ * smartest it could possibly be; it's intended primarily as a visualization and
+ * editing tool.
+ */
 class EXPCL_PANDA_GRUTIL LineSegs : public Namable {
 PUBLISHED:
   LineSegs(const string &name = "lines");

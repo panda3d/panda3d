@@ -17,13 +17,11 @@
 #include "pandabase.h"
 #include "nodePointerToBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodePointerTo
-// Description : This implements the special NodePointerTo template
-//               class, which works just like PointerTo except it
-//               manages the objects node_ref_count instead of the
-//               normal ref_count.
-////////////////////////////////////////////////////////////////////
+/**
+ * This implements the special NodePointerTo template class, which works just
+ * like PointerTo except it manages the objects node_ref_count instead of the
+ * normal ref_count.
+ */
 template <class T>
 class NodePointerTo : public NodePointerToBase<T> {
 public:
@@ -54,11 +52,10 @@ public:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodeConstPointerTo
-// Description : A NodeConstPointerTo is similar to a NodePointerTo,
-//               except it keeps a const pointer to the thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * A NodeConstPointerTo is similar to a NodePointerTo, except it keeps a const
+ * pointer to the thing.
+ */
 template <class T>
 class NodeConstPointerTo : public NodePointerToBase<T> {
 public:

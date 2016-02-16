@@ -14,11 +14,9 @@
 #include "winStatsServer.h"
 #include "winStatsMonitor.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: WinStatsServer::make_monitor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatMonitor *WinStatsServer::
 make_monitor() {
   return new WinStatsMonitor(this);

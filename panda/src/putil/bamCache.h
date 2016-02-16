@@ -27,22 +27,16 @@
 
 class BamCacheIndex;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamCache
-// Description : This class maintains a cache of Bam and/or Txo
-//               objects generated from model files and texture images
-//               (as well as possibly other kinds of loadable objects
-//               that can be stored in bam file format).
-//
-//               This class also maintains a persistent index that
-//               lists all of the cached objects (see BamCacheIndex).
-//               We go through some considerable effort to make sure
-//               this index gets saved correctly to disk, even in the
-//               presence of multiple different processes writing to
-//               the same index, and without relying too heavily on
-//               low-level os-provided file locks (which work poorly
-//               with C++ iostreams).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class maintains a cache of Bam and/or Txo objects generated from model
+ * files and texture images (as well as possibly other kinds of loadable objects
+ * that can be stored in bam file format).  This class also maintains a
+ * persistent index that lists all of the cached objects (see BamCacheIndex). We
+ * go through some considerable effort to make sure this index gets saved
+ * correctly to disk, even in the presence of multiple different processes
+ * writing to the same index, and without relying too heavily on low-level os-
+ * provided file locks (which work poorly with C++ iostreams).
+ */
 class EXPCL_PANDA_PUTIL BamCache {
 PUBLISHED:
   BamCache();

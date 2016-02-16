@@ -14,15 +14,11 @@
 #include "physxTriangleMeshShapeDesc.h"
 #include "physxTriangleMesh.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMeshShapeDesc::set_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxTriangleMeshShapeDesc::
 set_mesh(PhysxTriangleMesh *mesh) {
 
   _desc.meshData = mesh->ptr();
 }
-
-

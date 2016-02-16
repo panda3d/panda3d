@@ -58,14 +58,11 @@ class EggRenderState;
 class CharacterMaker;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggLoader
-// Description : Converts an egg data structure, possibly read from an
-//               egg file but not necessarily, into a scene graph
-//               suitable for rendering.
-//
-//               This class isn't exported from this package.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an egg data structure, possibly read from an egg file but not
+ * necessarily, into a scene graph suitable for rendering.  This class isn't
+ * exported from this package.
+ */
 class EggLoader {
 public:
   EggLoader();
@@ -75,7 +72,7 @@ public:
   void reparent_decals();
   void start_sequences();
 
-  void make_polyset(EggBin *egg_bin, PandaNode *parent, 
+  void make_polyset(EggBin *egg_bin, PandaNode *parent,
                     const LMatrix4d *transform, bool is_dynamic,
                     CharacterMaker *character_maker);
 
@@ -109,7 +106,7 @@ private:
   typedef pmap<PrimitiveUnifier, PT(GeomPrimitive) > UniquePrimitives;
   typedef pvector< PT(GeomPrimitive) > Primitives;
 
-  void show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node);  
+  void show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node);
 
   void make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
                         const LMatrix4d &mat);
@@ -138,10 +135,10 @@ private:
   PandaNode *make_node(EggTable *egg_table, PandaNode *parent);
   PandaNode *make_node(EggGroupNode *egg_group, PandaNode *parent);
 
-  void check_for_polysets(EggGroup *egg_group, bool &all_polysets, 
+  void check_for_polysets(EggGroup *egg_group, bool &all_polysets,
                           bool &any_hidden);
   PT(GeomVertexData) make_vertex_data
-  (const EggRenderState *render_state, EggVertexPool *vertex_pool, 
+  (const EggRenderState *render_state, EggVertexPool *vertex_pool,
    EggNode *primitive_home, const LMatrix4d &transform, TransformBlendTable *blend_table,
    bool is_dynamic, CharacterMaker *character_maker, bool ignore_color);
   PT(TransformBlendTable) make_blend_table
@@ -149,11 +146,11 @@ private:
    CharacterMaker *character_maker);
   void record_morph
   (GeomVertexArrayFormat *array_format,
-   CharacterMaker *character_maker, const string &morph_name, 
+   CharacterMaker *character_maker, const string &morph_name,
    InternalName *column_name, int num_components);
 
-  void make_primitive(const EggRenderState *render_state, 
-                      EggPrimitive *egg_prim, 
+  void make_primitive(const EggRenderState *render_state,
+                      EggPrimitive *egg_prim,
                       UniquePrimitives &unique_primitives,
                       Primitives &primitives,
                       bool has_overall_color, const LColor &overall_color);
@@ -188,7 +185,7 @@ private:
                            EggGroup::CollideFlags flags);
   void apply_collision_flags(CollisionSolid *solid,
                              EggGroup::CollideFlags flags);
-  EggGroup *find_collision_geometry(EggGroup *egg_group, 
+  EggGroup *find_collision_geometry(EggGroup *egg_group,
                                     EggGroup::CollideFlags flags);
   CollisionPlane *create_collision_plane(EggPolygon *egg_poly,
                                          EggGroup *parent_group);
@@ -196,7 +193,7 @@ private:
                                  EggGroup *parent_group,
                                  EggGroup::CollideFlags flags);
 
-  void create_collision_floor_mesh(CollisionNode *cnode, 
+  void create_collision_floor_mesh(CollisionNode *cnode,
                                  EggGroup *parent_group,
                                  EggGroup::CollideFlags flags);
 
@@ -208,16 +205,16 @@ private:
                              const pvector<string> &expanded_history,
                              const string &object_type);
 
-  static TextureStage::CombineMode 
-  get_combine_mode(const EggTexture *egg_tex, 
+  static TextureStage::CombineMode
+  get_combine_mode(const EggTexture *egg_tex,
                    EggTexture::CombineChannel channel);
 
   static TextureStage::CombineSource
-  get_combine_source(const EggTexture *egg_tex, 
+  get_combine_source(const EggTexture *egg_tex,
                      EggTexture::CombineChannel channel, int n);
 
   static TextureStage::CombineOperand
-  get_combine_operand(const EggTexture *egg_tex, 
+  get_combine_operand(const EggTexture *egg_tex,
                       EggTexture::CombineChannel channel, int n);
 
   static ColorBlendAttrib::Mode

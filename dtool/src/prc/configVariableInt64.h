@@ -18,11 +18,10 @@
 #include "configVariable.h"
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableInt64
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a 64-bit integer type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a 64-bit integer
+ * type.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableInt64 : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableInt64(const string &name);

@@ -17,16 +17,12 @@
 #include "pandatoolbase.h"
 #include "namable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFLayer
-// Description : This represents a "layer" as read from the DXF file.
-//               A layer may be defined by reading the header part of
-//               the file, or it may be implicitly defined by an
-//               entity's having referenced it.
-//
-//               User code may derive from DXFLayer to associate
-//               private data with each layer, if desired.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a "layer" as read from the DXF file.  A layer may be defined
+ * by reading the header part of the file, or it may be implicitly defined by an
+ * entity's having referenced it.  User code may derive from DXFLayer to
+ * associate private data with each layer, if desired.
+ */
 class DXFLayer : public Namable {
 public:
   DXFLayer(const string &name);

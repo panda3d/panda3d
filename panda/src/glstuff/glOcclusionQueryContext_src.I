@@ -11,11 +11,9 @@
  * @date 2006-03-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(OcclusionQueryContext)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLP(OcclusionQueryContext)::
 CLP(OcclusionQueryContext)(GraphicsStateGuardian *gsg) {
   _index = 0;

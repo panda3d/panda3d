@@ -17,17 +17,17 @@
 TypeHandle OdeUniversalJoint::_type_handle;
 
 OdeUniversalJoint::
-OdeUniversalJoint(dJointID id) : 
+OdeUniversalJoint(dJointID id) :
   OdeJoint(id) {
 }
 
 OdeUniversalJoint::
-OdeUniversalJoint(OdeWorld &world) : 
+OdeUniversalJoint(OdeWorld &world) :
   OdeJoint(dJointCreateUniversal(world.get_id(), 0)) {
 }
 
 OdeUniversalJoint::
-OdeUniversalJoint(OdeWorld &world,  OdeJointGroup &joint_group) : 
+OdeUniversalJoint(OdeWorld &world,  OdeJointGroup &joint_group) :
   OdeJoint(dJointCreateUniversal(world.get_id(), joint_group.get_id())) {
 }
 

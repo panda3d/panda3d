@@ -40,7 +40,7 @@ main(int argc, char *argv[]) {
     cerr << "Couldn't read PEM file in " << source_filename << "\n";
     return 0;
   }
-  
+
   cerr << "PEM_X509_INFO_read() found " << sk_X509_INFO_num(inf)
        << " entries.\n";
 
@@ -119,10 +119,10 @@ main(int argc, char *argv[]) {
     ch = in.get();
   }
   out << "\n};\n\n"
-      << static_keyword << length_type << table_name << "_len = " 
+      << static_keyword << length_type << table_name << "_len = "
       << dec << count << ";\n\n";
 
-  cerr << "Wrote " << cert_count << " certificates to " 
+  cerr << "Wrote " << cert_count << " certificates to "
        << target_filename << "\n";
   return 0;
 }

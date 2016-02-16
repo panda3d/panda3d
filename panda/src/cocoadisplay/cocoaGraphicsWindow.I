@@ -11,21 +11,17 @@
  * @date 2012-05-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::get_nswindow
-//       Access: Public
-//  Description: Returns a pointer to the underlying NSWindow.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the underlying NSWindow.
+ */
 INLINE NSWindow *CocoaGraphicsWindow::
 get_nswindow() const {
   return _window;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::get_nsview
-//       Access: Public
-//  Description: Returns a pointer to the underlying NSView.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the underlying NSView.
+ */
 INLINE NSView *CocoaGraphicsWindow::
 get_nsview() const {
   return _view;

@@ -16,11 +16,9 @@
 #include "daeToEggConverter.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DAEToEgg::
 DAEToEgg():
   SomethingToEgg("COLLADA", ".dae")
@@ -45,11 +43,9 @@ DAEToEgg():
   _animation_convert = AC_both;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DAEToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DAEToEgg::
 run() {
   if (_animation_convert != AC_both && _animation_convert != AC_none &&

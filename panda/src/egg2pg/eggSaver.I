@@ -11,13 +11,10 @@
  * @date 2012-12-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::get_egg_data
-//       Access: Published
-//  Description: Returns the EggData populated within this class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggData populated within this class.
+ */
 INLINE EggData *EggSaver::
 get_egg_data() const {
   return _data;
 }
-

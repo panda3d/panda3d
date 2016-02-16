@@ -97,7 +97,7 @@ get_model_path() {
   static ConfigVariableSearchPath *model_path = NULL;
   if (model_path == NULL) {
     model_path = new ConfigVariableSearchPath
-      ("model-path", 
+      ("model-path",
        PRC_DESC("The default directories to search for all models and general "
                 "files loaded into Panda."));
   }
@@ -158,14 +158,12 @@ ConfigVariableBool cache_check_timestamps
           "to on-disk caching via model-cache-dir, which always checks the "
           "timestamps."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libputil
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libputil() {
   static bool initialized = false;

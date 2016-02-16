@@ -11,13 +11,10 @@
  * @date 2004-01-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventQueue::get_global_event_handler
-//       Access: Public
-//  Description: Returns a pointer to the one global EventHandler
-//               object.  If the global object has not yet been
-//               created, this will create it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the one global EventHandler object.  If the global
+ * object has not yet been created, this will create it.
+ */
 INLINE EventHandler *EventHandler::
 get_global_event_handler(EventQueue *queue) {
   // The event queue parameter is present for now, for backward

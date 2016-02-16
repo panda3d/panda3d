@@ -32,10 +32,9 @@ public:
   bool operator () (CPPType *a, CPPType *b) const;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPType : public CPPDeclaration {
 public:
   typedef vector<CPPTypedefType *> Typedefs;

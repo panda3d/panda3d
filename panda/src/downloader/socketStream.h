@@ -30,13 +30,11 @@
 
 class HTTPChannel;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SSReader
-// Description : An internal class for reading from a socket stream.
-//               This serves as a base class for both ISocketStream
-//               and SocketStream; its purpose is to minimize
-//               redundant code between them.  Do not use it directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal class for reading from a socket stream.  This serves as a base
+ * class for both ISocketStream and SocketStream; its purpose is to minimize
+ * redundant code between them.  Do not use it directly.
+ */
 class EXPCL_PANDAEXPRESS SSReader {
 public:
   SSReader(istream *stream);
@@ -73,7 +71,7 @@ private:
     double _reveal_time;
     Datagram _datagram;
   };
-    
+
   typedef pdeque<DelayedDatagram> Delayed;
   Delayed _delayed;
   bool _delay_active;
@@ -82,13 +80,11 @@ private:
 #endif  // SIMULATE_NETWORK_DELAY
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : SSWriter
-// Description : An internal class for writing to a socket stream.
-//               This serves as a base class for both OSocketStream
-//               and SocketStream; its purpose is to minimize
-//               redundant code between them.  Do not use it directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal class for writing to a socket stream.  This serves as a base
+ * class for both OSocketStream and SocketStream; its purpose is to minimize
+ * redundant code between them.  Do not use it directly.
+ */
 class EXPCL_PANDAEXPRESS SSWriter {
 public:
   SSWriter(ostream *stream);
@@ -119,15 +115,12 @@ private:
   int _tcp_header_size;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ISocketStream
-// Description : This is a base class for istreams implemented in
-//               Panda that read from a (possibly non-blocking)
-//               socket.  It adds is_closed(), which can be called
-//               after an eof condition to check whether the socket
-//               has been closed, or whether more data may be
-//               available later.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for istreams implemented in Panda that read from a
+ * (possibly non-blocking) socket.  It adds is_closed(), which can be called
+ * after an eof condition to check whether the socket has been closed, or
+ * whether more data may be available later.
+ */
 class EXPCL_PANDAEXPRESS ISocketStream : public istream, public SSReader {
 public:
   INLINE ISocketStream(streambuf *buf);
@@ -152,14 +145,12 @@ private:
   friend class HTTPChannel;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : OSocketStream
-// Description : A base class for ostreams that write to a (possibly
-//               non-blocking) socket.  It adds is_closed(), which can
-//               be called after any write operation fails to check
-//               whether the socket has been closed, or whether more
-//               data may be sent later.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for ostreams that write to a (possibly non-blocking) socket.  It
+ * adds is_closed(), which can be called after any write operation fails to
+ * check whether the socket has been closed, or whether more data may be sent
+ * later.
+ */
 class EXPCL_PANDAEXPRESS OSocketStream : public ostream, public SSWriter {
 public:
   INLINE OSocketStream(streambuf *buf);
@@ -171,11 +162,10 @@ PUBLISHED:
   INLINE bool flush();
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : SocketStream
-// Description : A base class for iostreams that read and write to a
-//               (possibly non-blocking) socket.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for iostreams that read and write to a (possibly non-blocking)
+ * socket.
+ */
 class EXPCL_PANDAEXPRESS SocketStream : public iostream, public SSReader, public SSWriter {
 public:
   INLINE SocketStream(streambuf *buf);
@@ -197,5 +187,3 @@ PUBLISHED:
 
 
 #endif
-
-

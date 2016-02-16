@@ -51,11 +51,9 @@ class DXIndexBufferContext9;
 
 class wdxGraphicsBuffer9;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXGraphicsStateGuardian9
-// Description : A GraphicsStateGuardian for rendering into DirectX9
-//               contexts.
-////////////////////////////////////////////////////////////////////
+/**
+ * A GraphicsStateGuardian for rendering into DirectX9 contexts.
+ */
 class EXPCL_PANDADX DXGraphicsStateGuardian9 : public GraphicsStateGuardian {
 public:
   DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe);

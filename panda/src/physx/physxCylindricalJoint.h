@@ -21,12 +21,10 @@
 
 class PhysxCylindricalJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxCylindricalJoint
-// Description : Cylindrical Joints permit relative translational
-//               movement between two bodies along an axis, and also
-//               relative rotation along the axis. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Cylindrical Joints permit relative translational movement between two bodies
+ * along an axis, and also relative rotation along the axis.
+ */
 class EXPCL_PANDAPHYSX PhysxCylindricalJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -51,7 +49,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxCylindricalJoint", 
+    register_type(_type_handle, "PhysxCylindricalJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

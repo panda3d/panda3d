@@ -23,17 +23,13 @@
 #include "dcast.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PartBundleNode
-// Description : This is a node that contains a pointer to an
-//               PartBundle.  Like AnimBundleNode, it exists to make
-//               it easy to store PartBundles in the scene graph.
-//
-//               (Unlike AnimBundleNode, however, PartBundleNode has
-//               an additional function: it is also the base class of
-//               the Character node type, which adds additional
-//               functionality.)
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a node that contains a pointer to an PartBundle.  Like
+ * AnimBundleNode, it exists to make it easy to store PartBundles in the scene
+ * graph.  (Unlike AnimBundleNode, however, PartBundleNode has an additional
+ * function: it is also the base class of the Character node type, which adds
+ * additional functionality.)
+ */
 class EXPCL_PANDA_CHAN PartBundleNode : public PandaNode {
 PUBLISHED:
   INLINE PartBundleNode(const string &name, PartBundle *bundle);
@@ -60,7 +56,7 @@ protected:
   void add_bundle(PartBundle *bundle);
   void add_bundle_handle(PartBundleHandle *handle);
   void steal_bundles(PartBundleNode *other);
-  virtual void update_bundle(PartBundleHandle *old_bundle_handle, 
+  virtual void update_bundle(PartBundleHandle *old_bundle_handle,
                              PartBundle *new_bundle);
 
 protected:

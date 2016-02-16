@@ -16,11 +16,9 @@
 #include "objToEggConverter.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ObjToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ObjToEgg::
 ObjToEgg() :
   SomethingToEgg("obj", ".obj")
@@ -44,11 +42,9 @@ ObjToEgg() :
   _coordinate_system = CS_zup_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ObjToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ObjToEgg::
 run() {
   nout << "Reading " << _input_filename << "\n";

@@ -22,12 +22,11 @@
 
 class CLP(GeomContext);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLGeomMunger
-// Description : This specialization on GeomMunger finesses vertices
-//               for OpenGL rendering.  In particular, it makes sure
-//               colors aren't stored in DirectX's packed_argb format.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on GeomMunger finesses vertices for OpenGL rendering.  In
+ * particular, it makes sure colors aren't stored in DirectX's packed_argb
+ * format.
+ */
 class EXPCL_GL CLP(GeomMunger) : public StandardMunger, public WeakPointerCallback {
 public:
   CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
@@ -84,4 +83,3 @@ private:
 };
 
 #include "glGeomMunger_src.I"
-

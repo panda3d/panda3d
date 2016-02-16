@@ -15,11 +15,9 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltEyepoint::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltEyepoint::
 FltEyepoint() {
   _rotation_center.set(0.0, 0.0, 0.0);
@@ -42,11 +40,9 @@ FltEyepoint() {
   _image_zoom = 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltEyepoint::extract_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltEyepoint::
 extract_record(FltRecordReader &reader) {
   DatagramIterator &iterator = reader.get_iterator();
@@ -91,11 +87,9 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltEyepoint::build_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltEyepoint::
 build_record(FltRecordWriter &writer) const {
   Datagram &datagram = writer.update_datagram();

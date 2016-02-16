@@ -18,11 +18,9 @@
 
 #include "eggPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSurface
-// Description : A parametric surface of some kind.  See
-//               EggNurbsSurface.
-////////////////////////////////////////////////////////////////////
+/**
+ * A parametric surface of some kind.  See EggNurbsSurface.
+ */
 class EXPCL_PANDAEGG EggSurface : public EggPrimitive {
 PUBLISHED:
   INLINE EggSurface(const string &name = "");

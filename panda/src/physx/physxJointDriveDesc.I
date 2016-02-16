@@ -11,21 +11,17 @@
  * @date 2009-10-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointDriveDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointDriveDesc::
 PhysxJointDriveDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointDriveDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointDriveDesc::
 PhysxJointDriveDesc(float spring, float damping, float forceLimit) {
 
@@ -34,13 +30,10 @@ PhysxJointDriveDesc(float spring, float damping, float forceLimit) {
   _desc.forceLimit = forceLimit;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointDriveDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointDriveDesc::
 ~PhysxJointDriveDesc() {
 
 }
-

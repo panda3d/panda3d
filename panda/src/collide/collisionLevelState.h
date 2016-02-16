@@ -21,17 +21,12 @@
 #include "bitMask.h"
 #include "doubleBitMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionLevelState
-// Description : This is the state information the
-//               CollisionTraverser retains for each level during
-//               traversal.
-//
-//               This is the template class that specifies the
-//               CurrentMask type: the type of bitmask that is used to
-//               keep track of the set of active colliders for each
-//               node.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the state information the CollisionTraverser retains for each level
+ * during traversal.  This is the template class that specifies the CurrentMask
+ * type: the type of bitmask that is used to keep track of the set of active
+ * colliders for each node.
+ */
 template<class MaskType>
 class CollisionLevelState : public CollisionLevelStateBase {
 public:
@@ -39,7 +34,7 @@ public:
   // speed and memory utilization.
 #ifndef CPPPARSER
   INLINE CollisionLevelState(const NodePath &node_path);
-  INLINE CollisionLevelState(const CollisionLevelState<MaskType> &parent, 
+  INLINE CollisionLevelState(const CollisionLevelState<MaskType> &parent,
                              PandaNode *child);
   INLINE CollisionLevelState(const CollisionLevelState<MaskType> &copy);
   INLINE void operator = (const CollisionLevelState<MaskType> &copy);
@@ -82,5 +77,3 @@ typedef CollisionLevelState<DoubleBitMaskNative> CollisionLevelStateDouble;
 typedef CollisionLevelState<QuadBitMaskNative> CollisionLevelStateQuad;
 
 #endif
-
-

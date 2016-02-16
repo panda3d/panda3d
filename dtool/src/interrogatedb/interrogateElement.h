@@ -20,11 +20,10 @@
 
 class IndexRemapper;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateElement
-// Description : An internal representation of a data element, like a
-//               data member or a global variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a data element, like a data member or a global
+ * variable.
+ */
 class EXPCL_INTERROGATEDB InterrogateElement : public InterrogateComponent {
 public:
   INLINE InterrogateElement(InterrogateModuleDef *def = NULL);

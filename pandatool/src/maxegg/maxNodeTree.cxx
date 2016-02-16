@@ -13,11 +13,9 @@
 
 #include "maxEgg.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MaxNodeTree::
 MaxNodeTree() {
   _root = new MaxNodeDesc;
@@ -28,13 +26,10 @@ MaxNodeTree() {
   _skeleton_node = (EggGroupNode *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::build_node
-//       Access: Public
-//  Description: Returns a pointer to the node corresponding to the
-//               indicated INode object, creating it first if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the node corresponding to the indicated INode object,
+ * creating it first if necessary.
+ */
 MaxNodeDesc *MaxNodeTree::
 build_node(INode *max_node) {
   MaxNodeDesc *node_desc = r_build_node(max_node);
@@ -46,13 +41,10 @@ build_node(INode *max_node) {
   return node_desc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::build_joint
-//       Access: Public
-//  Description: Returns a pointer to the node corresponding to the
-//               indicated INode object, creating it first if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the node corresponding to the indicated INode object,
+ * creating it first if necessary.
+ */
 MaxNodeDesc *MaxNodeTree::
 build_joint(INode *max_node, MaxNodeDesc *node_joint) {
   MaxNodeDesc *node_desc = r_build_joint(node_joint, max_node);
@@ -88,12 +80,10 @@ r_build_hierarchy(INode *root, ULONG *selection_list, int len) {
   }
   return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::build_complete_hierarchy
-//       Access: Public
-//  Description: Walks through the complete Max hierarchy and builds
-//               up the corresponding tree.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the complete Max hierarchy and builds up the corresponding
+ * tree.
+ */
 bool MaxNodeTree::
 build_complete_hierarchy(INode *root, ULONG *selection_list, int len) {
 
@@ -113,38 +103,30 @@ build_complete_hierarchy(INode *root, ULONG *selection_list, int len) {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::get_num_nodes
-//       Access: Public
-//  Description: Returns the total number of nodes in the hierarchy,
-//               not counting the root node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of nodes in the hierarchy, not counting the root
+ * node.
+ */
 int MaxNodeTree::
 get_num_nodes() const {
   return _nodes.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::get_node
-//       Access: Public
-//  Description: Returns the nth node in the hierarchy, in an
-//               arbitrary ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth node in the hierarchy, in an arbitrary ordering.
+ */
 MaxNodeDesc *MaxNodeTree::
 get_node(int n) const {
   nassertr(n >= 0 && n < (int)_nodes.size(), NULL);
   return _nodes[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::clear_egg
-//       Access: Public
-//  Description: Removes all of the references to generated egg
-//               structures from the tree, and prepares the tree for
-//               generating new egg structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the references to generated egg structures from the tree, and
+ * prepares the tree for generating new egg structures.
+ */
 void MaxNodeTree::
-clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
+clear_egg(EggData *egg_data, EggGroupNode *egg_root,
           EggGroupNode *skeleton_node) {
   _root->clear_egg();
   _egg_data = egg_data;
@@ -152,13 +134,10 @@ clear_egg(EggData *egg_data, EggGroupNode *egg_root,
   _skeleton_node = skeleton_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::get_egg_group
-//       Access: Public
-//  Description: Returns the EggGroupNode corresponding to the group
-//               or joint for the indicated node.  Creates the group
-//               node if it has not already been created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggGroupNode corresponding to the group or joint for the
+ * indicated node.  Creates the group node if it has not already been created.
+ */
 EggGroup *MaxNodeTree::
 get_egg_group(MaxNodeDesc *node_desc) {
   nassertr(_egg_root != (EggGroupNode *)NULL, NULL);
@@ -201,13 +180,10 @@ get_egg_group(MaxNodeDesc *node_desc) {
   return node_desc->_egg_group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::get_egg_table
-//       Access: Public
-//  Description: Returns the EggTable corresponding to the joint
-//               for the indicated node.  Creates the table node if it
-//               has not already been created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggTable corresponding to the joint for the indicated node.
+ * Creates the table node if it has not already been created.
+ */
 EggTable *MaxNodeTree::
 get_egg_table(MaxNodeDesc *node_desc) {
   nassertr(_skeleton_node != (EggGroupNode *)NULL, NULL);
@@ -239,24 +215,19 @@ get_egg_table(MaxNodeDesc *node_desc) {
   return node_desc->_egg_table;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::get_egg_anim
-//       Access: Public
-//  Description: Returns the anim table corresponding to the joint
-//               for the indicated node.  Creates the table node if it
-//               has not already been created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the anim table corresponding to the joint for the indicated node.
+ * Creates the table node if it has not already been created.
+ */
 EggXfmSAnim *MaxNodeTree::
 get_egg_anim(MaxNodeDesc *node_desc) {
   get_egg_table(node_desc);
   return node_desc->_anim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::r_build_node
-//       Access: Private
-//  Description: The recursive implementation of build_node().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of build_node().
+ */
 MaxNodeDesc *MaxNodeTree::
 r_build_node(INode* max_node) {
   // If we have already encountered this pathname, return the
@@ -299,11 +270,9 @@ r_build_node(INode* max_node) {
   return node_desc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::r_build_joint
-//       Access: Private
-//  Description: The recursive implementation of build_joint().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of build_joint().
+ */
 MaxNodeDesc *MaxNodeTree::
 r_build_joint(MaxNodeDesc *node_desc, INode *max_node)
 {
@@ -321,11 +290,9 @@ r_build_joint(MaxNodeDesc *node_desc, INode *max_node)
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::find_node
-//       Access: Private
-//  Description: The recursive implementation of build_node().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of build_node().
+ */
 MaxNodeDesc *MaxNodeTree::
 find_node(INode* max_node) {
   // If we have already encountered this pathname, return the
@@ -345,13 +312,11 @@ find_node(INode* max_node) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::find_joint
-//       Access: Private
-//  Description: The recursive implementation of build_node().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of build_node().
+ */
 MaxNodeDesc *MaxNodeTree::
-find_joint(INode* max_node) 
+find_joint(INode* max_node)
 {
   MaxNodeDesc *node = find_node(max_node);
   if (!node || (is_joint(max_node) && !node->is_node_joint()))
@@ -359,21 +324,18 @@ find_joint(INode* max_node)
   return node->_joint_entry;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::set_collision_tags
-//       Access: Private
-//  Description: Sets the corresponding collision tag to the egg_group
-//               based on the User Defined Tab in the object properties 
-//               panel
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the corresponding collision tag to the egg_group based on the User
+ * Defined Tab in the object properties panel
+ */
 void MaxNodeTree::set_collision_tags(MaxNodeDesc *node_desc, EggGroup *egg_group) {
     //Max has huge problems passing strings and bools to Get and SetUserProp
     //So instead we have to use Integers. Now we have to check
     //for every collide type, then get its collide flags and
     //do some number crunching to get the actual flag into the group
-  
+
     int check = 1; //is the value true. This could be anything really
-      
+
       //We have to check each collision type in turn to see if it's true
       //Ugly but it works per object, not globaly
     if (node_desc->get_max_node()->GetUserPropInt(_T("polyset"), check)) {
@@ -382,14 +344,14 @@ void MaxNodeTree::set_collision_tags(MaxNodeDesc *node_desc, EggGroup *egg_group
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_polyset);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("plane"), check)) {
       //plane
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_plane);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("polygon"), check)) {
       //polygon
       if (check == 1) {
@@ -403,28 +365,28 @@ void MaxNodeTree::set_collision_tags(MaxNodeDesc *node_desc, EggGroup *egg_group
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_sphere);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("inv-sphere"), check)) {
       //invsphere
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_inv_sphere);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("invsphere"), check)) {
       //invsphere (different spelling)
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_inv_sphere);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("tube"), check)) {
       //tube
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_tube);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("floor-mesh"), check)) {
       //floor-mesh
       if (check == 1) {
@@ -432,49 +394,49 @@ void MaxNodeTree::set_collision_tags(MaxNodeDesc *node_desc, EggGroup *egg_group
         egg_group->set_cs_type(EggGroup::CST_floor_mesh);
       }
     }
-    
+
     if (node_desc->get_max_node()->GetUserPropInt(_T("descend"), check)) {
       if (check == 1) {
       //we have the descend flag specified
       egg_group->set_collide_flags(EggGroup::CF_descend);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("event"), check)) {
       if (check == 1) {
       //we have the event flag specified
       egg_group->set_collide_flags(EggGroup::CF_event);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("keep"), check)) {
       if (check == 1) {
       //we have the keep flag specified
       egg_group->set_collide_flags(EggGroup::CF_keep);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("solid"), check)) {
       if (check == 1) {
       //we have the solid flag specified
       egg_group->set_collide_flags(EggGroup::CF_solid);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("center"), check)) {
       if (check == 1) {
       //we have the center flag specified
       egg_group->set_collide_flags(EggGroup::CF_center);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("turnstile"), check)) {
       if (check == 1) {
       //we have the turnstile flag specified
       egg_group->set_collide_flags(EggGroup::CF_turnstile);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("level"), check)) {
       if (check == 1) {
       //we have the level flag specified
       egg_group->set_collide_flags(EggGroup::CF_level);
       }
-    } 
+    }
     if (node_desc->get_max_node()->GetUserPropInt(_T("intangible"), check)) {
       if (check == 1) {
       //we have the intangible flag specified

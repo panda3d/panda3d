@@ -13,11 +13,9 @@
 
 #include "odeJoint_ext.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeBody::get_converted_joint
-//       Access: Published
-//  Description: Equivalent to get_joint().convert()
-////////////////////////////////////////////////////////////////////
+/**
+ * Equivalent to get_joint().convert()
+ */
 INLINE PyObject *Extension<OdeBody>::
 get_converted_joint(int i) const {
   OdeJoint j = _this->get_joint(i);

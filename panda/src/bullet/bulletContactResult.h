@@ -21,10 +21,9 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletContact
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 struct EXPCL_PANDABULLET BulletContact {
 
 public:
@@ -56,10 +55,9 @@ private:
   friend struct BulletContactResult;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletContactResult
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 struct EXPCL_PANDABULLET BulletContactResult : public btCollisionWorld::ContactResultCallback {
 
 PUBLISHED:
@@ -72,8 +70,8 @@ public:
   virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
 
   virtual btScalar addSingleResult(btManifoldPoint &mp,
-      const btCollisionObjectWrapper *wrap0, int part_id0, int idx0, 
-      const btCollisionObjectWrapper *wrap1, int part_id1, int idx1); 
+      const btCollisionObjectWrapper *wrap0, int part_id0, int idx0,
+      const btCollisionObjectWrapper *wrap1, int part_id1, int idx1);
 #else
   virtual btScalar addSingleResult(btManifoldPoint &mp,
       const btCollisionObject *obj0, int part_id0, int idx0,

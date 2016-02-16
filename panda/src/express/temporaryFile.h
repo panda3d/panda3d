@@ -18,13 +18,11 @@
 
 #include "fileReference.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TemporaryFile
-// Description : This is a special kind of FileReference class that
-//               automatically deletes the file in question when it is
-//               deleted.  It is not responsible for creating,
-//               opening, or closing the file, however.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special kind of FileReference class that automatically deletes the
+ * file in question when it is deleted.  It is not responsible for creating,
+ * opening, or closing the file, however.
+ */
 class EXPCL_PANDAEXPRESS TemporaryFile : public FileReference {
 PUBLISHED:
   INLINE TemporaryFile(const Filename &filename);

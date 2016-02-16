@@ -21,17 +21,13 @@
 #include "pointerTo.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataNode
-// Description : This is an abstract base class for an XFileNode which
-//               is also an XFileDataObject.  That is to say, objects
-//               that inherit from this class may be added to the
-//               toplevel X file graph as nodes, and they also may be
-//               containers for data elements.
-//
-//               Specifically, this is the base class of both
-//               XFileDataNodeTemplate and XFileDataNodeReference.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class for an XFileNode which is also an
+ * XFileDataObject.  That is to say, objects that inherit from this class may be
+ * added to the toplevel X file graph as nodes, and they also may be containers
+ * for data elements.  Specifically, this is the base class of both
+ * XFileDataNodeTemplate and XFileDataNodeReference.
+ */
 class XFileDataNode : public XFileNode, public XFileDataObject {
 public:
   XFileDataNode(XFile *x_file, const string &name,
@@ -72,7 +68,3 @@ private:
 #include "xFileDataNode.I"
 
 #endif
-  
-
-
-

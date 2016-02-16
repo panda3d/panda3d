@@ -13,12 +13,9 @@
  * @date 2010-04-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_filename
-//       Access: Published
-//  Description: Return the Shader's filename for the given shader
-//               type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the Shader's filename for the given shader type.
+ */
 INLINE Filename Shader::
 get_filename(ShaderType type) const {
   if (_filename._separate && type != ST_none) {
@@ -53,11 +50,9 @@ get_filename(ShaderType type) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_text
-//       Access: Published
-//  Description: Return the Shader's text for the given shader type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the Shader's text for the given shader type.
+ */
 INLINE const string &Shader::
 get_text(ShaderType type) const {
   if (_text._separate) {
@@ -89,96 +84,74 @@ get_text(ShaderType type) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_error_flag
-//       Access: Public
-//  Description: Returns true if the shader contains a compile-time
-//               error.  This doesn't tell you whether or not the
-//               shader is supported on the current video card.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the shader contains a compile-time error.  This doesn't tell
+ * you whether or not the shader is supported on the current video card.
+ */
 INLINE bool Shader::
 get_error_flag() const {
   return _error_flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_language
-//       Access: Published
-//  Description: Returns the shader language in which this shader
-//               was written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the shader language in which this shader was written.
+ */
 INLINE Shader::ShaderLanguage Shader::
 get_language() const {
   return _language;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::has_fullpath
-//       Access: Published
-//  Description: Returns true if the fullpath has been set and
-//               is available.  See set_fullpath().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the fullpath has been set and is available.  See
+ * set_fullpath().
+ */
 INLINE bool Shader::
 has_fullpath() const {
   return !_fullpath.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_fullpath
-//       Access: Published
-//  Description: Returns the fullpath that has been set.  This is
-//               the full path to the file as it was found along the
-//               model-path.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the fullpath that has been set.  This is the full path to the file as
+ * it was found along the model-path.
+ */
 INLINE const Filename &Shader::
 get_fullpath() const {
   return _fullpath;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_cache_compiled_shader
-//       Access: Public
-//  Description: Returns the setting of the cache_compiled_shader
-//               flag.  See set_cache_compiled_shader().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the setting of the cache_compiled_shader flag.  See
+ * set_cache_compiled_shader().
+ */
 INLINE bool Shader::
 get_cache_compiled_shader() const {
   return _cache_compiled_shader;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::set_cache_compiled_shader
-//       Access: Public
-//  Description: Sets the cache_compiled_shader flag.  When this is
-//               set, the next time the Shader is loaded on a GSG, it
-//               will automatically extract the compiled shader from
-//               the GSG and save it to the global BamCache.
-//
-//               This is used to store compiled shaders in the
-//               BamCache.  This flag should not be set explicitly; it
-//               is set automatically by the ShaderPool when
-//               model-cache-compiled-shaders is set true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the cache_compiled_shader flag.  When this is set, the next time the
+ * Shader is loaded on a GSG, it will automatically extract the compiled shader
+ * from the GSG and save it to the global BamCache.  This is used to store
+ * compiled shaders in the BamCache.  This flag should not be set explicitly; it
+ * is set automatically by the ShaderPool when model-cache-compiled-shaders is
+ * set true.
+ */
 INLINE void Shader::
 set_cache_compiled_shader(bool flag) {
   _cache_compiled_shader = flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderCapabilities Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderCaps::
 ShaderCaps() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderCapabilities::operator ==
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool Shader::ShaderCaps::
 operator == (const ShaderCaps &other) const {
 #ifdef HAVE_CG
@@ -194,11 +167,9 @@ operator == (const ShaderCaps &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData() :
   _ptr(NULL),
@@ -208,11 +179,9 @@ ShaderPtrData() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_float &ptr):
   _pta(ptr.v0()),
@@ -223,11 +192,9 @@ ShaderPtrData(const PTA_float &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix4f &ptr):
   _pta(ptr.v0()),
@@ -238,11 +205,9 @@ ShaderPtrData(const PTA_LMatrix4f &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix3f &ptr):
   _pta(ptr.v0()),
@@ -253,11 +218,9 @@ ShaderPtrData(const PTA_LMatrix3f &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4f &ptr):
   _pta(ptr.v0()),
@@ -268,11 +231,9 @@ ShaderPtrData(const PTA_LVecBase4f &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3f &ptr):
   _pta(ptr.v0()),
@@ -283,11 +244,9 @@ ShaderPtrData(const PTA_LVecBase3f &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2f &ptr):
   _pta(ptr.v0()),
@@ -298,11 +257,9 @@ ShaderPtrData(const PTA_LVecBase2f &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4f &vec) :
   _type(SPT_float),
@@ -316,11 +273,9 @@ ShaderPtrData(const LVecBase4f &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3f &vec) :
   _type(SPT_float),
@@ -334,11 +289,9 @@ ShaderPtrData(const LVecBase3f &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2f &vec) :
   _type(SPT_float),
@@ -352,11 +305,9 @@ ShaderPtrData(const LVecBase2f &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix4f &mat) :
   _type(SPT_float),
@@ -370,11 +321,9 @@ ShaderPtrData(const LMatrix4f &mat) :
   memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix3f &mat) :
   _type(SPT_float),
@@ -388,11 +337,9 @@ ShaderPtrData(const LMatrix3f &mat) :
   memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_double &ptr):
   _pta(ptr.v0()),
@@ -403,11 +350,9 @@ ShaderPtrData(const PTA_double &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix4d &ptr):
   _pta(ptr.v0()),
@@ -418,11 +363,9 @@ ShaderPtrData(const PTA_LMatrix4d &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LMatrix3d &ptr):
   _pta(ptr.v0()),
@@ -433,11 +376,9 @@ ShaderPtrData(const PTA_LMatrix3d &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4d &ptr):
   _pta(ptr.v0()),
@@ -448,11 +389,9 @@ ShaderPtrData(const PTA_LVecBase4d &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3d &ptr):
   _pta(ptr.v0()),
@@ -463,11 +402,9 @@ ShaderPtrData(const PTA_LVecBase3d &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2d &ptr):
   _pta(ptr.v0()),
@@ -478,11 +415,9 @@ ShaderPtrData(const PTA_LVecBase2d &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4d &vec) :
   _type(SPT_double),
@@ -496,11 +431,9 @@ ShaderPtrData(const LVecBase4d &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3d &vec) :
   _type(SPT_double),
@@ -514,11 +447,9 @@ ShaderPtrData(const LVecBase3d &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2d &vec) :
   _type(SPT_double),
@@ -532,11 +463,9 @@ ShaderPtrData(const LVecBase2d &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix4d &mat) :
   _type(SPT_double),
@@ -550,11 +479,9 @@ ShaderPtrData(const LMatrix4d &mat) :
   memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LMatrix3d &mat) :
   _type(SPT_double),
@@ -568,11 +495,9 @@ ShaderPtrData(const LMatrix3d &mat) :
   memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_int &ptr):
   _pta(ptr.v0()),
@@ -583,11 +508,9 @@ ShaderPtrData(const PTA_int &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase4i &ptr):
   _pta(ptr.v0()),
@@ -598,11 +521,9 @@ ShaderPtrData(const PTA_LVecBase4i &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase3i &ptr):
   _pta(ptr.v0()),
@@ -613,11 +534,9 @@ ShaderPtrData(const PTA_LVecBase3i &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const PTA_LVecBase2i &ptr):
   _pta(ptr.v0()),
@@ -628,11 +547,9 @@ ShaderPtrData(const PTA_LVecBase2i &ptr):
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase4i &vec) :
   _type(SPT_int),
@@ -646,11 +563,9 @@ ShaderPtrData(const LVecBase4i &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase3i &vec) :
   _type(SPT_int),
@@ -664,11 +579,9 @@ ShaderPtrData(const LVecBase3i &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData(const LVecBase2i &vec) :
   _type(SPT_int),
@@ -682,12 +595,10 @@ ShaderPtrData(const LVecBase2i &vec) :
   memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData::write_datagram
-//       Access: Public
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 INLINE void Shader::ShaderPtrData::
 write_datagram(Datagram &dg) const {
   dg.add_uint8(_type);
@@ -712,11 +623,9 @@ write_datagram(Datagram &dg) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderPtrData::write_datagram
-//       Access: Public
-//  Description: Reads the object from a Datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the object from a Datagram.
+ */
 INLINE void Shader::ShaderPtrData::
 read_datagram(DatagramIterator &scan) {
   _type = (ShaderPtrType) scan.get_uint8();
@@ -748,11 +657,9 @@ read_datagram(DatagramIterator &scan) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderFile::
 ShaderFile(const string &shared) :
   _separate(false),
@@ -760,11 +667,9 @@ ShaderFile(const string &shared) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE Shader::ShaderFile::
 ShaderFile(const string &vertex,
            const string &fragment,
@@ -780,12 +685,10 @@ ShaderFile(const string &vertex,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderFile::write_datagram
-//       Access: Public
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 INLINE void Shader::ShaderFile::
 write_datagram(Datagram &dg) const {
   if (_separate) {
@@ -802,11 +705,9 @@ write_datagram(Datagram &dg) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderFile::write_datagram
-//       Access: Public
-//  Description: Reads the object from a Datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the object from a Datagram.
+ */
 INLINE void Shader::ShaderFile::
 read_datagram(DatagramIterator &scan) {
   short count = scan.get_uint8();
@@ -827,11 +728,9 @@ read_datagram(DatagramIterator &scan) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::ShaderFile::operator <
-//       Access: Public
-//  Description: Ordering operator
-////////////////////////////////////////////////////////////////////
+/**
+ * Ordering operator
+ */
 INLINE bool Shader::ShaderFile::
 operator < (const Shader::ShaderFile &other) const {
   if (_separate != other._separate) {
@@ -861,14 +760,11 @@ operator < (const Shader::ShaderFile &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_filename_from_index
-//       Access: Public
-//  Description: Returns the filename of the included shader with
-//               the given source file index (as recorded in the
-//               #line statement in r_preprocess_source).  We use
-//               this to associate error messages with included files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the filename of the included shader with the given source file index
+ * (as recorded in the #line statement in r_preprocess_source).  We use this to
+ * associate error messages with included files.
+ */
 INLINE Filename Shader::
 get_filename_from_index(int index, ShaderType type) const {
   if (index == 0) {

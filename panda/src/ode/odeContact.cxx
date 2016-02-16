@@ -17,12 +17,12 @@
 TypeHandle OdeContact::_type_handle;
 
 OdeContact::
-OdeContact() : 
+OdeContact() :
   _contact() {
 }
 
 OdeContact::
-OdeContact(const dContact &contact) : 
+OdeContact(const dContact &contact) :
   _contact(contact) {
 }
 

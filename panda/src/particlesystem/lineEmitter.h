@@ -16,11 +16,9 @@
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LineEmitter
-// Description : Describes a linear region in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a linear region in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS LineEmitter : public BaseParticleEmitter {
 PUBLISHED:
   LineEmitter();

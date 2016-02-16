@@ -19,11 +19,9 @@
 #include "physxJointDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPointOnLineJointDesc
-// Description : Descriptor class for point-on-line joint.
-//               See PhysxPointOnLineJoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for point-on-line joint.  See PhysxPointOnLineJoint.
+ */
 class EXPCL_PANDAPHYSX PhysxPointOnLineJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

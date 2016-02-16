@@ -17,11 +17,9 @@
 
 TypeHandle BulletConvexPointCloudShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexPointCloudShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletConvexPointCloudShape::
 BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale) {
 
@@ -42,22 +40,18 @@ BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexPointCloudShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletConvexPointCloudShape::
 ptr() const {
 
   return _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletConvexPointCloudShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletConvexPointCloudShape::
 BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale) {
 
@@ -87,4 +81,3 @@ BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale) {
   _shape = new btConvexPointCloudShape(btPoints, points.size(), btScale);
   _shape->setUserPointer(this);
 }
-

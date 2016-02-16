@@ -18,10 +18,9 @@
 #include "pointerToArray.h"
 #include "material.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MaterialCollection
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_PGRAPH MaterialCollection {
 PUBLISHED:
   MaterialCollection();
@@ -62,5 +61,3 @@ INLINE ostream &operator << (ostream &out, const MaterialCollection &col) {
 #include "materialCollection.I"
 
 #endif
-
-

@@ -11,11 +11,9 @@
  * @date 2005-03-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGeomMunger9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE DXGeomMunger9::
 DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 1, NT_packed_dabc, C_color),
@@ -36,4 +34,3 @@ DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
   _texture.set_callback(this);
   _tex_gen.set_callback(this);
 }
-

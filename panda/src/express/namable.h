@@ -19,12 +19,10 @@
 #include "typedObject.h"
 #include <string>
 
-////////////////////////////////////////////////////////////////////
-//       Class : Namable
-// Description : A base class for all things which can have a name.
-//               The name is either empty or nonempty, but it is never
-//               NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for all things which can have a name.  The name is either empty
+ * or nonempty, but it is never NULL.
+ */
 class EXPCL_PANDAEXPRESS Namable : public MemoryBase {
 PUBLISHED:
   INLINE explicit Namable(const string &initial_name = "");
@@ -62,13 +60,11 @@ private:
 
 INLINE ostream &operator << (ostream &out, const Namable &n);
 
-////////////////////////////////////////////////////////////////////
-//       Class : NamableOrderByName
-// Description : An STL function object for sorting an array of
-//               pointers to Namables into order by name.  Returns
-//               true if the objects are in sorted order, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object for sorting an array of pointers to Namables into
+ * order by name.  Returns true if the objects are in sorted order, false
+ * otherwise.
+ */
 class NamableOrderByName {
 public:
   INLINE bool operator ()(const Namable *n1, const Namable *n2) const;
@@ -77,5 +73,3 @@ public:
 #include "namable.I"
 
 #endif
-
-

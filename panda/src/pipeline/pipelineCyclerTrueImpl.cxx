@@ -18,11 +18,9 @@
 #include "config_pipeline.h"
 #include "pipeline.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PipelineCyclerTrueImpl::
 PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   _pipeline(pipeline),
@@ -42,11 +40,9 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   _pipeline->add_cycler(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PipelineCyclerTrueImpl::
 PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   _pipeline(copy._pipeline),
@@ -55,18 +51,18 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
 {
   ReMutexHolder holder(_lock);
   ReMutexHolder holder2(copy._lock);
-  
+
   _num_stages = _pipeline->get_num_stages();
   nassertv(_num_stages == copy._num_stages);
   _data = new CycleDataNode[_num_stages];
-  
+
   // It's no longer critically important that we preserve pointerwise
   // equivalence between different stages in the copy, but it doesn't
   // cost much and might be a little more efficient, so we do it
   // anyway.
   typedef pmap<CycleData *, PT(CycleData) > Pointers;
   Pointers pointers;
-  
+
   for (int i = 0; i < _num_stages; ++i) {
     PT(CycleData) &new_pt = pointers[copy._data[i]._cdata];
     if (new_pt == NULL) {
@@ -81,11 +77,9 @@ PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::Copy Assignment
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PipelineCyclerTrueImpl::
 operator = (const PipelineCyclerTrueImpl &copy) {
   ReMutexHolder holder1(_lock);
@@ -108,11 +102,9 @@ operator = (const PipelineCyclerTrueImpl &copy) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PipelineCyclerTrueImpl::
 ~PipelineCyclerTrueImpl() {
   ReMutexHolder holder(_lock);
@@ -124,16 +116,12 @@ PipelineCyclerTrueImpl::
   _num_stages = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::write_stage
-//       Access: Public
-//  Description: Returns a pointer suitable for writing to the nth
-//               stage of the pipeline.  This is for special
-//               applications that need to update the entire pipeline
-//               at once (for instance, to remove an invalid pointer).
-//               This pointer should later be released with
-//               release_write_stage().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer suitable for writing to the nth stage of the pipeline.
+ * This is for special applications that need to update the entire pipeline at
+ * once (for instance, to remove an invalid pointer). This pointer should later
+ * be released with release_write_stage().
+ */
 CycleData *PipelineCyclerTrueImpl::
 write_stage(int pipeline_stage, Thread *current_thread) {
   _lock.acquire(current_thread);
@@ -161,11 +149,11 @@ write_stage(int pipeline_stage, Thread *current_thread) {
       _data[pipeline_stage]._cdata = old_data->make_copy();
       if (pipeline_cat.is_debug()) {
         pipeline_cat.debug()
-          << "Copy-on-write a: " << old_data << " becomes " 
+          << "Copy-on-write a: " << old_data << " becomes "
           << _data[pipeline_stage]._cdata << "\n";
         //nassertr(false, NULL);
       }
-      
+
       // Now we have differences between some of the data pointers, so
       // we're "dirty".  Mark it so.
       if (!_dirty && _num_stages != 1) {
@@ -178,13 +166,10 @@ write_stage(int pipeline_stage, Thread *current_thread) {
   return _data[pipeline_stage]._cdata;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::write_stage_upstream
-//       Access: Public
-//  Description: This special variant on write_stage() will
-//               automatically propagate changes back to upstream
-//               pipeline stages.  See write_upstream().
-////////////////////////////////////////////////////////////////////
+/**
+ * This special variant on write_stage() will automatically propagate changes
+ * back to upstream pipeline stages.  See write_upstream().
+ */
 CycleData *PipelineCyclerTrueImpl::
 write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread) {
   _lock.acquire(current_thread);
@@ -207,7 +192,7 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
       --k;
       --external_count;
     }
-    
+
     // We only perform copy-on-write if this is the first CycleData
     // requested for write mode from this thread.  (We will never have
     // outstanding writes for multiple threads, because we hold the
@@ -219,20 +204,20 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
       PT(CycleData) new_data = old_data->make_copy();
       if (pipeline_cat.is_debug()) {
         pipeline_cat.debug()
-          << "Copy-on-write b: " << old_data << " becomes " 
+          << "Copy-on-write b: " << old_data << " becomes "
           << new_data << "\n";
         //nassertr(false, NULL);
       }
-      
+
       k = pipeline_stage - 1;
       while (k >= 0 && (_data[k]._cdata == old_data || force_to_0)) {
         nassertr(_data[k]._writes_outstanding == 0, NULL);
         _data[k]._cdata = new_data.p();
         --k;
       }
-      
+
       _data[pipeline_stage]._cdata = new_data;
-      
+
       if (k >= 0 || pipeline_stage + 1 < _num_stages) {
         // Now we have differences between some of the data pointers,
         // which makes us "dirty".
@@ -240,7 +225,7 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
           _pipeline->add_dirty_cycler(this);
         }
       }
-      
+
     } else if (k >= 0 && force_to_0) {
       // There are no external pointers, so no need to copy-on-write,
       // but the current pointer doesn't go all the way back.  Make it
@@ -252,29 +237,21 @@ write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread
       }
     }
   }
-    
+
   ++(_data[pipeline_stage]._writes_outstanding);
   return _data[pipeline_stage]._cdata;
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::cycle
-//       Access: Private
-//  Description: Cycles the data between frames.  This is only called
-//               from Pipeline::cycle(), and presumably it is only
-//               called if the cycler is "dirty".
-//
-//               At the conclusion of this method, the cycler should
-//               clear its dirty flag if it is no longer "dirty"--that
-//               is, if all of the pipeline pointers are the same.
-//
-//               The return value is the CycleData pointer which fell
-//               off the end of the cycle.  If this is allowed to
-//               destruct immediately, there may be side-effects that
-//               cascade through the system, so the caller may choose
-//               to hold the pointer until it can safely be released
-//               later.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Cycles the data between frames.  This is only called from Pipeline::cycle(),
+ * and presumably it is only called if the cycler is "dirty".  At the conclusion
+ * of this method, the cycler should clear its dirty flag if it is no longer
+ * "dirty"--that is, if all of the pipeline pointers are the same.  The return
+ * value is the CycleData pointer which fell off the end of the cycle.  If this
+ * is allowed to destruct immediately, there may be side-effects that cascade
+ * through the system, so the caller may choose to hold the pointer until it can
+ * safely be released later.
+ */
 PT(CycleData) PipelineCyclerTrueImpl::
 cycle() {
   PT(CycleData) last_val = _data[_num_stages - 1]._cdata.p();
@@ -299,12 +276,10 @@ cycle() {
   return last_val;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::set_num_stages
-//       Access: Private
-//  Description: Changes the number of stages in the cycler.  This is
-//               only called from Pipeline::set_num_stages();
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the number of stages in the cycler.  This is only called from
+ * Pipeline::set_num_stages();
+ */
 void PipelineCyclerTrueImpl::
 set_num_stages(int num_stages) {
   nassertv(_lock.debug_is_locked());
@@ -318,7 +293,7 @@ set_num_stages(int num_stages) {
     }
 
     _num_stages = num_stages;
-    
+
 
   } else {
     // To increase the array, we must reallocate it larger.
@@ -339,11 +314,9 @@ set_num_stages(int num_stages) {
 }
 
 #ifdef DEBUG_THREADS
-////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::CyclerMutex::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PipelineCyclerTrueImpl::CyclerMutex::
 output(ostream &out) const {
   out << "CyclerMutex ";
@@ -352,5 +325,3 @@ output(ostream &out) const {
 #endif  // DEBUG_THREADS
 
 #endif  // THREADED_PIPELINE
-
-

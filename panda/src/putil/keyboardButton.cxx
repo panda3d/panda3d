@@ -16,13 +16,10 @@
 
 #include <ctype.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: KeyboardButton::ascii_key
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               particular ASCII character, if there is one, or
-//               ButtonHandle::none() if there is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle associated with the particular ASCII character, if
+ * there is one, or ButtonHandle::none() if there is not.
+ */
 ButtonHandle KeyboardButton::
 ascii_key(char ascii_equivalent) {
   return ButtonRegistry::ptr()->find_ascii_button(ascii_equivalent);
@@ -85,25 +82,23 @@ DEFINE_KEYBD_BUTTON_HANDLE(lmeta)
 DEFINE_KEYBD_BUTTON_HANDLE(rmeta)
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: KeyboardButton::init_keyboard_buttons
-//       Access: Public, Static
-//  Description: This is intended to be called only once, by the
-//               static initialization performed in config_util.cxx.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is intended to be called only once, by the static initialization
+ * performed in config_util.cxx.
+ */
 void KeyboardButton::
 init_keyboard_buttons() {
-  ButtonRegistry::ptr()->register_button(_space, "space", 
+  ButtonRegistry::ptr()->register_button(_space, "space",
                                          ButtonHandle::none(), ' ');
-  ButtonRegistry::ptr()->register_button(_backspace, "backspace", 
+  ButtonRegistry::ptr()->register_button(_backspace, "backspace",
                                          ButtonHandle::none(), '\x08');
-  ButtonRegistry::ptr()->register_button(_tab, "tab", 
+  ButtonRegistry::ptr()->register_button(_tab, "tab",
                                          ButtonHandle::none(), '\x09');
-  ButtonRegistry::ptr()->register_button(_enter, "enter", 
+  ButtonRegistry::ptr()->register_button(_enter, "enter",
                                          ButtonHandle::none(), '\x0d');
-  ButtonRegistry::ptr()->register_button(_escape, "escape", 
+  ButtonRegistry::ptr()->register_button(_escape, "escape",
                                          ButtonHandle::none(), '\x1b');
-  ButtonRegistry::ptr()->register_button(_del, "delete", 
+  ButtonRegistry::ptr()->register_button(_del, "delete",
                                          ButtonHandle::none(), '\x7f');
 
   ButtonRegistry::ptr()->register_button(_f1, "f1");

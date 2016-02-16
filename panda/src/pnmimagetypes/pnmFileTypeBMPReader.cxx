@@ -439,11 +439,9 @@ BMPreadbits(xel *array, xelval *alpha_array,
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeBMP::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeBMP::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
@@ -510,19 +508,13 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeBMP::Reader::read_data
-//       Access: Public, Virtual
-//  Description: Reads in an entire image all at once, storing it in
-//               the pre-allocated _x_size * _y_size array and alpha
-//               pointers.  (If the image type has no alpha channel,
-//               alpha is ignored.)  Returns the number of rows
-//               correctly read.
-//
-//               Derived classes need not override this if they
-//               instead provide supports_read_row() and read_row(),
-//               below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in an entire image all at once, storing it in the pre-allocated _x_size
+ * * _y_size array and alpha pointers.  (If the image type has no alpha channel,
+ * alpha is ignored.)  Returns the number of rows correctly read.  Derived
+ * classes need not override this if they instead provide supports_read_row()
+ * and read_row(), below.
+ */
 int PNMFileTypeBMP::Reader::
 read_data(xel *array, xelval *alpha_array) {
   BMPreadbits(array, alpha_array, _file, &pos, offBits, _x_size, _y_size,

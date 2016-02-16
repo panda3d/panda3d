@@ -82,14 +82,12 @@ ConfigVariableBool collect_tcp
 ConfigVariableDouble collect_tcp_interval
 ("collect-tcp-interval", 0.2);
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libexpress
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libexpress() {
   static bool initialized = false;
@@ -200,30 +198,26 @@ get_config_express() {
 #ifdef ANDROID
 static JavaVM *panda_jvm = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: JNI_OnLoad
-//  Description: Called by Java when loading this library.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Java when loading this library.
+ */
 jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
   panda_jvm = jvm;
   return JNI_VERSION_1_4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_java_vm
-//  Description: Returns a pointer to the JavaVM object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the JavaVM object.
+ */
 JavaVM *get_java_vm() {
   nassertr(panda_jvm != NULL, NULL);
   return panda_jvm;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_jni_env
-//  Description: Returns a JNIEnv object for the current thread.
-//               If it doesn't already exist, attaches the JVM
-//               to this thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a JNIEnv object for the current thread.  If it doesn't already exist,
+ * attaches the JVM to this thread.
+ */
 JNIEnv *get_jni_env() {
   nassertr(panda_jvm != NULL, NULL);
   JNIEnv *env = NULL;

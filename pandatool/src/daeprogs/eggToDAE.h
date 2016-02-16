@@ -23,10 +23,9 @@
 #include "FCollada.h"
 #include "FCDocument/FCDSceneNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToDAE
-// Description : A program to read an egg file and write a DAE file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an egg file and write a DAE file.
+ */
 class EggToDAE : public EggToSomething {
 public:
   EggToDAE();
@@ -35,11 +34,10 @@ public:
 
 private:
   FCDocument* _document;
-  
+
   void process_node(FCDSceneNode* parent, const PT(EggGroup) node);
   void apply_transform(FCDSceneNode* to, const PT(EggGroup) from);
 
 };
 
 #endif
-

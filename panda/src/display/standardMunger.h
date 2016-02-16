@@ -23,13 +23,11 @@
 #include "pointerTo.h"
 #include "weakPointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StandardMunger
-// Description : Performs some generic munging that is appropriate for
-//               all GSG types; for instance, applies ColorAttrib and
-//               ColorScaleAttrib to the vertices, and checks for
-//               hardware-accelerated animation capabilities.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs some generic munging that is appropriate for all GSG types; for
+ * instance, applies ColorAttrib and ColorScaleAttrib to the vertices, and
+ * checks for hardware-accelerated animation capabilities.
+ */
 class EXPCL_PANDA_DISPLAY StandardMunger : public StateMunger {
 public:
   StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
@@ -85,4 +83,3 @@ private:
 #include "standardMunger.I"
 
 #endif
-

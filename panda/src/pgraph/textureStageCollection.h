@@ -18,10 +18,9 @@
 #include "pointerToArray.h"
 #include "textureStage.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureStageCollection
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_PGRAPH TextureStageCollection {
 PUBLISHED:
   TextureStageCollection();
@@ -71,5 +70,3 @@ INLINE ostream &operator << (ostream &out, const TextureStageCollection &col) {
 #include "textureStageCollection.I"
 
 #endif
-
-

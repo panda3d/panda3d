@@ -89,4 +89,3 @@ NoBlendType& NoBlendType::operator=(const NoBlendType& c) {
 PN_stdfloat NoBlendType::operator()(PN_stdfloat t) {
   return t;
 }
-

@@ -18,10 +18,9 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformTranslate
-// Description : A transformation that applies a translation.
-////////////////////////////////////////////////////////////////////
+/**
+ * A transformation that applies a translation.
+ */
 class FltTransformTranslate : public FltTransformRecord {
 public:
   FltTransformTranslate(FltHeader *header);

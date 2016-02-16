@@ -32,81 +32,65 @@ static const int num_extensions_img = sizeof(extensions_img) / sizeof(const char
 
 TypeHandle PNMFileTypeIMG::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeIMG::
 PNMFileTypeIMG() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::get_name
-//       Access: Public, Virtual
-//  Description: Returns a few words describing the file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a few words describing the file type.
+ */
 string PNMFileTypeIMG::
 get_name() const {
   return "Raw binary RGB";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::get_num_extensions
-//       Access: Public, Virtual
-//  Description: Returns the number of different possible filename
-//               extensions associated with this particular file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of different possible filename extensions associated with
+ * this particular file type.
+ */
 int PNMFileTypeIMG::
 get_num_extensions() const {
   return num_extensions_img;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the nth possible filename extension
-//               associated with this particular file type, without a
-//               leading dot.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth possible filename extension associated with this particular
+ * file type, without a leading dot.
+ */
 string PNMFileTypeIMG::
 get_extension(int n) const {
   nassertr(n >= 0 && n < num_extensions_img, string());
   return extensions_img[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::get_suggested_extension
-//       Access: Public, Virtual
-//  Description: Returns a suitable filename extension (without a
-//               leading dot) to suggest for files of this type, or
-//               empty string if no suggestions are available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a suitable filename extension (without a leading dot) to suggest for
+ * files of this type, or empty string if no suggestions are available.
+ */
 string PNMFileTypeIMG::
 get_suggested_extension() const {
   return "img";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::make_reader
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new PNMReader suitable for
-//               reading from this file type, if possible.  If reading
-//               from this file type is not supported, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new PNMReader suitable for reading from this file
+ * type, if possible.  If reading from this file type is not supported, returns
+ * NULL.
+ */
 PNMReader *PNMFileTypeIMG::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
   return new Reader(this, file, owns_file, magic_number);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::make_writer
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new PNMWriter suitable for
-//               reading from this file type, if possible.  If writing
-//               files of this type is not supported, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new PNMWriter suitable for reading from this file
+ * type, if possible.  If writing files of this type is not supported, returns
+ * NULL.
+ */
 PNMWriter *PNMFileTypeIMG::
 make_writer(ostream *file, bool owns_file) {
   init_pnm();
@@ -148,11 +132,9 @@ write_uchar_IMG(ostream *file, unsigned char x) {
   file->put(x);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeIMG::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
@@ -227,30 +209,23 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::Reader::supports_read_row
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMReader supports a
-//               streaming interface to reading the data: that is, it
-//               is capable of returning the data one row at a time,
-//               via repeated calls to read_row().  Returns false if
-//               the only way to read from this file is all at once,
-//               via read_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMReader supports a streaming interface to
+ * reading the data: that is, it is capable of returning the data one row at a
+ * time, via repeated calls to read_row().  Returns false if the only way to
+ * read from this file is all at once, via read_data().
+ */
 bool PNMFileTypeIMG::Reader::
 supports_read_row() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::Reader::read_row
-//       Access: Public, Virtual
-//  Description: If supports_read_row(), above, returns true, this
-//               function may be called repeatedly to read the image,
-//               one horizontal row at a time, beginning from the top.
-//               Returns true if the row is successfully read, false
-//               if there is an error or end of file.
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_read_row(), above, returns true, this function may be called
+ * repeatedly to read the image, one horizontal row at a time, beginning from
+ * the top.  Returns true if the row is successfully read, false if there is an
+ * error or end of file.
+ */
 bool PNMFileTypeIMG::Reader::
 read_row(xel *row_data, xelval *, int x_size, int) {
   int x;
@@ -266,46 +241,34 @@ read_row(xel *row_data, xelval *, int x_size, int) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::Writer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeIMG::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::Writer::supports_write_row
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMWriter supports a
-//               streaming interface to writing the data: that is, it
-//               is capable of writing the image one row at a time,
-//               via repeated calls to write_row().  Returns false if
-//               the only way to write from this file is all at once,
-//               via write_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMWriter supports a streaming interface to
+ * writing the data: that is, it is capable of writing the image one row at a
+ * time, via repeated calls to write_row().  Returns false if the only way to
+ * write from this file is all at once, via write_data().
+ */
 bool PNMFileTypeIMG::Writer::
 supports_write_row() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::Writer::write_header
-//       Access: Public, Virtual
-//  Description: If supports_write_row(), above, returns true, this
-//               function may be called to write out the image header
-//               in preparation to writing out the image data one row
-//               at a time.  Returns true if the header is
-//               successfully written, false if there is an error.
-//
-//               It is the user's responsibility to fill in the header
-//               data via calls to set_x_size(), set_num_channels(),
-//               etc., or copy_header_from(), before calling
-//               write_header().
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_write_row(), above, returns true, this function may be called to
+ * write out the image header in preparation to writing out the image data one
+ * row at a time.  Returns true if the header is successfully written, false if
+ * there is an error.  It is the user's responsibility to fill in the header
+ * data via calls to set_x_size(), set_num_channels(), etc., or
+ * copy_header_from(), before calling write_header().
+ */
 bool PNMFileTypeIMG::Writer::
 write_header() {
   if (img_header_type == IHT_long) {
@@ -318,21 +281,15 @@ write_header() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::Writer::write_row
-//       Access: Public, Virtual
-//  Description: If supports_write_row(), above, returns true, this
-//               function may be called repeatedly to write the image,
-//               one horizontal row at a time, beginning from the top.
-//               Returns true if the row is successfully written,
-//               false if there is an error.
-//
-//               You must first call write_header() before writing the
-//               individual rows.  It is also important to delete the
-//               PNMWriter class after successfully writing the last
-//               row.  Failing to do this may result in some data not
-//               getting flushed!
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_write_row(), above, returns true, this function may be called
+ * repeatedly to write the image, one horizontal row at a time, beginning from
+ * the top.  Returns true if the row is successfully written, false if there is
+ * an error.  You must first call write_header() before writing the individual
+ * rows.  It is also important to delete the PNMWriter class after successfully
+ * writing the last row.  Failing to do this may result in some data not getting
+ * flushed!
+ */
 bool PNMFileTypeIMG::Writer::
 write_row(xel *row_data, xelval *) {
   int x;
@@ -347,30 +304,21 @@ write_row(xel *row_data, xelval *) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void PNMFileTypeIMG::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_PNMFileTypeIMG);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeIMG::make_PNMFileTypeIMG
-//       Access: Protected, Static
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-//
-//               In the case of the PNMFileType objects, since these
-//               objects are all shared, we just pull the object from
-//               the registry.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.  In the case of the PNMFileType objects, since these
+ * objects are all shared, we just pull the object from the registry.
+ */
 TypedWritable *PNMFileTypeIMG::
 make_PNMFileTypeIMG(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());

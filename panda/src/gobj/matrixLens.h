@@ -19,14 +19,12 @@
 #include "lens.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : MatrixLens
-// Description : A completely generic linear lens.  This is provided
-//               for the benefit of low-level code that wants to
-//               specify a perspective or orthographic frustum via an
-//               explicit projection matrix, but not mess around with
-//               fov's or focal lengths or any of that nonsense.
-////////////////////////////////////////////////////////////////////
+/**
+ * A completely generic linear lens.  This is provided for the benefit of low-
+ * level code that wants to specify a perspective or orthographic frustum via an
+ * explicit projection matrix, but not mess around with fov's or focal lengths
+ * or any of that nonsense.
+ */
 class EXPCL_PANDA_GOBJ MatrixLens : public Lens {
 PUBLISHED:
   INLINE MatrixLens();

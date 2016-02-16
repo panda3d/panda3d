@@ -18,11 +18,9 @@
 
 TypeHandle FltVertex::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltVertex::
 FltVertex(FltHeader *header) : FltRecord(header) {
   _color_name_index = 0;
@@ -36,12 +34,9 @@ FltVertex(FltHeader *header) : FltRecord(header) {
   _has_uv = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::get_opcode
-//       Access: Public
-//  Description: Returns the opcode that this record will be written
-//               as.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the opcode that this record will be written as.
+ */
 FltOpcode FltVertex::
 get_opcode() const {
   if (_has_normal) {
@@ -59,12 +54,10 @@ get_opcode() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::get_record_length
-//       Access: Public
-//  Description: Returns the length of this record in bytes as it will
-//               be written to the flt file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the length of this record in bytes as it will be written to the flt
+ * file.
+ */
 int FltVertex::
 get_record_length() const {
   if (_header->get_flt_version() < 1520) {
@@ -109,15 +102,11 @@ get_record_length() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::get_color
-//       Access: Public
-//  Description: If has_color() indicates true, returns the 
-//               color of the vertex, as a four-component value.  In
-//               the case of a vertex, the alpha channel will always
-//               be 1.0, as MultiGen does not store transparency
-//               per-vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_color() indicates true, returns the color of the vertex, as a four-
+ * component value.  In the case of a vertex, the alpha channel will always be
+ * 1.0, as MultiGen does not store transparency per-vertex.
+ */
 LColor FltVertex::
 get_color() const {
   nassertr(has_color(), LColor(0.0, 0.0, 0.0, 0.0));
@@ -126,12 +115,10 @@ get_color() const {
                             _packed_color, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::get_rgb
-//       Access: Public
-//  Description: If has_color() indicates true, returns the 
-//               color of the vertex, as a three-component value.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_color() indicates true, returns the color of the vertex, as a three-
+ * component value.
+ */
 LRGBColor FltVertex::
 get_rgb() const {
   nassertr(has_color(), LRGBColor(0.0, 0.0, 0.0));
@@ -140,26 +127,20 @@ get_rgb() const {
                           _packed_color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::set_rgb
-//       Access: Public
-//  Description: Sets the color of the vertex, using the packed
-//               color convention.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the color of the vertex, using the packed color convention.
+ */
 void FltVertex::
 set_rgb(const LRGBColor &rgb) {
   _packed_color.set_rgb(rgb);
   _flags = ((_flags & ~F_no_color) | F_packed_color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltVertex::
 extract_record(FltRecordReader &reader) {
   if (!FltRecord::extract_record(reader)) {
@@ -215,7 +196,7 @@ extract_record(FltRecordReader &reader) {
     }
     if (_header->get_flt_version() >= 1520) {
       _color_index = iterator.get_be_int32();
-      
+
       if (_has_normal && iterator.get_remaining_size() > 0) {
         // If we extracted a normal, our double-word alignment is off; now
         // we have a few extra bytes to ignore.
@@ -228,14 +209,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltVertex::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltVertex::
 build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {

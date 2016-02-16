@@ -24,4 +24,3 @@ NotifyCategoryDecl(nativenet, EXPCL_PANDA_NATIVENET, EXPTP_PANDA_NATIVENET);
 extern EXPCL_PANDA_NATIVENET void init_libnativenet();
 
 #endif
-

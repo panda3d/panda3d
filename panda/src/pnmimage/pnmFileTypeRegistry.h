@@ -22,11 +22,9 @@
 
 class PNMFileType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeRegistry
-// Description : This class maintains the set of all known
-//               PNMFileTypes in the universe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class maintains the set of all known PNMFileTypes in the universe.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMFileTypeRegistry {
 protected:
   PNMFileTypeRegistry();
@@ -67,4 +65,3 @@ private:
 };
 
 #endif
-

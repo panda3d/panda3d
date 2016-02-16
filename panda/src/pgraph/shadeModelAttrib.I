@@ -11,23 +11,18 @@
  * @date 2005-03-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShadeModelAttrib::Constructor
-//       Access: Private
-//  Description: Use ShadeModelAttrib::make() to construct a new
-//               ShadeModelAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use ShadeModelAttrib::make() to construct a new ShadeModelAttrib object.
+ */
 INLINE ShadeModelAttrib::
 ShadeModelAttrib(ShadeModelAttrib::Mode mode) :
   _mode(mode)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShadeModelAttrib::get_mode
-//       Access: Published
-//  Description: Returns the shade mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the shade mode.
+ */
 INLINE ShadeModelAttrib::Mode ShadeModelAttrib::
 get_mode() const {
   return _mode;

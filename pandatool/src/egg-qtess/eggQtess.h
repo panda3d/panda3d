@@ -21,12 +21,10 @@
 #include "pointerTo.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggQtess
-// Description : A program to tesselate NURBS surfaces appearing
-//               within an egg file into polygons, using variations on
-//               a quick uniform tesselation.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to tesselate NURBS surfaces appearing within an egg file into
+ * polygons, using variations on a quick uniform tesselation.
+ */
 class EggQtess : public EggFilter {
 public:
   EggQtess();
@@ -48,11 +46,9 @@ private:
   bool _describe_qtess;
 
   QtessInputFile _qtess_file;
-  
+
   typedef pvector< PT(QtessSurface) > Surfaces;
   Surfaces _surfaces;
 };
 
 #endif
-
-

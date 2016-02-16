@@ -22,14 +22,12 @@
 #include "pmap.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatView
-// Description : A View boils down the frame data to a linear list of
-//               times spent in a number of different Collectors,
-//               within a particular thread.  This automatically
-//               accounts for overlapping start/stop times and nested
-//               Collectors in a sensible way.
-////////////////////////////////////////////////////////////////////
+/**
+ * A View boils down the frame data to a linear list of times spent in a number
+ * of different Collectors, within a particular thread.  This automatically
+ * accounts for overlapping start/stop times and nested Collectors in a sensible
+ * way.
+ */
 class PStatView {
 public:
   PStatView();
@@ -53,7 +51,7 @@ public:
 
   bool has_level(int collector) const;
   PStatViewLevel *get_level(int collector);
- 
+
   INLINE bool get_show_level() const;
   INLINE int get_level_index() const;
 
@@ -80,4 +78,3 @@ private:
 #include "pStatView.I"
 
 #endif
-

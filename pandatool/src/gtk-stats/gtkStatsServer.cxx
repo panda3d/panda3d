@@ -14,11 +14,9 @@
 #include "gtkStatsServer.h"
 #include "gtkStatsMonitor.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsServer::make_monitor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatMonitor *GtkStatsServer::
 make_monitor() {
   return new GtkStatsMonitor(this);

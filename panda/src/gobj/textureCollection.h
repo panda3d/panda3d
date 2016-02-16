@@ -18,11 +18,10 @@
 #include "pointerToArray.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureCollection
-// Description : Manages a list of Texture objects, as returned by
-//               TexturePool::find_all_textures().
-////////////////////////////////////////////////////////////////////
+/**
+ * Manages a list of Texture objects, as returned by
+ * TexturePool::find_all_textures().
+ */
 class EXPCL_PANDA_GOBJ TextureCollection {
 PUBLISHED:
   TextureCollection();

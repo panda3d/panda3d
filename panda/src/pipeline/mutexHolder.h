@@ -17,14 +17,11 @@
 #include "pandabase.h"
 #include "pmutex.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MutexHolder
-// Description : A lightweight C++ object whose constructor calls
-//               acquire() and whose destructor calls release() on a
-//               mutex.  It is a C++ convenience wrapper to call
-//               release() automatically when a block exits (for
-//               instance, on return).
-////////////////////////////////////////////////////////////////////
+/**
+ * A lightweight C++ object whose constructor calls acquire() and whose
+ * destructor calls release() on a mutex.  It is a C++ convenience wrapper to
+ * call release() automatically when a block exits (for instance, on return).
+ */
 class EXPCL_PANDA_PIPELINE MutexHolder {
 public:
   INLINE MutexHolder(const Mutex &mutex);

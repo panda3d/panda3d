@@ -18,10 +18,9 @@
 
 #include "fltBeadID.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltObject
-// Description : The main objecting bead of the flt file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main objecting bead of the flt file.
+ */
 class FltObject : public FltBeadID {
 public:
   FltObject(FltHeader *header);
@@ -64,5 +63,3 @@ private:
 };
 
 #endif
-
-

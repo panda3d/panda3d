@@ -20,4 +20,3 @@
 
 #include "dblnames.h"
 #include "lquaternion_src.cxx"
-

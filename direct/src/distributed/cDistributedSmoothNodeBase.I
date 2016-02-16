@@ -11,12 +11,10 @@
  * @date 2004-09-03
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::set_repository
-//       Access: Published, Static
-//  Description: Tells the C++ instance definition about the AI or Client
-//               repository, used for sending datagrams.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the C++ instance definition about the AI or Client repository, used for
+ * sending datagrams.
+ */
 INLINE void CDistributedSmoothNodeBase::
 set_repository(CConnectionRepository *repository,
                bool is_ai, CHANNEL_TYPE ai_id) {
@@ -26,36 +24,28 @@ set_repository(CConnectionRepository *repository,
 }
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::set_clock_delta
-//       Access: Published, Static
-//  Description: Tells the C++ instance definition about the global
-//               ClockDelta object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the C++ instance definition about the global ClockDelta object.
+ */
 INLINE void CDistributedSmoothNodeBase::
 set_clock_delta(PyObject *clock_delta) {
   _clock_delta = clock_delta;
 }
 #endif  // HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::only_changed
-//       Access: Private, Static
-//  Description: Returns true if at least some of the bits of compare
-//               are set in flags, but no bits outside of compare are
-//               set.  That is to say, that the only things that are
-//               changed are the bits indicated in compare.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if at least some of the bits of compare are set in flags, but no
+ * bits outside of compare are set.  That is to say, that the only things that
+ * are changed are the bits indicated in compare.
+ */
 INLINE bool CDistributedSmoothNodeBase::
 only_changed(int flags, int compare) {
   return (flags & compare) != 0 && (flags & ~compare) == 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmStop
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmStop() {
   //cout << "d_setSmStop" << endl;
@@ -64,11 +54,9 @@ d_setSmStop() {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmH
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmH(PN_stdfloat h) {
   //cout << "d_setSmH: " << h << endl;
@@ -78,11 +66,9 @@ d_setSmH(PN_stdfloat h) {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmZ
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmZ(PN_stdfloat z) {
   //cout << "d_setSmZ: " << z << endl;
@@ -92,11 +78,9 @@ d_setSmZ(PN_stdfloat z) {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmXY
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmXY(PN_stdfloat x, PN_stdfloat y) {
   //cout << "d_setSmXY: " << x << ", " << y << endl;
@@ -107,11 +91,9 @@ d_setSmXY(PN_stdfloat x, PN_stdfloat y) {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmXZ
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmXZ(PN_stdfloat x, PN_stdfloat z) {
   //cout << "d_setSmXZ: " << x << ", " << z << endl;
@@ -122,11 +104,9 @@ d_setSmXZ(PN_stdfloat x, PN_stdfloat z) {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmPos
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmPos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   //cout << "d_setSmXYZ: " << x << ", " << y << ", " << z << endl;
@@ -138,11 +118,9 @@ d_setSmPos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmHpr
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmHpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   //cout << "d_setSmHPR: " << h << ", " << p << ", " << r << endl;
@@ -154,11 +132,9 @@ d_setSmHpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmXYH
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmXYH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat h) {
   //cout << "d_setSmXYH: " << x << ", " << y << ", " << h << endl;
@@ -170,11 +146,9 @@ d_setSmXYH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat h) {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmXYZH
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmXYZH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h) {
   //cout << "d_setSmXYZH: " << x << ", " << y << ", " << z << ", " << h << endl;
@@ -187,11 +161,9 @@ d_setSmXYZH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h) {
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmPosHpr
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmPosHpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   //cout << "d_setSmPosHpr: " << x << ", " << y << ", " << z << ", " << h << ", " << p << ", " << r << endl;
@@ -206,12 +178,9 @@ d_setSmPosHpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_std
   finish_send_update(packer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CDistributedSmoothNodeBase::d_setSmPosHprL
-//                 send out pos, hpr, and location info (zoneId)
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CDistributedSmoothNodeBase::
 d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, PN_uint64 l) {
   //cout << "d_setSmPosHprL: " << x << ", " << y << ", " << z << ", " << h << ", " << p << ", " << r << l << endl;
@@ -226,4 +195,3 @@ d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_st
   packer.pack_double(r);
   finish_send_update(packer);
 }
-

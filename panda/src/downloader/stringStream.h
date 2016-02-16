@@ -19,13 +19,11 @@
 #include "vector_uchar.h"
 #include "extension.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StringStream
-// Description : A bi-directional stream object that reads and writes
-//               data to an internal buffer, which can be retrieved
-//               and/or set as a string in Python 2 or a bytes object
-//               in Python 3.
-////////////////////////////////////////////////////////////////////
+/**
+ * A bi-directional stream object that reads and writes data to an internal
+ * buffer, which can be retrieved and/or set as a string in Python 2 or a bytes
+ * object in Python 3.
+ */
 class EXPCL_PANDAEXPRESS StringStream : public iostream {
 public:
   INLINE StringStream(const string &source);

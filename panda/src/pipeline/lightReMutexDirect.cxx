@@ -16,12 +16,10 @@
 
 #ifndef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightReMutexDirect::output
-//       Access: Published
-//  Description: This method is declared virtual in MutexDebug, but
-//               non-virtual in LightReMutexDirect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is declared virtual in MutexDebug, but non-virtual in
+ * LightReMutexDirect.
+ */
 void LightReMutexDirect::
 output(ostream &out) const {
   out << "LightReMutex " << (void *)this;

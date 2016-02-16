@@ -11,22 +11,17 @@
  * @date 2009-06-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::get_npp_instance
-//       Access: Public
-//  Description: Returns the NPP object corresponding to this
-//               particular instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the NPP object corresponding to this particular instance.
+ */
 inline NPP PPInstance::
 get_npp_instance() const {
   return _npp_instance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::get_window
-//       Access: Public
-//  Description: Returns the current window parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current window parameters.
+ */
 const NPWindow *PPInstance::
 get_window() const {
   if (_got_window) {

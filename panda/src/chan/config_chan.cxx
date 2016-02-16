@@ -145,7 +145,3 @@ ConfigureFn(config_chan) {
   AnimChannelScalarDynamic::register_with_read_factory();
   AnimPreloadTable::register_with_read_factory();
 }
-
-
-
-

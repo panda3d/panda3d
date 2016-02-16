@@ -22,19 +22,14 @@
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn< PT(Connection) >);
 
-////////////////////////////////////////////////////////////////////
-//       Class : QueuedConnectionManager
-// Description : This flavor of ConnectionManager will queue up all of
-//               the reset-connection messages from the
-//               ConnectionReaders and ConnectionWriters and report
-//               them to the client on demand.
-//
-//               When a reset connection has been discovered via
-//               reset_connection_available()/get_reset_connection(),
-//               it is still the responsibility of the client to call
-//               close_connection() on that connection to free up its
-//               resources.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of ConnectionManager will queue up all of the reset-connection
+ * messages from the ConnectionReaders and ConnectionWriters and report them to
+ * the client on demand.  When a reset connection has been discovered via
+ * reset_connection_available()/get_reset_connection(), it is still the
+ * responsibility of the client to call close_connection() on that connection to
+ * free up its resources.
+ */
 class EXPCL_PANDA_NET QueuedConnectionManager : public ConnectionManager,
                                 public QueuedReturn< PT(Connection) > {
 PUBLISHED:
@@ -45,7 +40,7 @@ PUBLISHED:
   bool get_reset_connection(PT(Connection) &connection);
 
 protected:
-  virtual void connection_reset(const PT(Connection) &connection, 
+  virtual void connection_reset(const PT(Connection) &connection,
                                 bool okflag);
 };
 

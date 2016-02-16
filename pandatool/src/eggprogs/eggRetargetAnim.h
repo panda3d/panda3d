@@ -25,13 +25,11 @@ class EggCharacterData;
 class EggJointData;
 class EggCharacterDb;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggRetargetAnim
-// Description : Retargets one or more animation files from one
-//               particular skeleton to a similar, but differently
-//               scaled skeleton by preserving the rotation
-//               information but discarding translation and/or scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * Retargets one or more animation files from one particular skeleton to a
+ * similar, but differently scaled skeleton by preserving the rotation
+ * information but discarding translation and/or scale.
+ */
 class EggRetargetAnim : public EggCharacterFilter {
 public:
   EggRetargetAnim();
@@ -47,4 +45,3 @@ public:
 };
 
 #endif
-

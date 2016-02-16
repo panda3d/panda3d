@@ -16,13 +16,11 @@
 
 #include "handleStreamBuf.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HandleStream
-// Description : Implements a C++ stream object suitable for reading
-//               from and writing to Windows' HANDLE objects, or Posix
-//               file descriptors.  This is necessary to map low-level
-//               pipes into an iostream for tinyxml.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a C++ stream object suitable for reading from and writing to
+ * Windows' HANDLE objects, or Posix file descriptors.  This is necessary to map
+ * low-level pipes into an iostream for tinyxml.
+ */
 class HandleStream : public iostream {
 public:
   inline HandleStream();

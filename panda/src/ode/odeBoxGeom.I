@@ -37,4 +37,3 @@ INLINE dReal OdeBoxGeom::
 get_point_depth(const LPoint3f &p) {
   return get_point_depth(p[0], p[1], p[2]);
 }
-

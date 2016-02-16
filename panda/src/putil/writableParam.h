@@ -21,13 +21,11 @@
 
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WritableParam
-// Description : The specific derivation of FactoryParam that
-//               contains the information needed by a TypedWritable
-//               object.  Simply contains a Datagram for the object
-//               to construct itself from.
-////////////////////////////////////////////////////////////////////
+/**
+ * The specific derivation of FactoryParam that contains the information needed
+ * by a TypedWritable object.  Simply contains a Datagram for the object to
+ * construct itself from.
+ */
 class EXPCL_PANDA_PUTIL WritableParam : public FactoryParam {
 public:
   INLINE const Datagram &get_datagram();
@@ -65,4 +63,3 @@ private:
 #include "writableParam.I"
 
 #endif
-

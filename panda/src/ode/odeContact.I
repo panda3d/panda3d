@@ -45,5 +45,3 @@ set_fdir1(const LVecBase3f &fdir1) {
   _contact.fdir1[1] = fdir1[1];
   _contact.fdir1[2] = fdir1[2];
 }
-
-

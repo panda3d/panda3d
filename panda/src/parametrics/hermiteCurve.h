@@ -43,11 +43,10 @@ BEGIN_PUBLISH //[
 // change continuously.  This is C1 parametric continuity.
 END_PUBLISH //]
 
-////////////////////////////////////////////////////////////////////
-//       Class : HermiteCurveCV
-// Description : A single CV of a Hermite curve.  Hermite curve CV's
-//               include an in and out tangent, as well as a position.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single CV of a Hermite curve.  Hermite curve CV's include an in and out
+ * tangent, as well as a position.
+ */
 class EXPCL_PANDA_PARAMETRICS HermiteCurveCV {
 public:
   HermiteCurveCV();
@@ -72,18 +71,14 @@ public:
   string _name;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : HermiteCurve
-// Description : A parametric curve defined by a sequence of control
-//               vertices, each with an in and out tangent.
-//
-//               This class is actually implemented as a
-//               PiecewiseCurve made up of several CubicCurvesegs,
-//               each of which is created using the hermite_basis()
-//               method.  The HermiteCurve class itself keeps its own
-//               list of the CV's that are used to define the curve
-//               (since the CubicCurveseg class doesn't retain these).
-////////////////////////////////////////////////////////////////////
+/**
+ * A parametric curve defined by a sequence of control vertices, each with an in
+ * and out tangent.  This class is actually implemented as a PiecewiseCurve made
+ * up of several CubicCurvesegs, each of which is created using the
+ * hermite_basis() method.  The HermiteCurve class itself keeps its own list of
+ * the CV's that are used to define the curve (since the CubicCurveseg class
+ * doesn't retain these).
+ */
 class EXPCL_PANDA_PARAMETRICS HermiteCurve : public PiecewiseCurve {
 PUBLISHED:
   HermiteCurve();

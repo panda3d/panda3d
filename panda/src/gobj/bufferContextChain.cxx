@@ -15,15 +15,11 @@
 #include "bufferContext.h"
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferContextChain::get_first
-//       Access: Public
-//  Description: Returns the first BufferContext object stored in the
-//               tracker.  You can walk through the entire list of
-//               objects stored on the tracker by calling get_next()
-//               on each returned object, until the return value is
-//               NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first BufferContext object stored in the tracker.  You can walk
+ * through the entire list of objects stored on the tracker by calling
+ * get_next() on each returned object, until the return value is NULL.
+ */
 BufferContext *BufferContextChain::
 get_first() {
   // This method is declared non-inline so we can include
@@ -35,12 +31,9 @@ get_first() {
   return (BufferContext *)_next;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferContextChain::take_from
-//       Access: Public
-//  Description: Moves all of the BufferContexts from the other
-//               tracker onto this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves all of the BufferContexts from the other tracker onto this one.
+ */
 void BufferContextChain::
 take_from(BufferContextChain &other) {
   _total_size += other._total_size;
@@ -58,11 +51,9 @@ take_from(BufferContextChain &other) {
   take_list_from(&other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferContextChain::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BufferContextChain::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)

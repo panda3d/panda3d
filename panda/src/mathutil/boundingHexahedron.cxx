@@ -21,11 +21,9 @@
 
 TypeHandle BoundingHexahedron::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BoundingHexahedron::
 BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
                    CoordinateSystem cs) {
@@ -61,11 +59,9 @@ BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BoundingHexahedron::
 BoundingHexahedron(const LPoint3 &fll, const LPoint3 &flr,
                    const LPoint3 &fur, const LPoint3 &ful,
@@ -85,21 +81,17 @@ BoundingHexahedron(const LPoint3 &fll, const LPoint3 &flr,
   set_planes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::make_copy
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BoundingVolume *BoundingHexahedron::
 make_copy() const {
   return new BoundingHexahedron(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::get_min
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 BoundingHexahedron::
 get_min() const {
   nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
@@ -114,11 +106,9 @@ get_min() const {
   return m;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::get_max
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 BoundingHexahedron::
 get_max() const {
   nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
@@ -133,11 +123,9 @@ get_max() const {
   return m;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::get_approx_center
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 BoundingHexahedron::
 get_approx_center() const {
   nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
@@ -145,11 +133,9 @@ get_approx_center() const {
   return _centroid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::xform
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BoundingHexahedron::
 xform(const LMatrix4 &mat) {
   if (!is_empty() && !is_infinite()) {
@@ -161,11 +147,9 @@ xform(const LMatrix4 &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BoundingHexahedron::
 output(ostream &out) const {
   if (is_empty()) {
@@ -177,11 +161,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::write
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BoundingHexahedron::
 write(ostream &out, int indent_level) const {
   if (is_empty()) {
@@ -199,33 +181,26 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::as_bounding_hexahedron
-//       Access: Public, Virtual
-//  Description: Virtual downcast method.  Returns this object as a
-//               pointer of the indicated type, if it is in fact that
-//               type.  Returns NULL if it is not that type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Virtual downcast method.  Returns this object as a pointer of the indicated
+ * type, if it is in fact that type.  Returns NULL if it is not that type.
+ */
 const BoundingHexahedron *BoundingHexahedron::
 as_bounding_hexahedron() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::extend_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BoundingHexahedron::
 extend_other(BoundingVolume *other) const {
   return other->extend_by_hexahedron(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::around_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BoundingHexahedron::
 around_other(BoundingVolume *other,
              const BoundingVolume **first,
@@ -233,21 +208,17 @@ around_other(BoundingVolume *other,
   return other->around_hexahedrons(first, last);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingHexahedron::
 contains_other(const BoundingVolume *other) const {
   return other->contains_hexahedron(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_point
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingHexahedron::
 contains_point(const LPoint3 &point) const {
   if (is_empty()) {
@@ -269,11 +240,9 @@ contains_point(const LPoint3 &point) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_lineseg
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingHexahedron::
 contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   if (is_empty()) {
@@ -300,11 +269,9 @@ contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_sphere
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingHexahedron::
 contains_sphere(const BoundingSphere *sphere) const {
   nassertr(!is_empty(), 0);
@@ -335,11 +302,9 @@ contains_sphere(const BoundingSphere *sphere) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_box
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingHexahedron::
 contains_box(const BoundingBox *box) const {
   nassertr(!is_empty(), 0);
@@ -361,7 +326,7 @@ contains_box(const BoundingBox *box) const {
     if (dist2 <= radius2) {
       // The sphere is not completely behind this plane, but some of
       // it is.
-      
+
       // Look a little closer.
       bool all_in = true;
       bool all_out = true;
@@ -390,11 +355,9 @@ contains_box(const BoundingBox *box) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::contains_hexahedron
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int BoundingHexahedron::
 contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   nassertr(!is_empty(), 0);
@@ -443,11 +406,9 @@ contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::set_planes
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BoundingHexahedron::
 set_planes() {
   _planes[0] = LPlane(_points[0], _points[3], _points[2]);
@@ -487,11 +448,9 @@ set_planes() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingHexahedron::set_centroid
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BoundingHexahedron::
 set_centroid() {
   LPoint3 net = _points[0];

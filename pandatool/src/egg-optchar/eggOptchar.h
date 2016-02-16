@@ -29,14 +29,11 @@ class EggJointData;
 class EggSliderData;
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggOptchar
-// Description : Performs basic optimizations of a character model and
-//               its associated animations, by analyzing the animation
-//               tables and removing unneeded joints and/or morphs.
-//               Can also be used to restructure the character
-//               hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs basic optimizations of a character model and its associated
+ * animations, by analyzing the animation tables and removing unneeded joints
+ * and/or morphs.  Can also be used to restructure the character hierarchy.
+ */
 class EggOptchar : public EggCharacterFilter {
 public:
   EggOptchar();
@@ -130,4 +127,3 @@ private:
 };
 
 #endif
-

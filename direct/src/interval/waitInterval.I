@@ -11,12 +11,10 @@
  * @date 2002-09-12
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: WaitInterval::Constructor
-//       Access: Published
-//  Description: All Wait intervals have the same name.  No one really
-//               cares if their names are unique, after all.
-////////////////////////////////////////////////////////////////////
+/**
+ * All Wait intervals have the same name.  No one really cares if their names
+ * are unique, after all.
+ */
 INLINE WaitInterval::
 WaitInterval(double duration) :
   CInterval("Wait", duration, true)

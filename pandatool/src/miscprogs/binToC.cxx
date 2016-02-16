@@ -17,11 +17,9 @@
 // The number of bytes across the page to write.
 static const int col_width = 11;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BinToC::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BinToC::
 BinToC() :
   WithOutputFile(true, true, false)
@@ -64,11 +62,9 @@ BinToC() :
   _table_name = "data";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BinToC::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BinToC::
 run() {
   ifstream in;
@@ -126,11 +122,9 @@ run() {
       << dec << count << ";\n\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BinToC::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool BinToC::
 handle_args(ProgramBase::Args &args) {
   if (args.size() == 2 && !_got_output_filename) {

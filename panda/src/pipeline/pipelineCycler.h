@@ -19,36 +19,23 @@
 #include "cyclerHolder.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PipelineCycler
-// Description : This class maintains different copies of a page of
-//               data between stages of the graphics pipeline (or any
-//               other pipelining context).
-//
-//               The class object maintains up to n copies of a
-//               CycleData structure, one for each stage of the
-//               pipeline.  The head of the pipeline is responsible
-//               for making changes to its copy, which are then cycled
-//               through the pipeline at each frame.
-//
-//               To access the data, you must first ask for a readable
-//               pointer.  In order to make changes to the data, you
-//               must ask for a writable pointer.  Both kinds of
-//               pointers should be released when you are done, as a
-//               sanity check.  The CycleDataReader and
-//               CycleDataWriter classes transparently handle this.
-//
-//               If pipelining support is not enabled at compile time
-//               (that is, DO_PIPELINING is not defined), this object
-//               compiles to a minimum object that presents the same
-//               interface but with minimal runtime overhead.
-//
-//               We define this as a struct instead of a class to
-//               guarantee byte placement within the object, so that
-//               (particularly for the trivial implementation) the
-//               inherited struct's data is likely to be placed by the
-//               compiler at the "this" pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class maintains different copies of a page of data between stages of the
+ * graphics pipeline (or any other pipelining context).  The class object
+ * maintains up to n copies of a CycleData structure, one for each stage of the
+ * pipeline.  The head of the pipeline is responsible for making changes to its
+ * copy, which are then cycled through the pipeline at each frame.  To access
+ * the data, you must first ask for a readable pointer.  In order to make
+ * changes to the data, you must ask for a writable pointer.  Both kinds of
+ * pointers should be released when you are done, as a sanity check.  The
+ * CycleDataReader and CycleDataWriter classes transparently handle this.  If
+ * pipelining support is not enabled at compile time (that is, DO_PIPELINING is
+ * not defined), this object compiles to a minimum object that presents the same
+ * interface but with minimal runtime overhead.  We define this as a struct
+ * instead of a class to guarantee byte placement within the object, so that
+ * (particularly for the trivial implementation) the inherited struct's data is
+ * likely to be placed by the compiler at the "this" pointer.
+ */
 template<class CycleDataType>
 struct PipelineCycler : public PipelineCyclerBase {
 public:
@@ -139,26 +126,26 @@ private:
 // bothering to create a for loop.
 #define OPEN_ITERATE_UPSTREAM_ONLY(cycler, current_thread)      \
   if (false) {                                  \
-    const int pipeline_stage = -1;                   
+    const int pipeline_stage = -1;
 
 #define CLOSE_ITERATE_UPSTREAM_ONLY(cycler)     \
   }
 
 #define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler, current_thread) {                     \
     const int pipeline_stage = 0;                                       \
-    
+
 #define CLOSE_ITERATE_CURRENT_AND_UPSTREAM(cycler)      \
   }
 
 #define OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler, current_thread) {  \
     const int pipeline_stage = 0;                                       \
-    
+
 #define CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler)   \
   }
 
 #define OPEN_ITERATE_ALL_STAGES(cycler) {                               \
     const int pipeline_stage = 0;                                       \
-    
+
 #define CLOSE_ITERATE_ALL_STAGES(cycler)        \
   }
 
@@ -167,4 +154,3 @@ private:
 #include "pipelineCycler.I"
 
 #endif
-

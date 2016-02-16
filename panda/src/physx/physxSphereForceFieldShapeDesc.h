@@ -19,10 +19,9 @@
 #include "physxForceFieldShapeDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSphereForceFieldShapeDesc
-// Description : A descriptor for a sphere force field shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * A descriptor for a sphere force field shape.
+ */
 class EXPCL_PANDAPHYSX PhysxSphereForceFieldShapeDesc : public PhysxForceFieldShapeDesc {
 
 PUBLISHED:

@@ -18,11 +18,10 @@
 
 #include "eggPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPoint
-// Description : A single point, or a collection of points as defined
-//               by a single <PointLight> entry.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single point, or a collection of points as defined by a single <PointLight>
+ * entry.
+ */
 class EXPCL_PANDAEGG EggPoint : public EggPrimitive {
 PUBLISHED:
   INLINE EggPoint(const string &name = "");

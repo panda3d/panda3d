@@ -33,12 +33,10 @@ static bool traverse_callback(TextureContext *tc, void *data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_prepared_textures
-//       Access: Published
-//  Description: Returns a Python list of all of the
-//               currently-prepared textures within the GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a Python list of all of the currently-prepared textures within the
+ * GSG.
+ */
 PyObject *Extension<GraphicsStateGuardian>::
 get_prepared_textures() const {
   PyObject *list = PyList_New(0);

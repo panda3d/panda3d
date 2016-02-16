@@ -16,61 +16,48 @@
 
 #include <stdlib.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointParticleFactory
-//       Access: Public
-//  Description: default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 PointParticleFactory::
 PointParticleFactory() :
   BaseParticleFactory() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointParticleFactory
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 PointParticleFactory::
 PointParticleFactory(const PointParticleFactory &copy) :
   BaseParticleFactory(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~PointParticleFactory
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 PointParticleFactory::
 ~PointParticleFactory() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: populate_child_particle
-//       Access: Public
-//  Description: child particle generation function
-////////////////////////////////////////////////////////////////////
+/**
+ * child particle generation function
+ */
 void PointParticleFactory::
 populate_child_particle(BaseParticle *bp) const {
   bp->set_oriented(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: alloc_particle
-//       Access: Public
-//  Description: child particle generation function
-////////////////////////////////////////////////////////////////////
+/**
+ * child particle generation function
+ */
 BaseParticle *PointParticleFactory::
 alloc_particle() const {
   return new PointParticle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PointParticleFactory::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -78,12 +65,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PointParticleFactory::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

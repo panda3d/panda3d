@@ -34,16 +34,14 @@
 class PPToplevelObject;
 class PPDownloadRequest;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PPInstance
-// Description : This represents a single instance of the Panda3D
-//               plugin, via the NPAPI interface.  This instance
-//               brokers the communication with the P3D Core API, as
-//               defined in the plugin directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single instance of the Panda3D plugin, via the NPAPI
+ * interface.  This instance brokers the communication with the P3D Core API, as
+ * defined in the plugin directory.
+ */
 class PPInstance {
 public:
-  PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode, 
+  PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
              int16_t argc, char *argn[], char *argv[], NPSavedData *saved,
              P3D_window_handle_type window_handle_type,
              P3D_event_type event_type);
@@ -55,7 +53,7 @@ public:
 
   inline const NPWindow *get_window() const;
   void set_window(NPWindow *window);
-  NPError new_stream(NPMIMEType type, NPStream *stream, 
+  NPError new_stream(NPMIMEType type, NPStream *stream,
                      bool seekable, uint16_t *stype);
   void stop_outstanding_streams();
 
@@ -116,7 +114,7 @@ private:
   static void browser_sync_callback(void *);
 
 #ifdef _WIN32
-  static LONG 
+  static LONG
   st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void win_get_twirl_bitmaps();
@@ -130,7 +128,7 @@ private:
     wstring _text;
   };
 #ifdef MACOSX_HAS_EVENT_MODELS
-  static void copy_cocoa_event(P3DCocoaEvent *p3d_event, 
+  static void copy_cocoa_event(P3DCocoaEvent *p3d_event,
                                NPCocoaEvent *np_event,
                                EventAuxData &aux_data);
   static const wchar_t *make_ansi_string(wstring &result, NPNSString *ns_string);
@@ -165,7 +163,7 @@ private:
   // Set from fgcolor & bgcolor.
   int _fgcolor_r, _fgcolor_b, _fgcolor_g;
   int _bgcolor_r, _bgcolor_b, _bgcolor_g;
-  
+
   string _root_dir;
   string _standard_url_prefix;
   string _download_url_prefix;
@@ -189,9 +187,9 @@ private:
   public:
     StreamTempFile();
     ~StreamTempFile();
-    
+
     void open();
-    bool feed(size_t total_expected_data, const void *this_data, 
+    bool feed(size_t total_expected_data, const void *this_data,
               size_t this_data_size);
     void finish();
     void close();
@@ -211,7 +209,7 @@ private:
   StreamTempFile _p3d_temp_file;
   StreamTempFile _contents_temp_file;
   StreamTempFile _core_dll_temp_file;
- 
+
   // We need to keep a list of the NPStream objects that the instance
   // owns, because Safari (at least) won't automatically delete all of
   // the outstanding streams when the instance is destroyed.
@@ -248,7 +246,7 @@ private:
 
   typedef vector<StreamingFileData *> FileDatas;
   static FileDatas _file_datas;
-  
+
   bool _use_xembed;
   bool _got_window;
   NPWindow _window;

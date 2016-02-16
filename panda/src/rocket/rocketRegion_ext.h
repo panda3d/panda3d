@@ -22,12 +22,10 @@
 #include "rocketRegion.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<RocketRegion>
-// Description : This class defines the extension methods for
-//               GeomVertexArrayData, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for GeomVertexArrayData, which are
+ * called instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<RocketRegion> : public ExtensionBase<RocketRegion> {
 public:

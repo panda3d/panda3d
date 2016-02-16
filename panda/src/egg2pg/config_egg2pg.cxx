@@ -194,14 +194,12 @@ ConfigureFn(config_egg2pg) {
   init_libegg2pg();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libegg2pg
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libegg2pg() {
   static bool initialized = false;

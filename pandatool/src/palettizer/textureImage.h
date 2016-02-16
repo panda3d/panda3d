@@ -33,20 +33,14 @@ class DestTextureImage;
 class TexturePlacement;
 class EggFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureImage
-// Description : This represents a single source texture that is
-//               referenced by one or more egg files.  It may be
-//               assigned to multiple PaletteGroups, and thus placed
-//               on multiple PaletteImages (up to one per
-//               PaletteGroup).
-//
-//               Since a TextureImage may be referenced by multiple
-//               egg files that are each assigned to a different set
-//               of groups, it tries to maximize sharing between egg
-//               files and minimize the number of different
-//               PaletteGroups it is assigned to.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single source texture that is referenced by one or more egg
+ * files.  It may be assigned to multiple PaletteGroups, and thus placed on
+ * multiple PaletteImages (up to one per PaletteGroup).  Since a TextureImage
+ * may be referenced by multiple egg files that are each assigned to a different
+ * set of groups, it tries to maximize sharing between egg files and minimize
+ * the number of different PaletteGroups it is assigned to.
+ */
 class TextureImage : public ImageFile, public Namable {
 public:
   TextureImage();
@@ -197,4 +191,3 @@ private:
 };
 
 #endif
-

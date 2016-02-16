@@ -23,10 +23,9 @@
 class PhysxJointDriveDesc;
 class PhysxJointLimitSoftDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxD6JointDesc
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxD6JointDesc : public PhysxJointDesc {
 
 PUBLISHED:

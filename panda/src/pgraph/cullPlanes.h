@@ -26,27 +26,20 @@
 class ClipPlaneAttrib;
 class OccluderEffect;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullPlanes
-// Description : This represents the set of clip planes and/or
-//               occluders that are definitely in effect for the
-//               current node of the CullTraverserData, as well as on
-//               all child nodes.  Any clip planes and occluders in
-//               this list may be safely culled against.
-//
-//               This does not include the clip planes that are in
-//               effect now, but might later be turned off by a child
-//               node, since we can't safely cull against such clip
-//               planes.
-//
-//               The bounding volumes in this object are transformed
-//               for each level of the scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents the set of clip planes and/or occluders that are definitely
+ * in effect for the current node of the CullTraverserData, as well as on all
+ * child nodes.  Any clip planes and occluders in this list may be safely culled
+ * against.  This does not include the clip planes that are in effect now, but
+ * might later be turned off by a child node, since we can't safely cull against
+ * such clip planes.  The bounding volumes in this object are transformed for
+ * each level of the scene graph.
+ */
 class EXPCL_PANDA_PGRAPH CullPlanes : public ReferenceCount {
 protected:
   INLINE CullPlanes();
   INLINE CullPlanes(const CullPlanes &copy);
-  INLINE void operator = (const CullPlanes &copy); 
+  INLINE void operator = (const CullPlanes &copy);
 
 public:
   INLINE ~CullPlanes();
@@ -56,7 +49,7 @@ public:
 
   static CPT(CullPlanes) make_empty();
   CPT(CullPlanes) xform(const LMatrix4 &mat) const;
-  CPT(CullPlanes) apply_state(const CullTraverser *trav, 
+  CPT(CullPlanes) apply_state(const CullTraverser *trav,
                               const CullTraverserData *data,
                               const ClipPlaneAttrib *net_attrib,
                               const ClipPlaneAttrib *off_attrib,

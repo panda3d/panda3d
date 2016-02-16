@@ -19,12 +19,10 @@
 #include "physxObject.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxConvexMesh
-// Description : A Convex Mesh. Internally represented as a list of
-//               convex polygons. The number of polygons is
-//               limited to 256.
-////////////////////////////////////////////////////////////////////
+/**
+ * A Convex Mesh.  Internally represented as a list of convex polygons.  The
+ * number of polygons is limited to 256.
+ */
 class EXPCL_PANDAPHYSX PhysxConvexMesh : public PhysxObject {
 
 PUBLISHED:
@@ -54,7 +52,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxConvexMesh", 
+    register_type(_type_handle, "PhysxConvexMesh",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -25,11 +25,10 @@ class EggGroupNode;
 class EggGroup;
 class LMatrix4d;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VRMLToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from a VRML file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from a VRML
+ * file.
+ */
 class VRMLToEggConverter : public SomethingToEggConverter {
 public:
   VRMLToEggConverter();
@@ -48,7 +47,7 @@ private:
   typedef pmap<string, VrmlNode *> Nodes;
 
   void get_all_defs(SFNodeRef &vrml, Nodes &nodes);
-  void vrml_node(const SFNodeRef &vrml, EggGroupNode *egg, 
+  void vrml_node(const SFNodeRef &vrml, EggGroupNode *egg,
                  const LMatrix4d &net_transform);
 
   void vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
@@ -65,5 +64,3 @@ private:
 };
 
 #endif
-
-

@@ -21,14 +21,12 @@
 #include "collideMask.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionNode
-// Description : A node in the scene graph that can hold any number of
-//               CollisionSolids.  This may either represent a bit of
-//               static geometry in the scene that things will collide
-//               with, or an animated object twirling around in the
-//               world and running into things.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node in the scene graph that can hold any number of CollisionSolids.  This
+ * may either represent a bit of static geometry in the scene that things will
+ * collide with, or an animated object twirling around in the world and running
+ * into things.
+ */
 class EXPCL_PANDA_COLLIDE CollisionNode : public PandaNode {
 PUBLISHED:
   CollisionNode(const string &name);
@@ -41,7 +39,7 @@ public:
   virtual PandaNode *make_copy() const;
   virtual bool preserve_name() const;
   virtual void xform(const LMatrix4 &mat);
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
   virtual CollideMask get_legal_collide_mask() const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
@@ -94,7 +92,7 @@ private:
 
   typedef pvector< COWPT(CollisionSolid) > Solids;
   Solids _solids;
-  
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

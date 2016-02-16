@@ -22,16 +22,12 @@
 #include <Rocket/Core/Python/Utilities.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketRegion::get_context
-//       Access: Published
-//  Description: Returns a pointer to the Rocket context associated
-//               with this region.  Will only be valid as long as this
-//               region still exists, so be sure to toss it when you
-//               toss the region itself.
-//               It's best to call this method just once and store
-//               the context in a Python variable, to avoid overhead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the Rocket context associated with this region.  Will
+ * only be valid as long as this region still exists, so be sure to toss it when
+ * you toss the region itself.  It's best to call this method just once and
+ * store the context in a Python variable, to avoid overhead.
+ */
 PyObject* Extension<RocketRegion>::
 get_context() const {
   try {

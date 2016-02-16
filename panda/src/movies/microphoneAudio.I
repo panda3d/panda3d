@@ -11,23 +11,18 @@
  * @date 2007-07-02
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudio::get_channels
-//       Access: Published
-//  Description: Returns the number of channels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of channels.
+ */
 INLINE int MicrophoneAudio::
 get_channels() const {
   return _channels;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudio::get_rate
-//       Access: Published
-//  Description: Returns the sample rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the sample rate.
+ */
 INLINE int MicrophoneAudio::
 get_rate() const {
   return _rate;
 }
-

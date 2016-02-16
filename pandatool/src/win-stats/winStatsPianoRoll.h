@@ -24,12 +24,10 @@
 
 class WinStatsMonitor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinStatsPianoRoll
-// Description : A window that draws a piano-roll style chart,
-//               which shows the collectors explicitly stopping and
-//               starting, one frame at a time.
-////////////////////////////////////////////////////////////////////
+/**
+ * A window that draws a piano-roll style chart, which shows the collectors
+ * explicitly stopping and starting, one frame at a time.
+ */
 class WinStatsPianoRoll : public PStatPianoRoll, public WinStatsGraph {
 public:
   WinStatsPianoRoll(WinStatsMonitor *monitor, int thread_index);
@@ -54,7 +52,7 @@ protected:
   virtual LONG graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   virtual void additional_window_paint(HDC hdc);
   virtual void additional_graph_window_paint(HDC hdc);
-  virtual DragMode consider_drag_start(int mouse_x, int mouse_y, 
+  virtual DragMode consider_drag_start(int mouse_x, int mouse_y,
                                        int width, int height);
 
 private:
@@ -73,4 +71,3 @@ private:
 };
 
 #endif
-

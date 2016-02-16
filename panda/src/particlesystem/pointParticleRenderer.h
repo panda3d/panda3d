@@ -25,12 +25,10 @@
 #include "geomPoints.h"
 #include "pStatCollector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointParticleRenderer
-// Description : Simple point/point particle renderer.  Does NOT
-//               handle billboards- use BillboardParticleRenderer
-//               for that.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simple point/point particle renderer.  Does NOT handle billboards- use
+ * BillboardParticleRenderer for that.
+ */
 
 class EXPCL_PANDAPHYSICS PointParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:

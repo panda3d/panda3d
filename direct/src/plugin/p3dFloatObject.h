@@ -17,10 +17,9 @@
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DFloatObject
-// Description : An object type that contains a floating-point value.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object type that contains a floating-point value.
+ */
 class P3DFloatObject : public P3DObject {
 public:
   P3DFloatObject(double value);
@@ -38,4 +37,3 @@ private:
 };
 
 #endif
-

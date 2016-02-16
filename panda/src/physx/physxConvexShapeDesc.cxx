@@ -14,15 +14,11 @@
 #include "physxConvexShapeDesc.h"
 #include "physxConvexMesh.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexShapeDesc::set_mesh
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxConvexShapeDesc::
 set_mesh(PhysxConvexMesh *mesh) {
 
   _desc.meshData = mesh->ptr();
 }
-
-

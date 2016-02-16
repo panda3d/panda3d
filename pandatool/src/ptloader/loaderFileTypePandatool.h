@@ -21,13 +21,11 @@
 class SomethingToEggConverter;
 class EggToSomethingConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypePandatool
-// Description : This defines the Loader interface to files whose
-//               converters are defined within the Pandatool package
-//               and inherit from SomethingToEggConverter, like
-//               FltToEggConverter and LwoToEggConverter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the Loader interface to files whose converters are defined
+ * within the Pandatool package and inherit from SomethingToEggConverter, like
+ * FltToEggConverter and LwoToEggConverter.
+ */
 class EXPCL_PTLOADER LoaderFileTypePandatool : public LoaderFileType {
 public:
   LoaderFileTypePandatool(SomethingToEggConverter *loader,
@@ -71,4 +69,3 @@ private:
 };
 
 #endif
-

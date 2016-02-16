@@ -24,10 +24,9 @@ class IndexRemapper;
 class CPPType;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterrogateType
-// Description : An internal representation of a type.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal representation of a type.
+ */
 class EXPCL_INTERROGATEDB InterrogateType : public InterrogateComponent {
 public:
   InterrogateType(InterrogateModuleDef *def = NULL);

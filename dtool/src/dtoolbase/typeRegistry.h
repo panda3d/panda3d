@@ -26,15 +26,13 @@ class TypeHandle;
 class TypeRegistryNode;
 class TypedObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeRegistry
-// Description : The TypeRegistry class maintains all the assigned
-//               TypeHandles in a given system.  There should be only
-//               one TypeRegistry class during the lifetime of the
-//               application.  It will be created on the local heap
-//               initially, and it should be migrated to shared memory
-//               as soon as shared memory becomes available.
-////////////////////////////////////////////////////////////////////
+/**
+ * The TypeRegistry class maintains all the assigned TypeHandles in a given
+ * system.  There should be only one TypeRegistry class during the lifetime of
+ * the application.  It will be created on the local heap initially, and it
+ * should be migrated to shared memory as soon as shared memory becomes
+ * available.
+ */
 class EXPCL_DTOOL TypeRegistry : public MemoryBase {
 public:
   // User code shouldn't generally need to call

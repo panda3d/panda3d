@@ -25,14 +25,11 @@
 class HTTPChannel;
 class BioStreamPtr;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IChunkedStream
-// Description : An input stream object that reads data from a source
-//               istream, but automatically decodes the "chunked"
-//               transfer-coding specified by an HTTP server.
-//
-//               Seeking is not supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * An input stream object that reads data from a source istream, but
+ * automatically decodes the "chunked" transfer-coding specified by an HTTP
+ * server.  Seeking is not supported.
+ */
 // No need to export from DLL.
 class IChunkedStream : public ISocketStream {
 public:
@@ -55,6 +52,3 @@ private:
 #endif  // HAVE_OPENSSL
 
 #endif
-
-
-

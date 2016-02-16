@@ -31,14 +31,11 @@
 
 class NurbsCurveResult;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DynamicTextFont
-// Description : A DynamicTextFont is a special TextFont object that
-//               rasterizes its glyphs from a standard font file
-//               (e.g. a TTF file) on the fly.  It requires the
-//               FreeType 2.0 library (or any higher,
-//               backward-compatible version).
-////////////////////////////////////////////////////////////////////
+/**
+ * A DynamicTextFont is a special TextFont object that rasterizes its glyphs
+ * from a standard font file (e.g.  a TTF file) on the fly.  It requires the
+ * FreeType 2.0 library (or any higher, backward-compatible version).
+ */
 class EXPCL_PANDA_TEXT DynamicTextFont : public TextFont, public FreetypeFont {
 PUBLISHED:
   DynamicTextFont(const Filename &font_filename, int face_index = 0);

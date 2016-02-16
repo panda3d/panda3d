@@ -11,23 +11,18 @@
  * @date 2002-03-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DepthWriteAttrib::Constructor
-//       Access: Private
-//  Description: Use DepthWriteAttrib::make() to construct a new
-//               DepthWriteAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use DepthWriteAttrib::make() to construct a new DepthWriteAttrib object.
+ */
 INLINE DepthWriteAttrib::
 DepthWriteAttrib(DepthWriteAttrib::Mode mode) :
   _mode(mode)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DepthWriteAttrib::get_mode
-//       Access: Published
-//  Description: Returns the depth write mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the depth write mode.
+ */
 INLINE DepthWriteAttrib::Mode DepthWriteAttrib::
 get_mode() const {
   return _mode;

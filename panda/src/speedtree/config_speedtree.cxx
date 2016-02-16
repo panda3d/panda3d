@@ -29,7 +29,7 @@ ConfigureFn(config_speedtree) {
 }
 
 ConfigVariableString speedtree_license
-("speedtree-license", "", 
+("speedtree-license", "",
  PRC_DESC("Specify the license string to pass to SpeedTreeNode::authorize() by default."));
 
 #ifndef CPPPARSER
@@ -195,7 +195,7 @@ ConfigVariableInt speedtree_terrain_resolution
 ("speedtree-terrain-resolution", 33,
  PRC_DESC("Specifies the number of vertices per edge of each terrain grid "
           "cell at the highest LOD.  This must be a power of two plus 1."));
-          
+
 ConfigVariableInt speedtree_terrain_cell_size
 ("speedtree-terrain-cell-size", 800,
  PRC_DESC("Specifies the size in spatial units of one edge of a terrain "
@@ -248,7 +248,7 @@ ConfigVariableInt speedtree_max_random_try_count
           "are deemed to be in error, and the function fails."));
 
 ConfigVariableBool speedtree_5_2_stf
-("speedtree-5-2-stf", 
+("speedtree-5-2-stf",
 #if SPEEDTREE_VERSION_MAJOR > 5 || (SPEEDTREE_VERSION_MAJOR == 5 && SPEEDTREE_VERSION_MINOR >= 2)
  true,
 #else
@@ -257,16 +257,14 @@ ConfigVariableBool speedtree_5_2_stf
  PRC_DESC("The format of the STF file changed in SpeedTree version 5.2.  "
           "Specify true here to read STF files in the new file format, or "
           "false to read STF files in the pre-5.2 file format."));
- 
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libspeedtree
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libspeedtree() {
   static bool initialized = false;
@@ -296,7 +294,7 @@ public:
   void *Alloc(size_t block_size) {
     return PANDA_MALLOC_ARRAY(block_size);
   }
-  
+
   void Free(void *block) {
     if (block != NULL) {
       PANDA_FREE_ARRAY(block);

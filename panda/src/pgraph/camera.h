@@ -27,12 +27,10 @@
 #include "auxSceneData.h"
 #include "displayRegionBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Camera
-// Description : A node that can be positioned around in the scene
-//               graph to represent a point of view for rendering a
-//               scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node that can be positioned around in the scene graph to represent a point
+ * of view for rendering a scene.
+ */
 class EXPCL_PANDA_PGRAPH Camera : public LensNode {
 PUBLISHED:
   explicit Camera(const string &name, Lens *lens = new PerspectiveLens());

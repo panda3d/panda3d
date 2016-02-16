@@ -35,13 +35,11 @@
 
 #endif  // OPENCV_VER_23
 
-////////////////////////////////////////////////////////////////////
-//       Class : OpenCVTexture
-// Description : A specialization on VideoTexture that takes its input
-//               using the CV library, to produce an animated texture,
-//               with its source taken from an .avi file or from a
-//               camera input.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization on VideoTexture that takes its input using the CV library,
+ * to produce an animated texture, with its source taken from an .avi file or
+ * from a camera input.
+ */
 class EXPCL_VISION OpenCVTexture : public VideoTexture {
 PUBLISHED:
   OpenCVTexture(const string &name = string());
@@ -60,7 +58,7 @@ public:
 protected:
   virtual void consider_update();
   virtual PT(Texture) make_copy_impl();
-  void do_assign(Texture::CData *cdata_tex, const OpenCVTexture *copy, 
+  void do_assign(Texture::CData *cdata_tex, const OpenCVTexture *copy,
                  const Texture::CData *cdata_copy_tex);
 
   virtual void do_update_frame(Texture::CData *cdata_tex, int frame);
@@ -75,14 +73,14 @@ protected:
                            const PNMImage &pnmimage, const string &name,
                            int z, int n, const LoaderOptions &options);
 
-private:    
+private:
   class VideoPage;
   class VideoStream;
 
   VideoPage &do_modify_page(const Texture::CData *cdata, int z);
-  bool do_reconsider_video_properties(Texture::CData *cdata, 
-                                      const VideoStream &stream, 
-                                      int num_components, int z, 
+  bool do_reconsider_video_properties(Texture::CData *cdata,
+                                      const VideoStream &stream,
+                                      int num_components, int z,
                                       const LoaderOptions &options);
   void do_update();
 

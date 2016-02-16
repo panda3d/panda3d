@@ -19,11 +19,9 @@
 
 #include "config_physx.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSphere
-// Description : Represents a sphere defined by its center point
-//               and radius.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a sphere defined by its center point and radius.
+ */
 class EXPCL_PANDAPHYSX PhysxSphere {
 
 PUBLISHED:

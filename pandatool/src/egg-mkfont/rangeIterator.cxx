@@ -13,17 +13,14 @@
 
 #include "rangeIterator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: RangeIterator::Constructor
-//       Access: Public
-//  Description: Constructs an iterator to walk through the codes on
-//               the descriptor.  It is important not to modify the
-//               RangeDescription object during the lifetime of the
-//               iterator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an iterator to walk through the codes on the descriptor.  It is
+ * important not to modify the RangeDescription object during the lifetime of
+ * the iterator.
+ */
 RangeIterator::
 RangeIterator(const RangeDescription &desc) :
-  _desc(desc) 
+  _desc(desc)
 {
   _it = _desc._range_list.begin();
   if (_it == _desc._range_list.end()) {
@@ -34,13 +31,10 @@ RangeIterator(const RangeDescription &desc) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RangeIterator::next
-//       Access: Public
-//  Description: Advances the iterator to the next code.  Returns true
-//               if there is a next code, or false if there are no
-//               mode codes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the iterator to the next code.  Returns true if there is a next
+ * code, or false if there are no mode codes.
+ */
 bool RangeIterator::
 next() {
   do {

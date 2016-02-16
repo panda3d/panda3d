@@ -51,12 +51,10 @@ TypeHandle GeomVertexArrayDataHandle::_type_handle;
 
 ALLOC_DELETED_CHAIN_DEF(GeomVertexArrayDataHandle);
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::Default Constructor
-//       Access: Private
-//  Description: Constructs an invalid object.  This is only used when
-//               reading from the bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an invalid object.  This is only used when reading from the bam
+ * file.
+ */
 GeomVertexArrayData::
 GeomVertexArrayData() : SimpleLruPage(0) {
   _contexts = NULL;
@@ -64,21 +62,17 @@ GeomVertexArrayData() : SimpleLruPage(0) {
   // Can't put it in the LRU until it has been read in and made valid.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::make_cow_copy
-//       Access: Protected, Virtual
-//  Description: Required to implement CopyOnWriteObject.
-////////////////////////////////////////////////////////////////////
+/**
+ * Required to implement CopyOnWriteObject.
+ */
 PT(CopyOnWriteObject) GeomVertexArrayData::
 make_cow_copy() {
   return new GeomVertexArrayData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomVertexArrayData::
 GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
                     GeomVertexArrayData::UsageHint usage_hint) :
@@ -96,12 +90,10 @@ GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
   set_lru_size(0);
   nassertv(_array_format->is_registered());
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::Copy Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+
+/**
+
+ */
 GeomVertexArrayData::
 GeomVertexArrayData(const GeomVertexArrayData &copy) :
   CopyOnWriteObject(copy),
@@ -117,14 +109,11 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
   nassertv(_array_format->is_registered());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::Copy Assignment Operator
-//       Access: Published
-//  Description: The copy assignment operator is not pipeline-safe.
-//               This will completely obliterate all stages of the
-//               pipeline, so don't do it for a GeomVertexArrayData
-//               that is actively being used for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * The copy assignment operator is not pipeline-safe.  This will completely
+ * obliterate all stages of the pipeline, so don't do it for a
+ * GeomVertexArrayData that is actively being used for rendering.
+ */
 void GeomVertexArrayData::
 operator = (const GeomVertexArrayData &copy) {
   CopyOnWriteObject::operator = (copy);
@@ -144,22 +133,18 @@ operator = (const GeomVertexArrayData &copy) {
   nassertv(_array_format->is_registered());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomVertexArrayData::
 ~GeomVertexArrayData() {
   release_all();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::compare_to
-//       Access: Published
-//  Description: Returns 0 if the two arrays are equivalent, even if
-//               they are not the same pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns 0 if the two arrays are equivalent, even if they are not the same
+ * pointer.
+ */
 int GeomVertexArrayData::
 compare_to(const GeomVertexArrayData &other) const {
   Thread *current_thread = Thread::get_current_thread();
@@ -176,21 +161,16 @@ compare_to(const GeomVertexArrayData &other) const {
   if (handle->get_data_size_bytes() != other_handle->get_data_size_bytes()) {
     return (int)handle->get_data_size_bytes() - (int)other_handle->get_data_size_bytes();
   }
-  return memcmp(handle->get_read_pointer(true), 
+  return memcmp(handle->get_read_pointer(true),
                 other_handle->get_read_pointer(true),
                 handle->get_data_size_bytes());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::set_usage_hint
-//       Access: Published
-//  Description: Changes the UsageHint hint for this array.  See
-//               get_usage_hint().
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the UsageHint hint for this array.  See get_usage_hint().  Don't call
+ * this in a downstream thread unless you don't mind it blowing away other
+ * changes you might have recently made in an upstream thread.
+ */
 void GeomVertexArrayData::
 set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
   CDWriter cdata(_cycler, true);
@@ -198,50 +178,38 @@ set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
   cdata->_modified = Geom::get_next_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GeomVertexArrayData::
 output(ostream &out) const {
   out << get_num_rows() << " rows: " << *get_array_format();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GeomVertexArrayData::
 write(ostream &out, int indent_level) const {
   _array_format->write_with_data(out, indent_level, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::prepare
-//       Access: Public
-//  Description: Indicates that the data should be enqueued to be
-//               prepared in the indicated prepared_objects at the
-//               beginning of the next frame.  This will ensure the
-//               data is already loaded into the GSG if it is expected
-//               to be rendered soon.
-//
-//               Use this function instead of prepare_now() to preload
-//               datas from a user interface standpoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that the data should be enqueued to be prepared in the indicated
+ * prepared_objects at the beginning of the next frame.  This will ensure the
+ * data is already loaded into the GSG if it is expected to be rendered soon.
+ * Use this function instead of prepare_now() to preload datas from a user
+ * interface standpoint.
+ */
 void GeomVertexArrayData::
 prepare(PreparedGraphicsObjects *prepared_objects) {
   prepared_objects->enqueue_vertex_buffer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::is_prepared
-//       Access: Published
-//  Description: Returns true if the data has already been prepared
-//               or enqueued for preparation on the indicated GSG,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the data has already been prepared or enqueued for
+ * preparation on the indicated GSG, false otherwise.
+ */
 bool GeomVertexArrayData::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   if (_contexts == (Contexts *)NULL) {
@@ -255,24 +223,17 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   return prepared_objects->is_vertex_buffer_queued(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::prepare_now
-//       Access: Public
-//  Description: Creates a context for the data on the particular
-//               GSG, if it does not already exist.  Returns the new
-//               (or old) VertexBufferContext.  This assumes that the
-//               GraphicsStateGuardian is the currently active
-//               rendering context and that it is ready to accept new
-//               datas.  If this is not necessarily the case, you
-//               should use prepare() instead.
-//
-//               Normally, this is not called directly except by the
-//               GraphicsStateGuardian; a data does not need to be
-//               explicitly prepared by the user before it may be
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a context for the data on the particular GSG, if it does not already
+ * exist.  Returns the new (or old) VertexBufferContext.  This assumes that the
+ * GraphicsStateGuardian is the currently active rendering context and that it
+ * is ready to accept new datas.  If this is not necessarily the case, you
+ * should use prepare() instead.  Normally, this is not called directly except
+ * by the GraphicsStateGuardian; a data does not need to be explicitly prepared
+ * by the user before it may be rendered.
+ */
 VertexBufferContext *GeomVertexArrayData::
-prepare_now(PreparedGraphicsObjects *prepared_objects, 
+prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
   if (_contexts == (Contexts *)NULL) {
     _contexts = new Contexts;
@@ -290,13 +251,10 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   return vbc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::release
-//       Access: Public
-//  Description: Frees the data context only on the indicated object,
-//               if it exists there.  Returns true if it was released,
-//               false if it had not been prepared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the data context only on the indicated object, if it exists there.
+ * Returns true if it was released, false if it had not been prepared.
+ */
 bool GeomVertexArrayData::
 release(PreparedGraphicsObjects *prepared_objects) {
   if (_contexts != (Contexts *)NULL) {
@@ -313,13 +271,10 @@ release(PreparedGraphicsObjects *prepared_objects) {
   return prepared_objects->dequeue_vertex_buffer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::release_all
-//       Access: Public
-//  Description: Frees the context allocated on all objects for which
-//               the data has been declared.  Returns the number of
-//               contexts which have been freed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the context allocated on all objects for which the data has been
+ * declared.  Returns the number of contexts which have been freed.
+ */
 int GeomVertexArrayData::
 release_all() {
   int num_freed = 0;
@@ -331,14 +286,14 @@ release_all() {
     // _contexts list while we're traversing it.
     Contexts temp = *_contexts;
     num_freed = (int)_contexts->size();
-    
+
     Contexts::const_iterator ci;
     for (ci = temp.begin(); ci != temp.end(); ++ci) {
       PreparedGraphicsObjects *prepared_objects = (*ci).first;
       VertexBufferContext *vbc = (*ci).second;
       prepared_objects->release_vertex_buffer(vbc);
     }
-    
+
     // Now that we've called release_vertex_buffer() on every known context,
     // the _contexts list should have completely emptied itself.
     nassertr(_contexts == NULL, num_freed);
@@ -347,13 +302,10 @@ release_all() {
   return num_freed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::lru_epoch
-//       Access: Published, Static
-//  Description: Marks that an epoch has passed in each LRU.  Asks the
-//               LRU's to consider whether they should perform
-//               evictions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks that an epoch has passed in each LRU.  Asks the LRU's to consider
+ * whether they should perform evictions.
+ */
 void GeomVertexArrayData::
 lru_epoch() {
   _independent_lru.begin_epoch();
@@ -361,21 +313,14 @@ lru_epoch() {
   VertexDataPage::get_global_lru(VertexDataPage::RC_compressed)->begin_epoch();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::evict_lru
-//       Access: Public, Virtual
-//  Description: Evicts the page from the LRU.  Called internally when
-//               the LRU determines that it is full.  May also be
-//               called externally when necessary to explicitly evict
-//               the page.
-//
-//               It is legal for this method to either evict the page
-//               as requested, do nothing (in which case the eviction
-//               will be requested again at the next epoch), or
-//               requeue itself on the tail of the queue (in which
-//               case the eviction will be requested again much
-//               later).
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts the page from the LRU.  Called internally when the LRU determines that
+ * it is full.  May also be called externally when necessary to explicitly evict
+ * the page.  It is legal for this method to either evict the page as requested,
+ * do nothing (in which case the eviction will be requested again at the next
+ * epoch), or requeue itself on the tail of the queue (in which case the
+ * eviction will be requested again much later).
+ */
 void GeomVertexArrayData::
 evict_lru() {
   dequeue_lru();
@@ -383,16 +328,12 @@ evict_lru() {
   cdata->_buffer.page_out(_book);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::clear_prepared
-//       Access: Private
-//  Description: Removes the indicated PreparedGraphicsObjects table
-//               from the data array's table, without actually
-//               releasing the data array.  This is intended to be
-//               called only from
-//               PreparedGraphicsObjects::release_vertex_buffer(); it should
-//               never be called by user code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated PreparedGraphicsObjects table from the data array's
+ * table, without actually releasing the data array.  This is intended to be
+ * called only from PreparedGraphicsObjects::release_vertex_buffer(); it should
+ * never be called by user code.
+ */
 void GeomVertexArrayData::
 clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   nassertv(_contexts != (Contexts *)NULL);
@@ -412,16 +353,13 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::reverse_data_endianness
-//       Access: Private
-//  Description: Fills a new data array with all numeric values
-//               expressed in the indicated array reversed,
-//               byte-for-byte, to convert littleendian to bigendian
-//               and vice-versa.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills a new data array with all numeric values expressed in the indicated
+ * array reversed, byte-for-byte, to convert littleendian to bigendian and vice-
+ * versa.
+ */
 void GeomVertexArrayData::
-reverse_data_endianness(unsigned char *dest, const unsigned char *source, 
+reverse_data_endianness(unsigned char *dest, const unsigned char *source,
                         size_t size) {
   int num_columns = _array_format->get_num_columns();
 
@@ -448,23 +386,18 @@ reverse_data_endianness(unsigned char *dest, const unsigned char *source,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               GeomVertexArrayData.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type GeomVertexArrayData.
+ */
 void GeomVertexArrayData::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void GeomVertexArrayData::
 write_datagram(BamWriter *manager, Datagram &dg) {
   CopyOnWriteObject::write_datagram(manager, dg);
@@ -473,17 +406,15 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_cdata(dg, _cycler, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::read_raw_data
-//       Access: Public
-//  Description: Called by CData::fillin to read the raw data
-//               of the array from the indicated datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CData::fillin to read the raw data of the array from the indicated
+ * datagram.
+ */
 PTA_uchar GeomVertexArrayData::
 read_raw_data(BamReader *manager, DatagramIterator &scan) {
   size_t size = scan.get_uint32();
   PTA_uchar data = PTA_uchar::empty_array(size, get_class_type());
-  const unsigned char *source_data = 
+  const unsigned char *source_data =
     (const unsigned char *)scan.get_datagram().get_data();
   memcpy(data, source_data + scan.get_current_index(), size);
   scan.skip_bytes(size);
@@ -491,13 +422,10 @@ read_raw_data(BamReader *manager, DatagramIterator &scan) {
   return data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int GeomVertexArrayData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CopyOnWriteObject::complete_pointers(p_list, manager);
@@ -507,13 +435,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::finalize
-//       Access: Public, Virtual
-//  Description: Called by the BamReader to perform any final actions
-//               needed for setting up the object after all objects
-//               have been read and all pointers have been completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
 void GeomVertexArrayData::
 finalize(BamReader *manager) {
   // Now we need to register the format that we have read from the bam
@@ -525,7 +451,7 @@ finalize(BamReader *manager) {
 
   CDWriter cdata(_cycler, true);
 
-  CPT(GeomVertexArrayFormat) new_array_format = 
+  CPT(GeomVertexArrayFormat) new_array_format =
     GeomVertexArrayFormat::register_format(_array_format);
 
   manager->change_pointer(_array_format, new_array_format);
@@ -544,14 +470,11 @@ finalize(BamReader *manager) {
   set_lru_size(cdata->_buffer.get_size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type GeomVertexArrayData is encountered
-//               in the Bam file.  It should create the GeomVertexArrayData
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * GeomVertexArrayData is encountered in the Bam file.  It should create the
+ * GeomVertexArrayData and extract its information from the file.
+ */
 TypedWritable *GeomVertexArrayData::
 make_from_bam(const FactoryParams &params) {
   GeomVertexArrayData *object = new GeomVertexArrayData;
@@ -565,13 +488,10 @@ make_from_bam(const FactoryParams &params) {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomVertexArrayData.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new GeomVertexArrayData.
+ */
 void GeomVertexArrayData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   CopyOnWriteObject::fillin(scan, manager);
@@ -580,31 +500,25 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_cdata(scan, _cycler, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GeomVertexArrayData::CData::
 ~CData() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *GeomVertexArrayData::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void GeomVertexArrayData::CData::
 write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
   GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
@@ -624,13 +538,10 @@ write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new GeomVertexArrayData.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new GeomVertexArrayData.
+ */
 void GeomVertexArrayData::CData::
 fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
@@ -650,7 +561,7 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
     _buffer.unclean_realloc(size);
     _buffer.set_size(size);
 
-    const unsigned char *source_data = 
+    const unsigned char *source_data =
       (const unsigned char *)scan.get_datagram().get_data();
     memcpy(_buffer.get_write_pointer(), source_data + scan.get_current_index(), size);
     scan.skip_bytes(size);
@@ -659,7 +570,7 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   bool endian_reversed = false;
 
   if (manager->get_file_endian() != BamReader::BE_native) {
-    // For non-native endian files, we have to convert the data.  
+    // For non-native endian files, we have to convert the data.
 
     if (array_data->_array_format == (GeomVertexArrayFormat *)NULL) {
       // But we can't do that until we've completed the _array_format
@@ -686,12 +597,9 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   _modified = Geom::get_next_modified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_write_pointer
-//       Access: Public
-//  Description: Returns a writable pointer to the beginning of the
-//               actual data stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a writable pointer to the beginning of the actual data stream.
+ */
 unsigned char *GeomVertexArrayDataHandle::
 get_write_pointer() {
   nassertr(_writable, NULL);
@@ -700,11 +608,9 @@ get_write_pointer() {
   return _cdata->_buffer.get_write_pointer();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::set_num_rows
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool GeomVertexArrayDataHandle::
 set_num_rows(int n) {
   nassertr(_writable, false);
@@ -753,16 +659,14 @@ set_num_rows(int n) {
     nassertr(get_num_rows() == n, true);
     return true;
   }
-  
+
   nassertr(get_num_rows() == n, false);
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::unclean_set_num_rows
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool GeomVertexArrayDataHandle::
 unclean_set_num_rows(int n) {
   nassertr(_writable, false);
@@ -794,15 +698,13 @@ unclean_set_num_rows(int n) {
     }
     return true;
   }
-  
+
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::reserve_num_rows
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool GeomVertexArrayDataHandle::
 reserve_num_rows(int n) {
   nassertr(_writable, false);
@@ -830,11 +732,9 @@ reserve_num_rows(int n) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::copy_data_from
-//       Access: Public
-//  Description: Copies the entire data array from the other object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the entire data array from the other object.
+ */
 void GeomVertexArrayDataHandle::
 copy_data_from(const GeomVertexArrayDataHandle *other) {
   nassertv(_writable);
@@ -846,14 +746,11 @@ copy_data_from(const GeomVertexArrayDataHandle *other) {
   copy_data_from(source, size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::copy_subdata_from
-//       Access: Public
-//  Description: Copies a portion of the data array from the other
-//               object into a portion of the data array of this
-//               object.  If to_size != from_size, the size of this
-//               data array is adjusted accordingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a portion of the data array from the other object into a portion of
+ * the data array of this object.  If to_size != from_size, the size of this
+ * data array is adjusted accordingly.
+ */
 void GeomVertexArrayDataHandle::
 copy_subdata_from(size_t to_start, size_t to_size,
                   const GeomVertexArrayDataHandle *other,
@@ -870,11 +767,9 @@ copy_subdata_from(size_t to_start, size_t to_size,
                     from_start, from_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::copy_data_from
-//       Access: Public
-//  Description: Copies the entire data array from the buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the entire data array from the buffer.
+ */
 void GeomVertexArrayDataHandle::
 copy_data_from(const unsigned char *source, size_t size) {
   nassertv(_writable);
@@ -893,14 +788,11 @@ copy_data_from(const unsigned char *source, size_t size) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::copy_subdata_from
-//       Access: Public
-//  Description: Copies a portion of the data array from the buffer
-//               into a portion of the data array of this object.
-//               If to_size != from_size, the size of this data
-//               array is adjusted accordingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies a portion of the data array from the buffer into a portion of the data
+ * array of this object.  If to_size != from_size, the size of this data array
+ * is adjusted accordingly.
+ */
 void GeomVertexArrayDataHandle::
 copy_subdata_from(size_t to_start, size_t to_size,
                   const unsigned char *source,
@@ -916,7 +808,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
   if (from_size < to_size) {
     // Reduce the array.
     unsigned char *pointer = to_buffer.get_write_pointer();
-    memmove(pointer + to_start + to_size, 
+    memmove(pointer + to_start + to_size,
             pointer + to_start + from_size,
             to_buffer_orig_size - (to_start + to_size));
     to_buffer.set_size(to_buffer_orig_size + from_size - to_size);
@@ -932,13 +824,13 @@ copy_subdata_from(size_t to_start, size_t to_size,
     to_buffer.set_size(needed_size);
 
     unsigned char *pointer = to_buffer.get_write_pointer();
-    memmove(pointer + to_start + to_size, 
+    memmove(pointer + to_start + to_size,
             pointer + to_start + from_size,
             to_buffer_orig_size - (to_start + to_size));
   }
 
   // Now copy the data.
-  memcpy(to_buffer.get_write_pointer() + to_start, 
+  memcpy(to_buffer.get_write_pointer() + to_start,
          source + from_start, from_size);
   _cdata->_modified = Geom::get_next_modified();
 
@@ -947,13 +839,10 @@ copy_subdata_from(size_t to_start, size_t to_size,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::set_data
-//       Access: Public
-//  Description: Replaces the entire raw data array with the contents
-//               of the indicated string.  This is primarily for the
-//               benefit of high-level languages like Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the entire raw data array with the contents of the indicated string.
+ * This is primarily for the benefit of high-level languages like Python.
+ */
 void GeomVertexArrayDataHandle::
 set_data(const string &data) {
   nassertv(_writable);
@@ -970,16 +859,11 @@ set_data(const string &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::set_subdata
-//       Access: Public
-//  Description: Replaces a portion of the data array from the
-//               indicated string.  If size != data.size(), the size
-//               of this data array is adjusted accordingly.
-//
-//               This is primarily for the benefit of high-level
-//               languages like Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces a portion of the data array from the indicated string.  If size !=
+ * data.size(), the size of this data array is adjusted accordingly.  This is
+ * primarily for the benefit of high-level languages like Python.
+ */
 void GeomVertexArrayDataHandle::
 set_subdata(size_t start, size_t size, const string &data) {
   nassertv(_writable);
@@ -989,13 +873,13 @@ set_subdata(size_t start, size_t size, const string &data) {
   size_t to_buffer_orig_size = to_buffer.get_size();
   start = min(start, to_buffer_orig_size);
   size = min(size, to_buffer_orig_size - start);
-  
+
   size_t from_size = data.size();
 
   if (from_size < size) {
     // Reduce the array.
     unsigned char *pointer = to_buffer.get_write_pointer();
-    memmove(pointer + start + from_size, 
+    memmove(pointer + start + from_size,
             pointer + start + size,
             to_buffer_orig_size - (start + size));
     to_buffer.set_size(to_buffer_orig_size + from_size - size);
@@ -1011,7 +895,7 @@ set_subdata(size_t start, size_t size, const string &data) {
     to_buffer.set_size(needed_size);
 
     unsigned char *pointer = to_buffer.get_write_pointer();
-    memmove(pointer + start + from_size, 
+    memmove(pointer + start + from_size,
             pointer + start + size,
             to_buffer_orig_size - (start + size));
   }

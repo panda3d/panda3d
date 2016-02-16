@@ -27,11 +27,9 @@
 #include <maya/MFileIO.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToMaya::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToMaya::
 EggToMaya() :
   EggToSomething("Maya", ".mb", true, false)
@@ -65,11 +63,9 @@ EggToMaya() :
   _output_units = DU_centimeters;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToMaya::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToMaya::
 run() {
   if (!_convert_anim && !_convert_model) {
@@ -117,7 +113,7 @@ run() {
     status.perror("Could not save file");
     exit(1);
   }
-    
+
   /*
   // And write out the resulting Maya file.
   string os_specific = _output_filename.to_os_generic();
@@ -145,4 +141,3 @@ int main(int argc, char *argv[]) {
   prog.run();
   return 0;
 }
-

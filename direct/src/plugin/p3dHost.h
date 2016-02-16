@@ -22,11 +22,9 @@ class FileSpec;
 class P3DInstanceManager;
 class P3DPackage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DHost
-// Description : Represents a particular download host serving up
-//               Panda3D packages.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a particular download host serving up Panda3D packages.
+ */
 class P3DHost {
 private:
   P3DHost(const string &host_url, const string &host_dir = "");
@@ -51,7 +49,7 @@ public:
   bool read_contents_file(const string &contents_filename, bool fresh_download);
   void read_xhost(TiXmlElement *xhost);
 
-  P3DPackage *get_package(const string &package_name, 
+  P3DPackage *get_package(const string &package_name,
                           const string &package_version,
                           const string &package_platform,
                           const string &package_seq,
@@ -61,7 +59,7 @@ public:
                                 const string &package_name,
                                 const string &package_version,
                                 const string &package_platform);
-  bool get_package_desc_file(FileSpec &desc_file, 
+  bool get_package_desc_file(FileSpec &desc_file,
                              string &package_seq,
                              bool &package_solo,
                              const string &package_name,

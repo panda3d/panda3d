@@ -17,11 +17,9 @@
 #include "indent.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInfo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltInfo::
 FltInfo() {
   set_program_brief("describe the contents of a MultiGen .flt file");
@@ -39,11 +37,9 @@ FltInfo() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInfo::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FltInfo::
 run() {
   PT(FltHeader) header = new FltHeader(_path_replace);
@@ -64,12 +60,9 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInfo::list_hierarchy
-//       Access: Protected
-//  Description: Recursively lists the flt file's hierarchy in a
-//               meaningful way.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively lists the flt file's hierarchy in a meaningful way.
+ */
 void FltInfo::
 list_hierarchy(FltRecord *record, int indent_level) {
   // Maybe in the future we can do something fancier here.
@@ -77,11 +70,9 @@ list_hierarchy(FltRecord *record, int indent_level) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltInfo::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltInfo::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {

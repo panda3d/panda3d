@@ -19,14 +19,12 @@
 static const int default_piano_roll_width = 400;
 static const int default_piano_roll_height = 200;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsPianoRoll::
 GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
-  PStatPianoRoll(monitor, thread_index, 
+  PStatPianoRoll(monitor, thread_index,
                  default_piano_roll_width,
                  default_piano_roll_height),
   GtkStatsGraph(monitor)
@@ -37,23 +35,23 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
   // Add a DrawingArea widget on top of the graph, to display all of
   // the scale units.
   _scale_area = gtk_drawing_area_new();
-  g_signal_connect(G_OBJECT(_scale_area), "expose_event",  
-		   G_CALLBACK(expose_event_callback), this);
+  g_signal_connect(G_OBJECT(_scale_area), "expose_event",
+       G_CALLBACK(expose_event_callback), this);
   gtk_box_pack_start(GTK_BOX(_graph_vbox), _scale_area,
-		     FALSE, FALSE, 0);
+         FALSE, FALSE, 0);
   gtk_widget_set_size_request(_scale_area, 0, 20);
 
 
   gtk_widget_set_size_request(_graph_window, default_piano_roll_width,
-			      default_piano_roll_height);
+            default_piano_roll_height);
 
-  const PStatClientData *client_data = 
+  const PStatClientData *client_data =
     GtkStatsGraph::_monitor->get_client_data();
   string thread_name = client_data->get_thread_name(_thread_index);
   string window_title = thread_name + " thread piano roll";
   gtk_window_set_title(GTK_WINDOW(_window), window_title.c_str());
-      
-  gtk_widget_show_all(_window);  
+
+  gtk_widget_show_all(_window);
   gtk_widget_show(_window);
 
   // Allow the window to be resized as small as the user likes.  We
@@ -64,24 +62,18 @@ GtkStatsPianoRoll(GtkStatsMonitor *monitor, int thread_index) :
   clear_region();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GtkStatsPianoRoll::
 ~GtkStatsPianoRoll() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::idle
-//       Access: Public, Virtual
-//  Description: Called as each frame's data is made available.  There
-//               is no gurantee the frames will arrive in order, or
-//               that all of them will arrive at all.  The monitor
-//               should be prepared to accept frames received
-//               out-of-order or missing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called as each frame's data is made available.  There is no gurantee the
+ * frames will arrive in order, or that all of them will arrive at all.  The
+ * monitor should be prepared to accept frames received out-of-order or missing.
+ */
 void GtkStatsPianoRoll::
 new_data(int thread_index, int frame_number) {
   if (!_pause) {
@@ -89,35 +81,27 @@ new_data(int thread_index, int frame_number) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::force_redraw
-//       Access: Public, Virtual
-//  Description: Called when it is necessary to redraw the entire graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when it is necessary to redraw the entire graph.
+ */
 void GtkStatsPianoRoll::
 force_redraw() {
   PStatPianoRoll::force_redraw();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::changed_graph_size
-//       Access: Public, Virtual
-//  Description: Called when the user has resized the window, forcing
-//               a resize of the graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user has resized the window, forcing a resize of the graph.
+ */
 void GtkStatsPianoRoll::
 changed_graph_size(int graph_xsize, int graph_ysize) {
   PStatPianoRoll::changed_size(graph_xsize, graph_ysize);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::set_time_units
-//       Access: Public, Virtual
-//  Description: Called when the user selects a new time units from
-//               the monitor pulldown menu, this should adjust the
-//               units for the graph to the indicated mask if it is a
-//               time-based graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user selects a new time units from the monitor pulldown menu,
+ * this should adjust the units for the graph to the indicated mask if it is a
+ * time-based graph.
+ */
 void GtkStatsPianoRoll::
 set_time_units(int unit_mask) {
   int old_unit_mask = get_guide_bar_units();
@@ -130,11 +114,9 @@ set_time_units(int unit_mask) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::clicked_label
-//       Access: Public, Virtual
-//  Description: Called when the user single-clicks on a label.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user single-clicks on a label.
+ */
 void GtkStatsPianoRoll::
 clicked_label(int collector_index) {
   if (collector_index >= 0) {
@@ -142,12 +124,10 @@ clicked_label(int collector_index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::set_horizontal_scale
-//       Access: Public
-//  Description: Changes the amount of time the width of the
-//               horizontal axis represents.  This may force a redraw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the amount of time the width of the horizontal axis represents.  This
+ * may force a redraw.
+ */
 void GtkStatsPianoRoll::
 set_horizontal_scale(double time_width) {
   PStatPianoRoll::set_horizontal_scale(time_width);
@@ -156,24 +136,19 @@ set_horizontal_scale(double time_width) {
   gtk_widget_queue_draw(_scale_area);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::clear_region
-//       Access: Protected
-//  Description: Erases the chart area.
-////////////////////////////////////////////////////////////////////
+/**
+ * Erases the chart area.
+ */
 void GtkStatsPianoRoll::
 clear_region() {
   gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_white);
-  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, 0, 0, 
-		     get_xsize(), get_ysize());
+  gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, 0, 0,
+         get_xsize(), get_ysize());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::begin_draw
-//       Access: Protected, Virtual
-//  Description: Erases the chart area in preparation for drawing a
-//               bunch of bars.
-////////////////////////////////////////////////////////////////////
+/**
+ * Erases the chart area in preparation for drawing a bunch of bars.
+ */
 void GtkStatsPianoRoll::
 begin_draw() {
   clear_region();
@@ -185,11 +160,9 @@ begin_draw() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::draw_bar
-//       Access: Protected, Virtual
-//  Description: Draws a single bar on the chart.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a single bar on the chart.
+ */
 void GtkStatsPianoRoll::
 draw_bar(int row, int from_x, int to_x) {
   if (row >= 0 && row < _label_stack.get_num_labels()) {
@@ -198,29 +171,25 @@ draw_bar(int row, int from_x, int to_x) {
 
     int collector_index = get_label_collector(row);
     GdkGC *gc = get_collector_gc(collector_index);
-    
-    gdk_draw_rectangle(_pixmap, gc, TRUE, 
-		       from_x, y - height + 2, 
-		       to_x - from_x, height - 4);
+
+    gdk_draw_rectangle(_pixmap, gc, TRUE,
+           from_x, y - height + 2,
+           to_x - from_x, height - 4);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::end_draw
-//       Access: Protected, Virtual
-//  Description: Called after all the bars have been drawn, this
-//               triggers a refresh event to draw it to the window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after all the bars have been drawn, this triggers a refresh event to
+ * draw it to the window.
+ */
 void GtkStatsPianoRoll::
 end_draw() {
   gtk_widget_queue_draw(_graph_window);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::idle
-//       Access: Protected, Virtual
-//  Description: Called at the end of the draw cycle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called at the end of the draw cycle.
+ */
 void GtkStatsPianoRoll::
 idle() {
   if (_labels_changed) {
@@ -228,13 +197,10 @@ idle() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::additional_graph_window_paint
-//       Access: Protected, Virtual
-//  Description: This is called during the servicing of expose_event;
-//               it gives a derived class opportunity to do some
-//               further painting into the graph window.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called during the servicing of expose_event; it gives a derived class
+ * opportunity to do some further painting into the graph window.
+ */
 void GtkStatsPianoRoll::
 additional_graph_window_paint() {
   int num_user_guide_bars = get_num_user_guide_bars();
@@ -243,14 +209,11 @@ additional_graph_window_paint() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::consider_drag_start
-//       Access: Protected, Virtual
-//  Description: Based on the mouse position within the graph window,
-//               look for draggable things the mouse might be hovering
-//               over and return the appropriate DragMode enum or
-//               DM_none if nothing is indicated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Based on the mouse position within the graph window, look for draggable
+ * things the mouse might be hovering over and return the appropriate DragMode
+ * enum or DM_none if nothing is indicated.
+ */
 GtkStatsGraph::DragMode GtkStatsPianoRoll::
 consider_drag_start(int graph_x, int graph_y) {
   if (graph_y >= 0 && graph_y < get_ysize()) {
@@ -274,15 +237,12 @@ consider_drag_start(int graph_x, int graph_y) {
   return GtkStatsGraph::consider_drag_start(graph_x, graph_y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::handle_button_press
-//       Access: Protected, Virtual
-//  Description: Called when the mouse button is depressed within the
-//               graph window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the mouse button is depressed within the graph window.
+ */
 gboolean GtkStatsPianoRoll::
 handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
-		    bool double_click) {
+        bool double_click) {
   if (double_click) {
     // Double-clicking on a color bar in the graph is the same as
     // double-clicking on the corresponding label.
@@ -303,23 +263,20 @@ handle_button_press(GtkWidget *widget, int graph_x, int graph_y,
     return TRUE;
   }
 
-  return GtkStatsGraph::handle_button_press(widget, graph_x, graph_y, 
-					    double_click);
+  return GtkStatsGraph::handle_button_press(widget, graph_x, graph_y,
+              double_click);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::handle_button_release
-//       Access: Protected, Virtual
-//  Description: Called when the mouse button is released within the
-//               graph window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the mouse button is released within the graph window.
+ */
 gboolean GtkStatsPianoRoll::
 handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
   if (_drag_mode == DM_scale) {
     set_drag_mode(DM_none);
     //ReleaseCapture();
     return handle_motion(widget, graph_x, graph_y);
-    
+
   } else if (_drag_mode == DM_guide_bar) {
     if (graph_x < 0 || graph_x >= get_xsize()) {
       remove_user_guide_bar(_drag_guide_bar);
@@ -334,12 +291,9 @@ handle_button_release(GtkWidget *widget, int graph_x, int graph_y) {
   return GtkStatsGraph::handle_button_release(widget, graph_x, graph_y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::ns_motion_notify_event_callback
-//       Access: Protected, Virtual
-//  Description: Called when the mouse is moved within the
-//               graph window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the mouse is moved within the graph window.
+ */
 gboolean GtkStatsPianoRoll::
 handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   if (_drag_mode == DM_none && _potential_drag_mode == DM_none) {
@@ -387,12 +341,10 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   return GtkStatsGraph::handle_motion(widget, graph_x, graph_y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::get_collector_under_pixel
-//       Access: Private
-//  Description: Returns the collector index associated with the
-//               indicated vertical row, or -1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the collector index associated with the indicated vertical row, or
+ * -1.
+ */
 int GtkStatsPianoRoll::
 get_collector_under_pixel(int xpoint, int ypoint) {
   if (_label_stack.get_num_labels() == 0) {
@@ -409,28 +361,23 @@ get_collector_under_pixel(int xpoint, int ypoint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::update_labels
-//       Access: Private
-//  Description: Resets the list of labels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the list of labels.
+ */
 void GtkStatsPianoRoll::
 update_labels() {
   _label_stack.clear_labels();
   for (int i = 0; i < get_num_labels(); i++) {
     _label_stack.add_label(GtkStatsGraph::_monitor, this,
-			   _thread_index,
-			   get_label_collector(i), true);
+         _thread_index,
+         get_label_collector(i), true);
   }
   _labels_changed = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::draw_guide_bar
-//       Access: Private
-//  Description: Draws the line for the indicated guide bar on the
-//               graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the line for the indicated guide bar on the graph.
+ */
 void GtkStatsPianoRoll::
 draw_guide_bar(GdkDrawable *surface, const PStatGraph::GuideBar &bar) {
   int x = height_to_pixel(bar._height);
@@ -445,7 +392,7 @@ draw_guide_bar(GdkDrawable *surface, const PStatGraph::GuideBar &bar) {
     case GBS_user:
       gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_user_guide_bar);
       break;
-      
+
     case GBS_normal:
       gdk_gc_set_rgb_fg_color(_pixmap_gc, &rgb_dark_gray);
       break;
@@ -454,11 +401,9 @@ draw_guide_bar(GdkDrawable *surface, const PStatGraph::GuideBar &bar) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::draw_guide_labels
-//       Access: Private
-//  Description: This is called during the servicing of expose_event.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called during the servicing of expose_event.
+ */
 void GtkStatsPianoRoll::
 draw_guide_labels() {
   int i;
@@ -473,12 +418,9 @@ draw_guide_labels() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::draw_guide_label
-//       Access: Private
-//  Description: Draws the text for the indicated guide bar label at
-//               the top of the graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the text for the indicated guide bar label at the top of the graph.
+ */
 void GtkStatsPianoRoll::
 draw_guide_label(const PStatGraph::GuideBar &bar) {
   GdkGC *gc = gdk_gc_new(_scale_area->window);
@@ -487,11 +429,11 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
   case GBS_target:
     gdk_gc_set_rgb_fg_color(gc, &rgb_light_gray);
     break;
-    
+
   case GBS_user:
     gdk_gc_set_rgb_fg_color(gc, &rgb_user_guide_bar);
     break;
-    
+
   case GBS_normal:
     gdk_gc_set_rgb_fg_color(gc, &rgb_dark_gray);
     break;
@@ -518,26 +460,24 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
   if (x >= 0 && x < get_xsize()) {
     // Now convert our x to a coordinate within our drawing area.
     int junk_y;
-    
+
     // The x coordinate comes from the graph_window.
     gtk_widget_translate_coordinates(_graph_window, _scale_area,
-				     x, 0,
-				     &x, &junk_y);
-    
+             x, 0,
+             &x, &junk_y);
+
     int this_x = x - width / 2;
-    gdk_draw_layout(_scale_area->window, gc, this_x, 
-		    _scale_area->allocation.height - height, layout);
+    gdk_draw_layout(_scale_area->window, gc, this_x,
+        _scale_area->allocation.height - height, layout);
   }
-    
+
   g_object_unref(layout);
   g_object_unref(gc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GtkStatsPianoRoll::expose_event_callback
-//       Access: Private, Static
-//  Description: Draws in the scale labels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws in the scale labels.
+ */
 gboolean GtkStatsPianoRoll::
 expose_event_callback(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
   GtkStatsPianoRoll *self = (GtkStatsPianoRoll *)data;

@@ -21,31 +21,20 @@
 
 class TransformState;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGVirtualFrame
-// Description : This represents a frame that is rendered as a window
-//               onto another (possibly much larger) canvas.  You can
-//               only see the portion of the canvas that is below the
-//               window at any given time.
-//
-//               This works simply by automatically defining a scissor
-//               effect to be applied to a special child node, called
-//               the canvas_node, of the PGVirtualFrame node.  Every
-//               object that is parented to the canvas_node will be
-//               clipped by the scissor effect.  Also, you can modify
-//               the canvas_transform through convenience methods
-//               here, which actually modifies the transform on the
-//               canvas_node.
-//
-//               The net effect is that the virtual canvas is
-//               arbitrarily large, and we can peek at it through the
-//               scissor region, and scroll through different parts of
-//               it by modifying the canvas_transform.
-//
-//               See PGScrollFrame for a specialization of this class
-//               that handles the traditional scrolling canvas, with
-//               scroll bars.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a frame that is rendered as a window onto another (possibly
+ * much larger) canvas.  You can only see the portion of the canvas that is
+ * below the window at any given time.  This works simply by automatically
+ * defining a scissor effect to be applied to a special child node, called the
+ * canvas_node, of the PGVirtualFrame node.  Every object that is parented to
+ * the canvas_node will be clipped by the scissor effect.  Also, you can modify
+ * the canvas_transform through convenience methods here, which actually
+ * modifies the transform on the canvas_node.  The net effect is that the
+ * virtual canvas is arbitrarily large, and we can peek at it through the
+ * scissor region, and scroll through different parts of it by modifying the
+ * canvas_transform.  See PGScrollFrame for a specialization of this class that
+ * handles the traditional scrolling canvas, with scroll bars.
+ */
 class EXPCL_PANDA_PGUI PGVirtualFrame : public PGItem {
 PUBLISHED:
   PGVirtualFrame(const string &name = "");

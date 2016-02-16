@@ -21,18 +21,13 @@ bool __tau_shutdown = false;
 
 MemoryHook *memory_hook;
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_memory_hook
-//  Description: Any code that might need to use PANDA_MALLOC or
-//               PANDA_FREE, or any methods of the global memory_hook
-//               object, at static init time, should ensure that it
-//               calls init_memory_hook() first to ensure that the
-//               pointer has been properly initialized.  There is no
-//               harm in calling this function more than once.
-//
-//               There is no need to call this function other than at
-//               static init time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Any code that might need to use PANDA_MALLOC or PANDA_FREE, or any methods of
+ * the global memory_hook object, at static init time, should ensure that it
+ * calls init_memory_hook() first to ensure that the pointer has been properly
+ * initialized.  There is no harm in calling this function more than once.
+ * There is no need to call this function other than at static init time.
+ */
 void
 init_memory_hook() {
   if (memory_hook == NULL) {

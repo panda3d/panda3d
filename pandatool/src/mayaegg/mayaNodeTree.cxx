@@ -32,11 +32,9 @@
 #include <maya/MGlobal.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaNodeTree::
 MayaNodeTree(MayaToEggConverter *converter) :
   _converter(converter)
@@ -49,13 +47,10 @@ MayaNodeTree(MayaToEggConverter *converter) :
   _morph_node = (EggGroupNode *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::build_node
-//       Access: Public
-//  Description: Returns a pointer to the node corresponding to the
-//               indicated dag_path object, creating it first if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the node corresponding to the indicated dag_path object,
+ * creating it first if necessary.
+ */
 MayaNodeDesc *MayaNodeTree::
 build_node(const MDagPath &dag_path) {
   MayaNodeDesc *node_desc = r_build_node(dag_path.fullPathName().asChar());
@@ -63,12 +58,10 @@ build_node(const MDagPath &dag_path) {
   return node_desc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::build_hierarchy
-//       Access: Public
-//  Description: Walks through the complete Maya hierarchy but does 
-//               not tag any nodes for conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the complete Maya hierarchy but does not tag any nodes for
+ * conversion.
+ */
 bool MayaNodeTree::
 build_hierarchy() {
   MStatus status;
@@ -84,11 +77,11 @@ build_hierarchy() {
     status = dag_iterator.reset(dag_iterator.item(),MItDag::kDepthFirst, MFn::kTransform);
   */
   // Get the entire Maya scene.
-    
+
   // This while loop walks through the entire Maya hierarchy, one
   // node at a time.  Maya's MItDag object automatically performs a
   // depth-first traversal of its scene graph.
-  
+
   bool all_ok = true;
   while (!dag_iterator.isDone()) {
     MDagPath dag_path;
@@ -98,7 +91,7 @@ build_hierarchy() {
     } else {
       build_node(dag_path);
     }
-    
+
     dag_iterator.next();
   }
 
@@ -106,29 +99,23 @@ build_hierarchy() {
     _root->check_pseudo_joints(false);
     _root->check_lods();
   }
-  
+
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::tag_joint_all
-//       Access: Public
-//  Description: Tags the entire hierarchy for conversion.  This is
-//               the normal behavior.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags the entire hierarchy for conversion.  This is the normal behavior.
+ */
 void MayaNodeTree::
 tag_joint_all() {
   _root->tag_joint_recursively();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::tag_joint_named
-//       Access: Public
-//  Description: Tags nodes matching the indicated glob (and all of
-//               their children) for conversion.  Returns true on
-//               success, false otherwise (e.g. the named node does
-//               not exist).
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags nodes matching the indicated glob (and all of their children) for
+ * conversion.  Returns true on success, false otherwise (e.g.  the named node
+ * does not exist).
+ */
 bool MayaNodeTree::
 tag_joint_named(const GlobPattern &glob) {
   // There might be multiple nodes matching the name; search for all
@@ -147,25 +134,19 @@ tag_joint_named(const GlobPattern &glob) {
   return found_any;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::tag_all
-//       Access: Public
-//  Description: Tags the entire hierarchy for conversion.  This is
-//               the normal behavior.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags the entire hierarchy for conversion.  This is the normal behavior.
+ */
 void MayaNodeTree::
 tag_all() {
   _root->tag_recursively();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::tag_named
-//       Access: Public
-//  Description: Tags nodes matching the indicated glob (and all of
-//               their children) for conversion.  Returns true on
-//               success, false otherwise (e.g. the named node does
-//               not exist).
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags nodes matching the indicated glob (and all of their children) for
+ * conversion.  Returns true on success, false otherwise (e.g.  the named node
+ * does not exist).
+ */
 bool MayaNodeTree::
 tag_named(const GlobPattern &glob) {
   // There might be multiple nodes matching the name; search for all
@@ -184,14 +165,11 @@ tag_named(const GlobPattern &glob) {
   return found_any;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::untag_named
-//       Access: Public
-//  Description: Un-tags nodes matching the indicated glob (and all of
-//               their children) for conversion.  Returns true on
-//               success, false otherwise (e.g. the named node does
-//               not exist).
-////////////////////////////////////////////////////////////////////
+/**
+ * Un-tags nodes matching the indicated glob (and all of their children) for
+ * conversion.  Returns true on success, false otherwise (e.g.  the named node
+ * does not exist).
+ */
 bool MayaNodeTree::
 untag_named(const GlobPattern &glob) {
   // There might be multiple nodes matching the name; search for all
@@ -210,13 +188,10 @@ untag_named(const GlobPattern &glob) {
   return found_any;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::tag_selected
-//       Access: Public
-//  Description: Tags the just the selected hierarchy for conversion,
-//               or the entire hierarchy if nothing is selected.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tags the just the selected hierarchy for conversion, or the entire hierarchy
+ * if nothing is selected.  Returns true on success, false on failure.
+ */
 bool MayaNodeTree::
 tag_selected() {
   MStatus status;
@@ -233,7 +208,7 @@ tag_selected() {
     status.perror("MGlobal::getActiveSelectionList");
     return false;
   }
-  
+
   if (selection.isEmpty()) {
     mayaegg_cat.info()
       << "Selection list is empty.\n";
@@ -260,7 +235,7 @@ tag_selected() {
         } else {
           build_node(dag_path)->tag();
         }
-        
+
         dag_iterator.next();
       }
     }
@@ -273,35 +248,27 @@ tag_selected() {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::get_num_nodes
-//       Access: Public
-//  Description: Returns the total number of nodes in the hierarchy,
-//               not counting the root node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of nodes in the hierarchy, not counting the root
+ * node.
+ */
 int MayaNodeTree::
 get_num_nodes() const {
   return _nodes.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::get_node
-//       Access: Public
-//  Description: Returns the nth node in the hierarchy, in an
-//               arbitrary ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth node in the hierarchy, in an arbitrary ordering.
+ */
 MayaNodeDesc *MayaNodeTree::
 get_node(int n) const {
   nassertr(n >= 0 && n < (int)_nodes.size(), NULL);
   return _nodes[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::clear
-//       Access: Public
-//  Description: Resets the entire tree in preparation for
-//               repopulating with a new scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the entire tree in preparation for repopulating with a new scene.
+ */
 void MayaNodeTree::
 clear() {
   _root = new MayaNodeDesc(this);
@@ -314,15 +281,12 @@ clear() {
   _nodes.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::clear_egg
-//       Access: Public
-//  Description: Removes all of the references to generated egg
-//               structures from the tree, and prepares the tree for
-//               generating new egg structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the references to generated egg structures from the tree, and
+ * prepares the tree for generating new egg structures.
+ */
 void MayaNodeTree::
-clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
+clear_egg(EggData *egg_data, EggGroupNode *egg_root,
           EggGroupNode *skeleton_node, EggGroupNode *morph_node) {
   _root->clear_egg();
   BlendDescs::iterator bi;
@@ -336,13 +300,10 @@ clear_egg(EggData *egg_data, EggGroupNode *egg_root,
   _morph_node = morph_node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::get_egg_group
-//       Access: Public
-//  Description: Returns the EggGroupNode corresponding to the group
-//               or joint for the indicated node.  Creates the group
-//               node if it has not already been created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggGroupNode corresponding to the group or joint for the
+ * indicated node.  Creates the group node if it has not already been created.
+ */
 EggGroup *MayaNodeTree::
 get_egg_group(MayaNodeDesc *node_desc) {
   nassertr(_egg_root != (EggGroupNode *)NULL, NULL);
@@ -420,22 +381,22 @@ get_egg_group(MayaNodeDesc *node_desc) {
       // We treat the object type "billboard" as a special case: we
       // apply this one right away and also flag the group as an
       // instance.
-      if (egg_group->has_object_type("billboard")) {    
+      if (egg_group->has_object_type("billboard")) {
         egg_group->remove_object_type("billboard");
         egg_group->set_group_type(EggGroup::GT_instance);
         egg_group->set_billboard_type(EggGroup::BT_axis);
-        
+
       } else if (egg_group->has_object_type("billboard-point")) {
         egg_group->remove_object_type("billboard-point");
         egg_group->set_group_type(EggGroup::GT_instance);
         egg_group->set_billboard_type(EggGroup::BT_point_camera_relative);
-        
+
       } else if (egg_group->has_object_type("bbpoint")) {
         egg_group->remove_object_type("bbpoint");
         egg_group->set_group_type(EggGroup::GT_instance);
         egg_group->set_billboard_type(EggGroup::BT_point_camera_relative);
       }
-      
+
       // We also treat the object type "dcs" and "model" as a special
       // case, so we can test for these flags later.
       if (egg_group->has_object_type("dcs")) {
@@ -446,7 +407,7 @@ get_egg_group(MayaNodeDesc *node_desc) {
         egg_group->remove_object_type("model");
         egg_group->set_model_flag(true);
       }
-      
+
       // And "vertex-color" and "double-sided" have meaning only to
       // this converter.
       MayaEggGroupUserData *user_data;
@@ -481,13 +442,10 @@ get_egg_group(MayaNodeDesc *node_desc) {
   return node_desc->_egg_group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::get_egg_table
-//       Access: Public
-//  Description: Returns the EggTable corresponding to the joint
-//               for the indicated node.  Creates the table node if it
-//               has not already been created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the EggTable corresponding to the joint for the indicated node.
+ * Creates the table node if it has not already been created.
+ */
 EggTable *MayaNodeTree::
 get_egg_table(MayaNodeDesc *node_desc) {
   nassertr(_skeleton_node != (EggGroupNode *)NULL, NULL);
@@ -518,26 +476,20 @@ get_egg_table(MayaNodeDesc *node_desc) {
   return node_desc->_egg_table;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::get_egg_anim
-//       Access: Public
-//  Description: Returns the anim table corresponding to the joint
-//               for the indicated node.  Creates the table node if it
-//               has not already been created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the anim table corresponding to the joint for the indicated node.
+ * Creates the table node if it has not already been created.
+ */
 EggXfmSAnim *MayaNodeTree::
 get_egg_anim(MayaNodeDesc *node_desc) {
   get_egg_table(node_desc);
   return node_desc->_anim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::get_egg_slider
-//       Access: Public
-//  Description: Returns the anim table corresponding to the slider
-//               for the indicated blend.  Creates the table node if it
-//               has not already been created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the anim table corresponding to the slider for the indicated blend.
+ * Creates the table node if it has not already been created.
+ */
 EggSAnimData *MayaNodeTree::
 get_egg_slider(MayaBlendDesc *blend_desc) {
   nassertr(_morph_node != (EggGroupNode *)NULL, NULL);
@@ -554,23 +506,19 @@ get_egg_slider(MayaBlendDesc *blend_desc) {
   return blend_desc->_anim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::ignore_slider
-//       Access: Public
-//  Description: Returns true if the indicated name is on the list of
-//               sliders to ignore, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name is on the list of sliders to ignore, false
+ * otherwise.
+ */
 bool MayaNodeTree::
 ignore_slider(const string &name) const {
   return _converter->ignore_slider(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::report_ignored_slider
-//       Access: Public
-//  Description: Outputs a message to the user reporting that a slider
-//               was ignored.  Each slider is only reported once.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a message to the user reporting that a slider was ignored.  Each
+ * slider is only reported once.
+ */
 void MayaNodeTree::
 report_ignored_slider(const string &name) {
   if (_ignored_slider_names.insert(name).second) {
@@ -579,20 +527,14 @@ report_ignored_slider(const string &name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::add_blend_desc
-//       Access: Public
-//  Description: Adds the indicated MayaBlendDesc object to the list
-//               of blends collected so far.  If a MayaBlendDesc
-//               object with the same name is already part of the
-//               tree, the supplied object is discarded and the
-//               previously-added object is returned; otherwise, the
-//               supplied object is added to the tree and the same
-//               object is returned.
-//
-//               In either case, the return value is the MayaBlendDesc
-//               that should be used henceforth.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated MayaBlendDesc object to the list of blends collected so
+ * far.  If a MayaBlendDesc object with the same name is already part of the
+ * tree, the supplied object is discarded and the previously-added object is
+ * returned; otherwise, the supplied object is added to the tree and the same
+ * object is returned.  In either case, the return value is the MayaBlendDesc
+ * that should be used henceforth.
+ */
 MayaBlendDesc *MayaNodeTree::
 add_blend_desc(MayaBlendDesc *blend_desc) {
   BlendDescs::iterator bi = _blend_descs.insert(blend_desc).first;
@@ -600,36 +542,27 @@ add_blend_desc(MayaBlendDesc *blend_desc) {
   return (*bi);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::get_num_blend_descs
-//       Access: Public
-//  Description: Returns the number of unique MayaBlendDesc objects
-//               (and hence the number of morph sliders) discovered in
-//               the tree.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of unique MayaBlendDesc objects (and hence the number of
+ * morph sliders) discovered in the tree.
+ */
 int MayaNodeTree::
 get_num_blend_descs() const {
   return _blend_descs.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::get_blend_desc
-//       Access: Public
-//  Description: Returns the nth MayaBlendDesc object discovered in
-//               the tree.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth MayaBlendDesc object discovered in the tree.
+ */
 MayaBlendDesc *MayaNodeTree::
 get_blend_desc(int n) const {
   nassertr(n >= 0 && n < (int)_blend_descs.size(), NULL);
   return _blend_descs[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::reset_sliders
-//       Access: Public
-//  Description: Resets all of the sliders associated with all blend
-//               shapes down to 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all of the sliders associated with all blend shapes down to 0.
+ */
 void MayaNodeTree::
 reset_sliders() {
   BlendDescs::iterator bi;
@@ -639,11 +572,9 @@ reset_sliders() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaNodeTree::r_build_node
-//       Access: Private
-//  Description: The recursive implementation of build_node().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of build_node().
+ */
 MayaNodeDesc *MayaNodeTree::
 r_build_node(const string &path) {
   // If we have already encountered this pathname, return the

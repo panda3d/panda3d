@@ -9,7 +9,7 @@
  * @file microphoneAudioDS.cxx
  * @author jyelon
  * @date 2007-11-01
- * 
+ *
  * It goes against Panda3D coding style conventions to hide an
  * entire class in a C++ file and not expose it through header
  * files at all.  However, in this case, these classes are so full
@@ -28,10 +28,9 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : MicrophoneAudioDS
-// Description : The directshow implementation of microphones.
-////////////////////////////////////////////////////////////////////
+/**
+ * The directshow implementation of microphones.
+ */
 class MicrophoneAudioDS : public MicrophoneAudio {
 public:
   static void find_all_microphones_ds();
@@ -76,10 +75,9 @@ private:
 
 TypeHandle MicrophoneAudioDS::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MicrophoneAudioCursorDS
-// Description : The directshow implementation of microphones.
-////////////////////////////////////////////////////////////////////
+/**
+ * The directshow implementation of microphones.
+ */
 
 class MicrophoneAudioCursorDS : public MovieAudioCursor
 {
@@ -123,12 +121,10 @@ private:
 
 TypeHandle MicrophoneAudioCursorDS::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudioDS::find_all_microphones_ds
-//       Access: Public, Static
-//  Description: Finds all DirectShow microphones and adds them to
-//               the global list _all_microphones.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds all DirectShow microphones and adds them to the global list
+ * _all_microphones.
+ */
 void MicrophoneAudioDS::
 find_all_microphones_ds() {
   MMRESULT stat;
@@ -174,11 +170,9 @@ void find_all_microphones_ds() {
   MicrophoneAudioDS::find_all_microphones_ds();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudioDS::delete_buffers
-//       Access: Private, Static
-//  Description: Delete a set of audio buffers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Delete a set of audio buffers.
+ */
 void MicrophoneAudioDS::
 delete_buffers(AudioBuffers &buffers) {
   for (int i=0; i<(int)buffers.size(); i++) {
@@ -195,11 +189,9 @@ delete_buffers(AudioBuffers &buffers) {
   buffers.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudioDS::open
-//       Access: Published, Virtual
-//  Description: Open this video, returning a MovieVideoCursor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this video, returning a MovieVideoCursor.
+ */
 PT(MovieAudioCursor) MicrophoneAudioDS::
 open() {
 
@@ -286,11 +278,9 @@ open() {
   return new MicrophoneAudioCursorDS(this, buffers, hwav);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudioCursorDS::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MicrophoneAudioCursorDS::
 MicrophoneAudioCursorDS(MicrophoneAudioDS *src, AudioBuffers &bufs, HWAVEIN hwav) :
   MovieAudioCursor(src),
@@ -308,11 +298,9 @@ MicrophoneAudioCursorDS(MicrophoneAudioDS *src, AudioBuffers &bufs, HWAVEIN hwav
   _samples_per_buffer = bufs[0]._header->dwBufferLength / (2 * _audio_channels);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudioCursorDS::cleanup
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MicrophoneAudioCursorDS::
 cleanup() {
   if (_handle) {
@@ -324,21 +312,17 @@ cleanup() {
   _offset = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudioCursorDS::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MicrophoneAudioCursorDS::
 ~MicrophoneAudioCursorDS() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudioCursorDS::read_samples
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MicrophoneAudioCursorDS::
 read_samples(int n, PN_int16 *data) {
   int orign = n;
@@ -391,11 +375,9 @@ read_samples(int n, PN_int16 *data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MicrophoneAudioCursorDS::ready
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int MicrophoneAudioCursorDS::
 ready() const {
   if (_handle == 0) return 0;

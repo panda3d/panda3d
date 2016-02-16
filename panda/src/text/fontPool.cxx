@@ -23,22 +23,17 @@
 
 FontPool *FontPool::_global_ptr = (FontPool *)NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::write
-//       Access: Published, Static
-//  Description: Lists the contents of the font pool to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Lists the contents of the font pool to the indicated output stream.
+ */
 void FontPool::
 write(ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::ns_has_font
-//       Access: Private
-//  Description: The nonstatic implementation of has_font().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of has_font().
+ */
 bool FontPool::
 ns_has_font(const string &str) {
   LightMutexHolder holder(_lock);
@@ -58,11 +53,9 @@ ns_has_font(const string &str) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::ns_load_font
-//       Access: Private
-//  Description: The nonstatic implementation of load_font().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of load_font().
+ */
 TextFont *FontPool::
 ns_load_font(const string &str) {
   string index_str;
@@ -72,7 +65,7 @@ ns_load_font(const string &str) {
 
   {
     LightMutexHolder holder(_lock);
-    
+
     Fonts::const_iterator ti;
     ti = _fonts.find(index_str);
     if (ti != _fonts.end()) {
@@ -141,11 +134,9 @@ ns_load_font(const string &str) {
   return font;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::ns_add_font
-//       Access: Private
-//  Description: The nonstatic implementation of add_font().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of add_font().
+ */
 void FontPool::
 ns_add_font(const string &str, TextFont *font) {
   LightMutexHolder holder(_lock);
@@ -159,11 +150,9 @@ ns_add_font(const string &str, TextFont *font) {
   _fonts[index_str] = font;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::ns_release_font
-//       Access: Private
-//  Description: The nonstatic implementation of release_font().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_font().
+ */
 void FontPool::
 ns_release_font(const string &str) {
   LightMutexHolder holder(_lock);
@@ -180,11 +169,9 @@ ns_release_font(const string &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::ns_release_all_fonts
-//       Access: Private
-//  Description: The nonstatic implementation of release_all_fonts().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of release_all_fonts().
+ */
 void FontPool::
 ns_release_all_fonts() {
   LightMutexHolder holder(_lock);
@@ -192,11 +179,9 @@ ns_release_all_fonts() {
   _fonts.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::ns_garbage_collect
-//       Access: Private
-//  Description: The nonstatic implementation of garbage_collect().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of garbage_collect().
+ */
 int FontPool::
 ns_garbage_collect() {
   LightMutexHolder holder(_lock);
@@ -222,11 +207,9 @@ ns_garbage_collect() {
   return num_released;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::ns_list_contents
-//       Access: Private
-//  Description: The nonstatic implementation of list_contents().
-////////////////////////////////////////////////////////////////////
+/**
+ * The nonstatic implementation of list_contents().
+ */
 void FontPool::
 ns_list_contents(ostream &out) const {
   LightMutexHolder holder(_lock);
@@ -240,19 +223,14 @@ ns_list_contents(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::lookup_filename
-//       Access: Private, Static
-//  Description: Accepts a font "filename", which might consist of a
-//               filename followed by an optional colon and a face
-//               index, and splits it out into its two components.
-//               Then it looks up the filename on the model path.
-//               Sets the filename and face index accordingly.  Also
-//               sets index_str to be the concatenation of the
-//               found filename with the face index, thus restoring
-//               the original input (but normalized to contain the
-//               full path.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Accepts a font "filename", which might consist of a filename followed by an
+ * optional colon and a face index, and splits it out into its two components.
+ * Then it looks up the filename on the model path.  Sets the filename and face
+ * index accordingly.  Also sets index_str to be the concatenation of the found
+ * filename with the face index, thus restoring the original input (but
+ * normalized to contain the full path.)
+ */
 void FontPool::
 lookup_filename(const string &str, string &index_str,
                 Filename &filename, int &face_index) {
@@ -279,12 +257,10 @@ lookup_filename(const string &str, string &index_str,
   index_str = strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::get_ptr
-//       Access: Private, Static
-//  Description: Initializes and/or returns the global pointer to the
-//               one FontPool object in the system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes and/or returns the global pointer to the one FontPool object in
+ * the system.
+ */
 FontPool *FontPool::
 get_ptr() {
   if (_global_ptr == (FontPool *)NULL) {

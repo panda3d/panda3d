@@ -18,11 +18,10 @@
 #include "eglGraphicsPipe.h"
 #include "get_x11.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsStateGuardian
-// Description : A tiny specialization on GLESGraphicsStateGuardian
-//               to add some egl-specific information.
-////////////////////////////////////////////////////////////////////
+/**
+ * A tiny specialization on GLESGraphicsStateGuardian to add some egl-specific
+ * information.
+ */
 #ifdef OPENGLES_2
 class eglGraphicsStateGuardian : public GLES2GraphicsStateGuardian {
 #else

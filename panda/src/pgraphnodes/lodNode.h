@@ -20,13 +20,11 @@
 #include "luse.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LODNode
-// Description : A Level-of-Detail node.  This selects only one of its
-//               children for rendering, according to the distance
-//               from the camera and the table indicated in the
-//               associated LOD object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A Level-of-Detail node.  This selects only one of its children for rendering,
+ * according to the distance from the camera and the table indicated in the
+ * associated LOD object.
+ */
 class EXPCL_PANDA_PGRAPHNODES LODNode : public PandaNode {
 PUBLISHED:
   INLINE LODNode(const string &name);

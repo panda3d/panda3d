@@ -19,20 +19,15 @@
 #include "mutexImpl.h"
 #include <set>
 
-////////////////////////////////////////////////////////////////////
-//       Class : NeverFreeMemory
-// Description : This class is used to allocate bytes of memory from a
-//               pool that is never intended to be freed.  It is
-//               particularly useful to support DeletedChain, which
-//               allocates memory in just such a fashion.
-//
-//               When it is known that memory will not be freed, it is
-//               preferable to use this instead of the standard
-//               malloc() (or global_operator_new()) call, since this
-//               will help reduce fragmentation problems in the
-//               dynamic heap.  Also, memory allocated from here will
-//               exhibit less wasted space.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to allocate bytes of memory from a pool that is never
+ * intended to be freed.  It is particularly useful to support DeletedChain,
+ * which allocates memory in just such a fashion.  When it is known that memory
+ * will not be freed, it is preferable to use this instead of the standard
+ * malloc() (or global_operator_new()) call, since this will help reduce
+ * fragmentation problems in the dynamic heap.  Also, memory allocated from here
+ * will exhibit less wasted space.
+ */
 class EXPCL_DTOOL NeverFreeMemory {
 private:
   NeverFreeMemory();

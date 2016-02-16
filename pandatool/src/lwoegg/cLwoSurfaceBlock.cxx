@@ -23,11 +23,9 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurfaceBlock::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLwoSurfaceBlock::
 CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   _converter(converter),
@@ -142,11 +140,9 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   _inv_transform.invert_from(_transform);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurfaceBlock::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLwoSurfaceBlock::
 ~CLwoSurfaceBlock() {
   if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {

@@ -35,14 +35,12 @@ ConfigVariableBool iphone_autorotate_view
           "view automatically according to the phone's orientation, or "
           "false for its view to remain fixed."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libiphonedisplay
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libiphonedisplay() {
   static bool initialized = false;
@@ -65,11 +63,10 @@ init_libiphonedisplay() {
   GLESinit_classes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_pipe_type_iphonedisplay
-//  Description: Returns the TypeHandle index of the recommended
-//               graphics pipe type defined by this module.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TypeHandle index of the recommended graphics pipe type defined by
+ * this module.
+ */
 int
 get_pipe_type_iphonedisplay() {
   return IPhoneGraphicsPipe::get_class_type().get_index();

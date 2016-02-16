@@ -19,17 +19,13 @@
 #include "awWebView.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebBrowserTexture
-// Description : A Wrapper class for Awesomium webview.  This
-//               implements most of Awesomium's features and
-//               updates on the cull_traverser callback much
-//               much like a movie texture.
-//               
-//               The use of class means that you will have to
-//               follow Awesomium license agreement give below
-//               http://www.khrona.com/products/awesomium/licensing/
-////////////////////////////////////////////////////////////////////
+/**
+ * A Wrapper class for Awesomium webview.  This implements most of Awesomium's
+ * features and updates on the cull_traverser callback much much like a movie
+ * texture.  The use of class means that you will have to follow Awesomium
+ * license agreement give below
+ * http://www.khrona.com/products/awesomium/licensing
+ */
 class EXPCL_PANDAAWESOMIUM WebBrowserTexture : public Texture {
 protected:
     AwWebView* _aw_web_view;

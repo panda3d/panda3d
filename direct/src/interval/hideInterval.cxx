@@ -16,11 +16,9 @@
 int HideInterval::_unique_index;
 TypeHandle HideInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: HideInterval::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HideInterval::
 HideInterval(const NodePath &node, const string &name) :
   CInterval(name, 0.0, true),
@@ -35,14 +33,11 @@ HideInterval(const NodePath &node, const string &name) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HideInterval::instant
-//       Access: Published, Virtual
-//  Description: This is called in lieu of priv_initialize() .. priv_step()
-//               .. priv_finalize(), when everything is to happen within
-//               one frame.  The interval should initialize itself,
-//               then leave itself in the final state.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in lieu of priv_initialize() .. priv_step() ..
+ * priv_finalize(), when everything is to happen within one frame.  The interval
+ * should initialize itself, then leave itself in the final state.
+ */
 void HideInterval::
 priv_instant() {
   check_stopped(get_class_type(), "priv_instant");
@@ -50,15 +45,11 @@ priv_instant() {
   _state = S_final;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HideInterval::reverse_instant
-//       Access: Published, Virtual
-//  Description: This is called in lieu of priv_reverse_initialize()
-//               .. priv_step() .. priv_reverse_finalize(), when everything is
-//               to happen within one frame.  The interval should
-//               initialize itself, then leave itself in the initial
-//               state.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called in lieu of priv_reverse_initialize() .. priv_step() ..
+ * priv_reverse_finalize(), when everything is to happen within one frame.  The
+ * interval should initialize itself, then leave itself in the initial state.
+ */
 void HideInterval::
 priv_reverse_instant() {
   check_stopped(get_class_type(), "priv_reverse_instant");

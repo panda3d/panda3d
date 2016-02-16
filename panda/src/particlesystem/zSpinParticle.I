@@ -11,37 +11,33 @@
  * @date 2000-08-16
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_initial_angle
-//  Description: accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * accessor
+ */
 INLINE void ZSpinParticle::
 set_initial_angle(PN_stdfloat t) {
   _initial_angle = t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_initial_angle
-//  Description: accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * accessor
+ */
 INLINE PN_stdfloat ZSpinParticle::
 get_initial_angle() const {
   return _initial_angle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_final_angle
-//  Description: accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * accessor
+ */
 INLINE void ZSpinParticle::
 set_final_angle(PN_stdfloat t) {
   _final_angle = t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_final_angle
-//  Description: accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * accessor
+ */
 INLINE PN_stdfloat ZSpinParticle::
 get_final_angle() const {
   return _final_angle;
@@ -66,5 +62,3 @@ INLINE bool ZSpinParticle::
 get_angular_velocity_enabled() const {
   return _bUseAngularVelocity;
 }
-
-

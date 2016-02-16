@@ -16,11 +16,9 @@
 #include "cppSimpleType.h"
 #include "cppInstance.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPFunctionType::
 CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
                 int flags) :
@@ -42,11 +40,9 @@ CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPFunctionType::
 CPPFunctionType(const CPPFunctionType &copy) :
   CPPType(copy),
@@ -57,11 +53,9 @@ CPPFunctionType(const CPPFunctionType &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPFunctionType::
 operator = (const CPPFunctionType &copy) {
   CPPType::operator = (copy);
@@ -71,14 +65,11 @@ operator = (const CPPFunctionType &copy) {
   _class_owner = copy._class_owner;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::is_fully_specified
-//       Access: Public, Virtual
-//  Description: Returns true if this declaration is an actual,
-//               factual declaration, or false if some part of the
-//               declaration depends on a template parameter which has
-//               not yet been instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this declaration is an actual, factual declaration, or false
+ * if some part of the declaration depends on a template parameter which has not
+ * yet been instantiated.
+ */
 bool CPPFunctionType::
 is_fully_specified() const {
   return CPPType::is_fully_specified() &&
@@ -86,11 +77,9 @@ is_fully_specified() const {
     _parameters->is_fully_specified();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::substitute_decl
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration *CPPFunctionType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
@@ -118,14 +107,11 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   return rep;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::resolve_type
-//       Access: Public, Virtual
-//  Description: If this CPPType object is a forward reference or
-//               other nonspecified reference to a type that might now
-//               be known a real type, returns the real type.
-//               Otherwise returns the type itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * If this CPPType object is a forward reference or other nonspecified reference
+ * to a type that might now be known a real type, returns the real type.
+ * Otherwise returns the type itself.
+ */
 CPPType *CPPFunctionType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPType *rtype = _return_type->resolve_type(current_scope, global_scope);
@@ -141,14 +127,11 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::is_tbd
-//       Access: Public, Virtual
-//  Description: Returns true if the type, or any nested type within
-//               the type, is a CPPTBDType and thus isn't fully
-//               determined right now.  In this case, calling
-//               resolve_type() may or may not resolve the type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type, or any nested type within the type, is a CPPTBDType
+ * and thus isn't fully determined right now.  In this case, calling
+ * resolve_type() may or may not resolve the type.
+ */
 bool CPPFunctionType::
 is_tbd() const {
   if (_return_type->is_tbd()) {
@@ -157,37 +140,28 @@ is_tbd() const {
   return _parameters->is_tbd();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::is_trivial
-//       Access: Public, Virtual
-//  Description: Returns true if the type is considered a Plain Old
-//               Data (POD) type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type is considered a Plain Old Data (POD) type.
+ */
 bool CPPFunctionType::
 is_trivial() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPFunctionType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   output(out, indent_level, scope, complete, -1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::output
-//       Access: Public
-//  Description: The additional parameter allows us to specify the
-//               number of parameters we wish to show the default
-//               values for.  If num_default_parameters is >= 0, it
-//               indicates the number of default parameter values to
-//               show on output.  Otherwise, all parameter values are
-//               shown.
-////////////////////////////////////////////////////////////////////
+/**
+ * The additional parameter allows us to specify the number of parameters we
+ * wish to show the default values for.  If num_default_parameters is >= 0, it
+ * indicates the number of default parameter values to show on output.
+ * Otherwise, all parameter values are shown.
+ */
 void CPPFunctionType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete,
        int num_default_parameters) const {
@@ -232,14 +206,11 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::output_instance
-//       Access: Public, Virtual
-//  Description: Formats a C++-looking line that defines an instance
-//               of the given type, with the indicated name.  In most
-//               cases this will be "type name", but some types have
-//               special exceptions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats a C++-looking line that defines an instance of the given type, with
+ * the indicated name.  In most cases this will be "type name", but some types
+ * have special exceptions.
+ */
 void CPPFunctionType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
@@ -247,16 +218,12 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   output_instance(out, indent_level, scope, complete, prename, name, -1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::output_instance
-//       Access: Public
-//  Description: The additional parameter allows us to specify the
-//               number of parameters we wish to show the default
-//               values for.  If num_default_parameters is >= 0, it
-//               indicates the number of default parameter values to
-//               show on output.  Otherwise, all parameter values are
-//               shown.
-////////////////////////////////////////////////////////////////////
+/**
+ * The additional parameter allows us to specify the number of parameters we
+ * wish to show the default values for.  If num_default_parameters is >= 0, it
+ * indicates the number of default parameter values to show on output.
+ * Otherwise, all parameter values are shown.
+ */
 void CPPFunctionType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
@@ -312,12 +279,9 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::get_num_default_parameters
-//       Access: Public
-//  Description: Returns the number of parameters in the list that may
-//               take default values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of parameters in the list that may take default values.
+ */
 int CPPFunctionType::
 get_num_default_parameters() const {
   // The trick is just to count, beginning from the end and working
@@ -336,34 +300,27 @@ get_num_default_parameters() const {
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::get_subtype
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration::SubType CPPFunctionType::
 get_subtype() const {
   return ST_function;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::as_function_type
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPFunctionType *CPPFunctionType::
 as_function_type() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::is_equivalent_function
-//       Access: Public
-//  Description: This is similar to is_equal(), except it is more
-//               forgiving: it considers the functions to be
-//               equivalent only if the return type and the types of
-//               all parameters match.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to is_equal(), except it is more forgiving: it considers the
+ * functions to be equivalent only if the return type and the types of all
+ * parameters match.
+ */
 bool CPPFunctionType::
 is_equivalent_function(const CPPFunctionType &other) const {
   if (!_return_type->is_equivalent(*other._return_type)) {
@@ -381,12 +338,10 @@ is_equivalent_function(const CPPFunctionType &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::is_equal
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration() to determine whether this type is
-//               equivalent to another type of the same type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration() to determine whether this type is equivalent to
+ * another type of the same type.
+ */
 bool CPPFunctionType::
 is_equal(const CPPDeclaration *other) const {
   const CPPFunctionType *ot = ((CPPDeclaration *)other)->as_function_type();
@@ -405,13 +360,10 @@ is_equal(const CPPDeclaration *other) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPFunctionType::is_less
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration() to determine whether this type
-//               should be ordered before another type of the same
-//               type, in an arbitrary but fixed ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration() to determine whether this type should be ordered
+ * before another type of the same type, in an arbitrary but fixed ordering.
+ */
 bool CPPFunctionType::
 is_less(const CPPDeclaration *other) const {
   const CPPFunctionType *ot = ((CPPDeclaration *)other)->as_function_type();

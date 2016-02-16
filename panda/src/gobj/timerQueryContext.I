@@ -11,11 +11,9 @@
  * @date 2014-08-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimerQueryContext::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TimerQueryContext::
 TimerQueryContext(int pstats_index) :
   _pstats_index(pstats_index),

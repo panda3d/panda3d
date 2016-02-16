@@ -16,24 +16,20 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimedCycle::write_object
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void TimedCycle::
 write_datagram(Datagram &me) {
   me.add_stdfloat(_cycle_time);
   me.add_uint16(_element_count);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimedCycle::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_TimedCycle to
-//               read in all of the relevant data from the BamFile for
-//               the new TimedCycle.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_TimedCycle to read in all of the
+ * relevant data from the BamFile for the new TimedCycle.
+ */
 void TimedCycle::
 fillin(DatagramIterator &scan) {
   _cycle_time = scan.get_stdfloat();

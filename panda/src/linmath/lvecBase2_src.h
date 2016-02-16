@@ -11,11 +11,9 @@
  * @date 2000-03-08
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVecBase2
-// Description : This is the base class for all two-component
-//               vectors and points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for all two-component vectors and points.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVecBase2) {
 PUBLISHED:
   typedef FLOATTYPE numeric_type;

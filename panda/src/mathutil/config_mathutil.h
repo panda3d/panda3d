@@ -31,5 +31,3 @@ extern EXPCL_PANDA_MATHUTIL ConfigVariableEnum<BoundingVolume::BoundsType> bound
 extern EXPCL_PANDA_MATHUTIL void init_libmathutil();
 
 #endif
-
-

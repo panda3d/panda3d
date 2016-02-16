@@ -13,11 +13,9 @@
 
 #include "addHash.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: AddHash::add_hash
-//       Access: Public, Static
-//  Description: Adds a linear sequence of bytes to the hash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a linear sequence of bytes to the hash.
+ */
 size_t AddHash::
 add_hash(size_t start, const PN_uint8 *bytes, size_t num_bytes) {
   size_t num_words = num_bytes >> 2;

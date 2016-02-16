@@ -17,12 +17,10 @@
 #include "pandabase.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MainThread
-// Description : The special "main thread" class.  There is one
-//               instance of these in the world, and it is returned by
-//               Thread::get_main_thread().
-////////////////////////////////////////////////////////////////////
+/**
+ * The special "main thread" class.  There is one instance of these in the
+ * world, and it is returned by Thread::get_main_thread().
+ */
 class EXPCL_PANDA_PIPELINE MainThread : public Thread {
 private:
   MainThread();

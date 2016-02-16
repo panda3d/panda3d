@@ -19,10 +19,9 @@
 
 #include "assimp/IOSystem.hpp"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaIOSystem
-// Description : Custom implementation of Assimp::IOSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Custom implementation of Assimp::IOSystem.
+ */
 class PandaIOSystem : public Assimp::IOSystem {
 public:
   PandaIOSystem(VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr());
@@ -39,4 +38,3 @@ private:
 };
 
 #endif
-

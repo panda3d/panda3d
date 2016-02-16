@@ -22,12 +22,11 @@ class Thread;
 
 #ifndef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//       Class : ReMutexDirect
-// Description : This class implements a standard reMutex by making
-//               direct calls to the underlying implementation layer.
-//               It doesn't perform any debugging operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements a standard reMutex by making direct calls to the
+ * underlying implementation layer.  It doesn't perform any debugging
+ * operations.
+ */
 class EXPCL_PANDA_PIPELINE ReMutexDirect {
 protected:
   INLINE ReMutexDirect();

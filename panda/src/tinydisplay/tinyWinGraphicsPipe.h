@@ -21,12 +21,10 @@
 #include "winGraphicsPipe.h"
 #include "tinyGraphicsStateGuardian.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyWinGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating TinyPanda graphics windows on a
-//               Windows-based client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating TinyPanda graphics
+ * windows on a Windows-based client.
+ */
 class EXPCL_TINYDISPLAY TinyWinGraphicsPipe : public WinGraphicsPipe {
 public:
   TinyWinGraphicsPipe();

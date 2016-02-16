@@ -21,10 +21,9 @@
 
 class PhysxConvexMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxConvexShapeDesc
-// Description : Descriptor class for PhysxConvexShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxConvexShape.
+ */
 class EXPCL_PANDAPHYSX PhysxConvexShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

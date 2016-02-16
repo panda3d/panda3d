@@ -18,11 +18,9 @@
 
 TypeHandle BindAnimRequest::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BindAnimRequest::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BindAnimRequest::
 BindAnimRequest(const string &name,
                 const Filename &filename, const LoaderOptions &options,
@@ -36,12 +34,9 @@ BindAnimRequest(const string &name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BindAnimRequest::do_task
-//       Access: Protected, Virtual
-//  Description: Performs the task: that is, loads and binds the
-//               animation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the task: that is, loads and binds the animation.
+ */
 AsyncTask::DoneStatus BindAnimRequest::
 do_task() {
   ModelLoadRequest::do_task();

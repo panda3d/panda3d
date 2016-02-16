@@ -22,10 +22,9 @@
 
 class OdeContact;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeSurfaceParameters
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeSurfaceParameters : public TypedObject {
   friend class OdeContact;
 
@@ -47,7 +46,7 @@ PUBLISHED:
                    MF_contactApprox1_1 = 0x1000,
                    MF_contactApprox1_2 = 0x2000,
                    MF_contactApprox1   = 0x3000 };
-  
+
   /*
   // Interrogate doesn't seem to handle this so well
   enum ModeFlags { MF_contact_mu2      = dContactMu2,

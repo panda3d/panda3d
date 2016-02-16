@@ -18,10 +18,9 @@
 
 #include "cppType.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPReferenceType
-// Description : Either an lvalue- or rvalue-reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * Either an lvalue- or rvalue-reference.
+ */
 class CPPReferenceType : public CPPType {
 public:
   enum ValueCategory {

@@ -20,12 +20,10 @@
 
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggCrop
-// Description : A program to read an egg file and write an equivalent
-//               egg file, possibly performing some minor operations
-//               along the way.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an egg file and write an equivalent egg file, possibly
+ * performing some minor operations along the way.
+ */
 class EggCrop : public EggFilter {
 public:
   EggCrop();
@@ -41,4 +39,3 @@ private:
 };
 
 #endif
-

@@ -19,18 +19,14 @@
 #include "typedObject.h"
 #include "referenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypedReferenceCount
-// Description : A base class for things which need to inherit from
-//               both TypedObject and from ReferenceCount.  It's
-//               convenient to define this intermediate base class
-//               instead of multiply inheriting from the two classes
-//               each time they are needed, so that we can sensibly
-//               pass around pointers to things which are both
-//               TypedObjects and ReferenceCounters.
-//               
-//               See also TypedObject for detailed instructions.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for things which need to inherit from both TypedObject and from
+ * ReferenceCount.  It's convenient to define this intermediate base class
+ * instead of multiply inheriting from the two classes each time they are
+ * needed, so that we can sensibly pass around pointers to things which are both
+ * TypedObjects and ReferenceCounters.  See also TypedObject for detailed
+ * instructions.
+ */
 class EXPCL_PANDAEXPRESS TypedReferenceCount : public TypedObject, public ReferenceCount {
 public:
   INLINE TypedReferenceCount();
@@ -64,4 +60,3 @@ private:
 #include "typedReferenceCount.I"
 
 #endif
-

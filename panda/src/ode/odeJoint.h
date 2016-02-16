@@ -45,10 +45,9 @@ class OdeAMotorJoint;
 class OdeLMotorJoint;
 class OdePlane2dJoint;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeJoint
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeJoint : public TypedObject {
   friend class OdeBody;
   friend class OdeUtil;

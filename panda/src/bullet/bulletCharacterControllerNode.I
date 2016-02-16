@@ -11,35 +11,28 @@
  * @date 2010-11-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletCharacterControllerNode::
 ~BulletCharacterControllerNode() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::get_ghost
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE btPairCachingGhostObject *BulletCharacterControllerNode::
 get_ghost() const {
 
   return _ghost;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::get_character
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE btCharacterControllerInterface *BulletCharacterControllerNode::
 get_character() const {
 
   return _character;
 }
-

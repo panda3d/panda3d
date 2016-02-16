@@ -14,15 +14,12 @@
 #include "physxVehicleDesc.h"
 
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxVehicleDesc::add_wheel
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxVehicleDesc::
 add_wheel(PhysxWheelDesc *wheelDesc) {
 
   _wheels.push_back(wheelDesc);
 }
 */
-

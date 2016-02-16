@@ -40,12 +40,10 @@
 
 TypeHandle LODNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::make_default_lod
-//       Access: Published, Static
-//  Description: Creates a new LODNode of the type specified by the
-//               default-lod-type config variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new LODNode of the type specified by the default-lod-type config
+ * variable.
+ */
 PT(LODNode) LODNode::
 make_default_lod(const string &name) {
   switch (default_lod_type.get_value()) {
@@ -54,7 +52,7 @@ make_default_lod(const string &name) {
 
   case LNT_fade:
     return new FadeLODNode(name);
-    
+
   default:
     pgraph_cat.error()
       << "Invalid LODNodeType value: " << (int)default_lod_type << "\n";
@@ -62,55 +60,41 @@ make_default_lod(const string &name) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *LODNode::
 make_copy() const {
   return new LODNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::safe_to_combine
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine this
-//               particular kind of PandaNode with other kinds of
-//               PandaNodes of compatible type, adding children or
-//               whatever.  For instance, an LODNode should not be
-//               combined with any other PandaNode, because its set of
-//               children is meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to combine this particular kind of
+ * PandaNode with other kinds of PandaNodes of compatible type, adding children
+ * or whatever.  For instance, an LODNode should not be combined with any other
+ * PandaNode, because its set of children is meaningful.
+ */
 bool LODNode::
 safe_to_combine() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::safe_to_combine_children
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to combine the
-//               children of this PandaNode with each other.  For
-//               instance, an LODNode's children should not be
-//               combined with each other, because the set of children
-//               is meaningful.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if it is generally safe to combine the children of this
+ * PandaNode with each other.  For instance, an LODNode's children should not be
+ * combined with each other, because the set of children is meaningful.
+ */
 bool LODNode::
 safe_to_combine_children() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this PandaNode by the
-//               indicated matrix, if it means anything to do so.  For
-//               most kinds of PandaNodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this PandaNode by the indicated matrix, if it
+ * means anything to do so.  For most kinds of PandaNodes, this does nothing.
+ */
 void LODNode::
 xform(const LMatrix4 &mat) {
   CDWriter cdata(_cycler);
@@ -123,38 +107,27 @@ xform(const LMatrix4 &mat) {
   PN_stdfloat factor = y.length();
 
   SwitchVector::iterator si;
-  for (si = cdata->_switch_vector.begin(); 
-       si != cdata->_switch_vector.end(); 
+  for (si = cdata->_switch_vector.begin();
+       si != cdata->_switch_vector.end();
        ++si) {
     (*si).rescale(factor);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool LODNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (is_any_shown()) {
@@ -179,7 +152,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       in_range = sw.in_range_2(dist2 * cdata->_lod_scale
                    * trav->get_scene()->get_camera_node()->get_lod_scale());
     }
-    
+
     if (in_range) {
       // This switch level is in range.  Draw its children.
       PandaNode *child = get_child(index);
@@ -195,11 +168,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void LODNode::
 output(ostream &out) const {
   PandaNode::output(out);
@@ -219,37 +190,25 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::is_lod_node
-//       Access: Published, Virtual
-//  Description: A simple downcast check.  Returns true if this kind
-//               of node happens to inherit from LODNode, false
-//               otherwise.
-//
-//               This is provided as a a faster alternative to calling
-//               is_of_type(LODNode::get_class_type()).
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple downcast check.  Returns true if this kind of node happens to
+ * inherit from LODNode, false otherwise.  This is provided as a a faster
+ * alternative to calling is_of_type(LODNode::get_class_type()).
+ */
 bool LODNode::
 is_lod_node() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::show_switch
-//       Access: Published
-//  Description: This is provided as a debugging aid.  show_switch()
-//               will put the LODNode into a special mode where rather
-//               than computing and drawing the appropriate level of
-//               the LOD, a ring is drawn around the LODNode center
-//               indicating the switch distances from the camera for
-//               the indicated level, and the geometry of the
-//               indicated level is drawn in wireframe.
-//
-//               Multiple different levels can be visualized this way
-//               at once.  Call hide_switch() or hide_all_switches() to
-//               undo this mode and restore the LODNode to its normal
-//               behavior.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is provided as a debugging aid.  show_switch() will put the LODNode into
+ * a special mode where rather than computing and drawing the appropriate level
+ * of the LOD, a ring is drawn around the LODNode center indicating the switch
+ * distances from the camera for the indicated level, and the geometry of the
+ * indicated level is drawn in wireframe.  Multiple different levels can be
+ * visualized this way at once.  Call hide_switch() or hide_all_switches() to
+ * undo this mode and restore the LODNode to its normal behavior.
+ */
 void LODNode::
 show_switch(int index) {
   CDWriter cdata(_cycler);
@@ -257,22 +216,15 @@ show_switch(int index) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::show_switch
-//       Access: Published
-//  Description: This is provided as a debugging aid.  show_switch()
-//               will put the LODNode into a special mode where rather
-//               than computing and drawing the appropriate level of
-//               the LOD, a ring is drawn around the LODNode center
-//               indicating the switch distances from the camera for
-//               the indicated level, and the geometry of the
-//               indicated level is drawn in wireframe.
-//
-//               Multiple different levels can be visualized this way
-//               at once.  Call hide_switch() or hide_all_switches() to
-//               undo this mode and restore the LODNode to its normal
-//               behavior.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is provided as a debugging aid.  show_switch() will put the LODNode into
+ * a special mode where rather than computing and drawing the appropriate level
+ * of the LOD, a ring is drawn around the LODNode center indicating the switch
+ * distances from the camera for the indicated level, and the geometry of the
+ * indicated level is drawn in wireframe.  Multiple different levels can be
+ * visualized this way at once.  Call hide_switch() or hide_all_switches() to
+ * undo this mode and restore the LODNode to its normal behavior.
+ */
 void LODNode::
 show_switch(int index, const LColor &color) {
   CDWriter cdata(_cycler);
@@ -280,11 +232,9 @@ show_switch(int index, const LColor &color) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::hide_switch
-//       Access: Published
-//  Description: Disables a previous call to show_switch().
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables a previous call to show_switch().
+ */
 void LODNode::
 hide_switch(int index) {
   CDWriter cdata(_cycler);
@@ -292,11 +242,9 @@ hide_switch(int index) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::show_all_switches
-//       Access: Published
-//  Description: Shows all levels in their default colors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows all levels in their default colors.
+ */
 void LODNode::
 show_all_switches() {
   CDWriter cdata(_cycler);
@@ -306,12 +254,9 @@ show_all_switches() {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::hide_all_switches
-//       Access: Published
-//  Description: Hides all levels, restoring the LODNode to normal
-//               operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Hides all levels, restoring the LODNode to normal operation.
+ */
 void LODNode::
 hide_all_switches() {
   CDWriter cdata(_cycler);
@@ -321,15 +266,12 @@ hide_all_switches() {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::verify_child_bounds
-//       Access: Published
-//  Description: Returns true if the bounding volumes for the geometry
-//               of each fhild node entirely fits within the
-//               switch_in radius for that child, or false otherwise.
-//               It is almost always a mistake for the geometry of an
-//               LOD level to be larger than its switch_in radius.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the bounding volumes for the geometry of each fhild node
+ * entirely fits within the switch_in radius for that child, or false otherwise.
+ * It is almost always a mistake for the geometry of an LOD level to be larger
+ * than its switch_in radius.
+ */
 bool LODNode::
 verify_child_bounds() const {
   bool okflag = true;
@@ -337,7 +279,7 @@ verify_child_bounds() const {
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
     PN_stdfloat suggested_radius;
-    if (!do_verify_child_bounds(cdata, index, suggested_radius)) { 
+    if (!do_verify_child_bounds(cdata, index, suggested_radius)) {
       const Switch &sw = cdata->_switch_vector[index];
       pgraph_cat.warning()
         << "Level " << index << " geometry of " << *this
@@ -350,13 +292,11 @@ verify_child_bounds() const {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::compute_child
-//       Access: Protected
-//  Description: Determines which child should be visible according to
-//               the current camera position.  If a child is visible,
-//               returns its index number; otherwise, returns -1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines which child should be visible according to the current camera
+ * position.  If a child is visible, returns its index number; otherwise,
+ * returns -1.
+ */
 int LODNode::
 compute_child(CullTraverser *trav, CullTraverserData &data) {
   if (data.get_net_transform(trav)->is_singular()) {
@@ -364,7 +304,7 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
     // select none of them instead.
     return -1;
   }
-   
+
   CDReader cdata(_cycler);
 
   if (cdata->_got_force_switch) {
@@ -377,7 +317,7 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
     if (cdata->_switch_vector[index].in_range_2(dist2 * cdata->_lod_scale
-         * trav->get_scene()->get_camera_node()->get_lod_scale())) { 
+         * trav->get_scene()->get_camera_node()->get_lod_scale())) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
           << data._node_path << " at distance " << sqrt(dist2)
@@ -398,14 +338,11 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::show_switches_cull_callback
-//       Access: Protected
-//  Description: A special version of cull_callback() that is to be
-//               invoked when the LODNode is in show_switch() mode.
-//               This just draws the rings and the wireframe geometry
-//               for the selected switches.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special version of cull_callback() that is to be invoked when the LODNode
+ * is in show_switch() mode.  This just draws the rings and the wireframe
+ * geometry for the selected switches.
+ */
 bool LODNode::
 show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CDReader cdata(_cycler);
@@ -419,7 +356,7 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LMatrix4 mat;
   look_at(mat, -center, LVector3(0.0f, 0.0f, 1.0f));
   mat.set_row(3, center);
-  CPT(TransformState) viz_transform = 
+  CPT(TransformState) viz_transform =
     rel_transform->invert_compose(TransformState::make_mat(mat));
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
@@ -469,14 +406,11 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::compute_internal_bounds
-//       Access: Protected, Virtual
-//  Description: Returns a newly-allocated BoundingVolume that
-//               represents the internal contents of the node.  Should
-//               be overridden by PandaNode classes that contain
-//               something internally.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated BoundingVolume that represents the internal
+ * contents of the node.  Should be overridden by PandaNode classes that contain
+ * something internally.
+ */
 void LODNode::
 compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                         int &internal_vertices,
@@ -505,10 +439,10 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
         pt_volumes.push_back(sphere);
       }
     }
-    
+
     const BoundingVolume **child_begin = &child_volumes[0];
     const BoundingVolume **child_end = child_begin + child_volumes.size();
-    
+
     bound->around(child_begin, child_end);
   }
 
@@ -516,28 +450,26 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   internal_vertices = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_rel_transform
-//       Access: Protected
-//  Description: Returns the relative transform to convert from the
-//               LODNode space to the camera space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the relative transform to convert from the LODNode space to the
+ * camera space.
+ */
 CPT(TransformState) LODNode::
 get_rel_transform(CullTraverser *trav, CullTraverserData &data) {
   // Get a pointer to the camera node.
   Camera *camera = trav->get_scene()->get_camera_node();
-  
+
   // Get the camera space transform.
   CPT(TransformState) rel_transform;
 
   NodePath lod_center = camera->get_lod_center();
   if (!lod_center.is_empty()) {
-    rel_transform = 
+    rel_transform =
       lod_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
   } else {
     NodePath cull_center = camera->get_cull_center();
     if (!cull_center.is_empty()) {
-      rel_transform = 
+      rel_transform =
         cull_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
     } else {
       rel_transform = data.get_modelview_transform(trav);
@@ -547,11 +479,9 @@ get_rel_transform(CullTraverser *trav, CullTraverserData &data) {
   return rel_transform;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::do_show_switch
-//       Access: Private
-//  Description: The private implementation of show_switch().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of show_switch().
+ */
 void LODNode::
 do_show_switch(LODNode::CData *cdata, int index, const LColor &color) {
   nassertv(index >= 0 && index < (int)cdata->_switch_vector.size());
@@ -562,11 +492,9 @@ do_show_switch(LODNode::CData *cdata, int index, const LColor &color) {
   cdata->_switch_vector[index].show(color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::do_hide_switch
-//       Access: Private
-//  Description: The private implementation of hide_switch().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of hide_switch().
+ */
 void LODNode::
 do_hide_switch(LODNode::CData *cdata, int index) {
   nassertv(index >= 0 && index < (int)cdata->_switch_vector.size());
@@ -577,16 +505,11 @@ do_hide_switch(LODNode::CData *cdata, int index) {
   cdata->_switch_vector[index].hide();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::do_verify_child_bounds
-//       Access: Private
-//  Description: The private implementation of verify_child_bounds(),
-//               this checks the bounding volume of just one child.
-//
-//               If the return value is false, suggested_radius is
-//               filled with a radius that ought to be large enough to
-//               include the child.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implementation of verify_child_bounds(), this checks the bounding
+ * volume of just one child.  If the return value is false, suggested_radius is
+ * filled with a radius that ought to be large enough to include the child.
+ */
 bool LODNode::
 do_verify_child_bounds(const LODNode::CData *cdata, int index,
                        PN_stdfloat &suggested_radius) const {
@@ -619,21 +542,21 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
         // that we don't really want to check.
         return true;
       }
-      
+
       const Switch &sw = cdata->_switch_vector[index];
-      
+
       const GeometricBoundingVolume *gbv;
       DCAST_INTO_R(gbv, bv, false);
       BoundingSphere sphere(cdata->_center, sw.get_in());
       sphere.local_object();
-      
+
       int flags = sphere.contains(gbv);
       if ((flags & BoundingVolume::IF_all) != 0) {
         // This child's radius completely encloses its bounding volume.
         // Perfect.  (And this is the most common case.)
         return true;
       }
-      
+
       if (flags == 0) {
         // This child's radius doesn't even come close to containing
         // its volume.
@@ -643,22 +566,22 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
         ((Switch &)sw)._verify_ok = false;
         return false;
       }
-      
+
       // This child's radius partially encloses its (loose) bounding
       // volume.  We have to look closer to determine whether it, in
       // fact, fully encloses its geometry.
       LPoint3 min_point(0.0f, 0.0f, 0.0f);
       LPoint3 max_point(0.0f, 0.0f, 0.0f);
-      
+
       bool found_any = false;
-      child->calc_tight_bounds(min_point, max_point, found_any, 
+      child->calc_tight_bounds(min_point, max_point, found_any,
                                TransformState::make_identity(),
                                Thread::get_current_thread());
       if (!found_any) {
         // Hmm, the child has no geometry after all.
         return true;
       }
-      
+
       // Now we have a bounding box.  Define the largest sphere we can
       // that fits within this box.  All we can say about this sphere
       // is that it should definitely fit entirely within a bounding
@@ -667,15 +590,15 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
       PN_stdfloat box_radius = min(min(max_point[0] - box_center[0],
                                  max_point[1] - box_center[1]),
                              max_point[2] - box_center[2]);
-      
+
       BoundingSphere box_sphere(box_center, box_radius);
       box_sphere.local_object();
-      
+
       // So if any part of this inscribed sphere is outside of the
       // radius, then the radius is bad.
       flags = sphere.contains(&box_sphere);
       if ((flags & BoundingVolume::IF_all) == 0) {
-        // No good.  
+        // No good.
         if (gbv->is_infinite()) {
           sphere.extend_by(&box_sphere);
         } else {
@@ -686,16 +609,14 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
         return false;
       }
     }
-  }    
+  }
 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::do_auto_verify_lods
-//       Access: Private
-//  Description: Called internally by consider_verify_lods().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally by consider_verify_lods().
+ */
 void LODNode::
 do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
   UpdateSeq seq;
@@ -713,13 +634,13 @@ do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
     // Time to validate the children again.
     for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
       PN_stdfloat suggested_radius;
-      if (!do_verify_child_bounds(cdata, index, suggested_radius)) { 
+      if (!do_verify_child_bounds(cdata, index, suggested_radius)) {
         const Switch &sw = cdata->_switch_vector[index];
         ostringstream strm;
         strm
           << "Level " << index << " geometry of " << data._node_path
           << " is larger than its switch radius; suggest radius of "
-          << suggested_radius << " instead of " << sw.get_in() 
+          << suggested_radius << " instead of " << sw.get_in()
           << " (configure verify-lods 0 to ignore this error)";
         nassert_raise(strm.str());
       }
@@ -729,12 +650,9 @@ do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_default_show_color
-//       Access: Private, Static
-//  Description: Returns a default color appropriate for showing the
-//               indicated level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a default color appropriate for showing the indicated level.
+ */
 const LColor &LODNode::
 get_default_show_color(int index) {
   static LColor default_colors[] = {
@@ -751,41 +669,33 @@ get_default_show_color(int index) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               LODNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type LODNode.
+ */
 void LODNode::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void LODNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type LODNode is encountered
-//               in the Bam file.  It should create the LODNode
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * LODNode is encountered in the Bam file.  It should create the LODNode and
+ * extract its information from the file.
+ */
 TypedWritable *LODNode::
 make_from_bam(const FactoryParams &params) {
   LODNode *node = new LODNode("");
-  
+
   DatagramIterator scan;
   BamReader *manager;
 
@@ -795,35 +705,28 @@ make_from_bam(const FactoryParams &params) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new LODNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new LODNode.
+ */
 void LODNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *LODNode::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::check_limits
-//       Access: Public
-//  Description: Ensures that the _lowest and _highest members are set
-//               appropriately after a change to the set of switches.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the _lowest and _highest members are set appropriately after a
+ * change to the set of switches.
+ */
 void LODNode::CData::
 check_limits() {
   _lowest = 0;
@@ -838,12 +741,10 @@ check_limits() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void LODNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   _center.write_datagram(dg);
@@ -858,13 +759,10 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new LODNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new LODNode.
+ */
 void LODNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _center.read_datagram(scan);
@@ -882,12 +780,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _lod_scale = 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::compute_ring_viz
-//       Access: Private
-//  Description: Computes a Geom suitable for rendering the ring
-//               associated with this switch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a Geom suitable for rendering the ring associated with this switch.
+ */
 void LODNode::Switch::
 compute_ring_viz() {
   // We render the ring as a series of concentric ring-shaped triangle
@@ -939,7 +834,7 @@ compute_ring_viz() {
     for (si = 0; si < num_slices; ++si) {
       PN_stdfloat s = (PN_stdfloat)si / (PN_stdfloat)num_slices;
       PN_stdfloat t = MathNumbers::pi * 2.0f * s;
-      
+
       PN_stdfloat x = ccos(t);
       PN_stdfloat y = csin(t);
 
@@ -951,7 +846,7 @@ compute_ring_viz() {
     for (si = 0; si < num_slices; ++si) {
       PN_stdfloat s = (PN_stdfloat)si / (PN_stdfloat)num_slices;
       PN_stdfloat t = MathNumbers::pi * 2.0f * s;
-      
+
       PN_stdfloat x = ccos(t);
       PN_stdfloat y = csin(t);
 
@@ -996,7 +891,7 @@ compute_ring_viz() {
   material->set_twoside(true);
   material = MaterialPool::get_material(material);
 
-  CPT(RenderState) viz_state = 
+  CPT(RenderState) viz_state =
     RenderState::make(CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
                       TextureAttrib::make_off(),
                       ShaderAttrib::make_off(),
@@ -1012,12 +907,10 @@ compute_ring_viz() {
   _ring_viz = geom_node.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::compute_spindle_viz
-//       Access: Private
-//  Description: Computes a Geom suitable for rendering the LODNode
-//               spindle in the color of this switch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a Geom suitable for rendering the LODNode spindle in the color of
+ * this switch.
+ */
 void LODNode::Switch::
 compute_spindle_viz() {
   // We render the spindle as a cylinder, which consists of num_rings
@@ -1076,7 +969,7 @@ compute_spindle_viz() {
   PT(GeomNode) geom_node = new GeomNode("spindle");
   geom_node->add_geom(spindle_geom);
 
-  CPT(RenderState) viz_state = 
+  CPT(RenderState) viz_state =
     RenderState::make(CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
                       TextureAttrib::make_off(),
                       ShaderAttrib::make_off(),
@@ -1091,12 +984,10 @@ compute_spindle_viz() {
   _spindle_viz = geom_node.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::compute_viz_model_state
-//       Access: Private
-//  Description: Computes a RenderState for rendering the children of
-//               this switch in colored wireframe mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a RenderState for rendering the children of this switch in colored
+ * wireframe mode.
+ */
 void LODNode::Switch::
 compute_viz_model_state() {
   // The RenderState::make() function only takes up to four attribs at

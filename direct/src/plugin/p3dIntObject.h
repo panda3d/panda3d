@@ -17,10 +17,9 @@
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DIntObject
-// Description : An object type that contains an integer value.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object type that contains an integer value.
+ */
 class P3DIntObject : public P3DObject {
 public:
   P3DIntObject(int value);
@@ -37,4 +36,3 @@ private:
 };
 
 #endif
-

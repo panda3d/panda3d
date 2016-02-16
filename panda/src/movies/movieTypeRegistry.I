@@ -11,16 +11,13 @@
  * @date 2013-08-24
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTypeRegistry::get_global_ptr
-//       Access: Published, Static
-//  Description: Returns a pointer to the global MovieTypeRegistry
-//               instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global MovieTypeRegistry instance.
+ */
 INLINE MovieTypeRegistry *MovieTypeRegistry::
 get_global_ptr() {
   if (_global_ptr == NULL) {
-  	_global_ptr = new MovieTypeRegistry;
+    _global_ptr = new MovieTypeRegistry;
   }
 
   return _global_ptr;

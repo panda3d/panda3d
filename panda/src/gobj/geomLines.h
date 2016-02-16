@@ -17,10 +17,9 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomLines
-// Description : Defines a series of disconnected line segments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of disconnected line segments.
+ */
 class EXPCL_PANDA_GOBJ GeomLines : public GeomPrimitive {
 PUBLISHED:
   GeomLines(UsageHint usage_hint);

@@ -21,22 +21,15 @@
 
 class PNMImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMBrush
-// Description : This class is used to control the shape and color of
-//               the drawing operations performed by a PNMPainter
-//               object.
-//
-//               Normally, you don't create a PNMBrush directly;
-//               instead, use one of the static PNMBrush::make_*()
-//               methods provided here.
-//
-//               A PNMBrush is used to draw the border of a polygon or
-//               rectangle, as well as for filling its interior.  When
-//               it is used to draw a border, the brush is "smeared"
-//               over the border; when it is used to fill the
-//               interior, it is tiled through the interior.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to control the shape and color of the drawing operations
+ * performed by a PNMPainter object.  Normally, you don't create a PNMBrush
+ * directly; instead, use one of the static PNMBrush::make_*() methods provided
+ * here.  A PNMBrush is used to draw the border of a polygon or rectangle, as
+ * well as for filling its interior.  When it is used to draw a border, the
+ * brush is "smeared" over the border; when it is used to fill the interior, it
+ * is tiled through the interior.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMBrush : public ReferenceCount {
 protected:
   INLINE PNMBrush(float xc, float yc);

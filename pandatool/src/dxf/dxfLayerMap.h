@@ -20,13 +20,11 @@
 class DXFLayer;
 class DXFFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFLayerMap
-// Description : A map of string (layer name) to DXFLayer: that is,
-//               the layers of a file ordered by name.  This is used
-//               as a lookup within DXFFile to locate the layer
-//               associated with a particular entity.
-////////////////////////////////////////////////////////////////////
+/**
+ * A map of string (layer name) to DXFLayer: that is, the layers of a file
+ * ordered by name.  This is used as a lookup within DXFFile to locate the layer
+ * associated with a particular entity.
+ */
 class DXFLayerMap : public pmap<string, DXFLayer *> {
 public:
   DXFLayer *get_layer(const string &name, DXFFile *dxffile);

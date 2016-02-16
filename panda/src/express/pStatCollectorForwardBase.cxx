@@ -14,13 +14,10 @@
 #include "pStatCollectorForwardBase.h"
 
 #ifdef DO_PSTATS
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollectorForwardBase::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatCollectorForwardBase::
 ~PStatCollectorForwardBase() {
 }
 #endif  // DO_PSTATS
-

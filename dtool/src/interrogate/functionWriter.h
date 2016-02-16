@@ -16,13 +16,11 @@
 
 #include "dtoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FunctionWriter
-// Description : This is an abstract class that can be used by the
-//               various InterfaceMakers to indicate a generic helper
-//               function or variable that needs to be written to the
-//               generated source file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract class that can be used by the various InterfaceMakers to
+ * indicate a generic helper function or variable that needs to be written to
+ * the generated source file.
+ */
 class FunctionWriter {
 public:
   FunctionWriter();

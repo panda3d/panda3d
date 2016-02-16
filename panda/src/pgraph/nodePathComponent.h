@@ -28,22 +28,16 @@
 #include "lightMutex.h"
 #include "deletedChain.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodePathComponent
-// Description : This is one component of a NodePath.  These are
-//               stored on each PandaNode, as many as one for each of
-//               the possible instances of the node (but they only
-//               exist when they are requested, to minimize memory
-//               waste).  A NodePath represents a singly-linked list
-//               of these from an arbitrary component in the graph to
-//               the root.
-//
-//               This whole NodePath system is used to disambiguate
-//               instances in the scene graph, and the
-//               NodePathComponents are stored in the nodes themselves
-//               to allow the nodes to keep these up to date as the
-//               scene graph is manipulated.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is one component of a NodePath.  These are stored on each PandaNode, as
+ * many as one for each of the possible instances of the node (but they only
+ * exist when they are requested, to minimize memory waste).  A NodePath
+ * represents a singly-linked list of these from an arbitrary component in the
+ * graph to the root.  This whole NodePath system is used to disambiguate
+ * instances in the scene graph, and the NodePathComponents are stored in the
+ * nodes themselves to allow the nodes to keep these up to date as the scene
+ * graph is manipulated.
+ */
 class EXPCL_PANDA_PGRAPH NodePathComponent : public ReferenceCount {
 private:
   NodePathComponent(PandaNode *node, NodePathComponent *next,
@@ -54,19 +48,19 @@ private:
 public:
   INLINE ~NodePathComponent();
   ALLOC_DELETED_CHAIN(NodePathComponent);
-  
+
   INLINE PandaNode *get_node() const;
   INLINE bool has_key() const;
   int get_key() const;
   bool is_top_node(int pipeline_stage, Thread *current_thread) const;
-  
+
   NodePathComponent *get_next(int pipeline_stage, Thread *current_thread) const;
   int get_length(int pipeline_stage, Thread *current_thread) const;
 
   bool fix_length(int pipeline_stage, Thread *current_thread);
 
   void output(ostream &out) const;
-  
+
 private:
   void set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread);
   void set_top_node(int pipeline_stage, Thread *current_thread);
@@ -91,7 +85,7 @@ private:
 
     PT(NodePathComponent) _next;
     int _length;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -99,7 +93,7 @@ private:
     static void init_type() {
       register_type(_type_handle, "NodePathComponent::CData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -124,7 +118,7 @@ public:
                   ReferenceCount::get_class_type());
     CData::init_type();
   }
-  
+
 private:
   static TypeHandle _type_handle;
   friend class PandaNode;

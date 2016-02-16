@@ -27,12 +27,9 @@ LVector3 LinearNoiseForce::_gradient_table[256];
 
 TypeHandle LinearNoiseForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: InitNoiseTables
-//       Access: Public
-//  Description: One-time config function, sets up the PRN
-//                lattice.
-////////////////////////////////////////////////////////////////////
+/**
+ * One-time config function, sets up the PRN lattice.
+ */
 void LinearNoiseForce::
 init_noise_tables() {
   // since this is a repeatable noise function, we always want
@@ -49,11 +46,9 @@ init_noise_tables() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearNoiseForce
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LinearNoiseForce::
 LinearNoiseForce(PN_stdfloat a, bool mass) :
   LinearRandomForce(a, mass) {
@@ -63,41 +58,32 @@ LinearNoiseForce(PN_stdfloat a, bool mass) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearNoiseForce
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 LinearNoiseForce::
 LinearNoiseForce(const LinearNoiseForce &copy) :
   LinearRandomForce(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~LinearNoiseForce
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 LinearNoiseForce::
 ~LinearNoiseForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 LinearForce *LinearNoiseForce::
 make_copy() {
   return new LinearNoiseForce(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_child_vector
-//       Access: Public
-//  Description: Returns the noise value based on the object's
-//                position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the noise value based on the object's position.
+ */
 LVector3 LinearNoiseForce::
 get_child_vector(const PhysicsObject *po) {
   LPoint3 p = po->get_position();
@@ -146,12 +132,9 @@ get_child_vector(const PhysicsObject *po) {
   return vlerp(cubic_y, temp0, temp1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearNoiseForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -159,12 +142,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearNoiseForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

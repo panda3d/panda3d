@@ -32,13 +32,11 @@
 // MTU, which also limits the maximum size of a UDP packet.
 static const int maximum_udp_datagram = 1500;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NetDatagram
-// Description : A specific kind of Datagram, especially for sending
-//               across or receiving from a network.  It's different
-//               only in that it knows which Connection and/or
-//               NetAddress it is to be sent to or was received from.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specific kind of Datagram, especially for sending across or receiving from
+ * a network.  It's different only in that it knows which Connection and/or
+ * NetAddress it is to be sent to or was received from.
+ */
 class EXPCL_PANDA_NET NetDatagram : public Datagram {
 PUBLISHED:
   NetDatagram();

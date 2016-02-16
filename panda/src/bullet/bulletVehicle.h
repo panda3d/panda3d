@@ -26,10 +26,9 @@ class BulletWorld;
 class BulletRigidBodyNode;
 class BulletWheel;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletVehicleTuning
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletVehicleTuning {
 
 PUBLISHED:
@@ -53,14 +52,12 @@ private:
   friend class BulletVehicle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletVehicle
-// Description : Simulates a raycast vehicle which casts a ray per
-//               wheel at the ground as a cheap replacement for
-//               complex suspension simulation. The suspension can
-//               be tuned in various ways. It is possible to add a
-//               (probably) arbitrary number of wheels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simulates a raycast vehicle which casts a ray per wheel at the ground as a
+ * cheap replacement for complex suspension simulation.  The suspension can be
+ * tuned in various ways.  It is possible to add a (probably) arbitrary number
+ * of wheels.
+ */
 class EXPCL_PANDABULLET BulletVehicle : public TypedReferenceCount {
 
 PUBLISHED:
@@ -109,7 +106,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "BulletVehicle", 
+    register_type(_type_handle, "BulletVehicle",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

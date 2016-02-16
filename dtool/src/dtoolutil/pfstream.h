@@ -51,5 +51,3 @@ private:
 #include "pfstream.I"
 
 #endif /* __PFSTREAM_H__ */
-
-

@@ -25,13 +25,11 @@ class PNMImage;
 class EggTexture;
 class PaletteGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ImageFile
-// Description : This is the base class of both TextureImage and
-//               PaletteImage.  It encapsulates all the information
-//               specific to an image file that can be assigned as a
-//               texture image to egg geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class of both TextureImage and PaletteImage.  It
+ * encapsulates all the information specific to an image file that can be
+ * assigned as a texture image to egg geometry.
+ */
 class ImageFile : public TypedWritable {
 public:
   ImageFile();
@@ -100,4 +98,3 @@ private:
 };
 
 #endif
-

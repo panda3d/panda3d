@@ -21,11 +21,9 @@
 
 TypeHandle BamCacheRecord::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::Default Constructor
-//       Access: Private
-//  Description: Used when reading from a bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used when reading from a bam file.
+ */
 BamCacheRecord::
 BamCacheRecord() :
   _recorded_time(0),
@@ -37,13 +35,11 @@ BamCacheRecord() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::Constructor
-//       Access: Private
-//  Description: Use BamCache::lookup() to create one of these.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use BamCache::lookup() to create one of these.
+ */
 BamCacheRecord::
-BamCacheRecord(const Filename &source_pathname, 
+BamCacheRecord(const Filename &source_pathname,
                const Filename &cache_filename) :
   _source_pathname(source_pathname),
   _cache_filename(cache_filename),
@@ -56,12 +52,9 @@ BamCacheRecord(const Filename &source_pathname,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::Copy Constructor
-//       Access: Private
-//  Description: Use make_copy() to make a copy.  The copy does not
-//               share the data pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use make_copy() to make a copy.  The copy does not share the data pointer.
+ */
 BamCacheRecord::
 BamCacheRecord(const BamCacheRecord &copy) :
   _source_pathname(copy._source_pathname),
@@ -75,23 +68,18 @@ BamCacheRecord(const BamCacheRecord &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BamCacheRecord::
 ~BamCacheRecord() {
   clear_data();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::dependents_unchanged
-//       Access: Published
-//  Description: Returns true if all of the dependent files are still
-//               the same as when the cache was recorded, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the dependent files are still the same as when the
+ * cache was recorded, false otherwise.
+ */
 bool BamCacheRecord::
 dependents_unchanged() const {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -125,7 +113,7 @@ dependents_unchanged() const {
         return false;
       }
     }
-    
+
     // Presumably, the file is unchanged.
     if (util_cat.is_debug()) {
       util_cat.debug()
@@ -142,26 +130,19 @@ dependents_unchanged() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::clear_dependent_files
-//       Access: Published
-//  Description: Empties the list of files that contribute to the data
-//               in this record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the list of files that contribute to the data in this record.
+ */
 void BamCacheRecord::
 clear_dependent_files() {
   _files.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::add_dependent_file
-//       Access: Published
-//  Description: Adds the indicated file to the list of files that
-//               will be loaded to generate the data in this record.
-//               This should be called once for the primary source
-//               file, and again for each secondary source file, if
-//               any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated file to the list of files that will be loaded to generate
+ * the data in this record.  This should be called once for the primary source
+ * file, and again for each secondary source file, if any.
+ */
 void BamCacheRecord::
 add_dependent_file(const Filename &pathname) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -187,12 +168,9 @@ add_dependent_file(const Filename &pathname) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::add_dependent_file
-//       Access: Published
-//  Description: Variant of add_dependent_file that takes an already
-//               opened VirtualFile.
-////////////////////////////////////////////////////////////////////
+/**
+ * Variant of add_dependent_file that takes an already opened VirtualFile.
+ */
 void BamCacheRecord::
 add_dependent_file(const VirtualFile *file) {
   _files.push_back(DependentFile());
@@ -208,21 +186,17 @@ add_dependent_file(const VirtualFile *file) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BamCacheRecord::
 output(ostream &out) const {
   out << "BamCacheRecord " << get_source_pathname();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BamCacheRecord::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -244,12 +218,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::format_timestamp
-//       Access: Private, Static
-//  Description: Returns a timestamp value formatted nicely for
-//               output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a timestamp value formatted nicely for output.
+ */
 string BamCacheRecord::
 format_timestamp(time_t timestamp) {
   static const size_t buffer_size = 512;
@@ -275,23 +246,18 @@ format_timestamp(time_t timestamp) {
   return buffer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::register_with_read_factory
-//       Access: Published, Static
-//  Description: Tells the BamReader how to create objects of type
-//               BamCacheRecord.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type BamCacheRecord.
+ */
 void BamCacheRecord::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::write_datagram
-//       Access: Published, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void BamCacheRecord::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
@@ -310,14 +276,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type BamCacheRecord is encountered
-//               in the Bam file.  It should create the BamCacheRecord
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * BamCacheRecord is encountered in the Bam file.  It should create the
+ * BamCacheRecord and extract its information from the file.
+ */
 TypedWritable *BamCacheRecord::
 make_from_bam(const FactoryParams &params) {
   BamCacheRecord *object = new BamCacheRecord;
@@ -330,13 +293,10 @@ make_from_bam(const FactoryParams &params) {
   return object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BamCacheRecord::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new BamCacheRecord.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new BamCacheRecord.
+ */
 void BamCacheRecord::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);

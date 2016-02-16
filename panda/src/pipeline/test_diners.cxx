@@ -183,7 +183,7 @@ main(int argc, char *argv[]) {
 
   while (room_occupancy != 0) {
     room_condition.wait();
-  }  
+  }
 
   room_mutex.release();
 

@@ -23,10 +23,9 @@
 #include "pandaNode.h"
 #include "collideMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletBaseCharacterControllerNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletBaseCharacterControllerNode : public PandaNode {
 
 PUBLISHED:
@@ -54,7 +53,7 @@ public:
   }
   static void init_type() {
     PandaNode::init_type();
-    register_type(_type_handle, "BulletBaseCharacterControllerNode", 
+    register_type(_type_handle, "BulletBaseCharacterControllerNode",
                   PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -72,4 +71,3 @@ private:
 #include "bulletBaseCharacterControllerNode.I"
 
 #endif // __BULLET_BASE_CHARACTER_CONTROLLER_NODE_H__
-

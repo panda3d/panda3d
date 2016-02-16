@@ -23,11 +23,9 @@ class Socket_IP;
 class ConnectionManager;
 class NetDatagram;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Connection
-// Description : Represents a single TCP or UDP socket for input or
-//               output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single TCP or UDP socket for input or output.
+ */
 class EXPCL_PANDA_NET Connection : public ReferenceCount {
 PUBLISHED:
   Connection(ConnectionManager *manager, Socket_IP *socket);

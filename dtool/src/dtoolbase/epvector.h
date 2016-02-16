@@ -20,25 +20,18 @@
 
 #include <Eigen/StdVector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : epvector
-// Description : Unfortunately, on Windows, std::vector can't be used
-//               for classes with explicitly alignment requirements,
-//               due to a minor mistake in the template definition
-//               (one of the vector methods receives a concrete
-//               object, which the compiler flags as an error, even if
-//               the method is never called).
-//
-//               As a workaround, Eigen provides their own
-//               specialization of vector, using their own aligned
-//               allocator.  We define that here as epvector, which is
-//               meant to be a drop-in replacement for pvector for
-//               classes that include a linmath object that requires
-//               alignment.  Unfortunately, this means we can't use
-//               the Panda allocator, so memory allocated for this
-//               vector class won't be tracked as part of Panda's
-//               memory tracking system.  Them's the breaks, kids.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unfortunately, on Windows, std::vector can't be used for classes with
+ * explicitly alignment requirements, due to a minor mistake in the template
+ * definition (one of the vector methods receives a concrete object, which the
+ * compiler flags as an error, even if the method is never called).  As a
+ * workaround, Eigen provides their own specialization of vector, using their
+ * own aligned allocator.  We define that here as epvector, which is meant to be
+ * a drop-in replacement for pvector for classes that include a linmath object
+ * that requires alignment.  Unfortunately, this means we can't use the Panda
+ * allocator, so memory allocated for this vector class won't be tracked as part
+ * of Panda's memory tracking system.  Them's the breaks, kids.
+ */
 template<class Type>
 class epvector : public vector<Type, Eigen::aligned_allocator<Type> > {
 public:

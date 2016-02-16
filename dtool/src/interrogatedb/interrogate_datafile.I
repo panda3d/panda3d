@@ -11,12 +11,10 @@
  * @date 2000-08-09
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: idf_output_vector
-//  Description: Writes the indicated vector to the output file.  Each
-//               component is written using its normal ostream output
-//               operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated vector to the output file.  Each component is written
+ * using its normal ostream output operator.
+ */
 template<class Element>
 void
 idf_output_vector(ostream &out, const vector<Element> &vec) {
@@ -28,13 +26,11 @@ idf_output_vector(ostream &out, const vector<Element> &vec) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: idf_input_vector
-//  Description: Reads the given vector from the input file, as
-//               previously written by output_string().  Each
-//               component is read using its normal istream input
-//               operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the given vector from the input file, as previously written by
+ * output_string().  Each component is read using its normal istream input
+ * operator.
+ */
 template<class Element>
 void
 idf_input_vector(istream &in, vector<Element> &vec) {

@@ -19,10 +19,9 @@
 #include "physxForceFieldShapeDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxCapsuleForceFieldShapeDesc
-// Description : Descriptor for a capsule force field shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for a capsule force field shape.
+ */
 class EXPCL_PANDAPHYSX PhysxCapsuleForceFieldShapeDesc : public PhysxForceFieldShapeDesc {
 
 PUBLISHED:

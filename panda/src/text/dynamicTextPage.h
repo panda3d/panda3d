@@ -25,13 +25,11 @@
 
 class DynamicTextFont;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DynamicTextPage
-// Description : A single "page" of a DynamicTextFont.  This is a
-//               single texture that holds a number of glyphs for
-//               rendering.  The font starts out with one page, and
-//               will add more as it needs them.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single "page" of a DynamicTextFont.  This is a single texture that holds a
+ * number of glyphs for rendering.  The font starts out with one page, and will
+ * add more as it needs them.
+ */
 class EXPCL_PANDA_TEXT DynamicTextPage : public Texture {
 public:
   DynamicTextPage(DynamicTextFont *font, int page_number);

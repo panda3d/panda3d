@@ -21,11 +21,9 @@
 
 class PhysxMotorDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPulleyJointDesc
-// Description : Descriptor class for distance joint. See
-//               PhysxPulleyJoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for distance joint.  See PhysxPulleyJoint.
+ */
 class EXPCL_PANDAPHYSX PhysxPulleyJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

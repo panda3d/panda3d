@@ -73,7 +73,7 @@ main(int argc, char *argv[]) {
       window2->enable_keyboard();
       window2->setup_trackball();
       framework.get_models().instance_to(window2->get_render());
-      
+
       window2->center_trackball(framework.get_models());
     }
 

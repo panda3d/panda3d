@@ -18,12 +18,10 @@
 
 #include "somethingToEgg.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamToEgg
-// Description : This program reads a bam file, for instance as
-//               written out from a real-time interaction session, and
-//               generates a corresponding egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This program reads a bam file, for instance as written out from a real-time
+ * interaction session, and generates a corresponding egg file.
+ */
 class BamToEgg : public SomethingToEgg {
 public:
   BamToEgg();

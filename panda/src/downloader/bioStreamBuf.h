@@ -28,11 +28,9 @@
 #include "openSSLWrapper.h"  // must be included before any other openssl.
 #include "openssl/ssl.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BioStreamBuf
-// Description : The streambuf object that implements
-//               IBioStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements IBioStream.
+ */
 class EXPCL_PANDAEXPRESS BioStreamBuf : public streambuf {
 public:
   BioStreamBuf();

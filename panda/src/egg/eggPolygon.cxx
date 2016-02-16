@@ -22,15 +22,12 @@
 TypeHandle EggPolygon::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolygon::cleanup
-//       Access: Published, Virtual
-//  Description: Cleans up modeling errors in whatever context this
-//               makes sense.  For instance, for a polygon, this calls
-//               remove_doubled_verts(true).  For a point, it calls
-//               remove_nonunique_verts().  Returns true if the
-//               primitive is valid, or false if it is degenerate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Cleans up modeling errors in whatever context this makes sense.  For
+ * instance, for a polygon, this calls remove_doubled_verts(true).  For a point,
+ * it calls remove_nonunique_verts().  Returns true if the primitive is valid,
+ * or false if it is degenerate.
+ */
 bool EggPolygon::
 cleanup() {
   remove_doubled_verts(true);
@@ -40,18 +37,13 @@ cleanup() {
   return calculate_normal(normal);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolygon::calculate_normal
-//       Access: Published
-//  Description: Calculates the true polygon normal--the vector
-//               pointing out of the front of the polygon--based on
-//               the vertices.  This does not return or change the
-//               polygon's normal as set via set_normal().
-//
-//               The return value is true if the normal is computed
-//               correctly, or false if the polygon is degenerate and
-//               does not have at least three noncollinear vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the true polygon normal--the vector pointing out of the front of
+ * the polygon--based on the vertices.  This does not return or change the
+ * polygon's normal as set via set_normal().  The return value is true if the
+ * normal is computed correctly, or false if the polygon is degenerate and does
+ * not have at least three noncollinear vertices.
+ */
 bool EggPolygon::
 calculate_normal(LNormald &result, CoordinateSystem cs) const {
   result = LNormald::zero();
@@ -85,12 +77,10 @@ calculate_normal(LNormald &result, CoordinateSystem cs) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolygon::is_planar
-//       Access: Published
-//  Description: Returns true if all of the polygon's vertices lie
-//               within the same plane, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if all of the polygon's vertices lie within the same plane,
+ * false otherwise.
+ */
 bool EggPolygon::
 is_planar() const {
   if (size() <= 3) {
@@ -137,20 +127,14 @@ is_planar() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolygon::triangulate_in_place
-//       Access: Published
-//  Description: Subdivides the polygon into triangles and adds those
-//               triangles to the parent group node in place of the
-//               original polygon.  Returns a pointer to the original
-//               polygon, which is likely about to be destructed.
-//
-//               If convex_also is true, both concave and convex
-//               polygons will be subdivided into triangles;
-//               otherwise, only concave polygons will be subdivided,
-//               and convex polygons will be copied unchanged into the
-//               container.
-////////////////////////////////////////////////////////////////////
+/**
+ * Subdivides the polygon into triangles and adds those triangles to the parent
+ * group node in place of the original polygon.  Returns a pointer to the
+ * original polygon, which is likely about to be destructed.  If convex_also is
+ * true, both concave and convex polygons will be subdivided into triangles;
+ * otherwise, only concave polygons will be subdivided, and convex polygons will
+ * be copied unchanged into the container.
+ */
 PT(EggPolygon) EggPolygon::
 triangulate_in_place(bool convex_also) {
   EggGroupNode *parent = get_parent();
@@ -163,12 +147,9 @@ triangulate_in_place(bool convex_also) {
   return save_me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolygon::write
-//       Access: Published, Virtual
-//  Description: Writes the polygon to the indicated output stream in
-//               Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the polygon to the indicated output stream in Egg format.
+ */
 void EggPolygon::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Polygon>");
@@ -176,13 +157,10 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolygon::decomp_concave
-//       Access: Private
-//  Description: Decomposes a concave polygon into triangles.  Returns
-//               true if successful, false if the polygon is
-//               self-intersecting.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decomposes a concave polygon into triangles.  Returns true if successful,
+ * false if the polygon is self-intersecting.
+ */
 bool EggPolygon::
 decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
 #define VX(p, c)    p->coord[c]
@@ -342,25 +320,15 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPolygon::triangulate_poly
-//       Access: Private
-//  Description: Breaks a (possibly concave) higher-order polygon into
-//               a series of constituent triangles.  Fills the
-//               container up with EggPolygons that represent the
-//               triangles.  Returns true if successful, false on
-//               failure.
-//
-//               If convex_also is true, both concave and convex
-//               polygons will be subdivided into triangles;
-//               otherwise, only concave polygons will be subdivided,
-//               and convex polygons will be copied unchanged into the
-//               container.
-//
-//               It is assumed that the EggPolygon is not already a
-//               child of any other group when this function is
-//               called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Breaks a (possibly concave) higher-order polygon into a series of constituent
+ * triangles.  Fills the container up with EggPolygons that represent the
+ * triangles.  Returns true if successful, false on failure.  If convex_also is
+ * true, both concave and convex polygons will be subdivided into triangles;
+ * otherwise, only concave polygons will be subdivided, and convex polygons will
+ * be copied unchanged into the container.  It is assumed that the EggPolygon is
+ * not already a child of any other group when this function is called.
+ */
 bool EggPolygon::
 triangulate_poly(EggGroupNode *container, bool convex_also) {
   LPoint3d p0, p1, as;

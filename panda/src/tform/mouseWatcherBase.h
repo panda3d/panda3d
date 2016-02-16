@@ -22,14 +22,12 @@
 #include "nodePath.h"
 #include "lightMutex.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseWatcherBase
-// Description : This represents a collection of MouseWatcherRegions
-//               that may be managed as a group.  This is the base
-//               class for both MouseWatcherGroup and MouseWatcher,
-//               and exists so that we don't have to make MouseWatcher
-//               inherit from ReferenceCount more than once.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a collection of MouseWatcherRegions that may be managed as a
+ * group.  This is the base class for both MouseWatcherGroup and MouseWatcher,
+ * and exists so that we don't have to make MouseWatcher inherit from
+ * ReferenceCount more than once.
+ */
 class EXPCL_PANDA_TFORM MouseWatcherBase {
 public:
   MouseWatcherBase();

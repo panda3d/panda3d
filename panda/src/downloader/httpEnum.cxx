@@ -15,10 +15,9 @@
 
 #ifdef HAVE_OPENSSL
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPEnum::Method::output operator
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, HTTPEnum::Method method) {
   switch (method) {

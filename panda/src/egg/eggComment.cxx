@@ -20,12 +20,9 @@
 TypeHandle EggComment::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComment::write
-//       Access: Public, Virtual
-//  Description: Writes the comment definition to the indicated output
-//               stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the comment definition to the indicated output stream in Egg format.
+ */
 void EggComment::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Comment>");

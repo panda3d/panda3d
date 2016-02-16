@@ -21,13 +21,11 @@
 #include "lpoint2.h"
 #include "lvector2.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WindowProperties
-// Description : A container for the various kinds of properties we
-//               might ask to have on a graphics window before we open
-//               it.  This also serves to hold the current properties
-//               for a window after it has been opened.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for the various kinds of properties we might ask to have on a
+ * graphics window before we open it.  This also serves to hold the current
+ * properties for a window after it has been opened.
+ */
 class EXPCL_PANDA_DISPLAY WindowProperties {
 PUBLISHED:
   enum ZOrder {
@@ -35,7 +33,7 @@ PUBLISHED:
     Z_normal,
     Z_top,
   };
-  
+
   enum MouseMode {
     M_absolute,
     M_relative,

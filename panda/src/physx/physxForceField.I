@@ -11,42 +11,34 @@
  * @date 2009-11-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxForceField::
 PhysxForceField() : PhysxObject() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxForceField::
 ~PhysxForceField() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxForceField::
 ls() const {
 
   ls(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxForceField::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PhysxForceField::
 ls(ostream &out, int indent_level) const {
 
@@ -54,4 +46,3 @@ ls(ostream &out, int indent_level) const {
                             << " " << _name
                             << " (at 0x" << this << ")\n";
 }
-

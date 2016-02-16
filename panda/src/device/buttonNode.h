@@ -22,21 +22,15 @@
 #include "buttonEventList.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonNode
-// Description : This is the primary interface to on/off button
-//               devices associated with a ClientBase.  This creates a
-//               node that connects to the named button device, if it
-//               exists, and provides hooks to the user to read the
-//               state of any of the sequentially numbered buttons
-//               associated with that device.
-//
-//               It also can associate an arbitrary ButtonHandle with
-//               each button; when buttons are associated with
-//               ButtonHandles, this node will put appropriate up and
-//               down events on the data graph for each button state
-//               change.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary interface to on/off button devices associated with a
+ * ClientBase.  This creates a node that connects to the named button device, if
+ * it exists, and provides hooks to the user to read the state of any of the
+ * sequentially numbered buttons associated with that device.  It also can
+ * associate an arbitrary ButtonHandle with each button; when buttons are
+ * associated with ButtonHandles, this node will put appropriate up and down
+ * events on the data graph for each button state change.
+ */
 class EXPCL_PANDA_DEVICE ButtonNode : public DataNode {
 PUBLISHED:
   ButtonNode(ClientBase *client, const string &device_name);

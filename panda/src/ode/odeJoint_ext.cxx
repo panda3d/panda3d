@@ -43,12 +43,10 @@ extern Dtool_PyTypedObject Dtool_OdeLMotorJoint;
 extern Dtool_PyTypedObject Dtool_OdePlane2dJoint;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeJoint::attach
-//       Access: Published
-//  Description: Attach two bodies together.  If either body is None,
-//               the other will be attached to the environment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attach two bodies together.  If either body is None, the other will be
+ * attached to the environment.
+ */
 void Extension<OdeJoint>::
 attach(const OdeBody *body1, const OdeBody *body2) {
   if (body1 && body2) {
@@ -62,12 +60,10 @@ attach(const OdeBody *body1, const OdeBody *body2) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeJoint::convert
-//       Access: Published
-//  Description: Do a sort of pseudo-downcast on this space in
-//               order to expose its specialized functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do a sort of pseudo-downcast on this space in order to expose its specialized
+ * functions.
+ */
 PyObject *Extension<OdeJoint>::
 convert() const {
   Dtool_PyTypedObject *class_type;

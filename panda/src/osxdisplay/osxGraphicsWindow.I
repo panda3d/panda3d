@@ -11,11 +11,9 @@
  * @date 2009-02-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsWindow::send_key_event
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline void osxGraphicsWindow::
 send_key_event(ButtonHandle key, bool down) {
   if (down) {

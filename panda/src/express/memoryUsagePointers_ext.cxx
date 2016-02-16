@@ -21,19 +21,14 @@ extern Dtool_PyTypedObject Dtool_TypedReferenceCount;
 extern Dtool_PyTypedObject Dtool_ReferenceCount;
 #endif  // CPPPARSER
 
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointers::get_python_pointer
-//       Access: Published
-//  Description: Returns the nth object, represented as a Python
-//               object of the appropriate type.  Reference counting
-//               will be properly set on the Python object.
-//
-//               get_typed_pointer() is almost as good as this, but
-//               (a) it does not set the reference count, and (b) it
-//               does not work for objects that do not inherit from
-//               TypedObject.  This will work for any object whose
-//               type is known, which has a Python representation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth object, represented as a Python object of the appropriate
+ * type.  Reference counting will be properly set on the Python object.
+ * get_typed_pointer() is almost as good as this, but (a) it does not set the
+ * reference count, and (b) it does not work for objects that do not inherit
+ * from TypedObject.  This will work for any object whose type is known, which
+ * has a Python representation.
+ */
 PyObject *Extension<MemoryUsagePointers>::
 get_python_pointer(size_t n) const {
   TypedObject *typed_ptr = _this->get_typed_pointer(n);

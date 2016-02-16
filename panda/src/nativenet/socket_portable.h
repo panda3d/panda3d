@@ -12,10 +12,10 @@
 #ifndef __SOCKET_PORTABLE_H__
 #define __SOCKET_PORTABLE_H__
 
-////////////////////////////////////////////////////////////////////
-// Lots of stuff to make network socket-based io transparent across multiple
-//  platforms
-////////////////////////////////////////////////////////////////////
+/*
+ * Lots of stuff to make network socket-based io transparent across multiple
+ * platforms
+ */
 
 const int ALL_OK = 0;
 const int BASIC_ERROR = -1;

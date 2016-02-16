@@ -17,13 +17,11 @@
 #include "pandabase.h"
 #include "vector_uchar.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StringStreamBuf
-// Description : Used by StringStream to implement an stream that
-//               reads from and/or writes to a memory buffer, whose
-//               contents can be appended to or extracted at any time
-//               by application code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used by StringStream to implement an stream that reads from and/or writes to
+ * a memory buffer, whose contents can be appended to or extracted at any time
+ * by application code.
+ */
 class EXPCL_PANDAEXPRESS StringStreamBuf : public streambuf {
 public:
   StringStreamBuf();

@@ -14,90 +14,70 @@
 #include "cycleData.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleData::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData::
 ~CycleData() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void CycleData::
 write_datagram(BamWriter *, Datagram &) const {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void CycleData::
 write_datagram(BamWriter *, Datagram &, void *) const {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleData::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int CycleData::
 complete_pointers(TypedWritable **, BamReader *) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is intended to be called by
-//               each class's make_from_bam() method to read in all of
-//               the relevant data from the BamFile for the new
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is intended to be called by each class's
+ * make_from_bam() method to read in all of the relevant data from the BamFile
+ * for the new object.
+ */
 void CycleData::
 fillin(DatagramIterator &, BamReader *) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is intended to be called by
-//               each class's make_from_bam() method to read in all of
-//               the relevant data from the BamFile for the new
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is intended to be called by each class's
+ * make_from_bam() method to read in all of the relevant data from the BamFile
+ * for the new object.
+ */
 void CycleData::
 fillin(DatagramIterator &, BamReader *, void *) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleData::get_parent_type
-//       Access: Public, Virtual
-//  Description: Returns the type of the container that owns the
-//               CycleData.  This is useful mainly for debugging.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type of the container that owns the CycleData.  This is useful
+ * mainly for debugging.
+ */
 TypeHandle CycleData::
 get_parent_type() const {
   return TypeHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleData::output
-//       Access: Public, Virtual
-//  Description: Formats the contents of the CycleData in some
-//               meaningful way for humans.  This is useful mainly for
-//               debugging.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the contents of the CycleData in some meaningful way for humans.
+ * This is useful mainly for debugging.
+ */
 void CycleData::
 output(ostream &out) const {
   out << get_parent_type() << "::CData";

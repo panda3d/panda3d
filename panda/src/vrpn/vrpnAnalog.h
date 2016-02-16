@@ -22,22 +22,15 @@
 
 class VrpnAnalogDevice;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnAnalog
-// Description : This is the actual interface to a particular VRPN
-//               analog device, and all of its numbered controls.  A
-//               pointer to this object is stored in the VrpnClient
-//               class for each differently-named VRPN analog device
-//               we connect to.
-//
-//               The VRPN callbacks go here, which in turn get
-//               vectored out to any VrpnAnalogDevice objects that
-//               register with this.  When the last VrpnAnalogDevice
-//               object unregisters, the VrpnAnalog will be deleted
-//               by the VrpnClient.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the actual interface to a particular VRPN analog device, and all of
+ * its numbered controls.  A pointer to this object is stored in the VrpnClient
+ * class for each differently-named VRPN analog device we connect to.  The VRPN
+ * callbacks go here, which in turn get vectored out to any VrpnAnalogDevice
+ * objects that register with this.  When the last VrpnAnalogDevice object
+ * unregisters, the VrpnAnalog will be deleted by the VrpnClient.  This class
+ * does not need to be exported from the DLL.
+ */
 class VrpnAnalog {
 public:
   VrpnAnalog(const string &analog_name, vrpn_Connection *connection);

@@ -11,21 +11,17 @@
  * @date 2002-03-16
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPusher::set_horizontal
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void CollisionHandlerPusher::
 set_horizontal(bool flag) {
   _horizontal = flag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPusher::get_horizontal
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool CollisionHandlerPusher::
 get_horizontal() const {
   return _horizontal;

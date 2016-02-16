@@ -22,7 +22,7 @@ pofstream binary_output;
 
 void
 usage() {
-  cerr << 
+  cerr <<
     "\n"
     "Usage:\n\n"
     "check_md5 [-q] [-d] [-b filename] [-i \"input string\"] [file1 file2 ...]\n"
@@ -32,7 +32,7 @@ usage() {
 void
 help() {
   usage();
-  cerr << 
+  cerr <<
     "This program outputs the MD5 hash of one or more files (or of a string\n"
     "passed on the command line with -i).\n\n"
 
@@ -40,7 +40,7 @@ help() {
     "hexadecimal string by default, but with -d, it is presented as four\n"
     "big-endian unsigned 32-bit decimal integers.  Normally the filename\n"
     "of each file is printed along with the hash; -q suppresses this.\n\n"
-    
+
     "To write the 16 bytes (per input file) of the output directly to a\n"
     "binary file, use -b with the name of the file to receive the output.\n";
 }
@@ -61,7 +61,7 @@ output_hash(const string &filename, const HashVal &hash) {
   // it's not.
   hash.output_binary(binary_output);
 }
-  
+
 
 int
 main(int argc, char **argv) {

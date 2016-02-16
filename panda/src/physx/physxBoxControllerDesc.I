@@ -11,46 +11,37 @@
  * @date 2009-09-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxControllerDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxBoxControllerDesc::
 PhysxBoxControllerDesc() : PhysxControllerDesc() {
 
   _desc.upDirection = (NxHeightFieldAxis)physx_up_axis.get_value();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxControllerDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxBoxControllerDesc::
 ~PhysxBoxControllerDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxControllerDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxBoxControllerDesc::
 set_to_default() {
 
   _desc.setToDefault();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxControllerDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxBoxControllerDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

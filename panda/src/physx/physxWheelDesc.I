@@ -11,43 +11,35 @@
  * @date 2010-03-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxWheelDesc::
 PhysxWheelDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxWheelDesc::
 ~PhysxWheelDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxWheelDesc::
 set_to_default() {
 
   // TODO
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxWheelDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxWheelDesc::
 is_valid() const {
 
@@ -55,4 +47,3 @@ is_valid() const {
 
   return true;
 }
-

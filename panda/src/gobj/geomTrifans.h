@@ -17,10 +17,9 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomTrifans
-// Description : Defines a series of triangle fans.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of triangle fans.
+ */
 class EXPCL_PANDA_GOBJ GeomTrifans : public GeomPrimitive {
 PUBLISHED:
   GeomTrifans(UsageHint usage_hint);

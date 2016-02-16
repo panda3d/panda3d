@@ -15,11 +15,9 @@
 
 TypeHandle PhysxHeightField::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightField::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightField::
 link(NxHeightField *hfPtr) {
 
@@ -28,11 +26,9 @@ link(NxHeightField *hfPtr) {
   _error_type = ET_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightField::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightField::
 unlink() {
 
@@ -40,11 +36,9 @@ unlink() {
   PhysxManager::get_global_ptr()->_heightfields.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightField::release
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightField::
 release() {
 
@@ -55,11 +49,9 @@ release() {
   _ptr = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightField::get_height
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxHeightField::
 get_height(float x, float y) const {
 
@@ -67,15 +59,12 @@ get_height(float x, float y) const {
   return _ptr->getHeight(x, y);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightField::get_reference_count
-//       Access: Published
-//  Description: Returns the reference count for shared meshes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reference count for shared meshes.
+ */
 unsigned int PhysxHeightField::
 get_reference_count() const {
 
   nassertr(_error_type == ET_ok, 0);
   return _ptr->getReferenceCount();
 }
-

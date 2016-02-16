@@ -20,14 +20,12 @@
 
 class CPPIdentifier;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPTBDType
-// Description : This represents a type whose exact meaning is still
-//               to-be-determined.  It happens when a typename is
-//               referenced in a template class (especially using the
-//               'typename' keyword) but the actual type cannot be
-//               known until the class is instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a type whose exact meaning is still to-be-determined.  It
+ * happens when a typename is referenced in a template class (especially using
+ * the 'typename' keyword) but the actual type cannot be known until the class
+ * is instantiated.
+ */
 class CPPTBDType : public CPPType {
 public:
   CPPTBDType(CPPIdentifier *ident);

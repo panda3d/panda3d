@@ -15,11 +15,9 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrackplane::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltTrackplane::
 FltTrackplane() {
   _origin.set(0.0, 0.0, 0.0);
@@ -36,11 +34,9 @@ FltTrackplane() {
   _grid_mask = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrackplane::extract_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltTrackplane::
 extract_record(FltRecordReader &reader) {
   DatagramIterator &iterator = reader.get_iterator();
@@ -69,11 +65,9 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTrackplane::build_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltTrackplane::
 build_record(FltRecordWriter &writer) const {
   Datagram &datagram = writer.update_datagram();

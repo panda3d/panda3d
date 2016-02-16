@@ -16,13 +16,10 @@
 
 TypeHandle CLerpInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpInterval::string_blend_type
-//       Access: Published, Static
-//  Description: Returns the BlendType enumerated value corresponding
-//               to the indicated string, or BT_invalid if the string
-//               doesn't match anything.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the BlendType enumerated value corresponding to the indicated string,
+ * or BT_invalid if the string doesn't match anything.
+ */
 CLerpInterval::BlendType CLerpInterval::
 string_blend_type(const string &blend_type) {
   if (blend_type == "easeIn") {
@@ -38,14 +35,11 @@ string_blend_type(const string &blend_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpInterval::compute_delta
-//       Access: Protected
-//  Description: Given a t value in the range [0, get_duration()],
-//               returns the corresponding delta value clamped to the
-//               range [0, 1], after scaling by duration and applying
-//               the blend type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a t value in the range [0, get_duration()], returns the corresponding
+ * delta value clamped to the range [0, 1], after scaling by duration and
+ * applying the blend type.
+ */
 double CLerpInterval::
 compute_delta(double t) const {
   double duration = get_duration();

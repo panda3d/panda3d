@@ -11,40 +11,31 @@
  * @date 2002-08-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpAnimEffectInterval::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLerpAnimEffectInterval::
-CLerpAnimEffectInterval(const string &name, double duration, 
+CLerpAnimEffectInterval(const string &name, double duration,
                         CLerpInterval::BlendType blend_type) :
   CLerpInterval(name, duration, blend_type)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpAnimEffectInterval::add_control
-//       Access: Published
-//  Description: Adds another AnimControl to the list of AnimControls
-//               affected by the lerp.  This control will be lerped
-//               from begin_effect to end_effect over the period of
-//               the lerp.
-//
-//               The AnimControl name parameter is only used when
-//               formatting the interval for output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds another AnimControl to the list of AnimControls affected by the lerp.
+ * This control will be lerped from begin_effect to end_effect over the period
+ * of the lerp.  The AnimControl name parameter is only used when formatting the
+ * interval for output.
+ */
 INLINE void CLerpAnimEffectInterval::
 add_control(AnimControl *control, const string &name,
             float begin_effect, float end_effect) {
   _controls.push_back(ControlDef(control, name, begin_effect, end_effect));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpAnimEffectInterval::ControlDef::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLerpAnimEffectInterval::ControlDef::
 ControlDef(AnimControl *control, const string &name,
            float begin_effect, float end_effect) :

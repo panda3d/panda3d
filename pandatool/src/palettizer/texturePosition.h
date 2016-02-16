@@ -22,14 +22,12 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TexturePosition
-// Description : This represents a particular position of a texture
-//               within a PaletteImage.  There is only one of these
-//               per TexturePlacement, but it exists as a separate
-//               structure so the TexturePlacement can easily consider
-//               repositioning the texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a particular position of a texture within a PaletteImage.
+ * There is only one of these per TexturePlacement, but it exists as a separate
+ * structure so the TexturePlacement can easily consider repositioning the
+ * texture.
+ */
 class TexturePosition : public TypedWritable {
 public:
   TexturePosition();
@@ -75,4 +73,3 @@ private:
 };
 
 #endif
-

@@ -11,40 +11,30 @@
  * @date 2007-06-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBlock::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VertexDataBlock::
 VertexDataBlock(VertexDataPage *page, size_t start, size_t size) :
   SimpleAllocatorBlock(page, start, size)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBlock::get_page
-//       Access: Published
-//  Description: Returns the page from which this buffer was
-//               allocated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the page from which this buffer was allocated.
+ */
 INLINE VertexDataPage *VertexDataBlock::
 get_page() const {
   return (VertexDataPage *)get_allocator();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBlock::get_pointer
-//       Access: Public
-//  Description: Returns a pointer to the start of the allocated
-//               memory for this buffer, or NULL if the data is not
-//               currently resident.  If the data is not currently
-//               resident, this will implicitly request it to become
-//               resident soon.
-//
-//               If force is true, this method will never return NULL,
-//               but may block until the data is available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the start of the allocated memory for this buffer, or
+ * NULL if the data is not currently resident.  If the data is not currently
+ * resident, this will implicitly request it to become resident soon.  If force
+ * is true, this method will never return NULL, but may block until the data is
+ * available.
+ */
 INLINE unsigned char *VertexDataBlock::
 get_pointer(bool force) const {
   nassertr(get_page() != (VertexDataPage *)NULL, NULL);
@@ -56,12 +46,10 @@ get_pointer(bool force) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBlock::get_next_block
-//       Access: Published
-//  Description: Returns a pointer to the next allocated block in the
-//               chain, or NULL if there are no more allocated blocks.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the next allocated block in the chain, or NULL if there
+ * are no more allocated blocks.
+ */
 INLINE VertexDataBlock *VertexDataBlock::
 get_next_block() const {
   return (VertexDataBlock *)SimpleAllocatorBlock::get_next_block();

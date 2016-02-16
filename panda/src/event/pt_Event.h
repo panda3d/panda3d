@@ -20,11 +20,10 @@
 
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PT_Event
-// Description : A PointerTo<Event>.  This is defined here solely we
-//               can explicitly export the template class.
-////////////////////////////////////////////////////////////////////
+/**
+ * A PointerTo<Event>.  This is defined here solely we can explicitly export the
+ * template class.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, PointerToBase<Event>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, PointerTo<Event>)

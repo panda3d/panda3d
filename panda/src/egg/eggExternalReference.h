@@ -18,11 +18,10 @@
 
 #include "eggFilenameNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggExternalReference
-// Description : Defines a reference to another egg file which should
-//               be inserted at this point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a reference to another egg file which should be inserted at this
+ * point.
+ */
 class EXPCL_PANDAEGG EggExternalReference : public EggFilenameNode {
 PUBLISHED:
   EggExternalReference(const string &node_name, const string &filename);

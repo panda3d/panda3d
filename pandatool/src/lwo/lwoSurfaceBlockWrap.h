@@ -18,11 +18,9 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockWrap
-// Description : Specifies how the texture image appears for areas
-//               outside the image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies how the texture image appears for areas outside the image.
+ */
 class LwoSurfaceBlockWrap : public LwoChunk {
 public:
   enum Mode {
@@ -56,5 +54,3 @@ private:
 };
 
 #endif
-
-

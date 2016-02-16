@@ -19,15 +19,13 @@
 #include "typeHandle.h"
 #include "typeRegistry.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: register_type
-//  Description: This inline function is just a convenient way to call
-//               TypeRegistry::register_type(), along with zero to four
-//               record_derivation()s.  If for some reason you have a
-//               class that has more than four base classes (you're
-//               insane!), then you will need to call Register() and
-//               record_derivation() yourself.
-////////////////////////////////////////////////////////////////////
+/**
+ * This inline function is just a convenient way to call
+ * TypeRegistry::register_type(), along with zero to four record_derivation()s.
+ * If for some reason you have a class that has more than four base classes
+ * (you're insane!), then you will need to call Register() and
+ * record_derivation() yourself.
+ */
 INLINE void
 register_type(TypeHandle &type_handle, const string &name);
 
@@ -50,14 +48,11 @@ register_type(TypeHandle &type_handle, const string &name,
               TypeHandle parent3, TypeHandle parent4);
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: register_dynamic_type
-//  Description: This is essentially similar to register_type(),
-//               except that it doesn't store a reference to any
-//               TypeHandle passed in and it therefore doesn't
-//               complain if the type is registered more than once to
-//               different TypeHandle reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is essentially similar to register_type(), except that it doesn't store
+ * a reference to any TypeHandle passed in and it therefore doesn't complain if
+ * the type is registered more than once to different TypeHandle reference.
+ */
 INLINE TypeHandle
 register_dynamic_type(const string &name);
 

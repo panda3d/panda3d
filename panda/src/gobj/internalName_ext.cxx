@@ -15,14 +15,11 @@
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: InternalName::make
-//       Access: Published, Static
-//  Description: This extension method serves to allow coercion of
-//               Python interned strings to InternalName objects
-//               more efficiently by storing a mapping between
-//               Python and Panda interned strings.
-////////////////////////////////////////////////////////////////////
+/**
+ * This extension method serves to allow coercion of Python interned strings to
+ * InternalName objects more efficiently by storing a mapping between Python and
+ * Panda interned strings.
+ */
 #if PY_MAJOR_VERSION >= 3
 PT(InternalName) Extension<InternalName>::
 make(PyUnicodeObject *str) {

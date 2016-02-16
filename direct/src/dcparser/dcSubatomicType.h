@@ -17,13 +17,11 @@
 #include "dcbase.h"
 
 BEGIN_PUBLISH
-////////////////////////////////////////////////////////////////////
-//        Enum : DCSubatomicType
-// Description : This defines the numeric type of each element of a
-//               DCAtomicField; that is, the particular values that
-//               will get added to the message when the atomic field
-//               method is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the numeric type of each element of a DCAtomicField; that is,
+ * the particular values that will get added to the message when the atomic
+ * field method is called.
+ */
 enum DCSubatomicType {
   ST_int8,
   ST_int16,
@@ -66,5 +64,3 @@ END_PUBLISH
 ostream &operator << (ostream &out, DCSubatomicType type);
 
 #endif
-
-

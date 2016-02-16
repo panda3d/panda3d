@@ -35,12 +35,10 @@
 
 class CullTraverser;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullableObject
-// Description : The smallest atom of cull.  This is normally just a
-//               Geom and its associated state, but it also contain
-//               a draw callback.
-////////////////////////////////////////////////////////////////////
+/**
+ * The smallest atom of cull.  This is normally just a Geom and its associated
+ * state, but it also contain a draw callback.
+ */
 class EXPCL_PANDA_PGRAPH CullableObject
 #ifdef DO_MEMORY_USAGE
   : public ReferenceCount   // We inherit from ReferenceCount just to get the memory type tracking that MemoryUsage provides.

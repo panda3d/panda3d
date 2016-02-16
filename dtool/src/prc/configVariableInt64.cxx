@@ -14,11 +14,9 @@
 #include "configVariableInt64.h"
 #include "string_utils.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableInt64::set_default_value
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigVariableInt64::
 set_default_value(PN_int64 default_value) {
   _core->set_default_value(format_string(default_value));

@@ -16,10 +16,9 @@
 
 #include "baseParticleFactory.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ZSpinParticleFactory
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSICS ZSpinParticleFactory : public BaseParticleFactory {
 PUBLISHED:
   ZSpinParticleFactory();

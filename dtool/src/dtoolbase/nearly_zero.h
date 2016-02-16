@@ -83,4 +83,3 @@ get_nearly_zero_value(int) {
 
 
 #endif
-

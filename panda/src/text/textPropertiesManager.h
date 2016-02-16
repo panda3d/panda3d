@@ -20,35 +20,22 @@
 #include "textProperties.h"
 #include "textGraphic.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextPropertiesManager
-// Description : This defines all of the TextProperties structures
-//               that might be referenced by name from an embedded
-//               text string.
-//
-//               A text string, as rendered by a TextNode, can contain
-//               embedded references to one of the TextProperties
-//               defined here, by enclosing the name between \1 (ASCII
-//               0x01) characters; this causes a "push" to the named
-//               state.  All text following the closing \1 character
-//               will then be rendered in the new state.  The next \2
-//               (ASCII 0x02) character will then restore the previous
-//               state for subsequent text.
-//
-//               For instance, "x\1up\1n\2 + y" indicates that the
-//               character "x" will be rendered in the normal state,
-//               the character "n" will be rendered in the "up" state,
-//               and then " + y" will be rendered in the normal state
-//               again.
-//
-//               This can also be used to define arbitrary models that
-//               can serve as embedded graphic images in a text
-//               paragraph.  This works similarly; the convention is
-//               to create a TextGraphic that describes the graphic
-//               image, and then associate it here via the
-//               set_graphic() call.  Then "\5name\5" will embed the
-//               named graphic.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines all of the TextProperties structures that might be referenced by
+ * name from an embedded text string.  A text string, as rendered by a TextNode,
+ * can contain embedded references to one of the TextProperties defined here, by
+ * enclosing the name between \1 (ASCII 0x01) characters; this causes a "push"
+ * to the named state.  All text following the closing \1 character will then be
+ * rendered in the new state.  The next \2 (ASCII 0x02) character will then
+ * restore the previous state for subsequent text.  For instance, "x\1up\1n\2 +
+ * y" indicates that the character "x" will be rendered in the normal state, the
+ * character "n" will be rendered in the "up" state, and then " + y" will be
+ * rendered in the normal state again.  This can also be used to define
+ * arbitrary models that can serve as embedded graphic images in a text
+ * paragraph.  This works similarly; the convention is to create a TextGraphic
+ * that describes the graphic image, and then associate it here via the
+ * set_graphic() call.  Then "\5name\5" will embed the named graphic.
+ */
 class EXPCL_PANDA_TEXT TextPropertiesManager {
 protected:
   TextPropertiesManager();

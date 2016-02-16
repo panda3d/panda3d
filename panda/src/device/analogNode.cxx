@@ -19,11 +19,9 @@
 
 TypeHandle AnalogNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AnalogNode::
 AnalogNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
@@ -51,11 +49,9 @@ AnalogNode(ClientBase *client, const string &device_name) :
   _analog = DCAST(ClientAnalogDevice, device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AnalogNode::
 ~AnalogNode() {
   // When the _analog pointer destructs, the ClientAnalogDevice
@@ -63,11 +59,9 @@ AnalogNode::
   // to get turned off does.  Magic.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void AnalogNode::
 write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
@@ -79,21 +73,16 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output parameters.
+ * The input parameters may be accessed with the index numbers returned by the
+ * define_input() calls that were made earlier (presumably in the constructor);
+ * likewise, the output parameters should be set with the index numbers returned
+ * by the define_output() calls.
+ */
 void AnalogNode::
-do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &, 
+do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
   if (is_valid()) {
     _analog->poll();

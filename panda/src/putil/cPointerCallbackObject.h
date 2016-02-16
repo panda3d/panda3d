@@ -17,12 +17,10 @@
 #include "pandabase.h"
 #include "callbackObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPointerCallbackObject
-// Description : This is a specialization on CallbackObject to allow
-//               association with a C-style function pointer and a
-//               void * parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on CallbackObject to allow association with a
+ * C-style function pointer and a void * parameter.
+ */
 class EXPCL_PANDA_PUTIL CPointerCallbackObject : public CallbackObject {
 public:
   typedef void CallbackFunction(CallbackData *cbdata, void *data);

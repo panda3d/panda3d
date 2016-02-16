@@ -14,12 +14,10 @@
 #include "interrogate_datafile.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: idf_output_string
-//  Description: Writes the indicated string to the output file.  Uses
-//               the given whitespace character to separate the
-//               string's length and its contents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated string to the output file.  Uses the given whitespace
+ * character to separate the string's length and its contents.
+ */
 void
 idf_output_string(ostream &out, const string &str, char whitespace) {
   out << str.length() << whitespace;
@@ -28,11 +26,10 @@ idf_output_string(ostream &out, const string &str, char whitespace) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: idf_input_string
-//  Description: Reads the given string from the input file, as
-//               previously written by output_string().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the given string from the input file, as previously written by
+ * output_string().
+ */
 void
 idf_input_string(istream &in, string &str) {
   int length;
@@ -50,12 +47,10 @@ idf_input_string(istream &in, string &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: idf_output_string
-//  Description: Writes the indicated string to the output file.  Uses
-//               the given whitespace character to separate the
-//               string's length and its contents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the indicated string to the output file.  Uses the given whitespace
+ * character to separate the string's length and its contents.
+ */
 void
 idf_output_string(ostream &out, const char *str, char whitespace) {
   if (str == (const char *)NULL) {
@@ -68,11 +63,10 @@ idf_output_string(ostream &out, const char *str, char whitespace) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: idf_input_string
-//  Description: Reads the given string from the input file, as
-//               previously written by output_string().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the given string from the input file, as previously written by
+ * output_string().
+ */
 void
 idf_input_string(istream &in, const char *&str) {
   int length;

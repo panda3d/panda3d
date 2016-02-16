@@ -17,17 +17,17 @@
 TypeHandle OdeAMotorJoint::_type_handle;
 
 OdeAMotorJoint::
-OdeAMotorJoint(dJointID id) : 
+OdeAMotorJoint(dJointID id) :
   OdeJoint(id) {
 }
 
 OdeAMotorJoint::
-OdeAMotorJoint(OdeWorld &world) : 
+OdeAMotorJoint(OdeWorld &world) :
   OdeJoint(dJointCreateAMotor(world.get_id(), 0)) {
 }
 
 OdeAMotorJoint::
-OdeAMotorJoint(OdeWorld &world, OdeJointGroup &joint_group) : 
+OdeAMotorJoint(OdeWorld &world, OdeJointGroup &joint_group) :
   OdeJoint(dJointCreateAMotor(world.get_id(), joint_group.get_id())) {
 }
 

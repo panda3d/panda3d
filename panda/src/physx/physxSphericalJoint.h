@@ -21,14 +21,11 @@
 
 class PhysxSphericalJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSphericalJoint
-// Description : A sphere joint constrains two points on two bodies
-//               to coincide. This point, specified in world space
-//               (this guarantees that the points coincide to start
-//               with) is the only parameter that has to be
-//               specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * A sphere joint constrains two points on two bodies to coincide.  This point,
+ * specified in world space (this guarantees that the points coincide to start
+ * with) is the only parameter that has to be specified.
+ */
 class EXPCL_PANDAPHYSX PhysxSphericalJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -59,7 +56,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxSphericalJoint", 
+    register_type(_type_handle, "PhysxSphericalJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

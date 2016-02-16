@@ -18,12 +18,10 @@
 
 #include "parameterRemap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapConcreteToPointer
-// Description : A ParameterRemap class that handles remapping a
-//               concrete structure or class parameter to a pointer
-//               parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ParameterRemap class that handles remapping a concrete structure or class
+ * parameter to a pointer parameter.
+ */
 class ParameterRemapConcreteToPointer : public ParameterRemap {
 public:
   ParameterRemapConcreteToPointer(CPPType *orig_type);

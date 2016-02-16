@@ -11,11 +11,9 @@
  * @date 2000-03-08
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVecBase3
-// Description : This is the base class for all three-component
-//               vectors and points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for all three-component vectors and points.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVecBase3) {
 PUBLISHED:
   typedef FLOATTYPE numeric_type;
@@ -191,7 +189,7 @@ public:
     return _type_handle;
   }
   static void init_type();
- 
+
 private:
   static TypeHandle _type_handle;
 };

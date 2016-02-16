@@ -21,12 +21,10 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatThread
-// Description : A lightweight class that represents a single thread
-//               of execution to PStats.  It corresponds one-to-one
-//               with Panda's Thread instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * A lightweight class that represents a single thread of execution to PStats.
+ * It corresponds one-to-one with Panda's Thread instance.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatThread {
 public:
   INLINE PStatThread();
@@ -58,4 +56,3 @@ friend class PStatCollector;
 #include "pStatThread.I"
 
 #endif
-

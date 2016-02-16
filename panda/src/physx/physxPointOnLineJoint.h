@@ -21,15 +21,12 @@
 
 class PhysxPointOnLineJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPointOnLineJoint
-// Description : A point on line joint constrains a point on one
-//               body to only move along a line attached to another
-//               body. 
-//               The starting point of the joint is defined as the
-//               anchor point. The line through this point is
-//               specified by its direction (axis) vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * A point on line joint constrains a point on one body to only move along a
+ * line attached to another body.  The starting point of the joint is defined as
+ * the anchor point.  The line through this point is specified by its direction
+ * (axis) vector.
+ */
 class EXPCL_PANDAPHYSX PhysxPointOnLineJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -54,7 +51,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxPointOnLineJoint", 
+    register_type(_type_handle, "PhysxPointOnLineJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

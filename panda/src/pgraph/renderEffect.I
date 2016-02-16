@@ -11,18 +11,13 @@
  * @date 2002-03-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderEffect::compare_to
-//       Access: Published
-//  Description: Provides an arbitrary ordering among all unique
-//               RenderEffects, so we can store the essentially
-//               different ones in a big set and throw away the rest.
-//
-//               This method is not needed outside of the RenderEffect
-//               class because all equivalent RenderEffect objects are
-//               guaranteed to share the same pointer; thus, a pointer
-//               comparison is always sufficient.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides an arbitrary ordering among all unique RenderEffects, so we can
+ * store the essentially different ones in a big set and throw away the rest.
+ * This method is not needed outside of the RenderEffect class because all
+ * equivalent RenderEffect objects are guaranteed to share the same pointer;
+ * thus, a pointer comparison is always sufficient.
+ */
 INLINE int RenderEffect::
 compare_to(const RenderEffect &other) const {
   // First, we compare the types; if they are of different types then

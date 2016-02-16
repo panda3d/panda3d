@@ -11,11 +11,9 @@
  * @date 2000-10-30
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramInputFile::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE DatagramInputFile::
 DatagramInputFile() {
   _error = false;
@@ -25,32 +23,26 @@ DatagramInputFile() {
   _timestamp = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramInputFile::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE DatagramInputFile::
 ~DatagramInputFile() {
   close();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramInputFile::open
-//       Access: Published
-//  Description: Opens the indicated filename for reading.  Returns
-//               true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated filename for reading.  Returns true on success, false on
+ * failure.
+ */
 INLINE bool DatagramInputFile::
 open(const Filename &filename) {
   return open(new FileReference(filename));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramInputFile::get_stream
-//       Access: Published
-//  Description: Returns the istream represented by the input file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the istream represented by the input file.
+ */
 INLINE istream &DatagramInputFile::
 get_stream() {
   static ifstream null_stream;

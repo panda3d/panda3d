@@ -21,10 +21,9 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPlaneShapeDesc
-// Description : Descriptor class for PhysxPlaneShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxPlaneShape.
+ */
 class EXPCL_PANDAPHYSX PhysxPlaneShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

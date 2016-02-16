@@ -21,10 +21,9 @@
 class CPPType;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPTypeParser
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPTypeParser : public CPPPreprocessor {
 public:
   CPPTypeParser(CPPScope *current_scope, CPPScope *global_scope);
@@ -47,5 +46,3 @@ operator << (ostream &out, const CPPTypeParser &ep) {
 }
 
 #endif
-
-

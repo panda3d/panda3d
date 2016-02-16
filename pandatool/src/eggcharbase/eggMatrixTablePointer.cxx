@@ -19,11 +19,9 @@
 
 TypeHandle EggMatrixTablePointer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMatrixTablePointer::
 EggMatrixTablePointer(EggObject *object) {
   _table = DCAST(EggTable, object);
@@ -54,12 +52,10 @@ EggMatrixTablePointer(EggObject *object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::get_frame_rate
-//       Access: Public, Virtual
-//  Description: Returns the stated frame rate of this particular
-//               joint, or 0.0 if it doesn't state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the stated frame rate of this particular joint, or 0.0 if it doesn't
+ * state.
+ */
 double EggMatrixTablePointer::
 get_frame_rate() const {
   if (_xform == (EggXfmSAnim *)NULL || !_xform->has_fps()) {
@@ -69,12 +65,9 @@ get_frame_rate() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::get_num_frames
-//       Access: Public, Virtual
-//  Description: Returns the number of frames of animation for this
-//               particular joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames of animation for this particular joint.
+ */
 int EggMatrixTablePointer::
 get_num_frames() const {
   if (_xform == (EggXfmSAnim *)NULL) {
@@ -84,11 +77,9 @@ get_num_frames() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::extend_to
-//       Access: Public, Virtual
-//  Description: Extends the table to the indicated number of frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extends the table to the indicated number of frames.
+ */
 void EggMatrixTablePointer::
 extend_to(int num_frames) {
   nassertv(_xform != (EggXfmSAnim *)NULL);
@@ -107,12 +98,10 @@ extend_to(int num_frames) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::get_frame
-//       Access: Public, Virtual
-//  Description: Returns the transform matrix corresponding to this
-//               joint position in the nth frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the transform matrix corresponding to this joint position in the nth
+ * frame.
+ */
 LMatrix4d EggMatrixTablePointer::
 get_frame(int n) const {
   if (get_num_frames() == 1) {
@@ -131,25 +120,20 @@ get_frame(int n) const {
   return mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::set_frame
-//       Access: Public, Virtual
-//  Description: Sets the transform matrix corresponding to this
-//               joint position in the nth frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the transform matrix corresponding to this joint position in the nth
+ * frame.
+ */
 void EggMatrixTablePointer::
 set_frame(int n, const LMatrix4d &mat) {
   nassertv(n >= 0 && n < get_num_frames());
   _xform->set_value(n, mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::add_frame
-//       Access: Public, Virtual
-//  Description: Appends a new frame onto the end of the data, if
-//               possible; returns true if not possible, or false
-//               otherwise (e.g. for a static joint).
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends a new frame onto the end of the data, if possible; returns true if
+ * not possible, or false otherwise (e.g.  for a static joint).
+ */
 bool EggMatrixTablePointer::
 add_frame(const LMatrix4d &mat) {
   if (_xform == (EggXfmSAnim *)NULL) {
@@ -159,13 +143,10 @@ add_frame(const LMatrix4d &mat) {
   return _xform->add_data(mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::do_finish_reparent
-//       Access: Protected
-//  Description: Performs the actual reparenting operation
-//               by removing the node from its old parent and
-//               associating it with its new parent, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the actual reparenting operation by removing the node from its old
+ * parent and associating it with its new parent, if any.
+ */
 void EggMatrixTablePointer::
 do_finish_reparent(EggJointPointer *new_parent) {
   if (new_parent == (EggJointPointer *)NULL) {
@@ -185,19 +166,12 @@ do_finish_reparent(EggJointPointer *new_parent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::do_rebuild
-//       Access: Public, Virtual
-//  Description: Rebuilds the entire table all at once, based on the
-//               frames added by repeated calls to add_rebuild_frame()
-//               since the last call to begin_rebuild().
-//
-//               Until do_rebuild() is called, the animation table is
-//               not changed.
-//
-//               The return value is true if all frames are
-//               acceptable, or false if there is some problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rebuilds the entire table all at once, based on the frames added by repeated
+ * calls to add_rebuild_frame() since the last call to begin_rebuild().  Until
+ * do_rebuild() is called, the animation table is not changed.  The return value
+ * is true if all frames are acceptable, or false if there is some problem.
+ */
 bool EggMatrixTablePointer::
 do_rebuild(EggCharacterDb &db) {
   LMatrix4d mat;
@@ -211,7 +185,7 @@ do_rebuild(EggCharacterDb &db) {
   }
 
   bool all_ok = true;
-  
+
   _xform->clear_data();
   if (!_xform->add_data(mat)) {
     all_ok = false;
@@ -229,13 +203,10 @@ do_rebuild(EggCharacterDb &db) {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::optimize
-//       Access: Public, Virtual
-//  Description: Resets the table before writing to disk so that
-//               redundant rows (e.g. i { 1 1 1 1 1 1 1 1 }) are
-//               collapsed out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the table before writing to disk so that redundant rows (e.g.  i { 1 1
+ * 1 1 1 1 1 1 }) are collapsed out.
+ */
 void EggMatrixTablePointer::
 optimize() {
   if (_xform != (EggXfmSAnim *)NULL) {
@@ -243,12 +214,9 @@ optimize() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::zero_channels
-//       Access: Public, Virtual
-//  Description: Zeroes out the named components of the transform in
-//               the animation frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Zeroes out the named components of the transform in the animation frames.
+ */
 void EggMatrixTablePointer::
 zero_channels(const string &components) {
   if (_xform == (EggXfmSAnim *)NULL) {
@@ -267,12 +235,10 @@ zero_channels(const string &components) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::quantize_channels
-//       Access: Public, Virtual
-//  Description: Rounds the named components of the transform to the
-//               nearest multiple of quantum.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rounds the named components of the transform to the nearest multiple of
+ * quantum.
+ */
 void EggMatrixTablePointer::
 quantize_channels(const string &components, double quantum) {
   if (_xform == (EggXfmSAnim *)NULL) {
@@ -285,7 +251,7 @@ quantize_channels(const string &components, double quantum) {
   for (si = components.begin(); si != components.end(); ++si) {
     string table_name(1, *si);
     EggNode *child = _xform->find_child(table_name);
-    if (child != (EggNode *)NULL && 
+    if (child != (EggNode *)NULL &&
         child->is_of_type(EggSAnimData::get_class_type())) {
       EggSAnimData *anim = DCAST(EggSAnimData, child);
       anim->quantize(quantum);
@@ -293,12 +259,10 @@ quantize_channels(const string &components, double quantum) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::make_new_joint
-//       Access: Public, Virtual
-//  Description: Creates a new child of the current joint in the
-//               egg data, and returns a pointer to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new child of the current joint in the egg data, and returns a
+ * pointer to it.
+ */
 EggJointPointer *EggMatrixTablePointer::
 make_new_joint(const string &name) {
   EggTable *new_table = new EggTable(name);
@@ -314,11 +278,9 @@ make_new_joint(const string &name) {
   return new EggMatrixTablePointer(new_table);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMatrixTablePointer::set_name
-//       Access: Public, Virtual
-//  Description: Applies the indicated name change to the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated name change to the egg file.
+ */
 void EggMatrixTablePointer::
 set_name(const string &name) {
   _table->set_name(name);

@@ -20,35 +20,32 @@
 #include "pandaNode.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ModelFlattenRequest
-// Description : This class object manages a single asynchronous
-//               request to flatten a model.  The model will be
-//               duplicated and flattened in a sub-thread (if
-//               threading is available), without affecting the
-//               original model; and when the result is done it may be
-//               retrieved from this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class object manages a single asynchronous request to flatten a model.
+ * The model will be duplicated and flattened in a sub-thread (if threading is
+ * available), without affecting the original model; and when the result is done
+ * it may be retrieved from this object.
+ */
 class EXPCL_PANDA_PGRAPH ModelFlattenRequest : public AsyncTask {
 public:
   ALLOC_DELETED_CHAIN(ModelFlattenRequest);
 
 PUBLISHED:
   INLINE ModelFlattenRequest(PandaNode *orig);
-  
+
   INLINE PandaNode *get_orig() const;
-  
+
   INLINE bool is_ready() const;
   INLINE PandaNode *get_model() const;
-  
+
 protected:
   virtual DoneStatus do_task();
-  
+
 private:
   PT(PandaNode) _orig;
   bool _is_ready;
   PT(PandaNode) _model;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -62,7 +59,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
   static TypeHandle _type_handle;
 };

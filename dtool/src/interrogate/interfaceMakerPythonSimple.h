@@ -21,18 +21,14 @@
 
 class FunctionRemap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMakerPythonSimple
-// Description : An InterfaceMaker for generating simple Python
-//               function wrappers around C++ code.  This allows the
-//               C++ code to be called by Python, but not necessarily
-//               in a user-friendly or object-oriented way.
-//
-//               You probably want to use InterfaceMakerPythonObj for
-//               a full object-oriented solution.  This InterfaceMaker
-//               is primarily useful as a stopgap for our old
-//               Python-based FFI system.
-////////////////////////////////////////////////////////////////////
+/**
+ * An InterfaceMaker for generating simple Python function wrappers around C++
+ * code.  This allows the C++ code to be called by Python, but not necessarily
+ * in a user-friendly or object-oriented way.  You probably want to use
+ * InterfaceMakerPythonObj for a full object-oriented solution.  This
+ * InterfaceMaker is primarily useful as a stopgap for our old Python-based FFI
+ * system.
+ */
 class InterfaceMakerPythonSimple : public InterfaceMakerPython {
 public:
   InterfaceMakerPythonSimple(InterrogateModuleDef *def);
@@ -50,7 +46,7 @@ protected:
   virtual string get_unique_prefix();
 
   virtual void
-  record_function_wrapper(InterrogateFunction &ifunc, 
+  record_function_wrapper(InterrogateFunction &ifunc,
                           FunctionWrapperIndex wrapper_index);
 
 private:

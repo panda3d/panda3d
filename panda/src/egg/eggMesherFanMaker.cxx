@@ -16,13 +16,11 @@
 #include "eggPolygon.h"
 #include "eggGroupNode.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMesherFanMaker::
-EggMesherFanMaker(int vertex, EggMesherStrip *tri, 
+EggMesherFanMaker(int vertex, EggMesherStrip *tri,
                   EggMesher *mesher) {
   _vertex = vertex;
   const EggMesherEdge *edge = tri->find_opposite_edge(vertex);
@@ -34,11 +32,9 @@ EggMesherFanMaker(int vertex, EggMesherStrip *tri,
   _mesher = mesher;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMesherFanMaker::
 EggMesherFanMaker(const EggMesherFanMaker &copy) :
   _vertex(copy._vertex),
@@ -49,11 +45,9 @@ EggMesherFanMaker(const EggMesherFanMaker &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggMesherFanMaker::
 operator = (const EggMesherFanMaker &copy) {
   _vertex = copy._vertex;
@@ -63,15 +57,11 @@ operator = (const EggMesherFanMaker &copy) {
   _mesher = copy._mesher;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::join
-//       Access: Public
-//  Description: Attempts to connect two fans end-to-end.  They must
-//               both share the same common vertex and a common edge.
-//
-//               The return value is true if the fans were
-//               successfully joined, or false if they could not be.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to connect two fans end-to-end.  They must both share the same
+ * common vertex and a common edge.  The return value is true if the fans were
+ * successfully joined, or false if they could not be.
+ */
 bool EggMesherFanMaker::
 join(EggMesherFanMaker &other) {
   nassertr(_vertex == other._vertex, false);
@@ -81,7 +71,7 @@ join(EggMesherFanMaker &other) {
 
   const EggMesherEdge *my_back = _edges.back();
   const EggMesherEdge *other_front = other._edges.front();
-  nassertr(my_back != (EggMesherEdge *)NULL && 
+  nassertr(my_back != (EggMesherEdge *)NULL &&
            other_front != (EggMesherEdge *)NULL, false);
 
   int my_back_b = my_back->_vi_b;
@@ -96,7 +86,7 @@ join(EggMesherFanMaker &other) {
 
   const EggMesherEdge *my_front = _edges.front();
   const EggMesherEdge *other_back = other._edges.back();
-  nassertr(my_front != (EggMesherEdge *)NULL && 
+  nassertr(my_front != (EggMesherEdge *)NULL &&
            other_back != (EggMesherEdge *)NULL, false);
 
   int my_front_a = my_front->_vi_a;
@@ -112,12 +102,10 @@ join(EggMesherFanMaker &other) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::compute_angle
-//       Access: Public
-//  Description: Returns the overall angle subtended by the fan, from
-//               the leading edge to the trailing edge, in degrees.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the overall angle subtended by the fan, from the leading edge to the
+ * trailing edge, in degrees.
+ */
 double EggMesherFanMaker::
 compute_angle() const {
   // We sum up the angles of each triangle.  This is more correct than
@@ -126,7 +114,7 @@ compute_angle() const {
   nassertr(is_valid(), 0.0);
 
   EggVertexPool *vertex_pool = _mesher->_vertex_pool;
-  
+
   double angle = 0.0;
   LPoint3d v0 = vertex_pool->get_vertex(_vertex)->get_pos3();
 
@@ -143,21 +131,14 @@ compute_angle() const {
   return rad_2_deg(angle);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::build
-//       Access: Public
-//  Description: Begins the fanning process.  Searches for triangles
-//               and connects them into a fan.
-//
-//               In certain cases, if egg_unroll_fans is enabled, the
-//               resulting fan may be retesselated into a series of
-//               zig-zag triangles, which are stored in unrolled_tris.
-//               Otherwise, an EggMesherStrip (representing the fan)
-//               is created and added to the mesher.
-//
-//               The return value is (loosely) the number of
-//               primitives created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins the fanning process.  Searches for triangles and connects them into a
+ * fan.  In certain cases, if egg_unroll_fans is enabled, the resulting fan may
+ * be retesselated into a series of zig-zag triangles, which are stored in
+ * unrolled_tris.  Otherwise, an EggMesherStrip (representing the fan) is
+ * created and added to the mesher.  The return value is (loosely) the number of
+ * primitives created.
+ */
 int EggMesherFanMaker::
 build(EggGroupNode *unrolled_tris) {
   nassertr(_edges.size() == _strips.size(), 0);
@@ -265,16 +246,12 @@ build(EggGroupNode *unrolled_tris) {
   return 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::unroll
-//       Access: Public
-//  Description: Unrolls a planar subset of the current working fan,
-//               defined by the given iterators, into a series of
-//               triangles that zig-zag back and forth for better
-//               tristripping properties.  The new triangles are added
-//               to unrolled_tris; the return value is 1 if
-//               successful, or 0 otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unrolls a planar subset of the current working fan, defined by the given
+ * iterators, into a series of triangles that zig-zag back and forth for better
+ * tristripping properties.  The new triangles are added to unrolled_tris; the
+ * return value is 1 if successful, or 0 otherwise.
+ */
 int EggMesherFanMaker::
 unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
        Edges::iterator edge_begin, Edges::iterator edge_end,
@@ -344,11 +321,9 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMesherFanMaker::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggMesherFanMaker::
 output(ostream &out) const {
   out << _vertex << ":[";

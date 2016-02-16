@@ -18,10 +18,9 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxJointLimitDesc
-// Description : Describes a joint limit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a joint limit.
+ */
 class EXPCL_PANDAPHYSX PhysxJointLimitDesc {
 
 PUBLISHED:

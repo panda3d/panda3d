@@ -24,13 +24,11 @@ class DatagramIterator;
 class BamReader;
 class BamWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DataNodeTransmit
-// Description : Encapsulates the data generated from (or sent into)
-//               any particular DataNode.  This is basically just an
-//               array of EventParameters, one for each registered
-//               input or output wire.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the data generated from (or sent into) any particular DataNode.
+ * This is basically just an array of EventParameters, one for each registered
+ * input or output wire.
+ */
 class EXPCL_PANDA_DGRAPH DataNodeTransmit : public TypedWritable {
 public:
   INLINE DataNodeTransmit();
@@ -60,7 +58,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

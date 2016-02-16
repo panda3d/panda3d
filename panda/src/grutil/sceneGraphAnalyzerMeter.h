@@ -27,18 +27,14 @@ class PandaNode;
 class GraphicsChannel;
 class ClockObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SceneGraphAnalyzerMeter
-// Description : This is a special TextNode that automatically updates
-//               itself with output from a SceneGraphAnalyzer instance.
-//               It can be placed anywhere in the world where you'd like
-//               to see the output from SceneGraphAnalyzer.
-//
-//               It also has a special mode in which it may be
-//               attached directly to a channel or window.  If this is
-//               done, it creates a DisplayRegion for itself and renders
-//               itself in the upper-right-hand corner.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special TextNode that automatically updates itself with output from
+ * a SceneGraphAnalyzer instance.  It can be placed anywhere in the world where
+ * you'd like to see the output from SceneGraphAnalyzer.  It also has a special
+ * mode in which it may be attached directly to a channel or window.  If this is
+ * done, it creates a DisplayRegion for itself and renders itself in the upper-
+ * right-hand corner.
+ */
 class EXPCL_PANDA SceneGraphAnalyzerMeter : public TextNode {
 PUBLISHED:
   SceneGraphAnalyzerMeter(const string &name, PandaNode *node);

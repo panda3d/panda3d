@@ -13,11 +13,9 @@
 
 #include "bulletSoftBodyControl.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletSoftBodyControl::
 BulletSoftBodyControl() {
 
@@ -28,21 +26,17 @@ BulletSoftBodyControl() {
   _sign = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletSoftBodyControl::
 ~BulletSoftBodyControl() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::Prepare
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletSoftBodyControl::
 Prepare(btSoftBody::AJoint* joint) {
 
@@ -52,14 +46,11 @@ Prepare(btSoftBody::AJoint* joint) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::Speed
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btScalar BulletSoftBodyControl::
 Speed(btSoftBody::AJoint *, btScalar current) {
 
   return (current + btMin(_maxtorque, btMax(-_maxtorque, _goal - current)));
 }
-

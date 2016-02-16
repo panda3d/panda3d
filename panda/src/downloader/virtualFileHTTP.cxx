@@ -21,11 +21,9 @@
 TypeHandle VirtualFileHTTP::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VirtualFileHTTP::
 VirtualFileHTTP(VirtualFileMountHTTP *mount, const Filename &local_filename,
                 bool implicit_pz_file, int open_flags) :
@@ -44,11 +42,9 @@ VirtualFileHTTP(VirtualFileMountHTTP *mount, const Filename &local_filename,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::Destructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VirtualFileHTTP::
 ~VirtualFileHTTP() {
   // Recycle the associated HTTPChannel, so we can use it again later
@@ -56,23 +52,17 @@ VirtualFileHTTP::
   _mount->recycle_channel(_channel);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::get_file_system
-//       Access: Published, Virtual
-//  Description: Returns the VirtualFileSystem this file is associated
-//               with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the VirtualFileSystem this file is associated with.
+ */
 VirtualFileSystem *VirtualFileHTTP::
 get_file_system() const {
   return _mount->get_file_system();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::get_filename
-//       Access: Published, Virtual
-//  Description: Returns the full pathname to this file within the
-//               virtual file system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the full pathname to this file within the virtual file system.
+ */
 Filename VirtualFileHTTP::
 get_filename() const {
   string mount_point = _mount->get_mount_point();
@@ -92,52 +82,40 @@ get_filename() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::has_file
-//       Access: Published, Virtual
-//  Description: Returns true if this file exists, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file exists, false otherwise.
+ */
 bool VirtualFileHTTP::
 has_file() const {
   return _channel->is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::is_directory
-//       Access: Published, Virtual
-//  Description: Returns true if this file represents a directory (and
-//               scan_directory() may be called), false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file represents a directory (and scan_directory() may be
+ * called), false otherwise.
+ */
 bool VirtualFileHTTP::
 is_directory() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::is_regular_file
-//       Access: Published, Virtual
-//  Description: Returns true if this file represents a regular file
-//               (and read_file() may be called), false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file represents a regular file (and read_file() may be
+ * called), false otherwise.
+ */
 bool VirtualFileHTTP::
 is_regular_file() const {
   return _channel->is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::open_read_file
-//       Access: Published, Virtual
-//  Description: Opens the file for reading.  Returns a newly
-//               allocated istream on success (which you should
-//               eventually delete when you are done reading).
-//               Returns NULL on failure.
-//
-//               If auto_unwrap is true, an explicitly-named .pz file
-//               is automatically decompressed and the decompressed
-//               contents are returned.  This is different than
-//               vfs-implicit-pz, which will automatically decompress
-//               a file if the extension .pz is *not* given.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the file for reading.  Returns a newly allocated istream on success
+ * (which you should eventually delete when you are done reading). Returns NULL
+ * on failure.  If auto_unwrap is true, an explicitly-named .pz file is
+ * automatically decompressed and the decompressed contents are returned.  This
+ * is different than vfs-implicit-pz, which will automatically decompress a file
+ * if the extension .pz is *not* given.
+ */
 istream *VirtualFileHTTP::
 open_read_file(bool auto_unwrap) const {
   if (_status_only) {
@@ -152,22 +130,17 @@ open_read_file(bool auto_unwrap) const {
     delete strstream;
     return NULL;
   }
-  
+
   return return_file(strstream, auto_unwrap);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::fetch_file
-//       Access: Private
-//  Description: Downloads the entire file from the web server into
-//               the indicated iostream.  Returns true on success,
-//               false on failure.
-//
-//               This seems to be safer than returning the socket
-//               stream directly, since this way we can better control
-//               timeouts and other internet hiccups.  We can also
-//               offer seeking on the resulting stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Downloads the entire file from the web server into the indicated iostream.
+ * Returns true on success, false on failure.  This seems to be safer than
+ * returning the socket stream directly, since this way we can better control
+ * timeouts and other internet hiccups.  We can also offer seeking on the
+ * resulting stream.
+ */
 bool VirtualFileHTTP::
 fetch_file(ostream *buffer_stream) const {
   _channel->download_to_stream(buffer_stream, false);
@@ -191,13 +164,10 @@ fetch_file(ostream *buffer_stream) const {
   return _channel->is_download_complete() && _channel->is_valid();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::return_file
-//       Access: Private
-//  Description: After downloading the entire file via fetch_file(),
-//               rewinds the file stream and returns it as its own
-//               readable stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * After downloading the entire file via fetch_file(), rewinds the file stream
+ * and returns it as its own readable stream.
+ */
 istream *VirtualFileHTTP::
 return_file(istream *buffer_stream, bool auto_unwrap) const {
   // Will we be automatically unwrapping a .pz file?
@@ -215,60 +185,44 @@ return_file(istream *buffer_stream, bool auto_unwrap) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::was_read_successful
-//       Access: Public
-//  Description: Call this method after a reading the istream returned
-//               by open_read_file() to completion.  If it returns
-//               true, the file was read completely and without error;
-//               if it returns false, there may have been some errors
-//               or a truncated file read.  This is particularly
-//               likely if the stream is a VirtualFileHTTP.
-////////////////////////////////////////////////////////////////////
+/**
+ * Call this method after a reading the istream returned by open_read_file() to
+ * completion.  If it returns true, the file was read completely and without
+ * error; if it returns false, there may have been some errors or a truncated
+ * file read.  This is particularly likely if the stream is a VirtualFileHTTP.
+ */
 bool VirtualFileHTTP::
 was_read_successful() const {
   return _channel->is_valid() && _channel->is_download_complete();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::get_file_size
-//       Access: Published, Virtual
-//  Description: Returns the current size on disk (or wherever it is)
-//               of the already-open file.  Pass in the stream that
-//               was returned by open_read_file(); some
-//               implementations may require this stream to determine
-//               the size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current size on disk (or wherever it is) of the already-open
+ * file.  Pass in the stream that was returned by open_read_file(); some
+ * implementations may require this stream to determine the size.
+ */
 streamsize VirtualFileHTTP::
 get_file_size(istream *stream) const {
   return _channel->get_file_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::get_file_size
-//       Access: Published, Virtual
-//  Description: Returns the current size on disk (or wherever it is)
-//               of the file before it has been opened.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current size on disk (or wherever it is) of the file before it
+ * has been opened.
+ */
 streamsize VirtualFileHTTP::
 get_file_size() const {
   return _channel->get_file_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileHTTP::get_timestamp
-//       Access: Published, Virtual
-//  Description: Returns a time_t value that represents the time the
-//               file was last modified, to within whatever precision
-//               the operating system records this information (on a
-//               Windows95 system, for instance, this may only be
-//               accurate to within 2 seconds).
-//
-//               If the timestamp cannot be determined, either because
-//               it is not supported by the operating system or
-//               because there is some error (such as file not found),
-//               returns 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a time_t value that represents the time the file was last modified,
+ * to within whatever precision the operating system records this information
+ * (on a Windows95 system, for instance, this may only be accurate to within 2
+ * seconds).  If the timestamp cannot be determined, either because it is not
+ * supported by the operating system or because there is some error (such as
+ * file not found), returns 0.
+ */
 time_t VirtualFileHTTP::
 get_timestamp() const {
   const DocumentSpec &spec = _channel->get_document_spec();
@@ -279,4 +233,3 @@ get_timestamp() const {
 }
 
 #endif // HAVE_OPENSSL
-

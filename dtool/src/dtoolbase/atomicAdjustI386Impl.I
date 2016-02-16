@@ -11,11 +11,9 @@
  * @date 2006-04-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::inc
-//       Access: Public, Static
-//  Description: Atomically increments the indicated variable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically increments the indicated variable.
+ */
 INLINE void AtomicAdjustI386Impl::
 inc(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
@@ -34,13 +32,10 @@ inc(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
 #endif  // __EDG__
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::dec
-//       Access: Public, Static
-//  Description: Atomically decrements the indicated variable and
-//               returns true if the new value is nonzero, false if it
-//               is zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically decrements the indicated variable and returns true if the new
+ * value is nonzero, false if it is zero.
+ */
 INLINE bool AtomicAdjustI386Impl::
 dec(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
@@ -62,12 +57,9 @@ dec(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
   return (c == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::add
-//       Access: Public, Static
-//  Description: Atomically computes var += delta.  It is legal for
-//               delta to be negative.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically computes var += delta.  It is legal for delta to be negative.
+ */
 INLINE void AtomicAdjustI386Impl::
 add(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer delta) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
@@ -77,14 +69,11 @@ add(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::set
-//       Access: Public, Static
-//  Description: Atomically changes the indicated variable and
-//               returns the original value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically changes the indicated variable and returns the original value.
+ */
 INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
-set(TVOLATILE AtomicAdjustI386Impl::Integer &var, 
+set(TVOLATILE AtomicAdjustI386Impl::Integer &var,
     AtomicAdjustI386Impl::Integer new_value) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
   Integer orig_value = var;
@@ -92,29 +81,23 @@ set(TVOLATILE AtomicAdjustI386Impl::Integer &var,
   return orig_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::get
-//       Access: Public, Static
-//  Description: Atomically retrieves the snapshot value of the
-//               indicated variable.  This is the only guaranteed safe
-//               way to retrieve the value that other threads might be
-//               asynchronously setting, incrementing, or decrementing
-//               (via other AtomicAjust methods).
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically retrieves the snapshot value of the indicated variable.  This is
+ * the only guaranteed safe way to retrieve the value that other threads might
+ * be asynchronously setting, incrementing, or decrementing (via other
+ * AtomicAjust methods).
+ */
 INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
 get(const TVOLATILE AtomicAdjustI386Impl::Integer &var) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
   return var;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::set_ptr
-//       Access: Public, Static
-//  Description: Atomically changes the indicated variable and
-//               returns the original value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically changes the indicated variable and returns the original value.
+ */
 INLINE AtomicAdjustI386Impl::Pointer AtomicAdjustI386Impl::
-set_ptr(TVOLATILE AtomicAdjustI386Impl::Pointer &var, 
+set_ptr(TVOLATILE AtomicAdjustI386Impl::Pointer &var,
         AtomicAdjustI386Impl::Pointer new_value) {
   assert((((size_t)&var) & (sizeof(Pointer) - 1)) == 0);
   Pointer orig_value = var;
@@ -122,42 +105,27 @@ set_ptr(TVOLATILE AtomicAdjustI386Impl::Pointer &var,
   return orig_value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::get_ptr
-//       Access: Public, Static
-//  Description: Atomically retrieves the snapshot value of the
-//               indicated variable.  This is the only guaranteed safe
-//               way to retrieve the value that other threads might be
-//               asynchronously setting, incrementing, or decrementing
-//               (via other AtomicAjust methods).
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically retrieves the snapshot value of the indicated variable.  This is
+ * the only guaranteed safe way to retrieve the value that other threads might
+ * be asynchronously setting, incrementing, or decrementing (via other
+ * AtomicAjust methods).
+ */
 INLINE AtomicAdjustI386Impl::Pointer AtomicAdjustI386Impl::
 get_ptr(const TVOLATILE AtomicAdjustI386Impl::Pointer &var) {
   assert((((size_t)&var) & (sizeof(Pointer) - 1)) == 0);
   return var;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::compare_and_exchange
-//       Access: Public, Static
-//  Description: Atomic compare and exchange.  
-//
-//               If mem is equal to old_value, store new_value in mem.
-//               In either case, return the original value of mem.
-//               The caller can test for success by comparing
-//               return_value == old_value.
-//
-//               The atomic function expressed in pseudo-code:
-//
-//                 orig_value = mem;
-//                 if (mem == old_value) {
-//                   mem = new_value;
-//                 }
-//                 return orig_value;
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomic compare and exchange.  If mem is equal to old_value, store new_value
+ * in mem.  In either case, return the original value of mem.  The caller can
+ * test for success by comparing return_value == old_value.  The atomic function
+ * expressed in pseudo-code:  orig_value = mem; if (mem == old_value) { mem =
+ * new_value; } return orig_value;
+ */
 INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
-compare_and_exchange(TVOLATILE AtomicAdjustI386Impl::Integer &mem, 
+compare_and_exchange(TVOLATILE AtomicAdjustI386Impl::Integer &mem,
                      AtomicAdjustI386Impl::Integer old_value,
                      AtomicAdjustI386Impl::Integer new_value) {
   assert((((size_t)&mem) & (sizeof(Integer) - 1)) == 0);
@@ -182,15 +150,12 @@ compare_and_exchange(TVOLATILE AtomicAdjustI386Impl::Integer &mem,
   return prev;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AtomicAdjustI386Impl::compare_and_exchange_ptr
-//       Access: Public, Static
-//  Description: Atomic compare and exchange.  
-//
-//               As above, but works on pointers instead of integers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomic compare and exchange.  As above, but works on pointers instead of
+ * integers.
+ */
 INLINE AtomicAdjustI386Impl::Pointer AtomicAdjustI386Impl::
-compare_and_exchange_ptr(TVOLATILE AtomicAdjustI386Impl::Pointer &mem, 
+compare_and_exchange_ptr(TVOLATILE AtomicAdjustI386Impl::Pointer &mem,
                          AtomicAdjustI386Impl::Pointer old_value,
                          AtomicAdjustI386Impl::Pointer new_value) {
   assert((((size_t)&mem) & (sizeof(Pointer) - 1)) == 0);

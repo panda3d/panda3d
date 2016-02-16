@@ -21,15 +21,12 @@
 
 #include "atomicAdjust.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MutexSpinlockImpl
-// Description : Uses a simple user-space spinlock to implement a
-//               mutex.  It is usually not a good idea to use this
-//               implementation, unless you are building Panda for a
-//               specific application on a specific SMP machine, and
-//               you are confident that you have at least as many
-//               CPU's as you have threads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses a simple user-space spinlock to implement a mutex.  It is usually not a
+ * good idea to use this implementation, unless you are building Panda for a
+ * specific application on a specific SMP machine, and you are confident that
+ * you have at least as many CPU's as you have threads.
+ */
 class EXPCL_DTOOL MutexSpinlockImpl {
 public:
   INLINE MutexSpinlockImpl();

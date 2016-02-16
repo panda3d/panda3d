@@ -27,14 +27,13 @@
 
 class BulletRigidBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletGenericConstraint
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletGenericConstraint : public BulletConstraint {
 
 PUBLISHED:
-  BulletGenericConstraint(const BulletRigidBodyNode *node_a, 
+  BulletGenericConstraint(const BulletRigidBodyNode *node_a,
                           const TransformState *frame_a,
                           bool use_frame_a);
   BulletGenericConstraint(const BulletRigidBodyNode *node_a,
@@ -68,7 +67,7 @@ public:
 private:
   btGeneric6DofConstraint *_constraint;
 
-//TODO btRotationalLimitMotor *  getRotationalLimitMotor (int index) 
+//TODO btRotationalLimitMotor *  getRotationalLimitMotor (int index)
 
 public:
   static TypeHandle get_class_type() {
@@ -76,7 +75,7 @@ public:
   }
   static void init_type() {
     BulletConstraint::init_type();
-    register_type(_type_handle, "BulletGenericConstraint", 
+    register_type(_type_handle, "BulletGenericConstraint",
                   BulletConstraint::get_class_type());
   }
   virtual TypeHandle get_type() const {

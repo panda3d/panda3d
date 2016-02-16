@@ -25,10 +25,9 @@
 class PhysxForceField;
 class PhysxForceFieldShapeGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxForceFieldShape
-// Description : Abstract base class for force field shapes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for force field shapes.
+ */
 class EXPCL_PANDAPHYSX PhysxForceFieldShape : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -68,7 +67,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxForceFieldShape", 
+    register_type(_type_handle, "PhysxForceFieldShape",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

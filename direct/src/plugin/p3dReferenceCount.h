@@ -16,13 +16,11 @@
 
 #include "p3d_plugin_common.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DReferenceCount
-// Description : A base class for reference-counted objects in this
-//               module.  We follow the Panda convention, rather than
-//               the Python convention: the reference count of a new
-//               object is initially 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for reference-counted objects in this module.  We follow the
+ * Panda convention, rather than the Python convention: the reference count of a
+ * new object is initially 0.
+ */
 class P3DReferenceCount {
 public:
   inline P3DReferenceCount();

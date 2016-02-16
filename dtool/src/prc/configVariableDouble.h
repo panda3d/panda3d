@@ -17,19 +17,18 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableDouble
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a floating-point type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a floating-point
+ * type.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableDouble : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableDouble(const string &name);
   INLINE ConfigVariableDouble(const string &name, double default_value,
-                              const string &description = string(), 
+                              const string &description = string(),
                               int flags = 0);
   INLINE ConfigVariableDouble(const string &name, const string &default_value,
-                              const string &description = string(), 
+                              const string &description = string(),
                               int flags = 0);
 
   INLINE void operator = (double value);

@@ -11,13 +11,10 @@
  * @date 1999-02-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::Default Constructor
-//       Access: Protected
-//  Description: This constructor is only intended for interal use and
-//               for derived classes.  You should normally use the
-//               non-default constructor, below.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor is only intended for interal use and for derived classes.
+ * You should normally use the non-default constructor, below.
+ */
 INLINE PartGroup::
 PartGroup(const string &name) :
   Namable(name),
@@ -25,13 +22,10 @@ PartGroup(const string &name) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::Copy Constructor
-//       Access: Protected
-//  Description: This constructor is only intended for interal use and
-//               for derived classes.  You should normally use the
-//               make_copy() interface to make copies..
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor is only intended for interal use and for derived classes.
+ * You should normally use the make_copy() interface to make copies..
+ */
 INLINE PartGroup::
 PartGroup(const PartGroup &copy) :
   Namable(copy),

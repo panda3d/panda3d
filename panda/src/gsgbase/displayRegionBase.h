@@ -18,11 +18,10 @@
 
 #include "typedReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DisplayRegionBase
-// Description : An abstract base class for DisplayRegion, mainly so
-//               we can store DisplayRegion pointers in a Camera.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for DisplayRegion, mainly so we can store
+ * DisplayRegion pointers in a Camera.
+ */
 class EXPCL_PANDA_GSGBASE DisplayRegionBase : public TypedReferenceCount {
 protected:
   INLINE DisplayRegionBase();

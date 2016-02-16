@@ -38,11 +38,11 @@ int main(int argc, char *argv[]) {
   t.add_hole_vertex(6);
   t.add_hole_vertex(5);
   t.add_hole_vertex(4);
-    
+
   t.triangulate();
 
   for (int i = 0; i < t.get_num_triangles(); ++i) {
-    cerr << "tri: " << t.get_triangle_v0(i) << " " 
+    cerr << "tri: " << t.get_triangle_v0(i) << " "
          << t.get_triangle_v1(i) << " "
          << t.get_triangle_v2(i) << "\n";
   }

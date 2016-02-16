@@ -36,11 +36,9 @@ bool Loader::_file_types_loaded = false;
 PT(Loader) Loader::_global_ptr;
 TypeHandle Loader::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Loader::
 Loader(const string &name) :
   Namable(name)
@@ -72,24 +70,20 @@ Loader(const string &name) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::make_async_request
-//       Access: Published
-//  Description: Returns a new AsyncTask object suitable for adding to
-//               load_async() to start an asynchronous model load.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new AsyncTask object suitable for adding to load_async() to start
+ * an asynchronous model load.
+ */
 PT(AsyncTask) Loader::
 make_async_request(const Filename &filename, const LoaderOptions &options) {
   return new ModelLoadRequest(string("model:")+filename.get_basename(),
                               filename, options, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::make_async_save_request
-//       Access: Published
-//  Description: Returns a new AsyncTask object suitable for adding to
-//               save_async() to start an asynchronous model save.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new AsyncTask object suitable for adding to save_async() to start
+ * an asynchronous model save.
+ */
 PT(AsyncTask) Loader::
 make_async_save_request(const Filename &filename, const LoaderOptions &options,
                         PandaNode *node) {
@@ -97,12 +91,10 @@ make_async_save_request(const Filename &filename, const LoaderOptions &options,
                               filename, options, node, this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::load_bam_stream
-//       Access: Published
-//  Description: Attempts to read a bam file from the indicated stream
-//               and return the scene graph defined there.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to read a bam file from the indicated stream and return the scene
+ * graph defined there.
+ */
 PT(PandaNode) Loader::
 load_bam_stream(istream &in) {
   BamFile bam_file;
@@ -113,11 +105,9 @@ load_bam_stream(istream &in) {
   return bam_file.read_node();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Loader::
 output(ostream &out) const {
   out << get_type() << " " << get_name();
@@ -128,17 +118,12 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::load_file
-//       Access: Private
-//  Description: Loads a single scene graph file, if possible.
-//               Returns the Node that is the root of the file, or
-//               NULL if the file cannot be loaded.
-//
-//               If search is true, the file is searched for along the
-//               model path; otherwise, only the exact filename is
-//               loaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a single scene graph file, if possible.  Returns the Node that is the
+ * root of the file, or NULL if the file cannot be loaded.  If search is true,
+ * the file is searched for along the model path; otherwise, only the exact
+ * filename is loaded.
+ */
 PT(PandaNode) Loader::
 load_file(const Filename &filename, const LoaderOptions &options) const {
   Filename this_filename(filename);
@@ -273,13 +258,10 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::try_load_file
-//       Access: Private
-//  Description: The implementatin of load_file(), this tries a single
-//               possible file without searching further along the
-//               path.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementatin of load_file(), this tries a single possible file without
+ * searching further along the path.
+ */
 PT(PandaNode) Loader::
 try_load_file(const Filename &pathname, const LoaderOptions &options,
               LoaderFileType *requested_type) const {
@@ -381,13 +363,10 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::save_file
-//       Access: Private
-//  Description: Saves a scene graph to a single file, if possible.
-//               The file type written is implicit in the filename
-//               extension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves a scene graph to a single file, if possible.  The file type written is
+ * implicit in the filename extension.
+ */
 bool Loader::
 save_file(const Filename &filename, const LoaderOptions &options,
           PandaNode *node) const {
@@ -466,12 +445,9 @@ save_file(const Filename &filename, const LoaderOptions &options,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::try_save_file
-//       Access: Private
-//  Description: The implementation of save_file(), this tries to
-//               write a specific file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * The implementation of save_file(), this tries to write a specific file type.
+ */
 bool Loader::
 try_save_file(const Filename &pathname, const LoaderOptions &options,
               PandaNode *node, LoaderFileType *requested_type) const {
@@ -481,14 +457,11 @@ try_save_file(const Filename &pathname, const LoaderOptions &options,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::load_file_types
-//       Access: Private, Static
-//  Description: Loads up all of the dynamic libraries named in a
-//               load-file-type Configure variable.  Presumably this
-//               will make the various file types available for
-//               runtime loading.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads up all of the dynamic libraries named in a load-file-type Configure
+ * variable.  Presumably this will make the various file types available for
+ * runtime loading.
+ */
 void Loader::
 load_file_types() {
   if (!_file_types_loaded) {
@@ -539,16 +512,12 @@ load_file_types() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Loader::make_global_ptr
-//       Access: Private, Static
-//  Description: Called once per application to create the global
-//               loader object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once per application to create the global loader object.
+ */
 void Loader::
 make_global_ptr() {
   nassertv(_global_ptr == (Loader *)NULL);
 
   _global_ptr = new Loader("loader");
 }
-

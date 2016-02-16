@@ -23,13 +23,10 @@
 
 class ConfigVariableCore;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableManager
-// Description : A global object that maintains the set of
-//               ConfigVariables (actually, ConfigVariableCores)
-//               everywhere in the world, and keeps them in sorted
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * A global object that maintains the set of ConfigVariables (actually,
+ * ConfigVariableCores) everywhere in the world, and keeps them in sorted order.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableManager {
 protected:
   ConfigVariableManager();
@@ -37,10 +34,10 @@ protected:
 
 PUBLISHED:
   ConfigVariableCore *make_variable(const string &name);
-  ConfigVariableCore *make_variable_template(const string &pattern, 
+  ConfigVariableCore *make_variable_template(const string &pattern,
                                              ConfigFlags::ValueType type,
                                              const string &default_value,
-                                             const string &description = string(), 
+                                             const string &description = string(),
                                              int flags = 0);
 
 
@@ -84,4 +81,3 @@ INLINE ostream &operator << (ostream &out, const ConfigVariableManager &variable
 #include "configVariableManager.I"
 
 #endif
-

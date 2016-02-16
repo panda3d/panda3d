@@ -16,11 +16,9 @@
 #include "pfmFile.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmBba::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PfmBba::
 PfmBba() {
   set_program_brief("generate .bba files from .pfm files");
@@ -40,11 +38,9 @@ PfmBba() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmBba::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PfmBba::
 run() {
   Filenames::const_iterator fi;
@@ -60,11 +56,9 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmBba::process_pfm
-//       Access: Public
-//  Description: Handles a single pfm file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles a single pfm file.
+ */
 bool PfmBba::
 process_pfm(const Filename &input_filename, PfmFile &file) {
   file.set_zero_special(_got_zero_special);
@@ -81,7 +75,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     bba_filename.set_text();
     PT(BoundingHexahedron) bounds = file.compute_planar_bounds(LPoint2f(0.5, 0.5), pfm_bba_dist[0], pfm_bba_dist[1], false);
     nassertr(bounds != (BoundingHexahedron *)NULL, false);
-    
+
     pofstream out;
     if (!bba_filename.open_write(out)) {
       cerr << "Unable to open " << bba_filename << "\n";
@@ -105,7 +99,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     points[2] += normal;
     points[3] += normal;
     */
-    
+
     for (int i = 0; i < 8; ++i) {
       const LPoint3 &p = points[i];
       out << p[0] << "," << p[1] << "," << p[2] << "\n";
@@ -115,14 +109,11 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PfmBba::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool PfmBba::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {

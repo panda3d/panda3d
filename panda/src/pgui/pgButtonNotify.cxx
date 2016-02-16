@@ -14,11 +14,9 @@
 #include "pgButtonNotify.h"
 #include "pgButton.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGButtonNotify::button_click
-//       Access: Protected, Virtual
-//  Description: Called whenever a watched PGButton has been clicked.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a watched PGButton has been clicked.
+ */
 void PGButtonNotify::
 button_click(PGButton *, const MouseWatcherParameter &) {
 }

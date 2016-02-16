@@ -11,23 +11,18 @@
  * @date 1999-02-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::is_valid_id
-//       Access: Public, Static
-//  Description: Returns true if the given letter is one of the nine
-//               valid table id's.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the given letter is one of the nine valid table id's.
+ */
 INLINE bool AnimChannelMatrixXfmTable::
 is_valid_id(char table_id) {
   return get_table_index(table_id) >= 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_table
-//       Access: Public
-//  Description: Returns a pointer to the indicated subtable's data,
-//               if it exists, or NULL if it does not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the indicated subtable's data, if it exists, or NULL if
+ * it does not.
+ */
 INLINE CPTA_stdfloat AnimChannelMatrixXfmTable::
 get_table(char table_id) const {
   int table_index = get_table_index(table_id);
@@ -37,12 +32,9 @@ get_table(char table_id) const {
   return _tables[table_index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::has_table
-//       Access: Published
-//  Description: Returns true if the indicated subtable has been
-//               assigned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated subtable has been assigned.
+ */
 INLINE bool AnimChannelMatrixXfmTable::
 has_table(char table_id) const {
   int table_index = get_table_index(table_id);
@@ -52,11 +44,9 @@ has_table(char table_id) const {
   return !(_tables[table_index] == (const PN_stdfloat *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::clear_table
-//       Access: Published
-//  Description: Removes the indicated table from the definition.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated table from the definition.
+ */
 INLINE void AnimChannelMatrixXfmTable::
 clear_table(char table_id) {
   int table_index = get_table_index(table_id);
@@ -66,13 +56,10 @@ clear_table(char table_id) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_table_id
-//       Access: Protected, Static
-//  Description: Returns the table ID associated with the indicated
-//               table index number.  This is the letter 'i', 'j',
-//               'k', 'a', 'b', 'c', 'h', 'p', 'r', 'x', 'y', or 'z'.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the table ID associated with the indicated table index number.  This
+ * is the letter 'i', 'j', 'k', 'a', 'b', 'c', 'h', 'p', 'r', 'x', 'y', or 'z'.
+ */
 INLINE char AnimChannelMatrixXfmTable::
 get_table_id(int table_index) {
   nassertr(table_index >= 0 && table_index < num_matrix_components, '\0');
@@ -80,15 +67,12 @@ get_table_id(int table_index) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixXfmTable::get_default_value
-//       Access: Protected, Static
-//  Description: Returns the default value the indicated table is
-//               expected to have in the absence of any data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default value the indicated table is expected to have in the
+ * absence of any data.
+ */
 INLINE PN_stdfloat AnimChannelMatrixXfmTable::
 get_default_value(int table_index) {
   nassertr(table_index >= 0 && table_index < num_matrix_components, 0.0);
   return matrix_component_defaults[table_index];
 }
-

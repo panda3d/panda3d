@@ -25,10 +25,9 @@ class PhysxWheel;
 class PhysxVehicleDesc;
 class PhysxScene;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxVehicle
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxVehicle : public PhysxObject {
 
 PUBLISHED:
@@ -64,7 +63,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxVehicle", 
+    register_type(_type_handle, "PhysxVehicle",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

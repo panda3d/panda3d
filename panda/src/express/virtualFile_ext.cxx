@@ -16,18 +16,13 @@
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::read_file
-//       Access: Published
-//  Description: Convenience function; returns the entire contents of
-//               the indicated file as a string (or as a bytes object,
-//               in Python 3).
-//
-//               This variant on read_file() is implemented directly
-//               for Python, as a small optimization, to avoid the
-//               double-construction of a string object that would be
-//               otherwise required for the return value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience function; returns the entire contents of the indicated file as a
+ * string (or as a bytes object, in Python 3).  This variant on read_file() is
+ * implemented directly for Python, as a small optimization, to avoid the
+ * double-construction of a string object that would be otherwise required for
+ * the return value.
+ */
 PyObject *Extension<VirtualFile>::
 read_file(bool auto_unwrap) const {
   vector_uchar pv;
@@ -49,17 +44,12 @@ read_file(bool auto_unwrap) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::write_file
-//       Access: Published
-//  Description: Convenience function; writes the entire contents of
-//               the indicated file as a string.
-//
-//               This variant on write_file() is implemented directly
-//               for Python, as a small optimization, to avoid the
-//               double-construction of a string object that would be
-//               otherwise required.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience function; writes the entire contents of the indicated file as a
+ * string.  This variant on write_file() is implemented directly for Python, as
+ * a small optimization, to avoid the double-construction of a string object
+ * that would be otherwise required.
+ */
 PyObject *Extension<VirtualFile>::
 write_file(PyObject *data, bool auto_wrap) {
   char *buffer;

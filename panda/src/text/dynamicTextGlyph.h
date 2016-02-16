@@ -23,17 +23,15 @@
 class DynamicTextPage;
 class DynamicTextFont;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DynamicTextGlyph
-// Description : A specialization on TextGlyph that is generated and
-//               stored by a DynamicTextFont.  This keeps some
-//               additional information, such as where the glyph
-//               appears on a texture map.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization on TextGlyph that is generated and stored by a
+ * DynamicTextFont.  This keeps some additional information, such as where the
+ * glyph appears on a texture map.
+ */
 class EXPCL_PANDA_TEXT DynamicTextGlyph : public TextGlyph {
 public:
   INLINE DynamicTextGlyph(int character, DynamicTextPage *page,
-                          int x, int y, int x_size, int y_size, 
+                          int x, int y, int x_size, int y_size,
                           int margin, PN_stdfloat advance);
   INLINE DynamicTextGlyph(int character, PN_stdfloat advance);
 private:

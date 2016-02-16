@@ -23,11 +23,9 @@
 template class AnimChannel<ACMatrixSwitchType>;
 template class AnimChannel<ACScalarSwitchType>;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ACMatrixSwitchType::output_value
-//       Access: Public, Static
-//  Description: Outputs a very brief description of a matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a very brief description of a matrix.
+ */
 void ACMatrixSwitchType::
 output_value(ostream &out, const ACMatrixSwitchType::ValueType &value) {
   LVecBase3 scale, shear, hpr, translate;
@@ -56,4 +54,3 @@ output_value(ostream &out, const ACMatrixSwitchType::ValueType &value) {
     out << " mat " << value;
   }
 }
-

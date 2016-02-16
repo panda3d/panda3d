@@ -16,15 +16,12 @@
 
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearControlForce
-// Description : Simple directed vector force.  This force is
-//               different from the others in that it can be
-//               global and still only affect a single object.
-//               That might not make sense for a physics simulation,
-//               but it's very handy for a game.  I.e. this is
-//               the force applied by user on the selected object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simple directed vector force.  This force is different from the others in
+ * that it can be global and still only affect a single object.  That might not
+ * make sense for a physics simulation, but it's very handy for a game.  I.e.
+ * this is the force applied by user on the selected object.
+ */
 class EXPCL_PANDAPHYSICS LinearControlForce : public LinearForce {
 PUBLISHED:
   LinearControlForce(const PhysicsObject *po = 0, PN_stdfloat a = 1.0f,

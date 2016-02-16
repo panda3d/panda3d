@@ -27,14 +27,11 @@ class BamReader;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimInterface
-// Description : This is the fundamental interface for things that
-//               have a play/loop/stop type interface for frame-based
-//               animation, such as animated characters.  This is the
-//               base class for AnimControl and other, similar
-//               classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the fundamental interface for things that have a play/loop/stop type
+ * interface for frame-based animation, such as animated characters.  This is
+ * the base class for AnimControl and other, similar classes.
+ */
 class EXPCL_PANDA_PUTIL AnimInterface {
 protected:
   AnimInterface();
@@ -130,7 +127,7 @@ private:
     double _play_frames;
     int _from_frame;
     int _to_frame;
-    
+
     double _play_rate;
     double _effective_frame_rate;
     bool _paused;

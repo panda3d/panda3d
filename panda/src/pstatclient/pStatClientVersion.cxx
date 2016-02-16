@@ -15,11 +15,9 @@
 #include "pStatProperties.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatClientVersion::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatClientVersion::
 PStatClientVersion() {
   _major_version = get_current_pstat_major_version();

@@ -32,7 +32,7 @@ PUBLISHED:
 
   INLINE void set_geom_node(PandaNode *node);
   INLINE PandaNode *get_geom_node();
-  INLINE ColorInterpolationManager* get_color_interpolation_manager() const;  
+  INLINE ColorInterpolationManager* get_color_interpolation_manager() const;
 
   INLINE void set_x_scale_flag(bool animate_x_ratio);
   INLINE void set_y_scale_flag(bool animate_y_ratio);

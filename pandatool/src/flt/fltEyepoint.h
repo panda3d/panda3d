@@ -21,11 +21,9 @@
 class FltRecordReader;
 class FltRecordWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltEyepoint
-// Description : A single eyepoint entry in the eyepoint/trackplane
-//               palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single eyepoint entry in the eyepoint/trackplane palette.
+ */
 class FltEyepoint {
 public:
   FltEyepoint();
@@ -55,6 +53,3 @@ public:
 };
 
 #endif
-
-
-

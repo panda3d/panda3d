@@ -21,11 +21,10 @@
 class TextureImage;
 class PNMImageHeader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SourceTextureImage
-// Description : This is a texture image reference as it appears in an
-//               egg file: the source image of the texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a texture image reference as it appears in an egg file: the source
+ * image of the texture.
+ */
 class SourceTextureImage : public ImageFile {
 private:
   SourceTextureImage();
@@ -84,4 +83,3 @@ operator << (ostream &out, const SourceTextureImage &source) {
 }
 
 #endif
-

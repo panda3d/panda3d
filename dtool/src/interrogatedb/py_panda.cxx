@@ -30,13 +30,11 @@ static RuntimeTypeMap runtime_type_map;
 static RuntimeTypeSet runtime_type_set;
 static NamedTypeMap named_type_map;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DtoolCanThisBeAPandaInstance
-//  Description: Given a valid (non-NULL) PyObject, does a simple
-//               check to see if it might be an instance of a Panda
-//               type.  It does this using a signature that is
-//               encoded on each instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a valid (non-NULL) PyObject, does a simple check to see if it might be
+ * an instance of a Panda type.  It does this using a signature that is encoded
+ * on each instance.
+ */
 bool DtoolCanThisBeAPandaInstance(PyObject *self) {
   // simple sanity check for the class type..size.. will stop basic foobars..
   // It is arguably better to use something like this:
@@ -51,12 +49,9 @@ bool DtoolCanThisBeAPandaInstance(PyObject *self) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DTOOL_Call_ExtractThisPointerForType
-//  These are the wrappers that allow for down and upcast from type ..
-//      needed by the Dtool py interface.. Be very careful if you muck with these
-//      as the generated code depends on how this is set up..
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer) {
   if (DtoolCanThisBeAPandaInstance(self)) {
     *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, classdef);
@@ -65,13 +60,11 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *c
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Call_ExtractThisPointer
-//  Description: This is a support function for the Python bindings:
-//               it extracts the underlying C++ pointer of the given
-//               type for a given Python object.  If it was of the
-//               wrong type, raises an AttributeError.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a support function for the Python bindings: it extracts the
+ * underlying C++ pointer of the given type for a given Python object.  If it
+ * was of the wrong type, raises an AttributeError.
+ */
 bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer) {
   if (self == NULL || !DtoolCanThisBeAPandaInstance(self)) {
     Dtool_Raise_TypeError("C++ object is not yet constructed, or already destructed.");
@@ -82,17 +75,13 @@ bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Call_ExtractThisPointer_NonConst
-//  Description: The same thing as Dtool_Call_ExtractThisPointer,
-//               except that it performs the additional check that
-//               the pointer is a non-const pointer.  This is called
-//               by function wrappers for functions of which all
-//               overloads are non-const, and saves a bit of code.
-//
-//               The extra method_name argument is used in formatting
-//               the error message.
-////////////////////////////////////////////////////////////////////
+/**
+ * The same thing as Dtool_Call_ExtractThisPointer, except that it performs the
+ * additional check that the pointer is a non-const pointer.  This is called by
+ * function wrappers for functions of which all overloads are non-const, and
+ * saves a bit of code.  The extra method_name argument is used in formatting
+ * the error message.
+ */
 bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
                                             void **answer, const char *method_name) {
 
@@ -113,33 +102,20 @@ bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject 
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DTOOL_Call_GetPointerThisClass
-//  Description: Extracts the C++ pointer for an object, given its
-//               Python wrapper object, for passing as the parameter
-//               to a C++ function.
-//
-//               self is the Python wrapper object in question.
-//
-//               classdef is the Python class wrapper for the C++
-//               class in which the this pointer should be returned.
-//               (This may require an upcast operation, if self is not
-//               already an instance of classdef.)
-//
-//               param and function_name are used for error reporting
-//               only, and describe the particular function and
-//               parameter index for this parameter.
-//
-//               const_ok is true if the function is declared const
-//               and can therefore be called with either a const or
-//               non-const "this" pointer, or false if the function is
-//               declared non-const, and can therefore be called with
-//               only a non-const "this" pointer.
-//
-//               The return value is the C++ pointer that was
-//               extracted, or NULL if there was a problem (in which
-//               case the Python exception state will have been set).
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the C++ pointer for an object, given its Python wrapper object, for
+ * passing as the parameter to a C++ function.  self is the Python wrapper
+ * object in question.  classdef is the Python class wrapper for the C++ class
+ * in which the this pointer should be returned.  (This may require an upcast
+ * operation, if self is not already an instance of classdef.)  param and
+ * function_name are used for error reporting only, and describe the particular
+ * function and parameter index for this parameter.  const_ok is true if the
+ * function is declared const and can therefore be called with either a const or
+ * non-const "this" pointer, or false if the function is declared non-const, and
+ * can therefore be called with only a non-const "this" pointer.  The return
+ * value is the C++ pointer that was extracted, or NULL if there was a problem
+ * (in which case the Python exception state will have been set).
+ */
 void *
 DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
                                int param, const string &function_name, bool const_ok,
@@ -189,20 +165,14 @@ void *DTOOL_Call_GetPointerThis(PyObject *self) {
 }
 
 #ifndef NDEBUG
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_CheckErrorOccurred
-//  Description: This is similar to a PyErr_Occurred() check, except
-//               that it also checks Notify to see if an assertion
-//               has occurred.  If that is the case, then it raises
-//               an AssertionError.
-//
-//               Returns true if there is an active exception, false
-//               otherwise.
-//
-//               In the NDEBUG case, this is simply a #define to
-//               _PyErr_OCCURRED() (which is an undocumented inline
-//               version of PyErr_Occurred()).
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to a PyErr_Occurred() check, except that it also checks
+ * Notify to see if an assertion has occurred.  If that is the case, then it
+ * raises an AssertionError.  Returns true if there is an active exception,
+ * false otherwise.  In the NDEBUG case, this is simply a #define to
+ * _PyErr_OCCURRED() (which is an undocumented inline version of
+ * PyErr_Occurred()).
+ */
 bool Dtool_CheckErrorOccurred() {
   if (_PyErr_OCCURRED()) {
     return true;
@@ -215,12 +185,10 @@ bool Dtool_CheckErrorOccurred() {
 }
 #endif  // NDEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Raise_AssertionError
-//  Description: Raises an AssertionError containing the last thrown
-//               assert message, and clears the assertion flag.
-//               Returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Raises an AssertionError containing the last thrown assert message, and
+ * clears the assertion flag.  Returns NULL.
+ */
 PyObject *Dtool_Raise_AssertionError() {
   Notify *notify = Notify::ptr();
 #if PY_MAJOR_VERSION >= 3
@@ -234,11 +202,9 @@ PyObject *Dtool_Raise_AssertionError() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Raise_TypeError
-//  Description: Raises a TypeError with the given message, and
-//               returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Raises a TypeError with the given message, and returns NULL.
+ */
 PyObject *Dtool_Raise_TypeError(const char *message) {
   // PyErr_Restore is what PyErr_SetString would have ended up calling
   // eventually anyway, so we might as well just get to the point.
@@ -251,16 +217,12 @@ PyObject *Dtool_Raise_TypeError(const char *message) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Raise_ArgTypeError
-//  Description: Raises a TypeError of the form:
-//               function_name() argument n must be type, not type
-//               for a given object passed to a function.
-//
-//               Always returns NULL so that it can be conveniently
-//               used as a return expression for wrapper functions
-//               that return a PyObject pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Raises a TypeError of the form: function_name() argument n must be type, not
+ * type for a given object passed to a function.  Always returns NULL so that it
+ * can be conveniently used as a return expression for wrapper functions that
+ * return a PyObject pointer.
+ */
 PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name) {
 #if PY_MAJOR_VERSION >= 3
   PyObject *message = PyUnicode_FromFormat(
@@ -276,15 +238,11 @@ PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *functio
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Raise_AttributeError
-//  Description: Raises an AttributeError of the form:
-//               'type' has no attribute 'attr'
-//
-//               Always returns NULL so that it can be conveniently
-//               used as a return expression for wrapper functions
-//               that return a PyObject pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Raises an AttributeError of the form: 'type' has no attribute 'attr'  Always
+ * returns NULL so that it can be conveniently used as a return expression for
+ * wrapper functions that return a PyObject pointer.
+ */
 PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
 #if PY_MAJOR_VERSION >= 3
   PyObject *message = PyUnicode_FromFormat(
@@ -299,30 +257,21 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Raise_BadArgumentsError
-//  Description: Raises a TypeError of the form:
-//               Arguments must match:
-//               <list of overloads>
-//
-//               However, in release builds, this instead is defined
-//               to a function that just prints out a generic
-//               message, to help reduce the amount of strings in
-//               the compiled library.
-//
-//               Always returns NULL so that it can be conveniently
-//               used as a return expression for wrapper functions
-//               that return a PyObject pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Raises a TypeError of the form: Arguments must match: <list of overloads>
+ * However, in release builds, this instead is defined to a function that just
+ * prints out a generic message, to help reduce the amount of strings in the
+ * compiled library.  Always returns NULL so that it can be conveniently used as
+ * a return expression for wrapper functions that return a PyObject pointer.
+ */
 PyObject *_Dtool_Raise_BadArgumentsError() {
   return Dtool_Raise_TypeError("arguments do not match any function overload");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Return_None
-//  Description: Convenience method that checks for exceptions, and
-//               if one occurred, returns NULL, otherwise Py_None.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience method that checks for exceptions, and if one occurred, returns
+ * NULL, otherwise Py_None.
+ */
 PyObject *_Dtool_Return_None() {
   if (_PyErr_OCCURRED()) {
     return NULL;
@@ -336,12 +285,10 @@ PyObject *_Dtool_Return_None() {
   return Py_None;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Return_Bool
-//  Description: Convenience method that checks for exceptions, and
-//               if one occurred, returns NULL, otherwise the given
-//               boolean value as a PyObject *.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience method that checks for exceptions, and if one occurred, returns
+ * NULL, otherwise the given boolean value as a PyObject *.
+ */
 PyObject *Dtool_Return_Bool(bool value) {
   if (_PyErr_OCCURRED()) {
     return NULL;
@@ -356,12 +303,11 @@ PyObject *Dtool_Return_Bool(bool value) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Dtool_Return
-//  Description: Convenience method that checks for exceptions, and
-//               if one occurred, returns NULL, otherwise the given
-//               return value.  Its reference count is not increased.
-////////////////////////////////////////////////////////////////////
+/**
+ * Convenience method that checks for exceptions, and if one occurred, returns
+ * NULL, otherwise the given return value.  Its reference count is not
+ * increased.
+ */
 PyObject *_Dtool_Return(PyObject *value) {
   if (_PyErr_OCCURRED()) {
     return NULL;
@@ -374,11 +320,9 @@ PyObject *_Dtool_Return(PyObject *value) {
   return value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DTool_CreatePyInstanceTyped
-// this function relies on the behavior of typed objects in the panda system.
-//
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &known_class_type, bool memory_rules, bool is_const, int type_index) {
   // We can't do the NULL check here like in DTool_CreatePyInstance, since
   // the caller will have to get the type index to pass to this function
@@ -421,10 +365,10 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   return (PyObject *)self;
 }
 
-////////////////////////////////////////////////////////////////////
-// DTool_CreatePyInstance .. wrapper function to finalize the existance of a general
-//    dtool py instance..
-////////////////////////////////////////////////////////////////////
+/*
+ * DTool_CreatePyInstance .. wrapper function to finalize the existance of a
+ * general dtool py instance..
+ */
 PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const) {
   if (local_this == NULL) {
     // This is actually a very common case, so let's allow this, but return
@@ -444,9 +388,9 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
   return (PyObject *)self;
 }
 
-////////////////////////////////////////////////////////////////////
-/// Th Finalizer for simple instances..
-////////////////////////////////////////////////////////////////////
+/*
+ * Th Finalizer for simple instances..
+ */
 int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject *type, bool memory_rules, bool is_const) {
   // lets put some code in here that checks to see the memory is properly configured..
   // prior to my call ..
@@ -458,11 +402,11 @@ int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject 
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-// A helper function to glue method definition together .. that can not be done
-// at code generation time because of multiple generation passes in interrogate..
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * A helper function to glue method definition together .. that can not be done
+ * at code generation time because of multiple generation passes in
+ * interrogate..
+ */
 void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
   for (; in->ml_name != NULL; in++) {
     if (themap.find(in->ml_name) == themap.end()) {
@@ -471,13 +415,11 @@ void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//  ** HACK ** alert..
-//
-//      Need to keep a runtime type dictionary ... that is forward declared of typed object.
-//        We rely on the fact that typed objects are uniquly defined by an integer.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * ** HACK ** alert.. Need to keep a runtime type dictionary ... that is forward
+ * declared of typed object.  We rely on the fact that typed objects are uniquly
+ * defined by an integer.
+ */
 void
 RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype) {
   pair<NamedTypeMap::iterator, bool> result =
@@ -684,14 +626,11 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
   return module;
 }
 
-////////////////////////////////////////////////////////////////////
-///  HACK.... Be careful
-//
-//  Dtool_BorrowThisReference
-//      This function can be used to grab the "THIS" pointer from an object and use it
-//      Required to support historical inheritance in the form of "is this instance of"..
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * HACK.... Be careful Dtool_BorrowThisReference This function can be used to
+ * grab the "THIS" pointer from an object and use it Required to support
+ * historical inheritance in the form of "is this instance of"..
+ */
 PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
   PyObject *from_in = NULL;
   PyObject *to_in = NULL;
@@ -720,9 +659,10 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
   return (PyObject *) NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-// We do expose a dictionay for dtool classes .. this should be removed at some point..
-////////////////////////////////////////////////////////////////////
+/*
+ * We do expose a dictionay for dtool classes .. this should be removed at some
+ * point..
+ */
 PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   PyObject *self;
   PyObject *subject;
@@ -858,20 +798,18 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
   return PyBool_FromLong(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: copy_from_make_copy
-//  Description: This is a support function for a synthesized
-//               __copy__() method from a C++ make_copy() method.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a support function for a synthesized __copy__() method from a C++
+ * make_copy() method.
+ */
 PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
   return PyObject_CallMethod(self, (char *)"make_copy", (char *)"()");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: copy_from_copy_constructor
-//  Description: This is a support function for a synthesized
-//               __copy__() method from a C++ copy constructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a support function for a synthesized __copy__() method from a C++
+ * copy constructor.
+ */
 PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *this_class = PyObject_Type(self);
   if (this_class == NULL) {
@@ -883,23 +821,19 @@ PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: map_deepcopy_to_copy
-//  Description: This is a support function for a synthesized
-//               __deepcopy__() method for any class that has a
-//               __copy__() method.  The sythethic method simply
-//               invokes __copy__().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a support function for a synthesized __deepcopy__() method for any
+ * class that has a __copy__() method.  The sythethic method simply invokes
+ * __copy__().
+ */
 PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
   return PyObject_CallMethod(self, (char *)"__copy__", (char *)"()");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PyLongOrInt_FromUnsignedLong
-//  Description: Similar to PyLong_FromUnsignedLong(), but returns
-//               either a regular integer or a long integer, according
-//               to whether the indicated value will fit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to PyLong_FromUnsignedLong(), but returns either a regular integer or
+ * a long integer, according to whether the indicated value will fit.
+ */
 #if PY_MAJOR_VERSION < 3
 EXPCL_INTERROGATEDB PyObject *
 PyLongOrInt_FromUnsignedLong(unsigned long value) {

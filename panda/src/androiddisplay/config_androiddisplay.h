@@ -29,12 +29,12 @@
 
 #ifdef OPENGLES_2
   NotifyCategoryDecl(androiddisplay, EXPCL_PANDAGLES2, EXPTP_PANDAGLES2);
-  
+
   extern EXPCL_PANDAGLES2 void init_libandroiddisplay();
   extern EXPCL_PANDAGLES2 const string get_egl_error_string(int error);
 #else
   NotifyCategoryDecl(androiddisplay, EXPCL_PANDAGLES, EXPTP_PANDAGLES);
-  
+
   extern EXPCL_PANDAGLES void init_libandroiddisplay();
   extern EXPCL_PANDAGLES const string get_egl_error_string(int error);
 #endif

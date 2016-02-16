@@ -17,91 +17,73 @@
 #include <algorithm>
 #include <iterator>
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DSearchPath::Results::
 Results() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DSearchPath::Results::
 Results(const DSearchPath::Results &copy) :
   _files(copy._files)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DSearchPath::Results::
 operator = (const DSearchPath::Results &copy) {
   _files = copy._files;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DSearchPath::Results::
 ~Results() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::clear
-//       Access: Published
-//  Description: Removes all the files from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the files from the list.
+ */
 void DSearchPath::Results::
 clear() {
   _files.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::get_num_files
-//       Access: Published
-//  Description: Returns the number of files on the result list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of files on the result list.
+ */
 size_t DSearchPath::Results::
 get_num_files() const {
   return _files.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::get_file
-//       Access: Published
-//  Description: Returns the nth file on the result list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth file on the result list.
+ */
 const Filename &DSearchPath::Results::
 get_file(size_t n) const {
   assert(n < _files.size());
   return _files[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::add_file
-//       Access: Published
-//  Description: Adds a new file to the result list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new file to the result list.
+ */
 void DSearchPath::Results::
 add_file(const Filename &file) {
   _files.push_back(file);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DSearchPath::Results::
 output(ostream &out) const {
   out << "[ ";
@@ -117,11 +99,9 @@ output(ostream &out) const {
   out << " ]";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Results::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DSearchPath::Results::
 write(ostream &out, int indent_level) const {
   Files::const_iterator fi;
@@ -133,101 +113,81 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Default Constructor
-//       Access: Published
-//  Description: Creates an empty search path.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an empty search path.
+ */
 DSearchPath::
 DSearchPath() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DSearchPath::
 DSearchPath(const string &path, const string &separator) {
   append_path(path, separator);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DSearchPath::
 DSearchPath(const Filename &directory) {
   append_directory(directory);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DSearchPath::
 DSearchPath(const DSearchPath &copy) :
   _directories(copy._directories)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DSearchPath::
 operator = (const DSearchPath &copy) {
   _directories = copy._directories;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DSearchPath::
 ~DSearchPath() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::clear
-//       Access: Published
-//  Description: Removes all the directories from the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the directories from the search list.
+ */
 void DSearchPath::
 clear() {
   _directories.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::append_directory
-//       Access: Published
-//  Description: Adds a new directory to the end of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new directory to the end of the search list.
+ */
 void DSearchPath::
 append_directory(const Filename &directory) {
   _directories.push_back(directory);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::prepend_directory
-//       Access: Published
-//  Description: Adds a new directory to the front of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new directory to the front of the search list.
+ */
 void DSearchPath::
 prepend_directory(const Filename &directory) {
   _directories.insert(_directories.begin(), directory);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::append_path
-//       Access: Published
-//  Description: Adds all of the directories listed in the search path
-//               to the end of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all of the directories listed in the search path to the end of the
+ * search list.
+ */
 void DSearchPath::
 append_path(const string &path, const string &separator) {
   string pathsep = separator;
@@ -254,24 +214,20 @@ append_path(const string &path, const string &separator) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::append_path
-//       Access: Published
-//  Description: Adds all of the directories listed in the search path
-//               to the end of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all of the directories listed in the search path to the end of the
+ * search list.
+ */
 void DSearchPath::
 append_path(const DSearchPath &path) {
   copy(path._directories.begin(), path._directories.end(),
        back_inserter(_directories));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::prepend_path
-//       Access: Published
-//  Description: Adds all of the directories listed in the search path
-//               to the beginning of the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds all of the directories listed in the search path to the beginning of the
+ * search list.
+ */
 void DSearchPath::
 prepend_path(const DSearchPath &path) {
   if (!path._directories.empty()) {
@@ -282,46 +238,36 @@ prepend_path(const DSearchPath &path) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::is_empty
-//       Access: Published
-//  Description: Returns true if the search list is empty, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the search list is empty, false otherwise.
+ */
 bool DSearchPath::
 is_empty() const {
   return _directories.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::get_num_directories
-//       Access: Published
-//  Description: Returns the number of directories on the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of directories on the search list.
+ */
 size_t DSearchPath::
 get_num_directories() const {
   return _directories.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::get_directory
-//       Access: Published
-//  Description: Returns the nth directory on the search list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth directory on the search list.
+ */
 const Filename &DSearchPath::
 get_directory(size_t n) const {
   assert(n < _directories.size());
   return _directories[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::find_file
-//       Access: Published
-//  Description: Searches all the directories in the search list for
-//               the indicated file, in order.  Returns the full
-//               matching pathname of the first match if found, or the
-//               empty string if not found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches all the directories in the search list for the indicated file, in
+ * order.  Returns the full matching pathname of the first match if found, or
+ * the empty string if not found.
+ */
 Filename DSearchPath::
 find_file(const Filename &filename) const {
   if (filename.is_local()) {
@@ -355,18 +301,13 @@ find_file(const Filename &filename) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::find_all_files
-//       Access: Published
-//  Description: Searches all the directories in the search list for
-//               the indicated file, in order.  Fills up the results
-//               list with *all* of the matching filenames found, if
-//               any.  Returns the number of matches found.
-//
-//               It is the responsibility of the the caller to clear
-//               the results list first; otherwise, the newly-found
-//               files will be appended to the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches all the directories in the search list for the indicated file, in
+ * order.  Fills up the results list with *all* of the matching filenames found,
+ * if any.  Returns the number of matches found.  It is the responsibility of
+ * the the caller to clear the results list first; otherwise, the newly-found
+ * files will be appended to the list.
+ */
 size_t DSearchPath::
 find_all_files(const Filename &filename,
                DSearchPath::Results &results) const {
@@ -404,11 +345,9 @@ find_all_files(const Filename &filename,
   return num_added;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DSearchPath::
 output(ostream &out, const string &separator) const {
   string pathsep = separator;
@@ -430,11 +369,9 @@ output(ostream &out, const string &separator) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DSearchPath::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DSearchPath::
 write(ostream &out, int indent_level) const {
   Directories::const_iterator di;

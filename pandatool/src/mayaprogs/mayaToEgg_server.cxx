@@ -23,11 +23,9 @@
   #include "pystub.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaToEggServer::
 MayaToEggServer() :
   SomethingToEgg("Maya", ".mb")
@@ -169,18 +167,16 @@ MayaToEggServer() :
   qReader = new QueuedConnectionReader(qManager, 0);
   cWriter = new ConnectionWriter(qManager, 0);
   dummy = new MayaToEggConverter();
-  
+
   nout << "Initializing Maya...\n";
   if (!dummy->open_api()) {
     nout << "Unable to initialize Maya.\n";
     exit(1);
   }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaToEggServer::
 ~MayaToEggServer() {
   delete qManager;
@@ -190,11 +186,9 @@ MayaToEggServer::
   delete dummy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MayaToEggServer::
 run() {
   // Make sure we have good clean data to start with
@@ -296,7 +290,7 @@ run() {
   append_command_comment(_data);
 
   write_egg_file();
-  
+
   // Clean and out
   close_output();
   _verbose = 0;
@@ -334,12 +328,10 @@ run() {
   dummy->clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::dispatch_transform_type
-//       Access: Protected, Static
-//  Description: Dispatches a parameter that expects a
-//               MayaToEggConverter::TransformType option.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dispatches a parameter that expects a MayaToEggConverter::TransformType
+ * option.
+ */
 bool MayaToEggServer::
 dispatch_transform_type(const string &opt, const string &arg, void *var) {
   MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
@@ -354,13 +346,10 @@ dispatch_transform_type(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggServer::poll
-//       Access: Public
-//  Description: Checks for any network activity and handles it, if
-//               appropriate, and then returns.  This must be called
-//               periodically
-////////////////////////////////////////////////////////////////////
+/**
+ * Checks for any network activity and handles it, if appropriate, and then
+ * returns.  This must be called periodically
+ */
 void MayaToEggServer::
 poll() {
   // Listen for new connections
@@ -386,7 +375,7 @@ poll() {
       qManager->close_connection(connection);
     }
   }
-  
+
   // Poll the readers (created above) and if they have data process it
   qReader->poll();
   if (qReader->data_available()) {
@@ -493,4 +482,3 @@ int main(int argc, char *argv[]) {
   }
   return 0;
 }
-

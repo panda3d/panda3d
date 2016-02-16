@@ -11,30 +11,24 @@
  * @date 2002-09-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IChunkedStream::
 IChunkedStream() : ISocketStream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IChunkedStream::
 IChunkedStream(BioStreamPtr *source, HTTPChannel *doc) : ISocketStream(&_buf) {
   open(source, doc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IChunkedStream::open
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE IChunkedStream &IChunkedStream::
 open(BioStreamPtr *source, HTTPChannel *doc) {
   clear((ios_iostate)0);

@@ -21,12 +21,10 @@
 
 class FunctionRemap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMakerC
-// Description : An InteraceMaker suitable for generating
-//               a series of C-calling-convention functions for
-//               Panda class objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * An InteraceMaker suitable for generating a series of C-calling-convention
+ * functions for Panda class objects.
+ */
 class InterfaceMakerC : public InterfaceMaker {
 public:
   InterfaceMakerC(InterrogateModuleDef *def);
@@ -44,7 +42,7 @@ protected:
   virtual string get_unique_prefix();
 
   virtual void
-  record_function_wrapper(InterrogateFunction &ifunc, 
+  record_function_wrapper(InterrogateFunction &ifunc,
                           FunctionWrapperIndex wrapper_index);
 
 private:

@@ -27,19 +27,16 @@ class FactoryParams;
 class BamCacheRecord;
 class VirtualFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamCacheRecord
-// Description : An instance of this class is written to the front of
-//               a Bam or Txo file to make the file a cached instance
-//               of some other loadable resource.  This record
-//               contains information needed to test the validity of
-//               the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * An instance of this class is written to the front of a Bam or Txo file to
+ * make the file a cached instance of some other loadable resource.  This record
+ * contains information needed to test the validity of the cache.
+ */
 class EXPCL_PANDA_PUTIL BamCacheRecord : public TypedWritableReferenceCount,
                                    public LinkedListNode {
 private:
   BamCacheRecord();
-  BamCacheRecord(const Filename &source_pathname, 
+  BamCacheRecord(const Filename &source_pathname,
                  const Filename &cache_filename);
   BamCacheRecord(const BamCacheRecord &copy);
 
@@ -106,7 +103,7 @@ private:
 
   typedef pvector<DependentFile> DependentFiles;
   DependentFiles _files;
-  
+
   // The following are not recorded to disk; they are preserved
   // in-memory only for the current session.
   Filename _cache_pathname;
@@ -125,7 +122,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -24,17 +24,15 @@
 class DCClass;
 class CConnectionRepository;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CDistributedSmoothNodeBase
-// Description : This class defines some basic methods of
-//               DistributedSmoothNodeBase which have been moved into
-//               C++ as a performance optimization.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines some basic methods of DistributedSmoothNodeBase which have
+ * been moved into C++ as a performance optimization.
+ */
 class EXPCL_DIRECT CDistributedSmoothNodeBase {
 PUBLISHED:
   CDistributedSmoothNodeBase();
   ~CDistributedSmoothNodeBase();
-  
+
   INLINE void
   set_repository(CConnectionRepository *repository,
                  bool is_ai, CHANNEL_TYPE ai_id);

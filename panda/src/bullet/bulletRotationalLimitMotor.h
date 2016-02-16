@@ -21,10 +21,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletRotationalLimitMotor
-// Description : Rotation Limit structure for generic joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rotation Limit structure for generic joints.
+ */
 class EXPCL_PANDABULLET BulletRotationalLimitMotor {
 
 PUBLISHED:

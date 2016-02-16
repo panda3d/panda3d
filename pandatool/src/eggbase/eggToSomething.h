@@ -19,12 +19,10 @@
 #include "eggConverter.h"
 #include "distanceUnit.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToSomething
-// Description : This is the general base class for a file-converter
-//               program that reads some model file format and
-//               generates an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the general base class for a file-converter program that reads some
+ * model file format and generates an egg file.
+ */
 class EggToSomething : public EggConverter {
 public:
   EggToSomething(const string &format_name,
@@ -44,5 +42,3 @@ protected:
 };
 
 #endif
-
-

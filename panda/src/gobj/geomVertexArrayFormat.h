@@ -31,24 +31,18 @@ class FactoryParams;
 class BamWriter;
 class BamReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexArrayFormat
-// Description : This describes the structure of a single array within
-//               a Geom data.  See GeomVertexFormat for the parent
-//               class which collects together all of the individual
-//               GeomVertexArrayFormat objects.
-//
-//               A particular array may include any number of standard
-//               or user-defined columns.  All columns consist of a
-//               sequence of one or more numeric values, packed in any
-//               of a variety of formats; the semantic meaning of each
-//               column is defined in general with its contents
-//               member, and in particular by its name.  The standard
-//               array types used most often are named "vertex",
-//               "normal", "texcoord", and "color"; other kinds of
-//               data may be piggybacked into the data record simply
-//               by choosing a unique name.
-////////////////////////////////////////////////////////////////////
+/**
+ * This describes the structure of a single array within a Geom data.  See
+ * GeomVertexFormat for the parent class which collects together all of the
+ * individual GeomVertexArrayFormat objects.  A particular array may include any
+ * number of standard or user-defined columns.  All columns consist of a
+ * sequence of one or more numeric values, packed in any of a variety of
+ * formats; the semantic meaning of each column is defined in general with its
+ * contents member, and in particular by its name.  The standard array types
+ * used most often are named "vertex", "normal", "texcoord", and "color"; other
+ * kinds of data may be piggybacked into the data record simply by choosing a
+ * unique name.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexArrayFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexArrayFormat();

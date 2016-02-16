@@ -22,14 +22,11 @@
 #include "pta_int.h"
 #include "pta_double.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataNodeTemplate
-// Description : This is a node which contains all of the data
-//               elements defined by a template.  See XFileTemplate
-//               for the definition of the template; this class only
-//               contains the data members for a particular instance
-//               of a template.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a node which contains all of the data elements defined by a template.
+ * See XFileTemplate for the definition of the template; this class only
+ * contains the data members for a particular instance of a template.
+ */
 class XFileDataNodeTemplate : public XFileDataNode {
 public:
   XFileDataNodeTemplate(XFile *x_file, const string &name,
@@ -57,7 +54,7 @@ protected:
 
 private:
   XFileParseDataList _parse_data_list;
-  
+
   typedef pvector< PT(XFileDataObject) > NestedElements;
   NestedElements _nested_elements;
 
@@ -82,7 +79,3 @@ private:
 #include "xFileDataNodeTemplate.I"
 
 #endif
-  
-
-
-

@@ -84,25 +84,21 @@ static bool plugin_loaded = false;
 static bool dso_needs_unload = false;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_plugin_basename
-//  Description: Returns the default plugin filename, without any
-//               directory path (but including the extension
-//               appropriate to this platform).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default plugin filename, without any directory path (but
+ * including the extension appropriate to this platform).
+ */
 string
 get_plugin_basename() {
   return default_plugin_filename + dll_ext;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_extension_dot
-//  Description: Returns the position in the string of the dot before
-//               the filename extension; that is, the position of the
-//               rightmost dot that is right of the rightmost slash
-//               (or backslash, on Windows).  Returns string::npos if
-//               there is no extension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the position in the string of the dot before the filename extension;
+ * that is, the position of the rightmost dot that is right of the rightmost
+ * slash (or backslash, on Windows).  Returns string::npos if there is no
+ * extension.
+ */
 static size_t
 find_extension_dot(const string &filename) {
   size_t p = filename.length();
@@ -119,22 +115,17 @@ find_extension_dot(const string &filename) {
 // Forward reference for function defined below.
 static void unload_dso();
 
-////////////////////////////////////////////////////////////////////
-//     Function: load_plugin
-//  Description: Loads the plugin and assigns all of the function
-//               pointers.  Returns true on success, false on failure.
-//               If load_plugin() has already been called
-//               successfully, this returns true immediately, without
-//               parsing any parameters.
-//
-//               If p3d_plugin_filename is empty, the module is
-//               assumed to be already loaded (or statically linked
-//               in), and the symbols are located within the current
-//               address space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the plugin and assigns all of the function pointers.  Returns true on
+ * success, false on failure.  If load_plugin() has already been called
+ * successfully, this returns true immediately, without parsing any parameters.
+ * If p3d_plugin_filename is empty, the module is assumed to be already loaded
+ * (or statically linked in), and the symbols are located within the current
+ * address space.
+ */
 bool
-load_plugin(const string &p3d_plugin_filename, 
-            const string &contents_filename, const string &host_url, 
+load_plugin(const string &p3d_plugin_filename,
+            const string &contents_filename, const string &host_url,
             P3D_verify_contents verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
@@ -159,14 +150,14 @@ load_plugin(const string &p3d_plugin_filename,
     // On Windows, the filename passed to LoadLibrary() must have an
     // extension, or a default ".DLL" will be implicitly added.  If the
     // file actually has no extension, we must add "." to avoid this.
-    
+
     // Check whether the filename has an extension.
     size_t extension_dot = find_extension_dot(filename);
     if (extension_dot == string::npos) {
       // No extension.
       filename += ".";
     }
-    
+
     SetErrorMode(0);
     wstring filename_w;
     if (string_to_wstring(filename_w, filename)) {
@@ -177,8 +168,8 @@ load_plugin(const string &p3d_plugin_filename,
 
   if (module == NULL) {
     // Couldn't load the DLL.
-    logfile 
-      << "Couldn't load " << filename << ", error = " 
+    logfile
+      << "Couldn't load " << filename << ", error = "
       << GetLastError() << "\n";
     return false;
   }
@@ -210,15 +201,15 @@ load_plugin(const string &p3d_plugin_filename,
 #endif  // _WIN32
 
   // Now get all of the function pointers.
-  P3D_initialize_ptr = (P3D_initialize_func *)get_func(module, "P3D_initialize");  
-  P3D_finalize_ptr = (P3D_finalize_func *)get_func(module, "P3D_finalize");  
-  P3D_set_plugin_version_ptr = (P3D_set_plugin_version_func *)get_func(module, "P3D_set_plugin_version");  
-  P3D_set_super_mirror_ptr = (P3D_set_super_mirror_func *)get_func(module, "P3D_set_super_mirror");  
-  P3D_new_instance_ptr = (P3D_new_instance_func *)get_func(module, "P3D_new_instance");  
-  P3D_instance_start_ptr = (P3D_instance_start_func *)get_func(module, "P3D_instance_start");  
-  P3D_instance_start_stream_ptr = (P3D_instance_start_stream_func *)get_func(module, "P3D_instance_start_stream");  
-  P3D_instance_finish_ptr = (P3D_instance_finish_func *)get_func(module, "P3D_instance_finish");  
-  P3D_instance_setup_window_ptr = (P3D_instance_setup_window_func *)get_func(module, "P3D_instance_setup_window");  
+  P3D_initialize_ptr = (P3D_initialize_func *)get_func(module, "P3D_initialize");
+  P3D_finalize_ptr = (P3D_finalize_func *)get_func(module, "P3D_finalize");
+  P3D_set_plugin_version_ptr = (P3D_set_plugin_version_func *)get_func(module, "P3D_set_plugin_version");
+  P3D_set_super_mirror_ptr = (P3D_set_super_mirror_func *)get_func(module, "P3D_set_super_mirror");
+  P3D_new_instance_ptr = (P3D_new_instance_func *)get_func(module, "P3D_new_instance");
+  P3D_instance_start_ptr = (P3D_instance_start_func *)get_func(module, "P3D_instance_start");
+  P3D_instance_start_stream_ptr = (P3D_instance_start_stream_func *)get_func(module, "P3D_instance_start_stream");
+  P3D_instance_finish_ptr = (P3D_instance_finish_func *)get_func(module, "P3D_instance_finish");
+  P3D_instance_setup_window_ptr = (P3D_instance_setup_window_func *)get_func(module, "P3D_instance_setup_window");
 
   P3D_object_get_type_ptr = (P3D_object_get_type_func *)get_func(module, "P3D_object_get_type");
   P3D_object_get_bool_ptr = (P3D_object_get_bool_func *)get_func(module, "P3D_object_get_bool");
@@ -243,18 +234,18 @@ load_plugin(const string &p3d_plugin_filename,
   P3D_instance_get_panda_script_object_ptr = (P3D_instance_get_panda_script_object_func *)get_func(module, "P3D_instance_get_panda_script_object");
   P3D_instance_set_browser_script_object_ptr = (P3D_instance_set_browser_script_object_func *)get_func(module, "P3D_instance_set_browser_script_object");
 
-  P3D_instance_get_request_ptr = (P3D_instance_get_request_func *)get_func(module, "P3D_instance_get_request");  
-  P3D_check_request_ptr = (P3D_check_request_func *)get_func(module, "P3D_check_request");  
-  P3D_request_finish_ptr = (P3D_request_finish_func *)get_func(module, "P3D_request_finish");  
-  P3D_instance_feed_url_stream_ptr = (P3D_instance_feed_url_stream_func *)get_func(module, "P3D_instance_feed_url_stream");  
-  P3D_instance_handle_event_ptr = (P3D_instance_handle_event_func *)get_func(module, "P3D_instance_handle_event");  
+  P3D_instance_get_request_ptr = (P3D_instance_get_request_func *)get_func(module, "P3D_instance_get_request");
+  P3D_check_request_ptr = (P3D_check_request_func *)get_func(module, "P3D_check_request");
+  P3D_request_finish_ptr = (P3D_request_finish_func *)get_func(module, "P3D_request_finish");
+  P3D_instance_feed_url_stream_ptr = (P3D_instance_feed_url_stream_func *)get_func(module, "P3D_instance_feed_url_stream");
+  P3D_instance_handle_event_ptr = (P3D_instance_handle_event_func *)get_func(module, "P3D_instance_handle_event");
 
   #undef get_func
 
   // Successfully loaded.
   plugin_loaded = true;
 
-  if (!init_plugin(contents_filename, host_url, 
+  if (!init_plugin(contents_filename, host_url,
                    verify_contents, platform,
                    log_directory, log_basename,
                    trusted_environment, console_environment,
@@ -266,18 +257,14 @@ load_plugin(const string &p3d_plugin_filename,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_plugin
-//  Description: Ensures all the required function pointers have been
-//               set, and then calls P3D_initialize() on the
-//               recently-loaded plugin.  Returns true on success,
-//               false on failure.
-//
-//               It is not necessary to call this after calling
-//               load_plugin(); it is called implicitly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures all the required function pointers have been set, and then calls
+ * P3D_initialize() on the recently-loaded plugin.  Returns true on success,
+ * false on failure.  It is not necessary to call this after calling
+ * load_plugin(); it is called implicitly.
+ */
 bool
-init_plugin(const string &contents_filename, const string &host_url, 
+init_plugin(const string &contents_filename, const string &host_url,
             P3D_verify_contents verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
@@ -318,13 +305,13 @@ init_plugin(const string &contents_filename, const string &host_url,
       P3D_new_string_object_ptr == NULL ||
       P3D_instance_get_panda_script_object_ptr == NULL ||
       P3D_instance_set_browser_script_object_ptr == NULL ||
-      
+
       P3D_instance_get_request_ptr == NULL ||
       P3D_check_request_ptr == NULL ||
       P3D_request_finish_ptr == NULL ||
       P3D_instance_feed_url_stream_ptr == NULL ||
       P3D_instance_handle_event_ptr == NULL) {
-    
+
     logfile
       << "Some function pointers not found:"
       << "\nP3D_initialize_ptr = " << P3D_initialize_ptr
@@ -383,12 +370,12 @@ init_plugin(const string &contents_filename, const string &host_url,
   if (!P3D_initialize_ptr(api_version, contents_filename.c_str(),
                           host_url.c_str(), verify_contents, platform.c_str(),
                           log_directory.c_str(), log_basename.c_str(),
-                          trusted_environment, console_environment, 
+                          trusted_environment, console_environment,
                           root_dir.c_str(), host_dir.c_str(),
                           start_dir.c_str())) {
     // Oops, failure to initialize.
     logfile
-      << "Failed to initialize plugin (passed API version " 
+      << "Failed to initialize plugin (passed API version "
       << api_version << ")\n";
     return false;
   }
@@ -396,11 +383,10 @@ init_plugin(const string &contents_filename, const string &host_url,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: unload_plugin
-//  Description: Calls finalize, then removes the plugin from memory
-//               space and clears all of the pointers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls finalize, then removes the plugin from memory space and clears all of
+ * the pointers.
+ */
 void
 unload_plugin(ostream &logfile) {
   if (!plugin_loaded) {
@@ -411,29 +397,25 @@ unload_plugin(ostream &logfile) {
   unload_dso();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: unload_dso
-//  Description: Removes the plugin from memory space and clears all
-//               of the pointers.  This is only intended to be called
-//               by load_plugin(), above, in the specific case that
-//               the plugin loaded but could not successfully
-//               initialize itself.  All user code should call
-//               unload_plugin(), above, which first calls
-//               P3D_finalize().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the plugin from memory space and clears all of the pointers.  This is
+ * only intended to be called by load_plugin(), above, in the specific case that
+ * the plugin loaded but could not successfully initialize itself.  All user
+ * code should call unload_plugin(), above, which first calls P3D_finalize().
+ */
 static void
 unload_dso() {
   if (dso_needs_unload) {
     assert(module != NULL);
 #ifdef _WIN32
     FreeLibrary(module);
-#else 
+#else
     dlclose(module);
 #endif
     module = NULL;
     dso_needs_unload = false;
   }
-  
+
   P3D_initialize_ptr = NULL;
   P3D_finalize_ptr = NULL;
   P3D_set_plugin_version_ptr = NULL;
@@ -477,12 +459,10 @@ unload_dso() {
   plugin_loaded = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_plugin_loaded
-//  Description: Returns true if the plugin has been loaded
-//               successfully by a previous call to load_plugin(),
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the plugin has been loaded successfully by a previous call to
+ * load_plugin(), false otherwise.
+ */
 bool
 is_plugin_loaded() {
   return plugin_loaded;

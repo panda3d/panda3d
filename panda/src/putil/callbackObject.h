@@ -19,15 +19,12 @@
 
 class CallbackData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CallbackObject
-// Description : This is a generic object that can be assigned to a
-//               callback at various points in the rendering process.
-//               This is actually a base class for a handful of
-//               specialized callback object types.  You can also
-//               subclass it yourself to make your own callback
-//               handler.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a generic object that can be assigned to a callback at various points
+ * in the rendering process.  This is actually a base class for a handful of
+ * specialized callback object types.  You can also subclass it yourself to make
+ * your own callback handler.
+ */
 class EXPCL_PANDA_PUTIL CallbackObject : public TypedReferenceCount {
 protected:
   INLINE CallbackObject();

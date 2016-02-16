@@ -20,13 +20,11 @@
 
 class FunctionRemap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : InterfaceMakerPython
-// Description : The base class for InteraceMakerPythonSimple and
-//               InterfaceMakerPythonObj, this includes a few
-//               functions that both have in common for formatting
-//               Python objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for InteraceMakerPythonSimple and InterfaceMakerPythonObj,
+ * this includes a few functions that both have in common for formatting Python
+ * objects.
+ */
 class InterfaceMakerPython : public InterfaceMaker {
 protected:
   InterfaceMakerPython(InterrogateModuleDef *def);

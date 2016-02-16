@@ -11,21 +11,17 @@
  * @date 2009-09-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSpringDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxSpringDesc::
 PhysxSpringDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSpringDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxSpringDesc::
 PhysxSpringDesc(float spring, float damper, float target) {
 
@@ -34,13 +30,10 @@ PhysxSpringDesc(float spring, float damper, float target) {
   _desc.targetValue = target;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxSpringDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxSpringDesc::
 ~PhysxSpringDesc() {
 
 }
-

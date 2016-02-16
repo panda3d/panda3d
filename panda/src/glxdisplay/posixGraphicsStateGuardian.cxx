@@ -17,11 +17,9 @@
 
 TypeHandle PosixGraphicsStateGuardian::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PosixGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PosixGraphicsStateGuardian::
 PosixGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe) :
   GLGraphicsStateGuardian(engine, pipe)
@@ -29,11 +27,9 @@ PosixGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _libgl_handle = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PosixGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PosixGraphicsStateGuardian::
 ~PosixGraphicsStateGuardian() {
   if (_libgl_handle != (void *)NULL) {
@@ -41,16 +37,12 @@ PosixGraphicsStateGuardian::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PosixGraphicsStateGuardian::do_get_extension_func
-//       Access: Public, Virtual
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name.  It is the responsibility of the
-//               caller to ensure that the required extension is
-//               defined in the OpenGL runtime prior to calling this;
-//               it is an error to call this for a function that is
-//               not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the GL extension function with the indicated name.  It
+ * is the responsibility of the caller to ensure that the required extension is
+ * defined in the OpenGL runtime prior to calling this; it is an error to call
+ * this for a function that is not defined.
+ */
 void *PosixGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   nassertr(name != NULL, NULL);
@@ -62,14 +54,11 @@ do_get_extension_func(const char *name) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PosixGraphicsStateGuardian::get_system_func
-//       Access: Protected
-//  Description: Support for get_extension_func(), above, that uses
-//               system calls to find a GL or GLX function (in the
-//               absence of a working glxGetProcAddress() function to
-//               call).
-////////////////////////////////////////////////////////////////////
+/**
+ * Support for get_extension_func(), above, that uses system calls to find a GL
+ * or GLX function (in the absence of a working glxGetProcAddress() function to
+ * call).
+ */
 void *PosixGraphicsStateGuardian::
 get_system_func(const char *name) {
   if (_libgl_handle == (void *)NULL) {

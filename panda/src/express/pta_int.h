@@ -19,14 +19,12 @@
 #include "pointerToArray.h"
 #include "vector_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PTA_int
-// Description : A pta of ints.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pta of ints.  This class is defined once here, and exported to PANDA.DLL;
+ * other packages that want to use a pta of this type (whether they need to
+ * export it or not) should include this header file, rather than defining the
+ * pta again.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToBase<ReferenceCountedVector<int> >)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToArrayBase<int>)

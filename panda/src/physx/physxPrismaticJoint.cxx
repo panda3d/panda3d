@@ -16,11 +16,9 @@
 
 TypeHandle PhysxPrismaticJoint::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPrismaticJoint::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxPrismaticJoint::
 link(NxJoint *jointPtr) {
 
@@ -34,11 +32,9 @@ link(NxJoint *jointPtr) {
   scene->_joints.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPrismaticJoint::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxPrismaticJoint::
 unlink() {
 
@@ -49,12 +45,9 @@ unlink() {
   scene->_joints.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPrismaticJoint::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the joint object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the joint object to a descriptor.
+ */
 void PhysxPrismaticJoint::
 save_to_desc(PhysxPrismaticJointDesc &jointDesc) const {
 
@@ -62,16 +55,12 @@ save_to_desc(PhysxPrismaticJointDesc &jointDesc) const {
   _ptr->saveToDesc(jointDesc._desc);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxPrismaticJoint::load_from_desc
-//       Access: Published
-//  Description: Loads the entire state of the joint from a
-//               descriptor with a single call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the entire state of the joint from a descriptor with a single call.
+ */
 void PhysxPrismaticJoint::
 load_from_desc(const PhysxPrismaticJointDesc &jointDesc) {
 
   nassertv(_error_type == ET_ok);
   _ptr->loadFromDesc(jointDesc._desc);
 }
-

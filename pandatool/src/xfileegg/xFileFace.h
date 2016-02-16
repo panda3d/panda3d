@@ -20,10 +20,9 @@
 class XFileMesh;
 class EggPolygon;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileFace
-// Description : This represents a single face of an XFileMesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single face of an XFileMesh.
+ */
 class XFileFace {
 public:
   XFileFace();
@@ -41,4 +40,3 @@ public:
 };
 
 #endif
-

@@ -21,17 +21,13 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointerToVoid
-// Description : This is the non-template part of the base class for
-//               PointerTo and ConstPointerTo.  It is necessary so we
-//               can keep a pointer to a non-template class within the
-//               ReferenceCount object, to implement weak reference
-//               pointers--we need to have something to clean up when
-//               the ReferenceCount object destructs.
-//
-//               This is the base class for PointerToBase<T>.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the non-template part of the base class for PointerTo and
+ * ConstPointerTo.  It is necessary so we can keep a pointer to a non-template
+ * class within the ReferenceCount object, to implement weak reference pointers
+ * --we need to have something to clean up when the ReferenceCount object
+ * destructs.  This is the base class for PointerToBase<T>.
+ */
 class EXPCL_PANDAEXPRESS PointerToVoid : public MemoryBase {
 protected:
   INLINE PointerToVoid();

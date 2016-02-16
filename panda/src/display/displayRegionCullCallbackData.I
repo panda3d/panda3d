@@ -11,23 +11,19 @@
  * @date 2009-03-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionCullCallbackData::get_cull_handler
-//       Access: Published
-//  Description: Returns a pointer to the CullHandler, which accepts
-//               each object to be added to the list for drawing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the CullHandler, which accepts each object to be added
+ * to the list for drawing.
+ */
 INLINE CullHandler *DisplayRegionCullCallbackData::
 get_cull_handler() const {
   return _cull_handler;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionCullCallbackData::get_scene_setup
-//       Access: Published
-//  Description: Returns a pointer to the SceneSetup object, which
-//               contains information about the camera and such.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the SceneSetup object, which contains information about
+ * the camera and such.
+ */
 INLINE SceneSetup *DisplayRegionCullCallbackData::
 get_scene_setup() const {
   return _scene_setup;

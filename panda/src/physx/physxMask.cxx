@@ -13,11 +13,9 @@
 
 #include "physxMask.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMask::all_on
-//       Access: Published
-//  Description: Returns a PhysxMask whose bits are all on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PhysxMask whose bits are all on.
+ */
 PhysxMask PhysxMask::
 all_on() {
 
@@ -26,11 +24,9 @@ all_on() {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMask::all_off
-//       Access: Published
-//  Description: Returns a PhysxMask whose bits are all off.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PhysxMask whose bits are all off.
+ */
 PhysxMask PhysxMask::
 all_off() {
 
@@ -39,12 +35,9 @@ all_off() {
   return mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMask::set_bit
-//       Access: Published
-//  Description: Sets the nth bit on.
-//               Index must be in the range [0, 31].
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit on.  Index must be in the range [0, 31].
+ */
 void PhysxMask::
 set_bit(unsigned int idx) {
 
@@ -52,12 +45,9 @@ set_bit(unsigned int idx) {
   _mask = _mask | (1 << idx);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMask::clear_bit
-//       Access: Published
-//  Description: Sets the nth bit off.
-//               Index must be in the range [0, 31].
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the nth bit off.  Index must be in the range [0, 31].
+ */
 void PhysxMask::
 clear_bit(unsigned int idx) {
 
@@ -65,13 +55,10 @@ clear_bit(unsigned int idx) {
   _mask = _mask & ~(1 << idx);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMask::get_bit
-//       Access: Published
-//  Description: Returns true if the nth bit is set, false if it is
-//               cleared.
-//               Index must be in the range [0, 31].
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the nth bit is set, false if it is cleared.  Index must be in
+ * the range [0, 31].
+ */
 bool PhysxMask::
 get_bit(unsigned int idx) const {
 
@@ -79,12 +66,9 @@ get_bit(unsigned int idx) const {
   return (_mask & (1 << idx)) ? true : false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMask::output
-//       Access: Published
-//  Description: Writes the PhysxMask out as a list of ones and
-//               zeros.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the PhysxMask out as a list of ones and zeros.
+ */
 void PhysxMask::
 output(ostream &out) const {
 
@@ -96,4 +80,3 @@ output(ostream &out) const {
 
   out << "/" << name << "/";
 }
-

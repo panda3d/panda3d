@@ -22,14 +22,12 @@
 #include "pta_stdfloat.h"
 #include "compose_matrix.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannelMatrixXfmTable
-// Description : An animation channel that issues a matrix each frame,
-//               read from a table such as might have been read from
-//               an egg file.  The table actually consists of nine
-//               sub-tables, each representing one component of the
-//               transform: scale, rotate, translate.
-////////////////////////////////////////////////////////////////////
+/**
+ * An animation channel that issues a matrix each frame, read from a table such
+ * as might have been read from an egg file.  The table actually consists of
+ * nine sub-tables, each representing one component of the transform: scale,
+ * rotate, translate.
+ */
 class EXPCL_PANDA_CHAN AnimChannelMatrixXfmTable : public AnimChannelMatrix {
 protected:
   AnimChannelMatrixXfmTable();
@@ -38,9 +36,9 @@ protected:
 PUBLISHED:
   AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name);
   virtual ~AnimChannelMatrixXfmTable();
-  
+
 public:
-  virtual bool has_changed(int last_frame, double last_frac, 
+  virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, LMatrix4 &mat);
 

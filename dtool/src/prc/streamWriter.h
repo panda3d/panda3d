@@ -20,15 +20,12 @@
 #include "littleEndian.h"
 #include "bigEndian.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StreamWriter
-// Description : A StreamWriter object is used to write sequential
-//               binary data directly to an ostream.  Its interface is
-//               very similar to Datagram by design; it's primarily
-//               intended as a convenience to eliminate the overhead
-//               of writing bytes to a Datagram and then writing the
-//               Datagram to a stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * A StreamWriter object is used to write sequential binary data directly to an
+ * ostream.  Its interface is very similar to Datagram by design; it's primarily
+ * intended as a convenience to eliminate the overhead of writing bytes to a
+ * Datagram and then writing the Datagram to a stream.
+ */
 class EXPCL_DTOOLCONFIG StreamWriter {
 public:
   INLINE StreamWriter(ostream &out);

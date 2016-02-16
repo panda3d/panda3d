@@ -17,14 +17,11 @@
 #include "pandabase.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : URLSpec
-// Description : A container for a URL, e.g. "http://server:port/path".
-//
-//               The URLSpec object is similar to a Filename in that
-//               it contains logic to identify the various parts of a
-//               URL and return (or modify) them separately.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for a URL, e.g.  "http://server:port/path".  The URLSpec object
+ * is similar to a Filename in that it contains logic to identify the various
+ * parts of a URL and return (or modify) them separately.
+ */
 class EXPCL_PANDAEXPRESS URLSpec {
 PUBLISHED:
   URLSpec();
@@ -123,4 +120,3 @@ INLINE ostream &operator << (ostream &out, const URLSpec &url);
 #include "urlSpec.I"
 
 #endif
-

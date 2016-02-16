@@ -31,11 +31,10 @@
 #define getFx_profile_array getFx_profile_abstract_array
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaBindMaterial::get_material
-//  Description: Returns the material to be applied to the given
-//               primitive, or NULL if there was none bound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the material to be applied to the given primitive, or NULL if there
+ * was none bound.
+ */
 CPT(RenderState) ColladaBindMaterial::
 get_material(const ColladaPrimitive *prim) const {
   if (prim == NULL || _states.count(prim->get_material()) == 0) {
@@ -44,11 +43,10 @@ get_material(const ColladaPrimitive *prim) const {
   return _states.find(prim->get_material())->second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaBindMaterial::get_material
-//  Description: Returns the bound material with the indicated
-//               symbol, or NULL if it was not found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the bound material with the indicated symbol, or NULL if it was not
+ * found.
+ */
 CPT(RenderState) ColladaBindMaterial::
 get_material(const string &symbol) const {
   if (_states.count(symbol) == 0) {
@@ -57,10 +55,9 @@ get_material(const string &symbol) const {
   return _states.find(symbol)->second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaBindMaterial::load_bind_material
-//  Description: Loads a bind_material object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads a bind_material object.
+ */
 void ColladaBindMaterial::
 load_bind_material(domBind_material &bind_mat) {
   domInstance_material_Array &mat_instances
@@ -71,10 +68,9 @@ load_bind_material(domBind_material &bind_mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaBindMaterial::load_instance_material
-//  Description: Loads an instance_material object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads an instance_material object.
+ */
 void ColladaBindMaterial::
 load_instance_material(domInstance_material &inst) {
   domMaterialRef mat = daeSafeCast<domMaterial> (inst.getTarget().getElement());
@@ -89,7 +85,7 @@ load_instance_material(domInstance_material &inst) {
     (mat->getInstance_effect()->getUrl().getElement());
 
   //TODO: read params
-  
+
   const domFx_profile_Array &profiles = effect->getFx_profile_array();
   for (size_t i = 0; i < profiles.getCount(); ++i) {
     //profiles[i]->

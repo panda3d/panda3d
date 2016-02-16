@@ -15,7 +15,7 @@
 
 // This needs to be included first to work around a bug in OSX 10.4.
 #if defined(HAVE_FCOLLADA) && defined(IS_OSX)
-#include "daeToEggConverter.h" 
+#include "daeToEggConverter.h"
 #endif
 
 #include "loaderFileTypePandatool.h"
@@ -33,7 +33,7 @@
 
 // Windows freaks out if this input is placed earlier.
 #if defined(HAVE_FCOLLADA) && !defined(IS_OSX)
-#include "daeToEggConverter.h" 
+#include "daeToEggConverter.h"
 #endif
 
 #include "dconfig.h"
@@ -61,14 +61,12 @@ ConfigVariableBool ptloader_load_node
           "always go through the egg library, which is more likely to be "
           "reliable."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libptloader
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libptloader() {
   static bool initialized = false;

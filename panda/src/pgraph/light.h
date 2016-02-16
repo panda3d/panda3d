@@ -30,14 +30,11 @@ class NodePath;
 class PandaNode;
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Light
-// Description : The abstract interface to all kinds of lights.  The
-//               actual light objects also inherit from PandaNode, and
-//               can therefore be added to the scene graph at some
-//               arbitrary point to define the coordinate system of
-//               effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract interface to all kinds of lights.  The actual light objects also
+ * inherit from PandaNode, and can therefore be added to the scene graph at some
+ * arbitrary point to define the coordinate system of effect.
+ */
 class EXPCL_PANDA_PGRAPH Light {
 PUBLISHED:
   INLINE Light();

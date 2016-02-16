@@ -11,12 +11,9 @@
  * @date 2000-06-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramSink::Constructor
-//       Access: Public
-//  Description: Does nothing since this is class is just
-//               the definition of an interface
-////////////////////////////////////////////////////////////////////
+/**
+ * Does nothing since this is class is just the definition of an interface
+ */
 
 INLINE DatagramSink::DatagramSink(){
 }

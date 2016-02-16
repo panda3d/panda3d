@@ -18,16 +18,15 @@
 #include "linearRandomForce.h"
 #include "configVariableInt.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearNoiseForce
-// Description : Repeating noise force vector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Repeating noise force vector.
+ */
 class EXPCL_PANDAPHYSICS LinearNoiseForce : public LinearRandomForce {
 PUBLISHED:
   LinearNoiseForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearNoiseForce(const LinearNoiseForce &copy);
   virtual ~LinearNoiseForce();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

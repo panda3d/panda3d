@@ -621,9 +621,9 @@ void MaxEggPlugin::BuildMesh()
     meshBuilt = TRUE;
 }
 
-////////////////////////////////////////////////////////////////////
-// The creation callback - sets the initial position of the helper in the scene.
-////////////////////////////////////////////////////////////////////
+/*
+ * The creation callback - sets the initial position of the helper in the scene.
+ */
 
 class MaxEggPluginCreateMouseCallBack: public CreateMouseCallBack
 {
@@ -654,9 +654,9 @@ static MaxEggPluginCreateMouseCallBack MaxEggCreateMouseCB;
 CreateMouseCallBack* MaxEggPlugin::GetCreateMouseCallBack()
 { return &MaxEggCreateMouseCB; }
 
-////////////////////////////////////////////////////////////////////
-//Boilerplate functions for dealing with the display of the plugin
-////////////////////////////////////////////////////////////////////
+/*
+ * Boilerplate functions for dealing with the display of the plugin
+ */
 
 void MaxEggPlugin::GetMat(TimeValue t, INode* inode, ViewExp* vpt, Matrix3& tm)
 {
@@ -750,9 +750,9 @@ RefTargetHandle MaxEggPlugin::Clone(RemapDir& remap)
     return(newob);
 }
 
-////////////////////////////////////////////////////////////////////
-// Loading and saving the plugin
-////////////////////////////////////////////////////////////////////
+/*
+ * Loading and saving the plugin
+ */
 
 IOResult MaxEggPlugin::Save(ISave *isave) {
     SaveCheckState();
@@ -863,4 +863,3 @@ TCHAR *GetString(int id)
                 return LoadString(hInstance, id, buf, sizeof(buf)) ? buf : NULL;
         return NULL;
 }
-

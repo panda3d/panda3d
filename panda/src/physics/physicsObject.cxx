@@ -18,11 +18,9 @@ ConfigVariableDouble PhysicsObject::_default_terminal_velocity
 
 TypeHandle PhysicsObject::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObject
-//       Access: Public
-//  Description: Default Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Constructor
+ */
 PhysicsObject::
 PhysicsObject() :
   _terminal_velocity(_default_terminal_velocity),
@@ -37,30 +35,24 @@ PhysicsObject() :
   _rotation = LRotation::ident_quat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObject
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 PhysicsObject::
 PhysicsObject(const PhysicsObject& copy) {
   operator=(copy);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~PhysicsObject
-//       Access: Public
-//  Description: Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 PhysicsObject::
 ~PhysicsObject() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const PhysicsObject &PhysicsObject::
 operator =(const PhysicsObject &other) {
   _process_me = other._process_me;
@@ -76,27 +68,21 @@ operator =(const PhysicsObject &other) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public, Virtual
-//  Description: dynamic copy.
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic copy.
+ */
 PhysicsObject *PhysicsObject::
 make_copy() const {
   return new PhysicsObject(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_local_impact
-//       Access: Public
-//  Description: Adds an impulse and/or torque (i.e. an instantanious
-//               change in velocity) based on how well the offset and
-//               impulse align with the center of mass (aka position).
-//               If you wanted to immitate this function you could
-//               work out the impulse and torque and call add_impulse
-//               and add_torque respectively.
-//               offset and force are in local coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds an impulse and/or torque (i.e.  an instantanious change in velocity)
+ * based on how well the offset and impulse align with the center of mass (aka
+ * position). If you wanted to immitate this function you could work out the
+ * impulse and torque and call add_impulse and add_torque respectively.  offset
+ * and force are in local coordinates.
+ */
 void PhysicsObject::
 add_local_impact(const LPoint3 &offset_from_center_of_mass,
     const LVector3 &force) {
@@ -107,17 +93,13 @@ add_local_impact(const LPoint3 &offset_from_center_of_mass,
       _orientation.xform(force));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_impact
-//       Access: Public
-//  Description: Adds an impulse and/or torque (i.e. an instantanious
-//               change in velocity) based on how well the offset and
-//               impulse align with the center of mass (aka position).
-//               If you wanted to immitate this function you could
-//               work out the impulse and torque and call add_impulse
-//               and add_torque respectively.
-//               offset and force are in global (or parent) coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds an impulse and/or torque (i.e.  an instantanious change in velocity)
+ * based on how well the offset and impulse align with the center of mass (aka
+ * position). If you wanted to immitate this function you could work out the
+ * impulse and torque and call add_impulse and add_torque respectively.  offset
+ * and force are in global (or parent) coordinates.
+ */
 void PhysicsObject::
 add_impact(const LPoint3 &offset,
     const LVector3 &force) {
@@ -142,12 +124,9 @@ add_impact(const LPoint3 &offset,
   add_impulse(impulse);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_lcs
-//       Access: Public
-//  Description: returns a transform matrix to this object's
-//                local coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * returns a transform matrix to this object's local coordinate system.
+ */
 LMatrix4 PhysicsObject::
 get_lcs() const {
   LMatrix4 m = LMatrix4::translate_mat(_position);
@@ -158,23 +137,18 @@ get_lcs() const {
   return m;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_inertial_tensor
-//       Access: Public
-//  Description: returns a transform matrix that represents the
-//                object's willingness to be forced.
-////////////////////////////////////////////////////////////////////
+/**
+ * returns a transform matrix that represents the object's willingness to be
+ * forced.
+ */
 LMatrix4 PhysicsObject::
 get_inertial_tensor() const {
   return LMatrix4::ident_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicsObject::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -182,12 +156,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void PhysicsObject::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

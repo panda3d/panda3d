@@ -16,11 +16,9 @@
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SphereVolumeEmitter
-// Description : Describes a voluminous spherical region in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a voluminous spherical region in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS SphereVolumeEmitter : public BaseParticleEmitter {
 PUBLISHED:
   SphereVolumeEmitter();

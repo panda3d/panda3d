@@ -19,14 +19,11 @@
 #include "pnmImageHeader.h"
 class PfmFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMWriter
-// Description : This is an abstract base class that defines the
-//               interface for writing image files of various types.
-//               Any particular image file type that can be written
-//               must define a class that inherits from PNMWriter to
-//               write it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class that defines the interface for writing image
+ * files of various types.  Any particular image file type that can be written
+ * must define a class that inherits from PNMWriter to write it.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMWriter : public PNMImageHeader {
 protected:
   INLINE PNMWriter(PNMFileType *type, ostream *file, bool owns_file);

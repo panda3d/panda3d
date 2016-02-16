@@ -25,11 +25,9 @@
 #include "animChannelMatrixXfmTable.h"
 #include "animChannelScalarTable.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::Construtor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AnimBundleMaker::
 AnimBundleMaker(EggTable *root) : _root(root) {
   _fps = 0.0f;
@@ -59,21 +57,17 @@ AnimBundleMaker(EggTable *root) : _root(root) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::make_node
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AnimBundleNode *AnimBundleMaker::
 make_node() {
   return new AnimBundleNode(_root->get_name(), make_bundle());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::make_bundle
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AnimBundle *AnimBundleMaker::
 make_bundle() {
   AnimBundle *bundle = new AnimBundle(_root->get_name(), _fps, _num_frames);
@@ -92,12 +86,9 @@ make_bundle() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::inspect_tree
-//       Access: Private
-//  Description: Walks the egg tree, getting out the fps and the
-//               number of frames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the egg tree, getting out the fps and the number of frames.
+ */
 void AnimBundleMaker::
 inspect_tree(EggNode *egg_node) {
   if (egg_node->is_of_type(EggAnimData::get_class_type())) {
@@ -171,12 +162,9 @@ inspect_tree(EggNode *egg_node) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::build_hierarchy
-//       Access: Private
-//  Description: Walks the egg tree again, creating the AnimChannels
-//               as appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the egg tree again, creating the AnimChannels as appropriate.
+ */
 void AnimBundleMaker::
 build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
   AnimGroup *this_node = NULL;
@@ -221,12 +209,10 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::create_s_channel
-//       Access: Private
-//  Description: Creates an AnimChannelScalarTable corresponding to
-//               the given EggSAnimData structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an AnimChannelScalarTable corresponding to the given EggSAnimData
+ * structure.
+ */
 AnimChannelScalarTable *AnimBundleMaker::
 create_s_channel(EggSAnimData *egg_anim, const string &name,
                  AnimGroup *parent) {
@@ -248,12 +234,10 @@ create_s_channel(EggSAnimData *egg_anim, const string &name,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::create_xfm_channel (EggNode)
-//       Access: Private
-//  Description: Creates an AnimChannelMatrixXfmTable corresponding to
-//               the given EggNode structure, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an AnimChannelMatrixXfmTable corresponding to the given EggNode
+ * structure, if possible.
+ */
 AnimChannelMatrixXfmTable *AnimBundleMaker::
 create_xfm_channel(EggNode *egg_node, const string &name,
                    AnimGroup *parent) {
@@ -274,12 +258,10 @@ create_xfm_channel(EggNode *egg_node, const string &name,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimBundleMaker::create_xfm_channel (EggXfmSAnim)
-//       Access: Private
-//  Description: Creates an AnimChannelMatrixXfmTable corresponding to
-//               the given EggXfmSAnim structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an AnimChannelMatrixXfmTable corresponding to the given EggXfmSAnim
+ * structure.
+ */
 AnimChannelMatrixXfmTable *AnimBundleMaker::
 create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
                    AnimGroup *parent) {

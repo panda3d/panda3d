@@ -18,11 +18,9 @@
 #include "get_tinyxml.h"
 #include <vector>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DFileParams
-// Description : Encapsulates the file parameters: the p3d_filename,
-//               and extra tokens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the file parameters: the p3d_filename, and extra tokens.
+ */
 class P3DFileParams {
 public:
   P3DFileParams();

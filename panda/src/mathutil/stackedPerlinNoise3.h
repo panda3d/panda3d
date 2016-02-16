@@ -18,12 +18,10 @@
 #include "perlinNoise3.h"
 #include "epvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StackedPerlinNoise3
-// Description : Implements a multi-layer PerlinNoise, with one or
-//               more high-frequency noise functions added to a
-//               lower-frequency base noise function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements a multi-layer PerlinNoise, with one or more high-frequency noise
+ * functions added to a lower-frequency base noise function.
+ */
 class EXPCL_PANDA_MATHUTIL StackedPerlinNoise3 {
 PUBLISHED:
   INLINE StackedPerlinNoise3();
@@ -58,4 +56,3 @@ private:
 #include "stackedPerlinNoise3.I"
 
 #endif
-

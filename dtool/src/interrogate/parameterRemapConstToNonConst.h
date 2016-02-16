@@ -18,13 +18,11 @@
 
 #include "parameterRemap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemapConstToNonConst
-// Description : A ParameterRemap class that handles remapping a
-//               simple const parameter (like const int) to an
-//               ordinary parameter (like int).  It doesn't apply to
-//               const references or const pointers, however.
-////////////////////////////////////////////////////////////////////
+/**
+ * A ParameterRemap class that handles remapping a simple const parameter (like
+ * const int) to an ordinary parameter (like int).  It doesn't apply to const
+ * references or const pointers, however.
+ */
 class ParameterRemapConstToNonConst : public ParameterRemap {
 public:
   ParameterRemapConstToNonConst(CPPType *orig_type);

@@ -11,132 +11,108 @@
  * @date 2000-06-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_radius
-//       Access: Public
-//  Description: radius assignment
-////////////////////////////////////////////////////////////////////
+/**
+ * radius assignment
+ */
 
 INLINE void DiscEmitter::
 set_radius(PN_stdfloat r) {
   _radius = r;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_outer_angle
-//       Access: Public
-//  Description: aoe assignement
-////////////////////////////////////////////////////////////////////
+/**
+ * aoe assignement
+ */
 
 INLINE void DiscEmitter::
 set_outer_angle(PN_stdfloat o_angle) {
   _outer_aoe = o_angle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_inner_angle
-//       Access: Public
-//  Description: aoe assignment
-////////////////////////////////////////////////////////////////////
+/**
+ * aoe assignment
+ */
 
 INLINE void DiscEmitter::
 set_inner_angle(PN_stdfloat i_angle) {
   _inner_aoe = i_angle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_outer_magnitude
-//       Access: Public
-//  Description: mag assignment
-////////////////////////////////////////////////////////////////////
+/**
+ * mag assignment
+ */
 
 INLINE void DiscEmitter::
 set_outer_magnitude(PN_stdfloat o_mag) {
   _outer_magnitude = o_mag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_inner_magnitude
-//       Access: Public
-//  Description: mag assignment
-////////////////////////////////////////////////////////////////////
+/**
+ * mag assignment
+ */
 
 INLINE void DiscEmitter::
 set_inner_magnitude(PN_stdfloat i_mag) {
   _inner_magnitude = i_mag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_cubic_lerping
-//       Access: Public
-//  Description: clerp flag
-////////////////////////////////////////////////////////////////////
+/**
+ * clerp flag
+ */
 
 INLINE void DiscEmitter::
 set_cubic_lerping(bool clerp) {
   _cubic_lerping = clerp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_radius
-//       Access: Public
-//  Description: radius accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * radius accessor
+ */
 
 INLINE PN_stdfloat DiscEmitter::
 get_radius() const {
   return _radius;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_outer_angle
-//       Access: Public
-//  Description: aoe accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * aoe accessor
+ */
 
 INLINE PN_stdfloat DiscEmitter::
 get_outer_angle() const {
   return _outer_aoe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_inner_angle
-//       Access: Public
-//  Description: aoe accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * aoe accessor
+ */
 
 INLINE PN_stdfloat DiscEmitter::
 get_inner_angle() const {
   return _inner_aoe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_outer_magnitude
-//       Access: Public
-//  Description: mag accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * mag accessor
+ */
 
 INLINE PN_stdfloat DiscEmitter::
 get_outer_magnitude() const {
   return _outer_magnitude;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_inner_magnitude
-//       Access: Public
-//  Description: mag accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * mag accessor
+ */
 
 INLINE PN_stdfloat DiscEmitter::
 get_inner_magnitude() const {
   return _inner_magnitude;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_cubic_lerping
-//       Access: Public
-//  Description: clerp flag accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * clerp flag accessor
+ */
 
 INLINE bool DiscEmitter::
 get_cubic_lerping() const {

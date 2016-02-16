@@ -19,11 +19,9 @@
 
 TypeHandle PythonThread::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonThread::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PythonThread::
 PythonThread(PyObject *function, PyObject *args,
              const string &name, const string &sync_name) :
@@ -52,11 +50,9 @@ PythonThread(PyObject *function, PyObject *args,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonThread::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PythonThread::
 ~PythonThread() {
   Py_DECREF(_function);
@@ -64,16 +60,11 @@ PythonThread::
   Py_XDECREF(_result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonThread::join
-//       Access: Published
-//  Description: Blocks the calling process until the thread
-//               terminates.  If the thread has already terminated,
-//               this returns immediately.
-//
-//               The PythonThread flavor of this function returns the
-//               same value returned by the thread function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blocks the calling process until the thread terminates.  If the thread has
+ * already terminated, this returns immediately.  The PythonThread flavor of
+ * this function returns the same value returned by the thread function.
+ */
 PyObject *PythonThread::
 join() {
   Thread::join();
@@ -87,11 +78,9 @@ join() {
   return _result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonThread::thread_main
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PythonThread::
 thread_main() {
   _result = call_python_func(_function, _args);

@@ -34,7 +34,7 @@ indent(ostream &out, int indent_level) {
 // Indents one or more lines of text, breaking the text up at newline
 // characters.
 static ostream &
-hanging_indent(ostream &out, const string &text, int first_indent_level, 
+hanging_indent(ostream &out, const string &text, int first_indent_level,
                int next_indent_level = -1) {
   if (next_indent_level < 0) {
     next_indent_level = first_indent_level;
@@ -116,7 +116,7 @@ describe_wrapper(int wrapper, int indent_level) {
     string comment = interrogate_wrapper_comment(wrapper);
     hanging_indent(cout, comment, indent_level + 2);
   }
-      
+
 
   if (interrogate_wrapper_caller_manages_return_value(wrapper)) {
     indent(cout, indent_level + 2)
@@ -205,7 +205,7 @@ void
 describe_make_seq(int make_seq, int indent_level) {
   indent(cout, indent_level)
     << "MakeSeq " << interrogate_make_seq_seq_name(make_seq)
-    << " (" << make_seq << "): " 
+    << " (" << make_seq << "): "
     << interrogate_make_seq_num_name(make_seq)
     << ", " << interrogate_make_seq_element_name(make_seq)
     << "\n";
@@ -285,7 +285,7 @@ describe_type(int type, int indent_level) {
     string comment = interrogate_type_comment(type);
     hanging_indent(cout, comment, indent_level + 2);
   }
-      
+
   if (interrogate_type_is_nested(type)) {
     indent(cout, indent_level + 2)
       << "Nested within ";

@@ -35,49 +35,39 @@ public:
   PN_stdfloat _dist2;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionHandlerQueue::
 CollisionHandlerQueue() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::begin_group
-//       Access: Published, Virtual
-//  Description: Will be called by the CollisionTraverser before a new
-//               traversal is begun.  It instructs the handler to
-//               reset itself in preparation for a number of
-//               CollisionEntries to be sent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Will be called by the CollisionTraverser before a new traversal is begun.  It
+ * instructs the handler to reset itself in preparation for a number of
+ * CollisionEntries to be sent.
+ */
 void CollisionHandlerQueue::
 begin_group() {
   _entries.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::add_entry
-//       Access: Published, Virtual
-//  Description: Called between a begin_group() .. end_group()
-//               sequence for each collision that is detected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called between a begin_group() .. end_group() sequence for each collision
+ * that is detected.
+ */
 void CollisionHandlerQueue::
 add_entry(CollisionEntry *entry) {
   nassertv(entry != (CollisionEntry *)NULL);
   _entries.push_back(entry);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::sort_entries
-//       Access: Published
-//  Description: Sorts all the detected collisions front-to-back by
-//               from_intersection_point() so that those intersection
-//               points closest to the collider's origin (e.g., the
-//               center of the CollisionSphere, or the point_a of a
-//               CollisionSegment) appear first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts all the detected collisions front-to-back by from_intersection_point()
+ * so that those intersection points closest to the collider's origin (e.g., the
+ * center of the CollisionSphere, or the point_a of a CollisionSegment) appear
+ * first.
+ */
 void CollisionHandlerQueue::
 sort_entries() {
   // Build up a temporary vector of entries so we can sort the
@@ -107,53 +97,42 @@ sort_entries() {
   _entries.swap(sorted_entries);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::clear_entries
-//       Access: Published
-//  Description: Removes all the entries from the queue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the entries from the queue.
+ */
 void CollisionHandlerQueue::
 clear_entries() {
   _entries.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::get_num_entries
-//       Access: Published
-//  Description: Returns the number of CollisionEntries detected last
-//               pass.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of CollisionEntries detected last pass.
+ */
 int CollisionHandlerQueue::
 get_num_entries() const {
   return _entries.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::get_entry
-//       Access: Published
-//  Description: Returns the nth CollisionEntry detected last pass.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth CollisionEntry detected last pass.
+ */
 CollisionEntry *CollisionHandlerQueue::
 get_entry(int n) const {
   nassertr(n >= 0 && n < (int)_entries.size(), NULL);
   return _entries[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionHandlerQueue::
 output(ostream &out) const {
   out << "CollisionHandlerQueue, " << _entries.size() << " entries";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerQueue::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionHandlerQueue::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)

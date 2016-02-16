@@ -20,14 +20,12 @@
 
 class MemoryInfo;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MemoryUsagePointerCounts
-// Description : This is a supporting class for MemoryUsage.  It
-//               tracks the relative counts of a number of pointers of
-//               some type (or age), for use by TypeHistogram and
-//               AgeHistogram.  It's not exported from the DLL, and it
-//               doesn't even exist if we're compiling NDEBUG.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a supporting class for MemoryUsage.  It tracks the relative counts of
+ * a number of pointers of some type (or age), for use by TypeHistogram and
+ * AgeHistogram.  It's not exported from the DLL, and it doesn't even exist if
+ * we're compiling NDEBUG.
+ */
 class MemoryUsagePointerCounts {
 public:
   INLINE MemoryUsagePointerCounts();
@@ -60,4 +58,3 @@ INLINE ostream &operator << (ostream &out, const MemoryUsagePointerCounts &c);
 #endif  // DO_MEMORY_USAGE
 
 #endif
-

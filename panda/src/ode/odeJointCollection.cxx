@@ -150,12 +150,10 @@ operator [] (int index) const {
   return get_joint(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeJointCollection::size
-//       Access: Published
-//  Description: Returns the number of joints in the collection.  This
-//               is the same thing as get_num_joints().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of joints in the collection.  This is the same thing as
+ * get_num_joints().
+ */
 int OdeJointCollection::
 size() const {
   return _joints.size();

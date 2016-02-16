@@ -19,14 +19,12 @@
 // This class is only defined on Windows builds.
 #ifdef WIN32_VC
 
-////////////////////////////////////////////////////////////////////
-//       Class : WindowsRegistry
-// Description : This class provides a hook to Python to read and
-//               write strings and integers to the windows registry.
-//               It automatically converts strings from utf-8 encoding
-//               and stores them in Unicode (and conversely reconverts
-//               them on retrieval).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a hook to Python to read and write strings and integers
+ * to the windows registry.  It automatically converts strings from utf-8
+ * encoding and stores them in Unicode (and conversely reconverts them on
+ * retrieval).
+ */
 class EXPCL_PANDAEXPRESS WindowsRegistry
 {
 PUBLISHED:

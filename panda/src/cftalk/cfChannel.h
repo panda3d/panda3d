@@ -20,12 +20,10 @@
 #include "bamWriter.h"
 #include "cfCommand.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CFChannel
-// Description : Represents an open communication channel in the
-//               connected-frame protocol.  Commands may be sent and
-//               received on this channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents an open communication channel in the connected-frame protocol.
+ * Commands may be sent and received on this channel.
+ */
 class EXPCL_CFTALK CFChannel : public ReferenceCount {
 public:
   CFChannel(DatagramGenerator *dggen, DatagramSink *dgsink);

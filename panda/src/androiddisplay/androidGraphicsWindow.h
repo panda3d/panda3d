@@ -27,11 +27,9 @@
 
 struct android_app;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AndroidGraphicsWindow
-// Description : An interface to manage Android windows and their
-//               appropriate EGL surfaces.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to manage Android windows and their appropriate EGL surfaces.
+ */
 class AndroidGraphicsWindow : public GraphicsWindow {
 public:
   AndroidGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,

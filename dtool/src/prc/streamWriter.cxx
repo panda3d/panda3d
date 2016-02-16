@@ -13,12 +13,9 @@
 
 #include "streamWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamWriter::pad_bytes
-//       Access: Public
-//  Description: Adds the indicated number of zero bytes to the
-//               stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated number of zero bytes to the stream.
+ */
 void StreamWriter::
 pad_bytes(size_t size) {
   nassertv((int)size >= 0);

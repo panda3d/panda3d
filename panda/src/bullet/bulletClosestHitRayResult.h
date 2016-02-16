@@ -23,10 +23,9 @@
 #include "pandaNode.h"
 #include "collideMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletClosestHitRayResult
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 struct EXPCL_PANDABULLET BulletClosestHitRayResult : public btCollisionWorld::ClosestRayResultCallback {
 
 PUBLISHED:

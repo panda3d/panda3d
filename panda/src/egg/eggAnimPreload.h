@@ -18,10 +18,9 @@
 
 #include "eggNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggAnimPreload
-// Description : This corresponds to an <AnimPreload> entry.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to an <AnimPreload> entry.
+ */
 class EXPCL_PANDAEGG EggAnimPreload : public EggNode {
 PUBLISHED:
   INLINE EggAnimPreload(const string &name = "");
@@ -67,4 +66,3 @@ private:
 #include "eggAnimPreload.I"
 
 #endif
-

@@ -20,12 +20,10 @@
 
 class QtessSurface;
 
-////////////////////////////////////////////////////////////////////
-//       Class : QtessInputEntry
-// Description : Stores one entry in the qtess input file.  This
-//               consists of a list of name patterns and a
-//               set of tesselation parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores one entry in the qtess input file.  This consists of a list of name
+ * patterns and a set of tesselation parameters.
+ */
 class QtessInputEntry {
 public:
   enum Type {
@@ -90,4 +88,3 @@ INLINE ostream &operator << (ostream &out, const QtessInputEntry &entry);
 #include "qtessInputEntry.I"
 
 #endif
-

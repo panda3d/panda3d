@@ -21,16 +21,12 @@
 
 class LensNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionParabola
-// Description : This defines a parabolic arc, or subset of an arc,
-//               similar to the path of a projectile or falling
-//               object.  It is finite, having a specific beginning
-//               and end, but it is infinitely thin.
-//
-//               Think of it as a wire bending from point t1 to point
-//               t2 along the path of a pre-defined parabola.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a parabolic arc, or subset of an arc, similar to the path of a
+ * projectile or falling object.  It is finite, having a specific beginning and
+ * end, but it is infinitely thin.  Think of it as a wire bending from point t1
+ * to point t2 along the path of a pre-defined parabola.
+ */
 class EXPCL_PANDA_COLLIDE CollisionParabola : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionParabola();
@@ -109,5 +105,3 @@ private:
 #include "collisionParabola.I"
 
 #endif
-
-

@@ -19,11 +19,9 @@
 #include "physxJointDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPointInPlaneJointDesc
-// Description : Descriptor class for point-in-plane joint. See
-//               PhysxPointInPlaneJoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for point-in-plane joint.  See PhysxPointInPlaneJoint.
+ */
 class EXPCL_PANDAPHYSX PhysxPointInPlaneJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

@@ -19,10 +19,9 @@
 
 class P3DInstance *inst;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DWindowParams
-// Description : Encapsulates the window parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encapsulates the window parameters.
+ */
 class P3DWindowParams {
 public:
   P3DWindowParams();

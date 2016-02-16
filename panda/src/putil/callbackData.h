@@ -17,17 +17,13 @@
 #include "pandabase.h"
 #include "typedObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CallbackData
-// Description : This is a generic data block that is passed along to
-//               a CallbackObject when a callback is made.  It
-//               contains data specific to the particular callback
-//               type in question.
-//
-//               This is actually an abstract base class and contains
-//               no data.  Specializations of this class will contain
-//               the actual data relevant to each callback type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a generic data block that is passed along to a CallbackObject when a
+ * callback is made.  It contains data specific to the particular callback type
+ * in question.  This is actually an abstract base class and contains no data.
+ * Specializations of this class will contain the actual data relevant to each
+ * callback type.
+ */
 class EXPCL_PANDA_PUTIL CallbackData : public TypedObject {
 protected:
   INLINE CallbackData();

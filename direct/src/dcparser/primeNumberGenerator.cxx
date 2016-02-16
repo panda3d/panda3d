@@ -14,24 +14,19 @@
 #include "primeNumberGenerator.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PrimeNumberGenerator::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PrimeNumberGenerator::
 PrimeNumberGenerator() {
   _primes.push_back(2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PrimeNumberGenerator::Indexing operator
-//       Access: Public
-//  Description: Returns the nth prime number.  this[0] returns 2,
-//               this[1] returns 3; successively larger values of n
-//               return larger prime numbers, up to the largest prime
-//               number that can be represented in an int.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth prime number.  this[0] returns 2, this[1] returns 3;
+ * successively larger values of n return larger prime numbers, up to the
+ * largest prime number that can be represented in an int.
+ */
 int PrimeNumberGenerator::
 operator [] (int n) {
   nassertr(n >= 0, 0);

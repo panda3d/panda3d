@@ -27,11 +27,9 @@
 
 class PhysxSoftBody;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSoftBodyNode
-// Description : Renderable geometry which represents a soft body
-//               mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renderable geometry which represents a soft body mesh.
+ */
 class EXPCL_PANDAPHYSX PhysxSoftBodyNode : public GeomNode {
 
 PUBLISHED:
@@ -77,7 +75,7 @@ public:
   }
   static void init_type() {
     GeomNode::init_type();
-    register_type(_type_handle, "PhysxSoftBodyNode", 
+    register_type(_type_handle, "PhysxSoftBodyNode",
                   GeomNode::get_class_type());
   }
   virtual TypeHandle get_type() const {

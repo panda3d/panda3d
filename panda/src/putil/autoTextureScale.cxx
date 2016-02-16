@@ -20,13 +20,13 @@ operator << (ostream &out, AutoTextureScale ats) {
   switch (ats) {
   case ATS_none:
     return out << "none";
-   
+
   case ATS_down:
     return out << "down";
-    
+
   case ATS_up:
     return out << "up";
-    
+
   case ATS_pad:
     return out << "pad";
 

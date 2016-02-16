@@ -11,11 +11,9 @@
  * @date 2006-05-18
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: StencilAttrib::get_render_state
-//       Access: Published
-//  Description: Returns render state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns render state.
+ */
 INLINE unsigned int StencilAttrib::
 get_render_state(StencilRenderState render_state_identifier) const {
   return _stencil_render_states[(int)render_state_identifier];

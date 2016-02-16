@@ -27,10 +27,9 @@
 
 #define TIFF_COLORMAP_MAXCOLORS 1024
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeTIFF
-// Description : For reading and writing TIFF files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing TIFF files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeTIFF : public PNMFileType {
 public:
   PNMFileTypeTIFF();

@@ -19,17 +19,13 @@
 
 class BufferContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BufferContextChain
-// Description : This class maintains a linked list of BufferContexts
-//               that might be allocated on the graphics card in some
-//               context.  There is a different BufferContextChain for
-//               resident textures, active textures, evicted textures,
-//               etc.
-//
-//               The primary purpose of this class is to facilitate
-//               PStats reporting of graphics memory usage.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class maintains a linked list of BufferContexts that might be allocated
+ * on the graphics card in some context.  There is a different
+ * BufferContextChain for resident textures, active textures, evicted textures,
+ * etc.  The primary purpose of this class is to facilitate PStats reporting of
+ * graphics memory usage.
+ */
 class EXPCL_PANDA_GOBJ BufferContextChain : private LinkedListNode {
 public:
   INLINE BufferContextChain();
@@ -55,4 +51,3 @@ private:
 #include "bufferContextChain.I"
 
 #endif
-

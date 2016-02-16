@@ -18,12 +18,10 @@
 #include "typeHandle.h"
 #include "register_type.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonHandle
-// Description : A ButtonHandle represents a single button from any
-//               device, including keyboard buttons and mouse buttons
-//               (but see KeyboardButton and MouseButton).
-////////////////////////////////////////////////////////////////////
+/**
+ * A ButtonHandle represents a single button from any device, including keyboard
+ * buttons and mouse buttons (but see KeyboardButton and MouseButton).
+ */
 class EXPCL_PANDA_PUTIL ButtonHandle FINAL {
 PUBLISHED:
   INLINE ButtonHandle();
@@ -89,4 +87,3 @@ INLINE ostream &operator << (ostream &out, ButtonHandle button) {
 #include "buttonHandle.I"
 
 #endif
-

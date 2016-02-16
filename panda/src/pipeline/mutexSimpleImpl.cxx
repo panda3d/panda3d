@@ -19,11 +19,9 @@
 #include "threadSimpleImpl.h"
 #include "threadSimpleManager.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::do_acquire
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MutexSimpleImpl::
 do_acquire() {
   // By the time we get here, we already know that someone else is
@@ -35,15 +33,13 @@ do_acquire() {
     manager->enqueue_block(thread, this);
     manager->next_context();
   }
-  
+
   _flags |= F_lock_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::do_release
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MutexSimpleImpl::
 do_release() {
   // By the time we get here, we already know that someone else is
@@ -58,11 +54,9 @@ do_release() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::do_release_quietly
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MutexSimpleImpl::
 do_release_quietly() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();

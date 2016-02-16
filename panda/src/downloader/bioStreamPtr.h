@@ -28,11 +28,10 @@
 #include "openSSLWrapper.h"  // must be included before any other openssl.
 #include "openssl/ssl.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BioStreamPtr
-// Description : A wrapper around an BioStream object to make a
-//               reference-counting pointer to it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A wrapper around an BioStream object to make a reference-counting pointer to
+ * it.
+ */
 class EXPCL_PANDAEXPRESS BioStreamPtr : public ReferenceCount {
 public:
   INLINE BioStreamPtr(BioStream *stream);
@@ -55,5 +54,3 @@ private:
 
 
 #endif
-
-

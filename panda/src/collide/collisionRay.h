@@ -19,14 +19,11 @@
 #include "collisionSolid.h"
 #include "lensNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionRay
-// Description : An infinite ray, with a specific origin and
-//               direction.  It begins at its origin and continues in
-//               one direction to infinity, and it has no radius.
-//               Useful for picking from a window, or for gravity
-//               effects.
-////////////////////////////////////////////////////////////////////
+/**
+ * An infinite ray, with a specific origin and direction.  It begins at its
+ * origin and continues in one direction to infinity, and it has no radius.
+ * Useful for picking from a window, or for gravity effects.
+ */
 class EXPCL_PANDA_COLLIDE CollisionRay : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionRay();
@@ -100,5 +97,3 @@ private:
 #include "collisionRay.I"
 
 #endif
-
-

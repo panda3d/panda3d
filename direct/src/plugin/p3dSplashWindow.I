@@ -11,42 +11,34 @@
  * @date 2009-06-17
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::get_fparams
-//       Access: Public
-//  Description: Returns the current file parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current file parameters.
+ */
 inline const P3DFileParams &P3DSplashWindow::
 get_fparams() const {
   return _fparams;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::get_wparams
-//       Access: Public
-//  Description: Returns the current window parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current window parameters.
+ */
 inline const P3DWindowParams &P3DSplashWindow::
 get_wparams() const {
   return _wparams;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::get_visible
-//       Access: Public
-//  Description: Returns the current setting of the "visible" flag.
-//               If false, the splash window is hidden.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current setting of the "visible" flag.  If false, the splash
+ * window is hidden.
+ */
 inline bool P3DSplashWindow::
 get_visible() const {
   return _visible;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::ImageData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline P3DSplashWindow::ImageData::
 ImageData() {
   _width = 0;

@@ -36,10 +36,9 @@ struct AVPacket;
 struct SwrContext;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : FfmpegAudioCursor
-// Description : A stream that generates a sequence of audio samples.
-////////////////////////////////////////////////////////////////////
+/**
+ * A stream that generates a sequence of audio samples.
+ */
 class EXPCL_FFMPEG FfmpegAudioCursor : public MovieAudioCursor {
   friend class FfmpegAudio;
 
@@ -47,10 +46,10 @@ PUBLISHED:
   FfmpegAudioCursor(FfmpegAudio *src);
   virtual ~FfmpegAudioCursor();
   virtual void seek(double offset);
-  
+
 public:
   virtual void read_samples(int n, PN_int16 *data);
-  
+
 protected:
   void fetch_packet();
   bool reload_buffer();

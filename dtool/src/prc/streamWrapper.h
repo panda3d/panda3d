@@ -17,12 +17,10 @@
 #include "dtoolbase.h"
 #include "mutexImpl.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : StreamWrapperBase
-// Description : The base class for both IStreamWrapper and
-//               OStreamWrapper, this provides the common locking
-//               interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for both IStreamWrapper and OStreamWrapper, this provides the
+ * common locking interface.
+ */
 class EXPCL_DTOOLCONFIG StreamWrapperBase {
 protected:
   INLINE StreamWrapperBase();
@@ -42,13 +40,10 @@ private:
 #endif
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : IStreamWrapper
-// Description : This class provides a locking wrapper around an
-//               arbitrary istream pointer.  A thread may use this
-//               class to perform an atomic seek/read/gcount
-//               operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a locking wrapper around an arbitrary istream pointer.  A
+ * thread may use this class to perform an atomic seek/read/gcount operation.
+ */
 class EXPCL_DTOOLCONFIG IStreamWrapper : virtual public StreamWrapperBase {
 public:
   INLINE IStreamWrapper(istream *stream, bool owns_pointer);
@@ -71,12 +66,10 @@ private:
   bool _owns_pointer;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : OStreamWrapper
-// Description : This class provides a locking wrapper around an
-//               arbitrary ostream pointer.  A thread may use this
-//               class to perform an atomic seek/write operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a locking wrapper around an arbitrary ostream pointer.  A
+ * thread may use this class to perform an atomic seek/write operation.
+ */
 class EXPCL_DTOOLCONFIG OStreamWrapper : virtual public StreamWrapperBase {
 public:
   INLINE OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack = false);
@@ -109,11 +102,10 @@ private:
 #endif
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : StreamWrapper
-// Description : This class provides a locking wrapper around a
-//               combination ostream/istream pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a locking wrapper around a combination ostream/istream
+ * pointer.
+ */
 class EXPCL_DTOOLCONFIG StreamWrapper : public IStreamWrapper, public OStreamWrapper {
 public:
   INLINE StreamWrapper(iostream *stream, bool owns_pointer, bool stringstream_hack = false);

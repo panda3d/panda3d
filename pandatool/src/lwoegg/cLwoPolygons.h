@@ -29,12 +29,10 @@ class LwoTags;
 class LwoPolygonTags;
 class LwoDiscontinuousVertexMap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLwoPolygons
-// Description : This class is a wrapper around LwoPolygons and stores
-//               additional information useful during the
-//               conversion-to-egg process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a wrapper around LwoPolygons and stores additional information
+ * useful during the conversion-to-egg process.
+ */
 class CLwoPolygons {
 public:
   INLINE CLwoPolygons(LwoToEggConverter *converter,
@@ -73,5 +71,3 @@ private:
 #include "cLwoPolygons.I"
 
 #endif
-
-

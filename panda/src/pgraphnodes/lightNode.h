@@ -19,12 +19,10 @@
 #include "light.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LightNode
-// Description : A derivative of Light and of PandaNode.  All kinds of
-//               Light except Spotlight (which must inherit from
-//               LensNode instead) inherit from this class.
-////////////////////////////////////////////////////////////////////
+/**
+ * A derivative of Light and of PandaNode.  All kinds of Light except Spotlight
+ * (which must inherit from LensNode instead) inherit from this class.
+ */
 class EXPCL_PANDA_PGRAPHNODES LightNode : public Light, public PandaNode {
 PUBLISHED:
   LightNode(const string &name);

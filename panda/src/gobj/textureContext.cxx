@@ -15,21 +15,17 @@
 
 TypeHandle TextureContext::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureContext::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextureContext::
 output(ostream &out) const {
   out << *get_texture() << ", " << get_data_size_bytes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureContext::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextureContext::
 write(ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);

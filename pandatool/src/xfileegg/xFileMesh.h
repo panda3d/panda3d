@@ -37,10 +37,9 @@ class EggPolygon;
 class EggPrimitive;
 class Datagram;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileMesh
-// Description : This is a collection of polygons; i.e. a polyset.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a collection of polygons; i.e.  a polyset.
+ */
 class XFileMesh : public Namable {
 public:
   XFileMesh(CoordinateSystem cs = CS_yup_left);
@@ -123,4 +122,3 @@ private:
 };
 
 #endif
-

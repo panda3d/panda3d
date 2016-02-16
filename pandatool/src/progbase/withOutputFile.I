@@ -11,12 +11,10 @@
  * @date 2003-10-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: WithOutputFile::set_binary_output
-//       Access: Protected
-//  Description: Changes the flag specifying whether the output file
-//               is to be opened in binary mode or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the flag specifying whether the output file is to be opened in binary
+ * mode or not.
+ */
 INLINE void WithOutputFile::
 set_binary_output(bool binary_output) {
   _binary_output = binary_output;

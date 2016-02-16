@@ -21,15 +21,11 @@
 
 class ParametricCurve;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsCurveInterface
-// Description : This abstract class defines the interface only for a
-//               Nurbs-style curve, with knots and coordinates in
-//               homogeneous space.
-//
-//               The NurbsCurve class inherits both from this and from
-//               ParametricCurve.
-////////////////////////////////////////////////////////////////////
+/**
+ * This abstract class defines the interface only for a Nurbs-style curve, with
+ * knots and coordinates in homogeneous space.  The NurbsCurve class inherits
+ * both from this and from ParametricCurve.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsCurveInterface {
 PUBLISHED:
   virtual ~NurbsCurveInterface();

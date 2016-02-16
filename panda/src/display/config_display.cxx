@@ -473,14 +473,12 @@ ConfigVariableBool basic_shaders_only
           "flaky becomes reliable, we may expand the definition of what "
           "constitutes 'basic' shaders."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libdisplay
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libdisplay() {
   static bool initialized = false;

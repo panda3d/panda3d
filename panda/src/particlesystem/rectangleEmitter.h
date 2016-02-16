@@ -16,11 +16,9 @@
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : RectangleEmitter
-// Description : Describes a planar square region in which
-//               particles are generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a planar square region in which particles are generated.
+ */
 class EXPCL_PANDAPHYSICS RectangleEmitter : public BaseParticleEmitter {
 PUBLISHED:
   RectangleEmitter();

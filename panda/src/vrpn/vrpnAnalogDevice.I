@@ -11,13 +11,10 @@
  * @date 2001-01-26
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnAnalogDevice::get_vrpn_analog
-//       Access: Public
-//  Description: Returns a pointer to the particular VrpnAnalog this
-//               device gets its data from.  This pointer may be
-//               shared with other VrpnAnalogDevice objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the particular VrpnAnalog this device gets its data
+ * from.  This pointer may be shared with other VrpnAnalogDevice objects.
+ */
 INLINE VrpnAnalog *VrpnAnalogDevice::
 get_vrpn_analog() const {
   return _vrpn_analog;

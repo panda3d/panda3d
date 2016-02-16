@@ -20,25 +20,18 @@
 #include "atomicAdjust.h"
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : UpdateSeq
-// Description : This is a sequence number that increments
-//               monotonically.  It can be used to track cache
-//               updates, or serve as a kind of timestamp for any
-//               changing properties.
-//
-//               A special class is used instead of simply an int, so
-//               we can elegantly handle such things as wraparound and
-//               special cases.  There are two special cases.
-//               Firstly, a sequence number is 'initial' when it is
-//               first created.  This sequence is older than any other
-//               sequence number.  Secondly, a sequence number may be
-//               explicitly set to 'old'.  This is older than any
-//               other sequence number except 'initial'.  Finally, we
-//               have the explicit number 'fresh', which is newer
-//               than any other sequence number.  All other sequences
-//               are numeric and are monotonically increasing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a sequence number that increments monotonically.  It can be used to
+ * track cache updates, or serve as a kind of timestamp for any changing
+ * properties.  A special class is used instead of simply an int, so we can
+ * elegantly handle such things as wraparound and special cases.  There are two
+ * special cases.  Firstly, a sequence number is 'initial' when it is first
+ * created.  This sequence is older than any other sequence number.  Secondly, a
+ * sequence number may be explicitly set to 'old'.  This is older than any other
+ * sequence number except 'initial'.  Finally, we have the explicit number
+ * 'fresh', which is newer than any other sequence number.  All other sequences
+ * are numeric and are monotonically increasing.
+ */
 class EXPCL_PANDA_PUTIL UpdateSeq {
 PUBLISHED:
   INLINE UpdateSeq();

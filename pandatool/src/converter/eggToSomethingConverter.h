@@ -24,16 +24,12 @@
 class EggData;
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToSomethingConverter
-// Description : This is a base class for a family of converter
-//               classes that manage a conversion from egg format to
-//               some other file type.
-//
-//               Classes of this type can be used to implement egg2xxx
-//               converter programs, as well as LoaderFileTypeXXX
-//               run-time savers.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for a family of converter classes that manage a
+ * conversion from egg format to some other file type.  Classes of this type can
+ * be used to implement egg2xxx converter programs, as well as LoaderFileTypeXXX
+ * run-time savers.
+ */
 class EggToSomethingConverter {
 public:
   EggToSomethingConverter();
@@ -72,5 +68,3 @@ protected:
 #include "eggToSomethingConverter.I"
 
 #endif
-
-

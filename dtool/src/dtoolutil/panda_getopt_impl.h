@@ -58,10 +58,10 @@ struct option {
 extern EXPCL_DTOOL int
 getopt(int argc, char *const argv[], const char *optstring);
 extern EXPCL_DTOOL int
-getopt_long(int argc, char *const argv[], const char *optstring, 
+getopt_long(int argc, char *const argv[], const char *optstring,
             const struct option *longopts, int *longindex);
 extern EXPCL_DTOOL int
-getopt_long_only(int argc, char *const argv[], const char *optstring, 
+getopt_long_only(int argc, char *const argv[], const char *optstring,
                  const struct option *longopts, int *longindex);
 
 #ifdef  __cplusplus

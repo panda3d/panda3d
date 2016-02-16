@@ -17,10 +17,10 @@
 #include "pandabase.h"
 
 BEGIN_PUBLISH
-////////////////////////////////////////////////////////////////////
-// An enumerated type used by Thread to specify a suggested relative
-// priority for a particular thread.
-////////////////////////////////////////////////////////////////////
+/*
+ * An enumerated type used by Thread to specify a suggested relative priority
+ * for a particular thread.
+ */
 enum ThreadPriority {
   TP_low,
   TP_normal,

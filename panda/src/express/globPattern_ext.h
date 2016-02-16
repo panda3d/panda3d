@@ -22,12 +22,10 @@
 #include "globPattern.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<GlobPattern>
-// Description : This class defines the extension methods for
-//               GlobPattern, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for GlobPattern, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<GlobPattern> : public ExtensionBase<GlobPattern> {
 public:

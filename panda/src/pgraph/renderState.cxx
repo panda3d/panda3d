@@ -56,13 +56,11 @@ CacheStats RenderState::_cache_stats;
 TypeHandle RenderState::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Constructor
-//       Access: Protected
-//  Description: Actually, this could be a private constructor, since
-//               no one inherits from RenderState, but gcc gives us a
-//               spurious warning if all constructors are private.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually, this could be a private constructor, since no one inherits from
+ * RenderState, but gcc gives us a spurious warning if all constructors are
+ * private.
+ */
 RenderState::
 RenderState() :
   _flags(0),
@@ -79,11 +77,9 @@ RenderState() :
   _generated_shader = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Copy Constructor
-//       Access: Private
-//  Description: RenderStates are only meant to be copied internally.
-////////////////////////////////////////////////////////////////////
+/**
+ * RenderStates are only meant to be copied internally.
+ */
 RenderState::
 RenderState(const RenderState &copy) :
   _filled_slots(copy._filled_slots),
@@ -103,22 +99,18 @@ RenderState(const RenderState &copy) :
   _generated_shader = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Copy Assignment Operator
-//       Access: Private
-//  Description: RenderStates are not meant to be copied.
-////////////////////////////////////////////////////////////////////
+/**
+ * RenderStates are not meant to be copied.
+ */
 void RenderState::
 operator = (const RenderState &) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::Destructor
-//       Access: Public, Virtual
-//  Description: The destructor is responsible for removing the
-//               RenderState from the global set if it is there.
-////////////////////////////////////////////////////////////////////
+/**
+ * The destructor is responsible for removing the RenderState from the global
+ * set if it is there.
+ */
 RenderState::
 ~RenderState() {
   // We'd better not call the destructor twice on a particular object.
@@ -145,18 +137,13 @@ RenderState::
   _cache_stats.add_num_states(-1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::compare_to
-//       Access: Published
-//  Description: Provides an arbitrary ordering among all unique
-//               RenderStates, so we can store the essentially
-//               different ones in a big set and throw away the rest.
-//
-//               This method is not needed outside of the RenderState
-//               class because all equivalent RenderState objects are
-//               guaranteed to share the same pointer; thus, a pointer
-//               comparison is always sufficient.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides an arbitrary ordering among all unique RenderStates, so we can store
+ * the essentially different ones in a big set and throw away the rest.  This
+ * method is not needed outside of the RenderState class because all equivalent
+ * RenderState objects are guaranteed to share the same pointer; thus, a pointer
+ * comparison is always sufficient.
+ */
 int RenderState::
 compare_to(const RenderState &other) const {
   SlotMask mask = _filled_slots | other._filled_slots;
@@ -173,16 +160,13 @@ compare_to(const RenderState &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::compare_sort
-//       Access: Published
-//  Description: Returns -1, 0, or 1 according to the relative sorting
-//               of these two RenderStates, with regards to rendering
-//               performance, so that "heavier" RenderAttribs (as
-//               defined by RenderAttribRegistry::get_slot_sort()) are
-//               more likely to be grouped together.  This is not
-//               related to the sorting order defined by compare_to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns -1, 0, or 1 according to the relative sorting of these two
+ * RenderStates, with regards to rendering performance, so that "heavier"
+ * RenderAttribs (as defined by RenderAttribRegistry::get_slot_sort()) are more
+ * likely to be grouped together.  This is not related to the sorting order
+ * defined by compare_to.
+ */
 int RenderState::
 compare_sort(const RenderState &other) const {
   if (this == &other) {
@@ -206,14 +190,11 @@ compare_sort(const RenderState &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::compare_mask
-//       Access: Published
-//  Description: This version of compare_to takes a slot mask that
-//               indicates which attributes to include in the
-//               comparison.  Unlike compare_to, this method
-//               compares the attributes by pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This version of compare_to takes a slot mask that indicates which attributes
+ * to include in the comparison.  Unlike compare_to, this method compares the
+ * attributes by pointer.
+ */
 int RenderState::
 compare_mask(const RenderState &other, SlotMask compare_mask) const {
   SlotMask mask = (_filled_slots | other._filled_slots) & compare_mask;
@@ -231,14 +212,11 @@ compare_mask(const RenderState &other, SlotMask compare_mask) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::cull_callback
-//       Access: Published
-//  Description: Calls cull_callback() on each attrib.  If any attrib
-//               returns false, interrupts the list and returns false
-//               immediately; otherwise, completes the list and
-//               returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls cull_callback() on each attrib.  If any attrib returns false,
+ * interrupts the list and returns false immediately; otherwise, completes the
+ * list and returns true.
+ */
 bool RenderState::
 cull_callback(CullTraverser *trav, const CullTraverserData &data) const {
   SlotMask mask = _filled_slots;
@@ -257,11 +235,9 @@ cull_callback(CullTraverser *trav, const CullTraverserData &data) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make
-//       Access: Published, Static
-//  Description: Returns a RenderState with one attribute set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState with one attribute set.
+ */
 CPT(RenderState) RenderState::
 make(const RenderAttrib *attrib, int override) {
   RenderState *state = new RenderState;
@@ -271,11 +247,9 @@ make(const RenderAttrib *attrib, int override) {
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make
-//       Access: Published, Static
-//  Description: Returns a RenderState with two attributes set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState with two attributes set.
+ */
 CPT(RenderState) RenderState::
 make(const RenderAttrib *attrib1,
      const RenderAttrib *attrib2, int override) {
@@ -287,11 +261,9 @@ make(const RenderAttrib *attrib1,
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make
-//       Access: Published, Static
-//  Description: Returns a RenderState with three attributes set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState with three attributes set.
+ */
 CPT(RenderState) RenderState::
 make(const RenderAttrib *attrib1,
      const RenderAttrib *attrib2,
@@ -306,11 +278,9 @@ make(const RenderAttrib *attrib1,
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make
-//       Access: Published, Static
-//  Description: Returns a RenderState with four attributes set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState with four attributes set.
+ */
 CPT(RenderState) RenderState::
 make(const RenderAttrib *attrib1,
      const RenderAttrib *attrib2,
@@ -328,11 +298,9 @@ make(const RenderAttrib *attrib1,
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make
-//       Access: Published, Static
-//  Description: Returns a RenderState with five attributes set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState with five attributes set.
+ */
 CPT(RenderState) RenderState::
 make(const RenderAttrib *attrib1,
      const RenderAttrib *attrib2,
@@ -353,11 +321,9 @@ make(const RenderAttrib *attrib1,
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make
-//       Access: Published, Static
-//  Description: Returns a RenderState with n attributes set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState with n attributes set.
+ */
 CPT(RenderState) RenderState::
 make(const RenderAttrib * const *attrib, int num_attribs, int override) {
   if (num_attribs == 0) {
@@ -372,19 +338,13 @@ make(const RenderAttrib * const *attrib, int num_attribs, int override) {
   return return_new(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::compose
-//       Access: Published
-//  Description: Returns a new RenderState object that represents the
-//               composition of this state with the other state.
-//
-//               The result of this operation is cached, and will be
-//               retained as long as both this RenderState object and
-//               the other RenderState object continue to exist.
-//               Should one of them destruct, the cached entry will be
-//               removed, and its pointer will be allowed to destruct
-//               as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new RenderState object that represents the composition of this
+ * state with the other state.  The result of this operation is cached, and will
+ * be retained as long as both this RenderState object and the other RenderState
+ * object continue to exist.  Should one of them destruct, the cached entry will
+ * be removed, and its pointer will be allowed to destruct as well.
+ */
 CPT(RenderState) RenderState::
 compose(const RenderState *other) const {
   // This method isn't strictly const, because it updates the cache,
@@ -465,17 +425,12 @@ compose(const RenderState *other) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::invert_compose
-//       Access: Published
-//  Description: Returns a new RenderState object that represents the
-//               composition of this state's inverse with the other
-//               state.
-//
-//               This is similar to compose(), but is particularly
-//               useful for computing the relative state of a node as
-//               viewed from some other node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new RenderState object that represents the composition of this
+ * state's inverse with the other state.  This is similar to compose(), but is
+ * particularly useful for computing the relative state of a node as viewed from
+ * some other node.
+ */
 CPT(RenderState) RenderState::
 invert_compose(const RenderState *other) const {
   // This method isn't strictly const, because it updates the cache,
@@ -557,15 +512,11 @@ invert_compose(const RenderState *other) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::add_attrib
-//       Access: Published
-//  Description: Returns a new RenderState object that represents the
-//               same as the source state, with the new RenderAttrib
-//               added.  If there is already a RenderAttrib with the
-//               same type, it is replaced (unless the override is
-//               lower).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new RenderState object that represents the same as the source
+ * state, with the new RenderAttrib added.  If there is already a RenderAttrib
+ * with the same type, it is replaced (unless the override is lower).
+ */
 CPT(RenderState) RenderState::
 add_attrib(const RenderAttrib *attrib, int override) const {
   int slot = attrib->get_slot();
@@ -582,15 +533,12 @@ add_attrib(const RenderAttrib *attrib, int override) const {
   return return_new(new_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::set_attrib
-//       Access: Published
-//  Description: Returns a new RenderState object that represents the
-//               same as the source state, with the new RenderAttrib
-//               added.  If there is already a RenderAttrib with the
-//               same type, it is replaced unconditionally.  The
-//               override is not changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new RenderState object that represents the same as the source
+ * state, with the new RenderAttrib added.  If there is already a RenderAttrib
+ * with the same type, it is replaced unconditionally.  The override is not
+ * changed.
+ */
 CPT(RenderState) RenderState::
 set_attrib(const RenderAttrib *attrib) const {
   RenderState *new_state = new RenderState(*this);
@@ -600,15 +548,12 @@ set_attrib(const RenderAttrib *attrib) const {
   return return_new(new_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::set_attrib
-//       Access: Published
-//  Description: Returns a new RenderState object that represents the
-//               same as the source state, with the new RenderAttrib
-//               added.  If there is already a RenderAttrib with the
-//               same type, it is replaced unconditionally.  The
-//               override is also replaced unconditionally.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new RenderState object that represents the same as the source
+ * state, with the new RenderAttrib added.  If there is already a RenderAttrib
+ * with the same type, it is replaced unconditionally.  The override is also
+ * replaced unconditionally.
+ */
 CPT(RenderState) RenderState::
 set_attrib(const RenderAttrib *attrib, int override) const {
   RenderState *new_state = new RenderState(*this);
@@ -618,13 +563,10 @@ set_attrib(const RenderAttrib *attrib, int override) const {
   return return_new(new_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::remove_attrib
-//       Access: Published
-//  Description: Returns a new RenderState object that represents the
-//               same as the source state, with the indicated
-//               RenderAttrib removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new RenderState object that represents the same as the source
+ * state, with the indicated RenderAttrib removed.
+ */
 CPT(RenderState) RenderState::
 remove_attrib(int slot) const {
   if (_attributes[slot]._attrib == NULL) {
@@ -643,15 +585,12 @@ remove_attrib(int slot) const {
   return return_new(new_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::adjust_all_priorities
-//       Access: Published
-//  Description: Returns a new RenderState object that represents the
-//               same as the source state, with all attributes'
-//               override values incremented (or decremented, if
-//               negative) by the indicated amount.  If the override
-//               would drop below zero, it is set to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new RenderState object that represents the same as the source
+ * state, with all attributes' override values incremented (or decremented, if
+ * negative) by the indicated amount.  If the override would drop below zero, it
+ * is set to zero.
+ */
 CPT(RenderState) RenderState::
 adjust_all_priorities(int adjustment) const {
   RenderState *new_state = new RenderState(*this);
@@ -670,16 +609,12 @@ adjust_all_priorities(int adjustment) const {
   return return_new(new_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::unref
-//       Access: Published, Virtual
-//  Description: This method overrides ReferenceCount::unref() to
-//               check whether the remaining reference count is
-//               entirely in the cache, and if so, it checks for and
-//               breaks a cycle in the cache involving this object.
-//               This is designed to prevent leaks from cyclical
-//               references within the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method overrides ReferenceCount::unref() to check whether the remaining
+ * reference count is entirely in the cache, and if so, it checks for and breaks
+ * a cycle in the cache involving this object.  This is designed to prevent
+ * leaks from cyclical references within the cache.
+ */
 bool RenderState::
 unref() const {
   if (!state_cache || garbage_collect_states) {
@@ -723,21 +658,14 @@ unref() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_auto_shader_state
-//       Access: Published
-//  Description: Returns the base RenderState that should have the
-//               generated_shader stored within it, for generated
-//               shader states.  The returned object might be the same
-//               as this object, or it might be a different
-//               RenderState with certain attributes removed, or set
-//               to their default values.
-//
-//               The point is to avoid needless regeneration of the
-//               shader attrib by storing the generated shader on a
-//               common RenderState object, with all irrelevant
-//               attributes removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the base RenderState that should have the generated_shader stored
+ * within it, for generated shader states.  The returned object might be the
+ * same as this object, or it might be a different RenderState with certain
+ * attributes removed, or set to their default values.  The point is to avoid
+ * needless regeneration of the shader attrib by storing the generated shader on
+ * a common RenderState object, with all irrelevant attributes removed.
+ */
 const RenderState *RenderState::
 get_auto_shader_state() const {
   if (_auto_shader_state == (const RenderState *)NULL) {
@@ -746,11 +674,9 @@ get_auto_shader_state() const {
   return _auto_shader_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void RenderState::
 output(ostream &out) const {
   out << "S:";
@@ -776,11 +702,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void RenderState::
 write(ostream &out, int indent_level) const {
   if (is_empty()) {
@@ -800,28 +724,21 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_max_priority
-//       Access: Published, Static
-//  Description: Returns the maximum priority number (sometimes called
-//               override) that may be set on any node.  This may or
-//               may not be enforced, but the scene graph code assumes
-//               that no priority numbers will be larger than this,
-//               and some effects may not work properly if you use a
-//               larger number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the maximum priority number (sometimes called override) that may be
+ * set on any node.  This may or may not be enforced, but the scene graph code
+ * assumes that no priority numbers will be larger than this, and some effects
+ * may not work properly if you use a larger number.
+ */
 int RenderState::
 get_max_priority() {
   return 1000000000;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_num_states
-//       Access: Published, Static
-//  Description: Returns the total number of unique RenderState
-//               objects allocated in the world.  This will go up and
-//               down during normal operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of unique RenderState objects allocated in the
+ * world.  This will go up and down during normal operations.
+ */
 int RenderState::
 get_num_states() {
   if (_states == (States *)NULL) {
@@ -831,24 +748,16 @@ get_num_states() {
   return _states->get_num_entries();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_num_unused_states
-//       Access: Published, Static
-//  Description: Returns the total number of RenderState objects that
-//               have been allocated but have no references outside of
-//               the internal RenderState cache.
-//
-//               A nonzero return value is not necessarily indicative
-//               of leaked references; it is normal for two
-//               RenderState objects, both of which have references
-//               held outside the cache, to have to result of their
-//               composition stored within the cache.  This result
-//               will be retained within the cache until one of the
-//               base RenderStates is released.
-//
-//               Use list_cycles() to get an idea of the number of
-//               actual "leaked" RenderState objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of RenderState objects that have been allocated but
+ * have no references outside of the internal RenderState cache.  A nonzero
+ * return value is not necessarily indicative of leaked references; it is normal
+ * for two RenderState objects, both of which have references held outside the
+ * cache, to have to result of their composition stored within the cache.  This
+ * result will be retained within the cache until one of the base RenderStates
+ * is released.  Use list_cycles() to get an idea of the number of actual
+ * "leaked" RenderState objects.
+ */
 int RenderState::
 get_num_unused_states() {
   if (_states == (States *)NULL) {
@@ -927,26 +836,16 @@ get_num_unused_states() {
   return num_unused;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::clear_cache
-//       Access: Published, Static
-//  Description: Empties the cache of composed RenderStates.  This
-//               makes every RenderState forget what results when
-//               it is composed with other RenderStates.
-//
-//               This will eliminate any RenderState objects that
-//               have been allocated but have no references outside of
-//               the internal RenderState map.  It will not
-//               eliminate RenderState objects that are still in
-//               use.
-//
-//               Nowadays, this method should not be necessary, as
-//               reference-count cycles in the composition cache
-//               should be automatically detected and broken.
-//
-//               The return value is the number of RenderStates
-//               freed by this operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the cache of composed RenderStates.  This makes every RenderState
+ * forget what results when it is composed with other RenderStates.  This will
+ * eliminate any RenderState objects that have been allocated but have no
+ * references outside of the internal RenderState map.  It will not eliminate
+ * RenderState objects that are still in use.  Nowadays, this method should not
+ * be necessary, as reference-count cycles in the composition cache should be
+ * automatically detected and broken.  The return value is the number of
+ * RenderStates freed by this operation.
+ */
 int RenderState::
 clear_cache() {
   if (_states == (States *)NULL) {
@@ -1019,19 +918,13 @@ clear_cache() {
   return orig_size - new_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::garbage_collect
-//       Access: Published, Static
-//  Description: Performs a garbage-collection cycle.  This must be
-//               called periodically if garbage-collect-states is true
-//               to ensure that RenderStates get cleaned up
-//               appropriately.  It does no harm to call it even if
-//               this variable is not true, but there is probably no
-//               advantage in that case.
-//
-//               This automatically calls
-//               RenderAttrib::garbage_collect() as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs a garbage-collection cycle.  This must be called periodically if
+ * garbage-collect-states is true to ensure that RenderStates get cleaned up
+ * appropriately.  It does no harm to call it even if this variable is not true,
+ * but there is probably no advantage in that case.  This automatically calls
+ * RenderAttrib::garbage_collect() as well.
+ */
 int RenderState::
 garbage_collect() {
   int num_attribs = RenderAttrib::garbage_collect();
@@ -1093,13 +986,10 @@ garbage_collect() {
   return orig_size - new_size + num_attribs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::clear_munger_cache
-//       Access: Published, Static
-//  Description: Completely empties the cache of state + gsg ->
-//               munger, for all states and all gsg's.  Normally there
-//               is no need to empty this cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely empties the cache of state + gsg -> munger, for all states and all
+ * gsg's.  Normally there is no need to empty this cache.
+ */
 void RenderState::
 clear_munger_cache() {
   LightReMutexHolder holder(*_states_lock);
@@ -1115,24 +1005,15 @@ clear_munger_cache() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::list_cycles
-//       Access: Published, Static
-//  Description: Detects all of the reference-count cycles in the
-//               cache and reports them to standard output.
-//
-//               These cycles may be inadvertently created when state
-//               compositions cycle back to a starting point.
-//               Nowadays, these cycles should be automatically
-//               detected and broken, so this method should never list
-//               any cycles unless there is a bug in that detection
-//               logic.
-//
-//               The cycles listed here are not leaks in the strictest
-//               sense of the word, since they can be reclaimed by a
-//               call to clear_cache(); but they will not be reclaimed
-//               automatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detects all of the reference-count cycles in the cache and reports them to
+ * standard output.  These cycles may be inadvertently created when state
+ * compositions cycle back to a starting point.  Nowadays, these cycles should
+ * be automatically detected and broken, so this method should never list any
+ * cycles unless there is a bug in that detection logic.  The cycles listed here
+ * are not leaks in the strictest sense of the word, since they can be reclaimed
+ * by a call to clear_cache(); but they will not be reclaimed automatically.
+ */
 void RenderState::
 list_cycles(ostream &out) {
   if (_states == (States *)NULL) {
@@ -1208,13 +1089,11 @@ list_cycles(ostream &out) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::list_states
-//       Access: Published, Static
-//  Description: Lists all of the RenderStates in the cache to the
-//               output stream, one per line.  This can be quite a lot
-//               of output if the cache is large, so be prepared.
-////////////////////////////////////////////////////////////////////
+/**
+ * Lists all of the RenderStates in the cache to the output stream, one per
+ * line.  This can be quite a lot of output if the cache is large, so be
+ * prepared.
+ */
 void RenderState::
 list_states(ostream &out) {
   if (_states == (States *)NULL) {
@@ -1235,16 +1114,12 @@ list_states(ostream &out) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::validate_states
-//       Access: Published, Static
-//  Description: Ensures that the cache is still stored in sorted
-//               order, and that none of the cache elements have been
-//               inadvertently deleted.  Returns true if so, false if
-//               there is a problem (which implies someone has
-//               modified one of the supposedly-const RenderState
-//               objects).
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the cache is still stored in sorted order, and that none of the
+ * cache elements have been inadvertently deleted.  Returns true if so, false if
+ * there is a problem (which implies someone has modified one of the supposedly-
+ * const RenderState objects).
+ */
 bool RenderState::
 validate_states() {
   if (_states == (States *)NULL) {
@@ -1305,14 +1180,11 @@ validate_states() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_geom_rendering
-//       Access: Published
-//  Description: Returns the union of the Geom::GeomRendering bits
-//               that will be required once this RenderState is
-//               applied to a geom which includes the indicated
-//               geom_rendering bits.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the union of the Geom::GeomRendering bits that will be required once
+ * this RenderState is applied to a geom which includes the indicated
+ * geom_rendering bits.
+ */
 int RenderState::
 get_geom_rendering(int geom_rendering) const {
   const RenderModeAttrib *render_mode;
@@ -1332,27 +1204,21 @@ get_geom_rendering(int geom_rendering) const {
   return geom_rendering;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::bin_removed
-//       Access: Public, Static
-//  Description: Intended to be called by
-//               CullBinManager::remove_bin(), this informs all the
-//               RenderStates in the world to remove the indicated
-//               bin_index from their cache if it has been cached.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called by CullBinManager::remove_bin(), this informs all the
+ * RenderStates in the world to remove the indicated bin_index from their cache
+ * if it has been cached.
+ */
 void RenderState::
 bin_removed(int bin_index) {
   // Do something here.
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::validate_filled_slots
-//       Access: Private
-//  Description: Returns true if the _filled_slots bitmask is
-//               consistent with the table of RenderAttrib pointers,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the _filled_slots bitmask is consistent with the table of
+ * RenderAttrib pointers, false otherwise.
+ */
 bool RenderState::
 validate_filled_slots() const {
   SlotMask mask;
@@ -1369,11 +1235,9 @@ validate_filled_slots() const {
   return (mask == _filled_slots);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::do_calc_hash
-//       Access: Private
-//  Description: Computes a suitable hash value for phash_map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a suitable hash value for phash_map.
+ */
 void RenderState::
 do_calc_hash() {
   _hash = 0;
@@ -1393,13 +1257,10 @@ do_calc_hash() {
   _flags |= F_hash_known;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::assign_auto_shader_state
-//       Access: Private
-//  Description: Sets _auto_shader_state to the appropriate
-//               RenderState object pointer, either the same pointer
-//               as this object, or some other (simpler) RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets _auto_shader_state to the appropriate RenderState object pointer, either
+ * the same pointer as this object, or some other (simpler) RenderState.
+ */
 void RenderState::
 assign_auto_shader_state() {
   CPT(RenderState) state = do_calc_auto_shader_state();
@@ -1415,13 +1276,10 @@ assign_auto_shader_state() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::do_calc_auto_shader_state
-//       Access: Private
-//  Description: Returns the appropriate RenderState that should be
-//               used to store the auto shader pointer for nodes that
-//               shader this RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the appropriate RenderState that should be used to store the auto
+ * shader pointer for nodes that shader this RenderState.
+ */
 CPT(RenderState) RenderState::
 do_calc_auto_shader_state() {
   RenderState *state = new RenderState;
@@ -1446,16 +1304,12 @@ do_calc_auto_shader_state() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::return_new
-//       Access: Private, Static
-//  Description: This function is used to share a common RenderState
-//               pointer for all equivalent RenderState objects.
-//
-//               This is different from return_unique() in that it
-//               does not actually guarantee a unique pointer, unless
-//               uniquify-states is set.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used to share a common RenderState pointer for all
+ * equivalent RenderState objects.  This is different from return_unique() in
+ * that it does not actually guarantee a unique pointer, unless uniquify-states
+ * is set.
+ */
 CPT(RenderState) RenderState::
 return_new(RenderState *state) {
   nassertr(state != (RenderState *)NULL, state);
@@ -1494,18 +1348,13 @@ return_new(RenderState *state) {
   return return_unique(state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::return_unique
-//       Access: Private, Static
-//  Description: This function is used to share a common RenderState
-//               pointer for all equivalent RenderState objects.
-//
-//               See the similar logic in RenderAttrib.  The idea is
-//               to create a new RenderState object and pass it
-//               through this function, which will share the pointer
-//               with a previously-created RenderState object if it is
-//               equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is used to share a common RenderState pointer for all
+ * equivalent RenderState objects.  See the similar logic in RenderAttrib.  The
+ * idea is to create a new RenderState object and pass it through this function,
+ * which will share the pointer with a previously-created RenderState object if
+ * it is equivalent.
+ */
 CPT(RenderState) RenderState::
 return_unique(RenderState *state) {
   nassertr(state != (RenderState *)NULL, NULL);
@@ -1567,13 +1416,10 @@ return_unique(RenderState *state) {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::do_compose
-//       Access: Private
-//  Description: The private implemention of compose(); this actually
-//               composes two RenderStates, without bothering with the
-//               cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implemention of compose(); this actually composes two
+ * RenderStates, without bothering with the cache.
+ */
 CPT(RenderState) RenderState::
 do_compose(const RenderState *other) const {
   PStatTimer timer(_state_compose_pcollector);
@@ -1626,11 +1472,9 @@ do_compose(const RenderState *other) const {
   return return_new(new_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::do_invert_compose
-//       Access: Private
-//  Description: The private implemention of invert_compose().
-////////////////////////////////////////////////////////////////////
+/**
+ * The private implemention of invert_compose().
+ */
 CPT(RenderState) RenderState::
 do_invert_compose(const RenderState *other) const {
   PStatTimer timer(_state_invert_pcollector);
@@ -1668,13 +1512,10 @@ do_invert_compose(const RenderState *other) const {
   return return_new(new_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::detect_and_break_cycles
-//       Access: Private
-//  Description: Detects whether there is a cycle in the cache that
-//               begins with this state.  If any are detected, breaks
-//               them by removing this state from the cache.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detects whether there is a cycle in the cache that begins with this state.
+ * If any are detected, breaks them by removing this state from the cache.
+ */
 void RenderState::
 detect_and_break_cycles() {
   PStatTimer timer(_state_break_cycles_pcollector);
@@ -1702,17 +1543,13 @@ detect_and_break_cycles() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::r_detect_cycles
-//       Access: Private, Static
-//  Description: Detects whether there is a cycle in the cache that
-//               begins with the indicated state.  Returns true if at
-//               least one cycle is found, false if this state is not
-//               part of any cycles.  If a cycle is found and
-//               cycle_desc is not NULL, then cycle_desc is filled in
-//               with the list of the steps of the cycle, in reverse
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Detects whether there is a cycle in the cache that begins with the indicated
+ * state.  Returns true if at least one cycle is found, false if this state is
+ * not part of any cycles.  If a cycle is found and cycle_desc is not NULL, then
+ * cycle_desc is filled in with the list of the steps of the cycle, in reverse
+ * order.
+ */
 bool RenderState::
 r_detect_cycles(const RenderState *start_state,
                 const RenderState *current_state,
@@ -1772,14 +1609,11 @@ r_detect_cycles(const RenderState *start_state,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::r_detect_reverse_cycles
-//       Access: Private, Static
-//  Description: Works the same as r_detect_cycles, but checks for
-//               cycles in the reverse direction along the cache
-//               chain.  (A cycle may appear in either direction, and
-//               we must check both.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Works the same as r_detect_cycles, but checks for cycles in the reverse
+ * direction along the cache chain.  (A cycle may appear in either direction,
+ * and we must check both.)
+ */
 bool RenderState::
 r_detect_reverse_cycles(const RenderState *start_state,
                         const RenderState *current_state,
@@ -1851,15 +1685,11 @@ r_detect_reverse_cycles(const RenderState *start_state,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::release_new
-//       Access: Private
-//  Description: This inverse of return_new, this releases this object
-//               from the global RenderState table.
-//
-//               You must already be holding _states_lock before you
-//               call this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * This inverse of return_new, this releases this object from the global
+ * RenderState table.  You must already be holding _states_lock before you call
+ * this method.
+ */
 void RenderState::
 release_new() {
   nassertv(_states_lock->debug_is_locked());
@@ -1872,17 +1702,12 @@ release_new() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::remove_cache_pointers
-//       Access: Private
-//  Description: Remove all pointers within the cache from and to this
-//               particular RenderState.  The pointers to this
-//               object may be scattered around in the various
-//               CompositionCaches from other RenderState objects.
-//
-//               You must already be holding _states_lock before you
-//               call this method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Remove all pointers within the cache from and to this particular RenderState.
+ * The pointers to this object may be scattered around in the various
+ * CompositionCaches from other RenderState objects.  You must already be
+ * holding _states_lock before you call this method.
+ */
 void RenderState::
 remove_cache_pointers() {
   nassertv(_states_lock->debug_is_locked());
@@ -2009,12 +1834,9 @@ remove_cache_pointers() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::determine_bin_index
-//       Access: Private
-//  Description: This is the private implementation of
-//               get_bin_index() and get_draw_order().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the private implementation of get_bin_index() and get_draw_order().
+ */
 void RenderState::
 determine_bin_index() {
   LightMutexHolder holder(_lock);
@@ -2063,11 +1885,9 @@ determine_bin_index() {
   _flags |= F_checked_bin_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::determine_cull_callback
-//       Access: Private
-//  Description: This is the private implementation of has_cull_callback().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the private implementation of has_cull_callback().
+ */
 void RenderState::
 determine_cull_callback() {
   LightMutexHolder holder(_lock);
@@ -2093,11 +1913,9 @@ determine_cull_callback() {
   _flags |= F_checked_cull_callback;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::fill_default
-//       Access: Private
-//  Description: Fills up the state with all of the default attribs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the state with all of the default attribs.
+ */
 void RenderState::
 fill_default() {
   RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
@@ -2108,14 +1926,11 @@ fill_default() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::update_pstats
-//       Access: Private
-//  Description: Moves the RenderState object from one PStats category
-//               to another, so that we can track in PStats how many
-//               pointers are held by nodes, and how many are held in
-//               the cache only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the RenderState object from one PStats category to another, so that we
+ * can track in PStats how many pointers are held by nodes, and how many are
+ * held in the cache only.
+ */
 void RenderState::
 update_pstats(int old_referenced_bits, int new_referenced_bits) {
 #ifdef DO_PSTATS
@@ -2132,16 +1947,12 @@ update_pstats(int old_referenced_bits, int new_referenced_bits) {
 #endif  // DO_PSTATS
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::init_states
-//       Access: Public, Static
-//  Description: Make sure the global _states map is allocated.  This
-//               only has to be done once.  We could make this map
-//               static, but then we run into problems if anyone
-//               creates a RenderState object at static init time;
-//               it also seems to cause problems when the Panda shared
-//               library is unloaded at application exit time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Make sure the global _states map is allocated.  This only has to be done
+ * once.  We could make this map static, but then we run into problems if anyone
+ * creates a RenderState object at static init time; it also seems to cause
+ * problems when the Panda shared library is unloaded at application exit time.
+ */
 void RenderState::
 init_states() {
   _states = new States;
@@ -2163,23 +1974,18 @@ init_states() {
   _empty_state = state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type RenderState.
+ */
 void RenderState::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void RenderState::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
@@ -2203,13 +2009,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int RenderState::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
@@ -2237,17 +2040,12 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::change_this
-//       Access: Public, Static
-//  Description: Called immediately after complete_pointers(), this
-//               gives the object a chance to adjust its own pointer
-//               if desired.  Most objects don't change pointers after
-//               completion, but some need to.
-//
-//               Once this function has been called, the old pointer
-//               will no longer be accessed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called immediately after complete_pointers(), this gives the object a chance
+ * to adjust its own pointer if desired.  Most objects don't change pointers
+ * after completion, but some need to.  Once this function has been called, the
+ * old pointer will no longer be accessed.
+ */
 TypedWritable *RenderState::
 change_this(TypedWritable *old_ptr, BamReader *manager) {
   // First, uniquify the pointer.
@@ -2269,13 +2067,11 @@ change_this(TypedWritable *old_ptr, BamReader *manager) {
   return (RenderState *)pointer.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::finalize
-//       Access: Public, Virtual
-//  Description: Called by the BamReader to perform any final actions
-//               needed for setting up the object after all objects
-//               have been read and all pointers have been completed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
 void RenderState::
 finalize(BamReader *) {
   // Unref the pointer that we explicitly reffed in change_this().
@@ -2289,14 +2085,11 @@ finalize(BamReader *) {
   nassertv(get_ref_count() != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type RenderState is encountered
-//               in the Bam file.  It should create the RenderState
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * RenderState is encountered in the Bam file.  It should create the RenderState
+ * and extract its information from the file.
+ */
 TypedWritable *RenderState::
 make_from_bam(const FactoryParams &params) {
   RenderState *state = new RenderState;
@@ -2310,13 +2103,10 @@ make_from_bam(const FactoryParams &params) {
   return state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new RenderState.
+ */
 void RenderState::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
@@ -2331,4 +2121,3 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     (*_read_overrides).push_back(override);
   }
 }
-

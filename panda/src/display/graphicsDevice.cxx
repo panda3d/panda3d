@@ -17,12 +17,10 @@
 
 TypeHandle GraphicsDevice::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsDevice::Constructor
-//       Access: Protected
-//  Description: Normally, the GraphicsDevice constructor holds 
-//               a reference to the Graphics Pipe that it is part of
-////////////////////////////////////////////////////////////////////
+/**
+ * Normally, the GraphicsDevice constructor holds a reference to the Graphics
+ * Pipe that it is part of
+ */
 GraphicsDevice::
 GraphicsDevice(GraphicsPipe *pipe) {
 #ifdef DO_MEMORY_USAGE
@@ -36,34 +34,27 @@ GraphicsDevice(GraphicsPipe *pipe) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsDevice::Copy Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsDevice::
 GraphicsDevice(const GraphicsDevice &) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsDevice::Copy Assignment Operator
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GraphicsDevice::
 operator = (const GraphicsDevice &) {
   nassertv(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsDevice::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsDevice::
 ~GraphicsDevice() {
   // And we shouldn't have a GraphicsPipe pointer anymore.
   //  nassertv(_pipe == (GraphicsPipe *)NULL);
 }
-

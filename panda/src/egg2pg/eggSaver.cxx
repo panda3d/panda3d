@@ -70,11 +70,9 @@
 #include "eggTable.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggSaver::
 EggSaver(EggData *data) :
   _data(data)
@@ -84,13 +82,10 @@ EggSaver(EggData *data) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::add_node
-//       Access: Published
-//  Description: Adds the scene graph rooted at the indicated node to
-//               the accumulated egg data within this object.  Call
-//               get_egg_data() to retrieve the result.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the scene graph rooted at the indicated node to the accumulated egg data
+ * within this object.  Call get_egg_data() to retrieve the result.
+ */
 void EggSaver::
 add_node(PandaNode *node) {
   _vpool = new EggVertexPool(node->get_name());
@@ -106,13 +101,10 @@ add_node(PandaNode *node) {
   _vpool = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_node
-//       Access: Private
-//  Description: Converts the indicated node to the corresponding Egg
-//               constructs, by first determining what kind of node it
-//               is.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated node to the corresponding Egg constructs, by first
+ * determining what kind of node it is.
+ */
 void EggSaver::
 convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
              bool has_decal) {
@@ -143,17 +135,14 @@ convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
     EggGroup *egg_group = new EggGroup(node->get_name());
     egg_parent->add_child(egg_group);
     apply_node_properties(egg_group, node);
-    
+
     recurse_nodes(node_path, egg_group, has_decal);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_lod_node
-//       Access: Private
-//  Description: Converts the indicated LODNode to the corresponding
-//               Egg constructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated LODNode to the corresponding Egg constructs.
+ */
 void EggSaver::
 convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
                  EggGroupNode *egg_parent, bool has_decal) {
@@ -196,12 +185,9 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_sequence_node
-//       Access: Private
-//  Description: Converts the indicated SequenceNode to the corresponding
-//               Egg constructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated SequenceNode to the corresponding Egg constructs.
+ */
 void EggSaver::
 convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
                       EggGroupNode *egg_parent, bool has_decal) {
@@ -229,12 +215,9 @@ convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_switch_node
-//       Access: Private
-//  Description: Converts the indicated SwitchNode to the corresponding
-//               Egg constructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated SwitchNode to the corresponding Egg constructs.
+ */
 void EggSaver::
 convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
                     EggGroupNode *egg_parent, bool has_decal) {
@@ -260,12 +243,10 @@ convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_animGroup_node
-//       Access: Private
-//  Description: Converts the indicated AnimationGroupNodes to the corresponding
-//               Egg constructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated AnimationGroupNodes to the corresponding Egg
+ * constructs.
+ */
 EggGroupNode * EggSaver::convert_animGroup_node(AnimGroup *animGroup, double fps ) {
   int num_children = animGroup->get_num_children();
 
@@ -304,26 +285,23 @@ EggGroupNode * EggSaver::convert_animGroup_node(AnimGroup *animGroup, double fps
       nassertr(eggNode!=NULL, NULL);
       eggNode->add_child(eggChildNode);
     }
-  } 
+  }
   return eggNode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_anim_node
-//       Access: Private
-//  Description: Converts the indicated AnimNode to the corresponding
-//               Egg constructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated AnimNode to the corresponding Egg constructs.
+ */
 void EggSaver::
 convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
                     EggGroupNode *egg_parent, bool has_decal) {
-  
+
   // A sequence node gets converted to an ordinary EggGroup, we only apply
   // the appropriate switch attributes to turn it into a sequence
   EggTable *eggTable = new EggTable();
   //egg_parent->add_child(eggTable);
   _data->add_child(eggTable);
- 
+
   AnimBundle *animBundle = node->get_bundle();
   // turn it into a switch..
   //egg_group->set_switch_flag(true);
@@ -332,16 +310,14 @@ convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
   eggTable->add_child(eggAnimation);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_character_bundle
-//       Access: Private
-//  Description: Converts the indicated Character Bundle to the corresponding
-//               Egg joints structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Character Bundle to the corresponding Egg joints
+ * structure.
+ */
 void EggSaver::
 convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *jointMap) {
   int num_children = bundleNode->get_num_children();
-  
+
   EggGroupNode *joint_group = egg_parent;
   if (bundleNode->is_of_type(CharacterJoint::get_class_type())) {
     CharacterJoint *character_joint = DCAST(CharacterJoint, bundleNode);
@@ -373,16 +349,13 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_character_node
-//       Access: Private
-//  Description: Converts the indicated Character to the corresponding
-//               Egg constructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Character to the corresponding Egg constructs.
+ */
 void EggSaver::
 convert_character_node(Character *node, const WorkingNodePath &node_path,
                     EggGroupNode *egg_parent, bool has_decal) {
-  
+
   // A sequence node gets converted to an ordinary EggGroup, we only apply
   // the appropriate switch attributes to turn it into a sequence
   EggGroup *egg_group = new EggGroup(node->get_name());
@@ -391,7 +364,7 @@ convert_character_node(Character *node, const WorkingNodePath &node_path,
   apply_node_properties(egg_group, node);
 
   CharacterJointMap jointMap;
-  
+
   // turn it into a switch..
   //egg_group->set_switch_flag(true);
 
@@ -414,12 +387,9 @@ convert_character_node(Character *node, const WorkingNodePath &node_path,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_collision_node
-//       Access: Private
-//  Description: Converts the indicated CollisionNode to the corresponding
-//               Egg constructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated CollisionNode to the corresponding Egg constructs.
+ */
 void EggSaver::
 convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
                        EggGroupNode *egg_parent, bool has_decal) {
@@ -545,14 +515,11 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
   recurse_nodes(node_path, egg_group, has_decal);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_geom_node
-//       Access: Private
-//  Description: Converts a GeomNode to the corresponding egg
-//               structures.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a GeomNode to the corresponding egg structures.
+ */
 void EggSaver::
-convert_geom_node(GeomNode *node, const WorkingNodePath &node_path, 
+convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
                   EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap) {
   PT(EggGroup) egg_group = new EggGroup(node->get_name());
   bool fancy_attributes = apply_node_properties(egg_group, node);
@@ -596,19 +563,17 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
                         net_mat, egg_parent, jointMap);
     }
   }
-  
+
   recurse_nodes(node_path, egg_parent, has_decal);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::convert_primitive
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggSaver::
 convert_primitive(const GeomVertexData *vertex_data,
                   const GeomPrimitive *primitive,
-                  const RenderState *net_state, 
+                  const RenderState *net_state,
                   const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                   CharacterJointMap *jointMap) {
   GeomVertexReader reader(vertex_data);
@@ -784,21 +749,21 @@ convert_primitive(const GeomVertexData *vertex_data,
     if (egg_tex != (EggTexture *)NULL) {
       egg_prim->set_texture(egg_tex);
     }
-    
+
     if (bface) {
       egg_prim->set_bface_flag(true);
     }
 
     for (int j = 0; j < num_vertices; j++) {
       EggVertex egg_vert;
-        
+
       // Get per-vertex properties.
       reader.set_row(primitive->get_vertex(i * num_vertices + j));
-        
+
       reader.set_column(InternalName::get_vertex());
       LVertex vertex = reader.get_data3();
       egg_vert.set_pos(LCAST(double, vertex * net_mat));
-        
+
       if (vertex_data->has_column(InternalName::get_normal())) {
         reader.set_column(InternalName::get_normal());
         LNormal normal = reader.get_data3();
@@ -806,7 +771,7 @@ convert_primitive(const GeomVertexData *vertex_data,
       }
       if (has_color_override) {
         egg_vert.set_color(color_override);
-          
+
       } else if (!has_color_off) {
         LColor color(1.0f, 1.0f, 1.0f, 1.0f);
         if (vertex_data->has_column(InternalName::get_color())) {
@@ -818,16 +783,16 @@ convert_primitive(const GeomVertexData *vertex_data,
                                   color[2] * color_scale[2],
                                   color[3] * color_scale[3]));
       }
-        
+
       if (vertex_data->has_column(InternalName::get_texcoord())) {
         reader.set_column(InternalName::get_texcoord());
         LTexCoord uv = reader.get_data2();
         egg_vert.set_uv(LCAST(double, uv));
       }
-        
+
       EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);
-        
-      if ((vertex_data->has_column(InternalName::get_transform_blend())) && 
+
+      if ((vertex_data->has_column(InternalName::get_transform_blend())) &&
           (jointMap!=NULL) && (transformBlendTable!=NULL)) {
         reader.set_column(InternalName::get_transform_blend());
         int idx = reader.get_data1i();
@@ -856,30 +821,25 @@ convert_primitive(const GeomVertexData *vertex_data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::recurse_nodes
-//       Access: Private
-//  Description: Converts all the children of the indicated node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts all the children of the indicated node.
+ */
 void EggSaver::
 recurse_nodes(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
               bool has_decal) {
   PandaNode *node = node_path.node();
   int num_children = node->get_num_children();
-  
+
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
     convert_node(WorkingNodePath(node_path, child), egg_parent, has_decal);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::apply_node_properties
-//       Access: Private
-//  Description: Applies any special properties that might be stored
-//               on the node, like billboarding.  Returns true if any
-//               were applied, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies any special properties that might be stored on the node, like
+ * billboarding.  Returns true if any were applied, false otherwise.
+ */
 bool EggSaver::
 apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage) {
   bool any_applied = false;
@@ -965,12 +925,10 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
   return any_applied;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::apply_tags
-//       Access: Private
-//  Description: Applies string tags to the egg file.  Returns true if
-//               any were applied, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies string tags to the egg file.  Returns true if any were applied, false
+ * otherwise.
+ */
 bool EggSaver::
 apply_tags(EggGroup *egg_group, PandaNode *node) {
   ostringstream strm;
@@ -995,7 +953,7 @@ apply_tags(EggGroup *egg_group, PandaNode *node) {
     p = q + 1;
     q = data.find(delimiter, p);
   }
-  
+
   string tag = data.substr(p);
   if (apply_tag(egg_group, node, tag)) {
     any_applied = true;
@@ -1004,11 +962,9 @@ apply_tags(EggGroup *egg_group, PandaNode *node) {
   return any_applied;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::apply_tag
-//       Access: Private
-//  Description: Applies the named string tags to the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the named string tags to the egg file.
+ */
 bool EggSaver::
 apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag) {
   if (!node->has_tag(tag)) {
@@ -1020,12 +976,9 @@ apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::get_egg_material
-//       Access: Private
-//  Description: Returns an EggMaterial pointer that corresponds to
-//               the indicated Material.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an EggMaterial pointer that corresponds to the indicated Material.
+ */
 EggMaterial *EggSaver::
 get_egg_material(Material *mat) {
   if (mat != (Material *)NULL) {
@@ -1072,12 +1025,9 @@ get_egg_material(Material *mat) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::get_egg_texture
-//       Access: Private
-//  Description: Returns an EggTexture pointer that corresponds to the
-//               indicated Texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an EggTexture pointer that corresponds to the indicated Texture.
+ */
 EggTexture *EggSaver::
 get_egg_texture(Texture *tex) {
   if (tex != (Texture *)NULL) {
@@ -1219,41 +1169,33 @@ get_egg_texture(Texture *tex) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::make_egg_polygon
-//       Access: Private, Static
-//  Description: A factory function to make a new EggPolygon instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * A factory function to make a new EggPolygon instance.
+ */
 EggPrimitive *EggSaver::
 make_egg_polygon() {
   return new EggPolygon;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::make_egg_patch
-//       Access: Private, Static
-//  Description: A factory function to make a new EggPatch instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * A factory function to make a new EggPatch instance.
+ */
 EggPrimitive *EggSaver::
 make_egg_patch() {
   return new EggPatch;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::make_egg_point
-//       Access: Private, Static
-//  Description: A factory function to make a new EggPoint instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * A factory function to make a new EggPoint instance.
+ */
 EggPrimitive *EggSaver::
 make_egg_point() {
   return new EggPoint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSaver::make_egg_line
-//       Access: Private, Static
-//  Description: A factory function to make a new EggLine instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * A factory function to make a new EggLine instance.
+ */
 EggPrimitive *EggSaver::
 make_egg_line() {
   return new EggLine;

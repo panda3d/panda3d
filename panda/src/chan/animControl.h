@@ -29,17 +29,15 @@
 class PartBundle;
 class AnimChannelBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimControl
-// Description : Controls the timing of a character animation.  An
-//               AnimControl object is created for each
-//               character/bundle binding and manages the state of the
-//               animation: whether started, stopped, or looping, and
-//               the current frame number and play rate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Controls the timing of a character animation.  An AnimControl object is
+ * created for each character/bundle binding and manages the state of the
+ * animation: whether started, stopped, or looping, and the current frame number
+ * and play rate.
+ */
 class EXPCL_PANDA_CHAN AnimControl : public TypedReferenceCount, public AnimInterface, public Namable {
 public:
-  AnimControl(const string &name, PartBundle *part, 
+  AnimControl(const string &name, PartBundle *part,
               double frame_rate, int num_frames);
   void setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
                   const BitArray &bound_joints);

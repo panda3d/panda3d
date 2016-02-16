@@ -11,11 +11,9 @@
  * @date 2000-08-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimedCycle::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TimedCycle::
 TimedCycle() :
   _cycle_time(30),
@@ -27,11 +25,9 @@ TimedCycle() :
   _global_clock = ClockObject::get_global_clock();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimedCycle::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TimedCycle::
 TimedCycle(PN_stdfloat cycle_time, int element_count) :
   _cycle_time(cycle_time),
@@ -44,22 +40,18 @@ TimedCycle(PN_stdfloat cycle_time, int element_count) :
   _inv_cycle_time = 1. / _cycle_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimedCycle::set_element_count
-//       Access: Public
-//  Description: Set the number of elements being cycled through
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the number of elements being cycled through
+ */
 INLINE void TimedCycle::
 set_element_count(int element_count)
 {
   _element_count = element_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimedCycle::set_cycle_time
-//       Access: Public
-//  Description: Set the number of elements being cycled through
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the number of elements being cycled through
+ */
 INLINE void TimedCycle::
 set_cycle_time(PN_stdfloat cycle_time)
 {
@@ -77,11 +69,9 @@ set_cycle_time(PN_stdfloat cycle_time)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimedCycle::next_element
-//       Access: Public
-//  Description: Set the number of elements being cycled through
-////////////////////////////////////////////////////////////////////
+/**
+ * Set the number of elements being cycled through
+ */
 INLINE int TimedCycle::
 next_element()
 {
@@ -94,4 +84,3 @@ next_element()
 
   return _current_child;
 }
-

@@ -13,11 +13,9 @@
 
 #include "psemaphore.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: Semaphore::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Semaphore::
 output(ostream &out) const {
   MutexHolder holder(_lock);

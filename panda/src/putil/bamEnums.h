@@ -16,11 +16,10 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamEnums
-// Description : This class exists just to provide scoping for the
-//               enums shared by BamReader and BamWriter.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class exists just to provide scoping for the enums shared by BamReader
+ * and BamWriter.
+ */
 class EXPCL_PANDA_PUTIL BamEnums {
 PUBLISHED:
 
@@ -76,4 +75,3 @@ EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, BamEnums::BamTextureMode b
 EXPCL_PANDA_PUTIL istream &operator >> (istream &in, BamEnums::BamTextureMode &btm);
 
 #endif
-

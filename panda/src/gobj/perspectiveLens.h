@@ -19,10 +19,9 @@
 #include "lens.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : PerspectiveLens
-// Description : A perspective-type lens: a normal camera.
-////////////////////////////////////////////////////////////////////
+/**
+ * A perspective-type lens: a normal camera.
+ */
 class EXPCL_PANDA_GOBJ PerspectiveLens : public Lens {
 PUBLISHED:
   INLINE PerspectiveLens();

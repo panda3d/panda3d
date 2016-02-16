@@ -11,26 +11,21 @@
  * @date 2002-08-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpInterval::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLerpInterval::
-CLerpInterval(const string &name, double duration, 
+CLerpInterval(const string &name, double duration,
               CLerpInterval::BlendType blend_type) :
   CInterval(name, duration, true),
   _blend_type(blend_type)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLerpInterval::get_blend_type
-//       Access: Published
-//  Description: Returns the blend type specified for the interval.
-//               This controls how the linear interpolation behaves
-//               near the beginning and end of the lerp period.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the blend type specified for the interval.  This controls how the
+ * linear interpolation behaves near the beginning and end of the lerp period.
+ */
 INLINE CLerpInterval::BlendType CLerpInterval::
 get_blend_type() const {
   return _blend_type;

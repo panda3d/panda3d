@@ -18,17 +18,13 @@
 
 #include "geometricBoundingVolume.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingLine
-// Description : This funny bounding volume is an infinite line with
-//               no thickness and extending to infinity in both
-//               directions.
-//
-//               Note that it *always* extends in both directions,
-//               despite the fact that you specify two points to the
-//               constructor.  These are not endpoints, they are two
-//               arbitrary points on the line.
-////////////////////////////////////////////////////////////////////
+/**
+ * This funny bounding volume is an infinite line with no thickness and
+ * extending to infinity in both directions.  Note that it *always* extends in
+ * both directions, despite the fact that you specify two points to the
+ * constructor.  These are not endpoints, they are two arbitrary points on the
+ * line.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingLine : public GeometricBoundingVolume {
 public:
   INLINE_MATHUTIL BoundingLine();

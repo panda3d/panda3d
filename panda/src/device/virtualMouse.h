@@ -23,15 +23,12 @@
 #include "linmath_events.h"
 #include "buttonEventList.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualMouse
-// Description : Poses as a MouseAndKeyboard object in the datagraph,
-//               but accepts input from user calls, rather than
-//               reading the actual mouse and keyboard from an input
-//               device.  The user can write high-level code to put
-//               the mouse wherever he/she wants, and to insert
-//               keypresses on demand.
-////////////////////////////////////////////////////////////////////
+/**
+ * Poses as a MouseAndKeyboard object in the datagraph, but accepts input from
+ * user calls, rather than reading the actual mouse and keyboard from an input
+ * device.  The user can write high-level code to put the mouse wherever he/she
+ * wants, and to insert keypresses on demand.
+ */
 class EXPCL_PANDA_DEVICE VirtualMouse : public DataNode {
 PUBLISHED:
   VirtualMouse(const string &name);
@@ -39,7 +36,7 @@ PUBLISHED:
   void set_mouse_pos(int x, int y);
   void set_window_size(int width, int height);
   void set_mouse_on(bool flag);
-  
+
   void press_button(ButtonHandle button);
   void release_button(ButtonHandle button);
 
@@ -86,4 +83,3 @@ private:
 };
 
 #endif
-

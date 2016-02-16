@@ -20,11 +20,10 @@
 
 class EggGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexMembership
-// Description : This class is used to help EggOptchar quantize the
-//               membership of one vertex among its various groups.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to help EggOptchar quantize the membership of one vertex
+ * among its various groups.
+ */
 class VertexMembership {
 public:
   INLINE VertexMembership(EggGroup *group, double membership);
@@ -42,4 +41,3 @@ typedef pvector<VertexMembership> VertexMemberships;
 #include "vertexMembership.I"
 
 #endif
-

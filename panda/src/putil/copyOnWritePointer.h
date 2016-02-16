@@ -20,17 +20,13 @@
 #include "pointerTo.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CopyOnWritePointer
-// Description : This safely stores the primary, owned pointer to a
-//               CopyOnWriteObject.  At any time, you may call
-//               get_read_pointer() or get_write_pointer() to get a
-//               read-only or modifiable pointer to the object stored.
-//
-//               There may be multiple copies of a CopyOnWritePointer
-//               which all refer to the same shared object.  They will
-//               negotiate with each other properly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This safely stores the primary, owned pointer to a CopyOnWriteObject.  At any
+ * time, you may call get_read_pointer() or get_write_pointer() to get a read-
+ * only or modifiable pointer to the object stored.  There may be multiple
+ * copies of a CopyOnWritePointer which all refer to the same shared object.
+ * They will negotiate with each other properly.
+ */
 class EXPCL_PANDA_PUTIL CopyOnWritePointer {
 public:
   INLINE CopyOnWritePointer(CopyOnWriteObject *object = NULL);
@@ -69,11 +65,10 @@ private:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : CopyOnWritePointerTo
-// Description : A template wrapper around the above class, mainly to
-//               handle the little typecasting niceties.
-////////////////////////////////////////////////////////////////////
+/**
+ * A template wrapper around the above class, mainly to handle the little
+ * typecasting niceties.
+ */
 template <class T>
 class CopyOnWritePointerTo : public CopyOnWritePointer {
 public:

@@ -15,21 +15,17 @@
 
 TypeHandle IndexBufferContext::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexBufferContext::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IndexBufferContext::
 output(ostream &out) const {
   out << *get_data() << ", " << get_data_size_bytes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IndexBufferContext::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IndexBufferContext::
 write(ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);

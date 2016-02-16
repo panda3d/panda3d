@@ -57,7 +57,7 @@ zlib_decompress(istream &source) {
   char *dest = (char *)PANDA_MALLOC_ARRAY(dest_len);
 
   uLongf actual_dest_len = dest_len;
-  int result = uncompress((Bytef *)dest, &actual_dest_len, 
+  int result = uncompress((Bytef *)dest, &actual_dest_len,
                           (const Bytef *)data.data(), source_len);
   if (result != Z_OK) {
     cerr << "compress result == " << result << "\n";
@@ -69,7 +69,7 @@ zlib_decompress(istream &source) {
     dest = (char *)PANDA_REALLOC_ARRAY(dest, dest_len);
 
     actual_dest_len = dest_len;
-    result = uncompress((Bytef *)dest, &actual_dest_len, 
+    result = uncompress((Bytef *)dest, &actual_dest_len,
                         (const Bytef *)data.data(), source_len);
     if (result != Z_OK) {
       cerr << "compress result == " << result << "\n";
@@ -96,7 +96,7 @@ zlib_compress(istream &source) {
   char *dest = (char *)PANDA_MALLOC_ARRAY(dest_len);
 
   uLongf actual_dest_len = dest_len;
-  int result = compress((Bytef *)dest, &actual_dest_len, 
+  int result = compress((Bytef *)dest, &actual_dest_len,
                         (const Bytef *)data.data(), source_len);
 
   if (result != Z_OK) {
@@ -115,7 +115,7 @@ main(int argc, char *argv[]) {
     argc--;
     argv++;
   }
-    
+
   if (argc != 2) {
     cerr << "test_zstream [-z] file\n"
          << "compresses file to standard output, or decompresses it if the\n"

@@ -21,10 +21,9 @@
 #include "typedReferenceCount.h"
 #include "boundingSphere.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletShape : public TypedWritableReferenceCount {
 protected:
   INLINE BulletShape() {};
@@ -59,7 +58,7 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "BulletShape", 
+    register_type(_type_handle, "BulletShape",
                   TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

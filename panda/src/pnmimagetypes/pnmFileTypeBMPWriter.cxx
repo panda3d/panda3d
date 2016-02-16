@@ -505,11 +505,9 @@ BMPEncode24(
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeBMP::Writer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeBMP::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
@@ -517,28 +515,18 @@ Writer(PNMFileType *type, ostream *file, bool owns_file) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeBMP::Writer::write_data
-//       Access: Public, Virtual
-//  Description: Writes out an entire image all at once, including the
-//               header, based on the image data stored in the given
-//               _x_size * _y_size array and alpha pointers.  (If the
-//               image type has no alpha channel, alpha is ignored.)
-//               Returns the number of rows correctly written.
-//
-//               It is the user's responsibility to fill in the header
-//               data via calls to set_x_size(), set_num_channels(),
-//               etc., or copy_header_from(), before calling
-//               write_data().
-//
-//               It is important to delete the PNMWriter class after
-//               successfully writing the data.  Failing to do this
-//               may result in some data not getting flushed!
-//
-//               Derived classes need not override this if they
-//               instead provide supports_streaming() and write_row(),
-//               below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out an entire image all at once, including the header, based on the
+ * image data stored in the given _x_size * _y_size array and alpha pointers.
+ * (If the image type has no alpha channel, alpha is ignored.) Returns the
+ * number of rows correctly written.  It is the user's responsibility to fill in
+ * the header data via calls to set_x_size(), set_num_channels(), etc., or
+ * copy_header_from(), before calling write_data().  It is important to delete
+ * the PNMWriter class after successfully writing the data.  Failing to do this
+ * may result in some data not getting flushed!  Derived classes need not
+ * override this if they instead provide supports_streaming() and write_row(),
+ * below.
+ */
 int PNMFileTypeBMP::Writer::
 write_data(xel *array, xelval *) {
   if (_y_size<=0 || _x_size<=0) {
@@ -633,16 +621,12 @@ write_data(xel *array, xelval *) {
   return _y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeBMP::Writer::supports_grayscale
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMWriter understands
-//               grayscale images.  If this is false, then the rgb
-//               values of the xel array will be pre-filled with the
-//               same value across all three channels, to allow the
-//               writer to simply write out RGB data for a grayscale
-//               image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMWriter understands grayscale images.  If
+ * this is false, then the rgb values of the xel array will be pre-filled with
+ * the same value across all three channels, to allow the writer to simply write
+ * out RGB data for a grayscale image.
+ */
 bool PNMFileTypeBMP::Writer::
 supports_grayscale() const {
   return false;

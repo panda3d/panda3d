@@ -14,15 +14,11 @@
 #include "physxBoxForceFieldShapeDesc.h"
 #include "physxManager.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShapeDesc::set_dimensions
-//       Access: Published
-//  Description: Sets the dimensions of the box.
-//
-//               The dimensions are the 'radii' of the box,
-//               meaning 1/2 extents in x dimension, 1/2 extents
-//               in y dimension, 1/2 extents in z dimension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the dimensions of the box.  The dimensions are the 'radii' of the box,
+ * meaning 1/2 extents in x dimension, 1/2 extents in y dimension, 1/2 extents
+ * in z dimension.
+ */
 void PhysxBoxForceFieldShapeDesc::
 set_dimensions(const LVector3f &dimensions) {
 
@@ -30,14 +26,11 @@ set_dimensions(const LVector3f &dimensions) {
   _desc.dimensions = PhysxManager::vec3_to_nxVec3(dimensions);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShapeDesc::get_dimensions
-//       Access: Published
-//  Description: Returns the dimensions of the box.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the dimensions of the box.
+ */
 LVector3f PhysxBoxForceFieldShapeDesc::
 get_dimensions() const {
 
   return PhysxManager::nxVec3_to_vec3(_desc.dimensions);
 }
-

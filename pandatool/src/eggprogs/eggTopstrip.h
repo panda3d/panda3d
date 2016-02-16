@@ -26,14 +26,11 @@ class EggCharacterDb;
 class EggJointData;
 class EggJointPointer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTopstrip
-// Description : Reads a character model and/or animations and strips
-//               out the animation from one of the top joints from the
-//               entire character.  Particularly useful for generating
-//               stackable character models from separately-extracted
-//               characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a character model and/or animations and strips out the animation from
+ * one of the top joints from the entire character.  Particularly useful for
+ * generating stackable character models from separately-extracted characters.
+ */
 class EggTopstrip : public EggCharacterFilter {
 public:
   EggTopstrip();
@@ -59,4 +56,3 @@ public:
 };
 
 #endif
-

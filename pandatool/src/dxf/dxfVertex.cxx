@@ -13,13 +13,10 @@
 
 #include "dxfVertex.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFVertex::Ordering operator
-//       Access: Public
-//  Description: This defines a unique ordering for vertices so that
-//               the DXFVertexMap can group identical vertices
-//               together.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a unique ordering for vertices so that the DXFVertexMap can
+ * group identical vertices together.
+ */
 int DXFVertex::
 operator < (const DXFVertex &other) const {
   if (fabs(_p[0] - other._p[0]) > 0.0001) {
@@ -32,4 +29,3 @@ operator < (const DXFVertex &other) const {
 
   return false;
 }
-

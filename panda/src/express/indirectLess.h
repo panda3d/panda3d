@@ -16,13 +16,11 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IndirectLess
-// Description : An STL function object class, this is intended to be
-//               used on any ordered collection of pointers to classes
-//               that contain an operator <() method.  It defines the
-//               order of the pointers via operator <().
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object class, this is intended to be used on any ordered
+ * collection of pointers to classes that contain an operator <() method.  It
+ * defines the order of the pointers via operator <().
+ */
 template<class ObjectType>
 class IndirectLess {
 public:
@@ -32,4 +30,3 @@ public:
 #include "indirectLess.I"
 
 #endif
-

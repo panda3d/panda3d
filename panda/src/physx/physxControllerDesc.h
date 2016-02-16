@@ -19,10 +19,9 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxControllerDesc
-// Description : Descriptor class for a character controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for a character controller.
+ */
 class EXPCL_PANDAPHYSX PhysxControllerDesc {
 
 PUBLISHED:

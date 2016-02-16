@@ -22,10 +22,9 @@
 #include "geom.h"
 #include "pta_LVecBase3.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletConvexPointCloudShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletConvexPointCloudShape : public BulletShape {
 
 PUBLISHED:
@@ -49,7 +48,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletConvexPointCloudShape", 
+    register_type(_type_handle, "BulletConvexPointCloudShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

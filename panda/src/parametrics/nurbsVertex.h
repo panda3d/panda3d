@@ -19,19 +19,14 @@
 #include "nodePath.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsVertex
-// Description : This represents a single control vertex in a
-//               NurbsEvaluator.  It may be relative to a particular
-//               coordinate space; or its coordinate space may be
-//               unspecified.
-//
-//               This is not related to NurbsCurve, CubicCurveseg or
-//               any of the ParametricCurve-derived objects in this
-//               module.  It is a completely parallel implementation
-//               of NURBS curves, and will probably eventually replace
-//               the whole ParametricCurve class hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single control vertex in a NurbsEvaluator.  It may be
+ * relative to a particular coordinate space; or its coordinate space may be
+ * unspecified.  This is not related to NurbsCurve, CubicCurveseg or any of the
+ * ParametricCurve-derived objects in this module.  It is a completely parallel
+ * implementation of NURBS curves, and will probably eventually replace the
+ * whole ParametricCurve class hierarchy.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsVertex {
 public:
   INLINE NurbsVertex();
@@ -60,4 +55,3 @@ private:
 #include "nurbsVertex.I"
 
 #endif
-

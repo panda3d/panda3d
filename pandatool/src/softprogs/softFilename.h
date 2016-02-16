@@ -16,17 +16,12 @@
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftFilename
-// Description : This encapsulates a SoftImage versioned filename, of
-//               the form base.v-v.ext: it consists of a directory
-//               name, a base, a major and minor version number, and
-//               an optional extension.
-//
-//               It also keeps track of whether the named file has
-//               been added to CVS, and how many scene files it is
-//               referenced by,
-////////////////////////////////////////////////////////////////////
+/**
+ * This encapsulates a SoftImage versioned filename, of the form base.v-v.ext:
+ * it consists of a directory name, a base, a major and minor version number,
+ * and an optional extension.  It also keeps track of whether the named file has
+ * been added to CVS, and how many scene files it is referenced by,
+ */
 class SoftFilename {
 public:
   SoftFilename(const string &dirname, const string &filename);

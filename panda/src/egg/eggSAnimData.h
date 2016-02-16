@@ -18,12 +18,10 @@
 
 #include "eggAnimData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSAnimData
-// Description : Corresponding to an <S$Anim> entry, this stores a
-//               single column of numbers, for instance for a morph
-//               target, or as one column in an EggXfmSAnim.
-////////////////////////////////////////////////////////////////////
+/**
+ * Corresponding to an <S$Anim> entry, this stores a single column of numbers,
+ * for instance for a morph target, or as one column in an EggXfmSAnim.
+ */
 class EXPCL_PANDAEGG EggSAnimData : public EggAnimData {
 PUBLISHED:
   INLINE EggSAnimData(const string &name = "");
@@ -60,4 +58,3 @@ private:
 #include "eggSAnimData.I"
 
 #endif
-

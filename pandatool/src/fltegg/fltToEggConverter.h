@@ -41,13 +41,11 @@ class FltTexture;
 class EggGroupNode;
 class EggPrimitive;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltToEggConverter
-// Description : This class supervises the construction of an EggData
-//               structure from the data represented by the FltHeader.
-//               Reading and writing the egg and flt structures is
-//               left to the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from the data
+ * represented by the FltHeader.  Reading and writing the egg and flt structures
+ * is left to the user.
+ */
 class FltToEggConverter : public SomethingToEggConverter {
 public:
   FltToEggConverter();
@@ -111,5 +109,3 @@ private:
 #include "fltToEggConverter.I"
 
 #endif
-
-

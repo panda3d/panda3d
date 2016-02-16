@@ -15,15 +15,13 @@
 #include "indexBufferContext.h"
 #include "deletedChain.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLIndexBufferContext
-// Description : Caches a GeomPrimitive on the GL as a buffer
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Caches a GeomPrimitive on the GL as a buffer object.
+ */
 class EXPCL_GL CLP(IndexBufferContext) : public IndexBufferContext {
 public:
   INLINE CLP(IndexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
-                                 PreparedGraphicsObjects *pgo, 
+                                 PreparedGraphicsObjects *pgo,
                                  GeomPrimitive *data);
   ALLOC_DELETED_CHAIN(CLP(IndexBufferContext));
 
@@ -53,4 +51,3 @@ private:
 };
 
 #include "glIndexBufferContext_src.I"
-

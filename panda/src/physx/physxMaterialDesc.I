@@ -11,45 +11,36 @@
  * @date 2009-09-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMaterialDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxMaterialDesc::
 PhysxMaterialDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMaterialDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxMaterialDesc::
 ~PhysxMaterialDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMaterialDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxMaterialDesc::
 set_to_default() {
 
   _desc.setToDefault();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMaterialDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxMaterialDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

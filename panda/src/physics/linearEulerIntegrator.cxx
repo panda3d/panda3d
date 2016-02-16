@@ -16,40 +16,26 @@
 #include "physicalNode.h"
 #include "config_physics.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearEulerIntegrator
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 LinearEulerIntegrator::
 LinearEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LinearEulerIntegrator
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 LinearEulerIntegrator::
 ~LinearEulerIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Integrate
-//       Access: Public
-//  Description: Integrate a step of motion (based on dt) by
-//                applying every force in force_vec to every object
-//                in obj_vec.
-//
-//                physical,
-//                    The objects being acted upon and the
-//                    set of local forces that are applied
-//                    after the global forces.
-//                forces,
-//                    Global forces to be applied first.
-//                dt,
-//                    The delta time of this integration step.
-////////////////////////////////////////////////////////////////////
+/**
+ * Integrate a step of motion (based on dt) by applying every force in force_vec
+ * to every object in obj_vec.  physical, The objects being acted upon and the
+ * set of local forces that are applied after the global forces.  forces, Global
+ * forces to be applied first.  dt, The delta time of this integration step.
+ */
 void LinearEulerIntegrator::
 child_integrate(Physical *physical,
                 LinearForceVector& forces,
@@ -199,12 +185,9 @@ child_integrate(Physical *physical,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearEulerIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -212,12 +195,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void LinearEulerIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -226,11 +206,3 @@ write(ostream &out, unsigned int indent) const {
   LinearIntegrator::write(out, indent+2);
   #endif //] NDEBUG
 }
-
-
-
-
-
-
-
-

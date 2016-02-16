@@ -11,11 +11,9 @@
  * @date 2009-11-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObjectCollection<T>::size
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class T>
 INLINE unsigned int PhysxObjectCollection<T>::
 size() const {
@@ -23,11 +21,9 @@ size() const {
   return _objects.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObjectCollection<T>::add
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class T>
 INLINE void PhysxObjectCollection<T>::
 add(PT(T) object) {
@@ -35,11 +31,9 @@ add(PT(T) object) {
   _objects.push_back(object);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObjectCollection<T>::remove
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class T>
 INLINE void PhysxObjectCollection<T>::
 remove(PT(T) object) {
@@ -56,13 +50,10 @@ remove(PT(T) object) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObjectCollection<T>::get
-//       Access: Public
-//  Description: Returns the n-th PhysxObject in the collection.
-//               The operator [] is maybe a more convenient way to
-//               access objects from the collection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the n-th PhysxObject in the collection.  The operator [] is maybe a
+ * more convenient way to access objects from the collection.
+ */
 template <class T>
 INLINE T *PhysxObjectCollection<T>::
 get(unsigned int index) const {
@@ -71,12 +62,10 @@ get(unsigned int index) const {
   return _objects[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObjectCollection<T>::operator []
-//       Access: Public
-//  Description: Returns the n-th PhysxObject in the collection.
-//               This is the same as the get() method.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the n-th PhysxObject in the collection.  This is the same as the
+ * get() method.
+ */
 template <class T>
 INLINE T *PhysxObjectCollection<T>::
 operator [] (unsigned int index) const {
@@ -85,11 +74,9 @@ operator [] (unsigned int index) const {
   return _objects[index];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObjectCollection::ls
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class T>
 INLINE void PhysxObjectCollection<T>::
 ls() const {
@@ -97,11 +84,9 @@ ls() const {
   ls(nout);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxObjectCollection::ls
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class T>
 INLINE void PhysxObjectCollection<T>::
 ls(ostream &out, int indent_level) const {
@@ -110,4 +95,3 @@ ls(ostream &out, int indent_level) const {
     get(i)->ls(out, indent_level + 2);
   }
 }
-

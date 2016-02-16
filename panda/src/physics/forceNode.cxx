@@ -16,50 +16,40 @@
 
 TypeHandle ForceNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ForceNode
-//       Access: Public
-//  Description: default constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * default constructor
+ */
 ForceNode::
 ForceNode(const string &name) :
   PandaNode(name) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ForceNode
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 ForceNode::
 ForceNode(const ForceNode &copy) :
   PandaNode(copy), _forces(copy._forces) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~ForceNode
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 ForceNode::
 ~ForceNode() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public, Virtual
-//  Description: dynamic child copy
-////////////////////////////////////////////////////////////////////
+/**
+ * dynamic child copy
+ */
 PandaNode *ForceNode::
 make_copy() const {
   return new ForceNode(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_forces_from
-//       Access: Public
-//  Description: append operation
-////////////////////////////////////////////////////////////////////
+/**
+ * append operation
+ */
 void ForceNode::
 add_forces_from(const ForceNode &other) {
   pvector< PT(BaseForce) >::iterator last = _forces.end() - 1;
@@ -74,11 +64,9 @@ add_forces_from(const ForceNode &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_force
-//       Access: Public
-//  Description: remove operation
-////////////////////////////////////////////////////////////////////
+/**
+ * remove operation
+ */
 void ForceNode::
 remove_force(BaseForce *f) {
   pvector< PT(BaseForce) >::iterator found;
@@ -89,11 +77,9 @@ remove_force(BaseForce *f) {
   _forces.erase(found);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: remove_force
-//       Access: Public
-//  Description: remove operation
-////////////////////////////////////////////////////////////////////
+/**
+ * remove operation
+ */
 void ForceNode::
 remove_force(int index) {
   nassertv(index >= 0 && index <= (int)_forces.size());
@@ -106,24 +92,18 @@ remove_force(int index) {
   _forces.erase(remove);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ForceNode::
 output(ostream &out) const {
   PandaNode::output(out);
   out<<" ("<<_forces.size()<<" forces)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write_linear_forces
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ForceNode::
 write_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
@@ -137,12 +117,9 @@ write_forces(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void ForceNode::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

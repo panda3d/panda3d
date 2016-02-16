@@ -20,10 +20,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RescaleNormalAttrib
-// Description : Specifies how polygons are to be drawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies how polygons are to be drawn.
+ */
 class EXPCL_PANDA_PGRAPH RescaleNormalAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -104,4 +103,3 @@ EXPCL_PANDA_PGRAPH istream &operator >> (istream &in, RescaleNormalAttrib::Mode 
 #include "rescaleNormalAttrib.I"
 
 #endif
-

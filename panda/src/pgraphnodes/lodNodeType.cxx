@@ -20,7 +20,7 @@ operator << (ostream &out, LODNodeType lnt) {
   switch (lnt) {
   case LNT_pop:
     return out << "pop";
-    
+
   case LNT_fade:
     return out << "fade";
   }

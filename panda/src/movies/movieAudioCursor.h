@@ -20,20 +20,15 @@
 #include "pointerTo.h"
 class MovieAudio;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovieAudioCursor
-// Description : A MovieAudio is actually any source that provides
-//               a sequence of audio samples.  That could include an
-//               AVI file, a microphone, or an internet TV station.
-//               A MovieAudioCursor is a handle that lets you read
-//               data sequentially from a MovieAudio.
-//
-//               Thread safety: each individual MovieAudioCursor
-//               must be owned and accessed by a single thread.
-//               It is OK for two different threads to open
-//               the same file at the same time, as long as they
-//               use separate MovieAudioCursor objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * A MovieAudio is actually any source that provides a sequence of audio
+ * samples.  That could include an AVI file, a microphone, or an internet TV
+ * station.  A MovieAudioCursor is a handle that lets you read data sequentially
+ * from a MovieAudio.  Thread safety: each individual MovieAudioCursor must be
+ * owned and accessed by a single thread.  It is OK for two different threads to
+ * open the same file at the same time, as long as they use separate
+ * MovieAudioCursor objects.
+ */
 class EXPCL_PANDA_MOVIES MovieAudioCursor : public TypedWritableReferenceCount {
 
 PUBLISHED:
@@ -66,7 +61,7 @@ protected:
   bool _aborted;
   double _last_seek;
   PN_int64 _samples_read;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

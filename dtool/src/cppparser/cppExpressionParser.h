@@ -21,10 +21,9 @@
 class CPPExpression;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPExpressionParser
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPExpressionParser : public CPPPreprocessor {
 public:
   CPPExpressionParser(CPPScope *current_scope, CPPScope *global_scope);
@@ -47,5 +46,3 @@ operator << (ostream &out, const CPPExpressionParser &ep) {
 }
 
 #endif
-
-

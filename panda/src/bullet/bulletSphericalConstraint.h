@@ -24,20 +24,17 @@
 
 class BulletRigidBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletSphericalConstraint
-// Description : A constraint between two rigid bodies, each with a
-//               pivot point. The pivot points are described in the
-//               body's local space. The constraint limits movement
-//               of the two rigid bodies in such a way that the 
-//               pivot points match in global space. The spherical
-//               constraint can be seen as a "ball and socket"
-//               joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * A constraint between two rigid bodies, each with a pivot point.  The pivot
+ * points are described in the body's local space.  The constraint limits
+ * movement of the two rigid bodies in such a way that the pivot points match in
+ * global space.  The spherical constraint can be seen as a "ball and socket"
+ * joint.
+ */
 class EXPCL_PANDABULLET BulletSphericalConstraint : public BulletConstraint {
 
 PUBLISHED:
-  BulletSphericalConstraint(const BulletRigidBodyNode *node_a, 
+  BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
                             const LPoint3 &pivot_a);
   BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
                             const BulletRigidBodyNode *node_b,
@@ -63,7 +60,7 @@ public:
   }
   static void init_type() {
     BulletConstraint::init_type();
-    register_type(_type_handle, "BulletSphericalConstraint", 
+    register_type(_type_handle, "BulletSphericalConstraint",
                   BulletConstraint::get_class_type());
   }
   virtual TypeHandle get_type() const {

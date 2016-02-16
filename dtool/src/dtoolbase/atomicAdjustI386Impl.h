@@ -21,13 +21,11 @@
 
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustI386Impl
-// Description : Uses assembly-language calls to atomically increment
-//               and decrement.  Although this class is named i386, it
-//               actually uses instructions that are specific to 486
-//               and higher.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses assembly-language calls to atomically increment and decrement.  Although
+ * this class is named i386, it actually uses instructions that are specific to
+ * 486 and higher.
+ */
 class EXPCL_DTOOL AtomicAdjustI386Impl {
 public:
   typedef ALIGN_4BYTE PN_int32 Integer;
@@ -43,11 +41,11 @@ public:
   INLINE static Pointer set_ptr(TVOLATILE Pointer &var, Pointer new_value);
   INLINE static Pointer get_ptr(const TVOLATILE Pointer &var);
 
-  INLINE static Integer compare_and_exchange(TVOLATILE Integer &mem, 
+  INLINE static Integer compare_and_exchange(TVOLATILE Integer &mem,
                                              Integer old_value,
                                              Integer new_value);
-  
-  INLINE static Pointer compare_and_exchange_ptr(TVOLATILE Pointer &mem, 
+
+  INLINE static Pointer compare_and_exchange_ptr(TVOLATILE Pointer &mem,
                                                  Pointer old_value,
                                                  Pointer new_value);
 };

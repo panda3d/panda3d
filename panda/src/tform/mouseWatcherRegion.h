@@ -24,11 +24,10 @@
 
 class MouseWatcherParameter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MouseWatcherRegion
-// Description : This is the class that defines a rectangular region
-//               on the screen for the MouseWatcher.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the class that defines a rectangular region on the screen for the
+ * MouseWatcher.
+ */
 class EXPCL_PANDA_TFORM MouseWatcherRegion : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   INLINE MouseWatcherRegion(const string &name, PN_stdfloat left, PN_stdfloat right,

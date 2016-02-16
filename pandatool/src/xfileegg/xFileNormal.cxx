@@ -16,22 +16,18 @@
 #include "eggPrimitive.h"
 #include "config_xfile.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileNormal::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileNormal::
 XFileNormal() {
   _normal.set(0.0, 0.0, 0.0);
   _has_normal = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileNormal::set_from_egg
-//       Access: Public
-//  Description: Sets the structure up from the indicated egg data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the structure up from the indicated egg data.
+ */
 void XFileNormal::
 set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   if (egg_vertex->has_normal() || egg_prim->has_normal()) {
@@ -56,11 +52,9 @@ set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileNormal::compare_to
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int XFileNormal::
 compare_to(const XFileNormal &other) const {
   int ct;

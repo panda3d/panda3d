@@ -13,21 +13,17 @@
 
 #include "baseParticle.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticle
-//       Access: Public
-//  Description: Default Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Constructor
+ */
 BaseParticle::
 BaseParticle(PN_stdfloat lifespan, bool alive) :
   _age(0.0f), _lifespan(lifespan), _alive(alive), _index(0){
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BaseParticle
-//       Access: Public
-//  Description: Copy Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy Constructor
+ */
 BaseParticle::
 BaseParticle(const BaseParticle &copy) :
   _age(copy._age),
@@ -36,31 +32,24 @@ BaseParticle(const BaseParticle &copy) :
   _index(copy._index) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~BaseParticle
-//       Access: Public
-//  Description: Default Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Destructor
+ */
 BaseParticle::
 ~BaseParticle() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_theta
-//       Access: Public
-//  Description: for spriteParticleRenderer
-////////////////////////////////////////////////////////////////////
+/**
+ * for spriteParticleRenderer
+ */
 PN_stdfloat BaseParticle::
 get_theta() const {
   return 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseParticle::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -68,12 +57,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void BaseParticle::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
@@ -86,4 +72,3 @@ write(ostream &out, int indent) const {
   PhysicsObject::write(out, indent+2);
   #endif //] NDEBUG
 }
-

@@ -14,11 +14,9 @@
 /* okcircular */
 #include "odeGeom_ext.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeSpace::get_AA_bounds
-//       Access: Published
-//  Description: A more Pythonic way of calling getAABB()
-////////////////////////////////////////////////////////////////////
+/**
+ * A more Pythonic way of calling getAABB()
+ */
 INLINE PyObject *Extension<OdeSpace>::
 get_AA_bounds() const {
   LPoint3f *min_point = new LPoint3f;
@@ -30,22 +28,18 @@ get_AA_bounds() const {
   return Py_BuildValue("NN", min_inst, max_inst);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeSpace::get_converted_geom
-//       Access: Published
-//  Description: Equivalent to get_geom(index).convert()
-////////////////////////////////////////////////////////////////////
+/**
+ * Equivalent to get_geom(index).convert()
+ */
 INLINE PyObject *Extension<OdeSpace>::
 get_converted_geom(int index) const {
   OdeGeom g = _this->get_geom(index);
   return invoke_extension(&g).convert();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeSpace::get_converted_space
-//       Access: Published
-//  Description: Equivalent to get_space().convert()
-////////////////////////////////////////////////////////////////////
+/**
+ * Equivalent to get_space().convert()
+ */
 INLINE PyObject *Extension<OdeSpace>::
 get_converted_space() const {
   OdeSpace s = _this->get_space();

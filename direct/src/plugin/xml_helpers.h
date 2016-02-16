@@ -20,4 +20,3 @@ bool parse_bool_attrib(TiXmlElement *xelem, const string &attrib,
                        bool default_value);
 
 #endif
-

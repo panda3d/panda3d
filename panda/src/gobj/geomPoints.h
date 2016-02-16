@@ -17,10 +17,9 @@
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomPoints
-// Description : Defines a series of disconnected points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a series of disconnected points.
+ */
 class EXPCL_PANDA_GOBJ GeomPoints : public GeomPrimitive {
 PUBLISHED:
   GeomPoints(UsageHint usage_hint);

@@ -11,11 +11,9 @@
  * @date 2007-11-20
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimateVerticesRequest::Constructor
-//       Access: Published
-//  Description: Create a new AnimateVerticesRequest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a new AnimateVerticesRequest.
+ */
 INLINE AnimateVerticesRequest::
 AnimateVerticesRequest(GeomVertexData *geom_vertex_data) :
   _geom_vertex_data(geom_vertex_data),
@@ -23,12 +21,9 @@ AnimateVerticesRequest(GeomVertexData *geom_vertex_data) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimateVerticesRequest::is_ready
-//       Access: Published
-//  Description: Returns true if this request has completed, false if
-//               it is still pending.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this request has completed, false if it is still pending.
+ */
 INLINE bool AnimateVerticesRequest::
 is_ready() const {
   return _is_ready;

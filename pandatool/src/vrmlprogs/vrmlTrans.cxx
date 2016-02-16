@@ -15,11 +15,9 @@
 #include "parse_vrml.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLTrans::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VRMLTrans::
 VRMLTrans() :
   WithOutputFile(true, true, false)
@@ -48,11 +46,9 @@ VRMLTrans() :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLTrans::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VRMLTrans::
 run() {
   nout << "Reading " << _input_filename << "\n";
@@ -67,11 +63,9 @@ run() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: VRMLTrans::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool VRMLTrans::
 handle_args(ProgramBase::Args &args) {
   if (!check_last_arg(args, 1)) {

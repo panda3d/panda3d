@@ -14,11 +14,9 @@
 #include "physxOverlapReport.h"
 #include "physxShape.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOverlapReport::onEvent
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxOverlapReport::
 onEvent(NxU32 nbEntities, NxShape **entities) {
 
@@ -30,22 +28,18 @@ onEvent(NxU32 nbEntities, NxShape **entities) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOverlapReport::get_num_overlaps
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxOverlapReport::
 get_num_overlaps() const {
 
   return _overlaps.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOverlapReport::get_first_overlap
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxShape *PhysxOverlapReport::
 get_first_overlap() {
 
@@ -53,11 +47,9 @@ get_first_overlap() {
   return get_next_overlap();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOverlapReport::get_next_overlap
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxShape *PhysxOverlapReport::
 get_next_overlap() {
 
@@ -69,15 +61,12 @@ get_next_overlap() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOverlapReport::get_overlap
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxShape *PhysxOverlapReport::
 get_overlap(unsigned int idx) {
 
   nassertr(idx < get_num_overlaps(), NULL);
   return _overlaps[idx];
 }
-

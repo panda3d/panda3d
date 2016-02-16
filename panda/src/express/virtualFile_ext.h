@@ -22,12 +22,10 @@
 #include "virtualFile.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<VirtualFile>
-// Description : This class defines the extension methods for
-//               VirtualFile, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for VirtualFile, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<VirtualFile> : public ExtensionBase<VirtualFile> {
 public:
@@ -38,4 +36,3 @@ public:
 #endif  // HAVE_PYTHON
 
 #endif  // VIRTUALFILE_EXT_H
-

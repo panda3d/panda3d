@@ -11,15 +11,11 @@
  * @date 1999-01-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: unwind_yup_rotation_old_hpr
-//  Description: Extracts the rotation about the x, y, and z axes from
-//               the given hpr & scale matrix.  Adjusts the matrix
-//               to eliminate the rotation.
-//
-//               This function assumes the matrix is stored in a
-//               right-handed Y-up coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the rotation about the x, y, and z axes from the given hpr & scale
+ * matrix.  Adjusts the matrix to eliminate the rotation.  This function assumes
+ * the matrix is stored in a right-handed Y-up coordinate system.
+ */
 static void
 unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   TAU_PROFILE("void unwind_yup_rotation_old_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
@@ -29,76 +25,72 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   mat.get_row(x,0);
   mat.get_row(y,1);
   mat.get_row(z,2);
-  
+
   // Project X onto the XY plane.
   FLOATNAME(LVector2) xy(x[0], x[1]);
   xy = normalize(xy);
-  
+
   // Compute the rotation about the +Z (back) axis.  This is roll.
   FLOATTYPE roll = rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
-  
+
   // Unwind the roll from the axes, and continue.
   FLOATNAME(LMatrix3) rot_z;
   rot_z.set_rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                 CS_yup_right);
-  
+
   x = x * rot_z;
   y = y * rot_z;
   z = z * rot_z;
-  
+
   // Project the rotated X into the XZ plane.
   FLOATNAME(LVector2) xz(x[0], x[2]);
   xz = normalize(xz);
-  
+
   // Compute the rotation about the +Y (up) axis.  This is yaw, or
   // "heading".
   FLOATTYPE heading = rad_2_deg(((FLOATTYPE)-catan2(xz[1], xz[0])));
-  
+
   // Unwind the heading, and continue.
   FLOATNAME(LMatrix3) rot_y;
   rot_y.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
                                 CS_yup_right);
-  
+
   x = x * rot_y;
   y = y * rot_y;
   z = z * rot_y;
-  
+
   // Project the rotated Z into the YZ plane.
   FLOATNAME(LVector2) yz(z[1], z[2]);
   yz = normalize(yz);
-  
+
   // Compute the rotation about the +X (right) axis.  This is pitch.
   FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)-catan2(yz[0], yz[1])));
-  
+
   // Unwind the pitch.
   FLOATNAME(LMatrix3) rot_x;
   rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
                                 CS_yup_right);
-  
+
   x = x * rot_x;
   y = y * rot_x;
   z = z * rot_x;
-  
+
   // Reset the matrix to reflect the unwinding.
   mat.set_row(0, x);
   mat.set_row(1, y);
   mat.set_row(2, z);
-  
+
   // Return the three rotation components.
   hpr[0] = heading;
   hpr[1] = pitch;
   hpr[2] = roll;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: unwind_zup_rotation_old_hpr
-//  Description: Extracts the rotation about the x, y, and z axes from
-//               the given hpr & scale matrix.  Adjusts the matrix
-//               to eliminate the rotation.
-//
-//               This function assumes the matrix is stored in a
-//               right-handed Z-up coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the rotation about the x, y, and z axes from the given hpr & scale
+ * matrix.  Adjusts the matrix to eliminate the rotation.  This function assumes
+ * the matrix is stored in a right-handed Z-up coordinate system.
+ */
 static void
 unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   TAU_PROFILE("void unwind_zup_rotation_old_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
@@ -107,15 +99,15 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   mat.get_row(x,0);
   mat.get_row(y,1);
   mat.get_row(z,2);
-  
-  
+
+
   // Project X into the XZ plane.
   FLOATNAME(LVector2) xz(x[0], x[2]);
   xz = normalize(xz);
-  
+
   // Compute the rotation about the -Y (back) axis.  This is roll.
   FLOATTYPE roll = rad_2_deg(((FLOATTYPE)catan2(xz[1], xz[0])));
-  
+
   if (y[1] < 0.0f) {
     if (roll < 0.0f) {
       roll += 180.0;
@@ -123,68 +115,66 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
       roll -= 180.0;
     }
   }
-  
+
   // Unwind the roll from the axes, and continue.
   FLOATNAME(LMatrix3) rot_y;
   rot_y.set_rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
                                 CS_zup_right);
-  
+
   x = x * rot_y;
   y = y * rot_y;
   z = z * rot_y;
-  
+
   // Project the rotated X into the XY plane.
   FLOATNAME(LVector2) xy(x[0], x[1]);
   xy = normalize(xy);
-  
+
   // Compute the rotation about the +Z (up) axis.  This is yaw, or
   // "heading".
   FLOATTYPE heading = rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
-  
+
   // Unwind the heading, and continue.
   FLOATNAME(LMatrix3) rot_z;
   rot_z.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                 CS_zup_right);
-  
+
   x = x * rot_z;
   y = y * rot_z;
   z = z * rot_z;
-  
+
   // Project the rotated Y into the YZ plane.
   FLOATNAME(LVector2) yz(y[1], y[2]);
   yz = normalize(yz);
-  
+
   // Compute the rotation about the +X (right) axis.  This is pitch.
   FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)catan2(yz[1], yz[0])));
-  
+
   // Unwind the pitch.
   FLOATNAME(LMatrix3) rot_x;
   rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
                                 CS_zup_right);
-  
+
   x = x * rot_x;
   y = y * rot_x;
   z = z * rot_x;
-  
+
   // Reset the matrix to reflect the unwinding.
   mat.set_row(0, x);
   mat.set_row(1, y);
   mat.set_row(2, z);
-  
+
   // Return the three rotation components.
   hpr[0] = heading;
   hpr[1] = pitch;
   hpr[2] = roll;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: decompose_matrix_old_hpr
-//  Description: Extracts out the components of a 3x3 rotation matrix.
-//               Returns true if successful, or false if there was an
-//               error.  Since a 3x3 matrix always contains an affine
-//               transform, this should succeed in the normal case;
-//               singular transforms are not treated as an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts out the components of a 3x3 rotation matrix.  Returns true if
+ * successful, or false if there was an error.  Since a 3x3 matrix always
+ * contains an affine transform, this should succeed in the normal case;
+ * singular transforms are not treated as an error.
+ */
 bool
 decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
                          FLOATNAME(LVecBase3) &scale,
@@ -256,7 +246,7 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
       << "Unexpected coordinate system: " << (int)cs << "\n";
     return false;
   }
-  
+
   if (linmath_cat.is_debug()) {
     linmath_cat.debug()
       << "after unwind, mat is " << new_mat << "\n";
@@ -282,15 +272,13 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
   shear.set(new_mat(0, 1) + new_mat(1, 0),
             new_mat(2, 0) + new_mat(0, 2),
             new_mat(2, 1) + new_mat(1, 2));
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: compose_matrix
-//  Description: Computes the 3x3 matrix from scale, shear, and
-//               rotation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the 3x3 matrix from scale, shear, and rotation.
+ */
 void
 compose_matrix(FLOATNAME(LMatrix3) &mat,
                const FLOATNAME(LVecBase3) &scale,
@@ -316,15 +304,11 @@ compose_matrix(FLOATNAME(LMatrix3) &mat,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: unwind_yup_rotation
-//  Description: Extracts the rotation about the x, y, and z axes from
-//               the given hpr & scale matrix.  Adjusts the matrix
-//               to eliminate the rotation.
-//
-//               This function assumes the matrix is stored in a
-//               right-handed Y-up coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the rotation about the x, y, and z axes from the given hpr & scale
+ * matrix.  Adjusts the matrix to eliminate the rotation.  This function assumes
+ * the matrix is stored in a right-handed Y-up coordinate system.
+ */
 static void
 unwind_yup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   TAU_PROFILE("void unwind_yup_rotation(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
@@ -334,76 +318,72 @@ unwind_yup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   mat.get_row(x,0);
   mat.get_row(y,1);
   mat.get_row(z,2);
-  
+
   // Project Z into the XZ plane.
   FLOATNAME(LVector2) xz(z[0], z[2]);
   xz = normalize(xz);
-  
+
   // Compute the rotation about the +Y (up) axis.  This is yaw, or
   // "heading".
   FLOATTYPE heading = rad_2_deg(((FLOATTYPE)catan2(xz[0], xz[1])));
-  
+
   // Unwind the heading, and continue.
   FLOATNAME(LMatrix3) rot_y;
   rot_y.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
                                 CS_yup_right);
-  
+
   x = x * rot_y;
   y = y * rot_y;
   z = z * rot_y;
-  
+
   // Project the rotated Z into the YZ plane.
   FLOATNAME(LVector2) yz(z[1], z[2]);
   yz = normalize(yz);
-  
+
   // Compute the rotation about the +X (right) axis.  This is pitch.
   FLOATTYPE pitch = rad_2_deg((FLOATTYPE)(-catan2(yz[0], yz[1])));
-  
+
   // Unwind the pitch.
   FLOATNAME(LMatrix3) rot_x;
   rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
                                 CS_yup_right);
-  
+
   x = x * rot_x;
   y = y * rot_x;
   z = z * rot_x;
-  
+
   // Project the rotated X onto the XY plane.
   FLOATNAME(LVector2) xy(x[0], x[1]);
   xy = normalize(xy);
-  
+
   // Compute the rotation about the +Z (back) axis.  This is roll.
   FLOATTYPE roll = -rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
-  
+
   // Unwind the roll from the axes, and continue.
   FLOATNAME(LMatrix3) rot_z;
   rot_z.set_rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                 CS_yup_right);
-  
+
   x = x * rot_z;
   y = y * rot_z;
   z = z * rot_z;
-  
+
   // Reset the matrix to reflect the unwinding.
   mat.set_row(0, x);
   mat.set_row(1, y);
   mat.set_row(2, z);
-  
+
   // Return the three rotation components.
   hpr[0] = heading;
   hpr[1] = pitch;
   hpr[2] = roll;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: unwind_zup_rotation
-//  Description: Extracts the rotation about the x, y, and z axes from
-//               the given hpr & scale matrix.  Adjusts the matrix
-//               to eliminate the rotation.
-//
-//               This function assumes the matrix is stored in a
-//               right-handed Z-up coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the rotation about the x, y, and z axes from the given hpr & scale
+ * matrix.  Adjusts the matrix to eliminate the rotation.  This function assumes
+ * the matrix is stored in a right-handed Z-up coordinate system.
+ */
 static void
 unwind_zup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   TAU_PROFILE("void unwind_zup_rotation(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
@@ -412,75 +392,73 @@ unwind_zup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   mat.get_row(x,0);
   mat.get_row(y,1);
   mat.get_row(z,2);
-  
+
   // Project Y into the XY plane.
   FLOATNAME(LVector2) xy(y[0], y[1]);
   xy = normalize(xy);
-  
+
   // Compute the rotation about the +Z (up) axis.  This is yaw, or
   // "heading".
   FLOATTYPE heading = -rad_2_deg(((FLOATTYPE)catan2(xy[0], xy[1])));
-  
+
   // Unwind the heading, and continue.
   FLOATNAME(LMatrix3) rot_z;
   rot_z.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                 CS_zup_right);
-  
+
   x = x * rot_z;
   y = y * rot_z;
   z = z * rot_z;
-  
+
   // Project the rotated Y into the YZ plane.
   FLOATNAME(LVector2) yz(y[1], y[2]);
   yz = normalize(yz);
-  
+
   // Compute the rotation about the +X (right) axis.  This is pitch.
   FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)catan2(yz[1], yz[0])));
-  
+
   // Unwind the pitch.
   FLOATNAME(LMatrix3) rot_x;
   rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
                                 CS_zup_right);
-  
+
   x = x * rot_x;
   y = y * rot_x;
   z = z * rot_x;
-  
+
   // Project X into the XZ plane.
   FLOATNAME(LVector2) xz(x[0], x[2]);
   xz = normalize(xz);
-  
+
   // Compute the rotation about the -Y (back) axis.  This is roll.
   FLOATTYPE roll = -rad_2_deg(((FLOATTYPE)catan2(xz[1], xz[0])));
-  
+
   // Unwind the roll from the axes, and continue.
   FLOATNAME(LMatrix3) rot_y;
   rot_y.set_rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
                                 CS_zup_right);
-  
+
   x = x * rot_y;
   y = y * rot_y;
   z = z * rot_y;
-  
+
   // Reset the matrix to reflect the unwinding.
   mat.set_row(0, x);
   mat.set_row(1, y);
   mat.set_row(2, z);
-  
+
   // Return the three rotation components.
   hpr[0] = heading;
   hpr[1] = pitch;
   hpr[2] = roll;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: decompose_matrix
-//  Description: Extracts out the components of a 3x3 rotation matrix.
-//               Returns true if successful, or false if there was an
-//               error.  Since a 3x3 matrix always contains an affine
-//               transform, this should succeed in the normal case;
-//               singular transforms are not treated as an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts out the components of a 3x3 rotation matrix.  Returns true if
+ * successful, or false if there was an error.  Since a 3x3 matrix always
+ * contains an affine transform, this should succeed in the normal case;
+ * singular transforms are not treated as an error.
+ */
 bool
 decompose_matrix(const FLOATNAME(LMatrix3) &mat,
                  FLOATNAME(LVecBase3) &scale,
@@ -552,7 +530,7 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
       << "Unexpected coordinate system: " << (int)cs << "\n";
     return false;
   }
-  
+
   if (linmath_cat.is_debug()) {
     linmath_cat.debug()
       << "after unwind, mat is " << new_mat << "\n";
@@ -578,20 +556,16 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
   shear.set(new_mat(0, 1) + new_mat(1, 0),
             new_mat(2, 0) + new_mat(0, 2),
             new_mat(2, 1) + new_mat(1, 2));
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: old_to_new_hpr
-//  Description: Converts the HPR as represented in the old, broken
-//               way to the new, correct representation.  Returns the
-//               new HPR.
-//
-//               This function is provided to ease transition from old
-//               systems that relied on Panda's original broken HPR
-//               calculation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the HPR as represented in the old, broken way to the new, correct
+ * representation.  Returns the new HPR.  This function is provided to ease
+ * transition from old systems that relied on Panda's original broken HPR
+ * calculation.
+ */
 FLOATNAME(LVecBase3)
 old_to_new_hpr(const FLOATNAME(LVecBase3) &old_hpr) {
   TAU_PROFILE("LVecBase3 old_to_new_hpr(const LVecBase3 &)", " ", TAU_USER);

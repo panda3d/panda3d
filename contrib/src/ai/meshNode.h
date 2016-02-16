@@ -14,18 +14,13 @@
 
 #include "aiGlobals.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Node
-// Description : This class is used to assign the nodes on the mesh.
-//               It holds all the data necessary to compute A*
-//               algorithm.  It also maintains a lot of vital
-//               information such as the neighbor nodes of each node
-//               and also its position on the mesh.
-//
-//               Note: The Mesh Generator which is a stand alone tool
-//               makes use of this class to generate the nodes on the
-//               mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to assign the nodes on the mesh.  It holds all the data
+ * necessary to compute A* algorithm.  It also maintains a lot of vital
+ * information such as the neighbor nodes of each node and also its position on
+ * the mesh.  Note: The Mesh Generator which is a stand alone tool makes use of
+ * this class to generate the nodes on the mesh.
+ */
 class EXPCL_PANDAAI Node {
 public:
     // This variable specifies whether the node is an obtacle or not.

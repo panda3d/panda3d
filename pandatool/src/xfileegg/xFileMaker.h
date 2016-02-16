@@ -30,11 +30,9 @@ class EggVertexPool;
 class Datagram;
 class XFileMesh;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileMaker
-// Description : This class converts a Panda scene graph into a .X
-//               file and writes it out.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class converts a Panda scene graph into a .X file and writes it out.
+ */
 class XFileMaker {
 public:
   XFileMaker();
@@ -64,4 +62,3 @@ private:
 };
 
 #endif
-

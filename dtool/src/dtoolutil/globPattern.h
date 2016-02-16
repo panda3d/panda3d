@@ -18,21 +18,15 @@
 #include "filename.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GlobPattern
-// Description : This class can be used to test for string matches
-//               against standard Unix-shell filename globbing
-//               conventions.  It serves as a portable standin for the
-//               Posix fnmatch() call.
-//
-//               A GlobPattern is given a pattern string, which can
-//               contain operators like *, ?, and [].  Then it can be
-//               tested against any number of candidate strings; for
-//               each candidate, it will indicate whether the string
-//               matches the pattern or not.  It can be used, for
-//               example, to scan a directory for all files matching a
-//               particular pattern.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class can be used to test for string matches against standard Unix-shell
+ * filename globbing conventions.  It serves as a portable standin for the Posix
+ * fnmatch() call.  A GlobPattern is given a pattern string, which can contain
+ * operators like *, ?, and [].  Then it can be tested against any number of
+ * candidate strings; for each candidate, it will indicate whether the string
+ * matches the pattern or not.  It can be used, for example, to scan a directory
+ * for all files matching a particular pattern.
+ */
 class EXPCL_DTOOL GlobPattern {
 PUBLISHED:
   INLINE GlobPattern(const string &pattern = string());

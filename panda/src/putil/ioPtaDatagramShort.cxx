@@ -17,11 +17,9 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: IoPtaDatagramShort::write_datagram
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IoPtaDatagramShort::
 write_datagram(BamWriter *, Datagram &dest, CPTA_ushort array) {
   dest.add_uint32(array.size());
@@ -30,11 +28,9 @@ write_datagram(BamWriter *, Datagram &dest, CPTA_ushort array) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IoPtaDatagramShort::read_datagram
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PTA_ushort IoPtaDatagramShort::
 read_datagram(BamReader *, DatagramIterator &source) {
   PTA_ushort array;

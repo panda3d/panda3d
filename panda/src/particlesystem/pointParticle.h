@@ -16,11 +16,10 @@
 
 #include "baseParticle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointParticle
-// Description : Describes a particle that requires representation
-//               by a point (pixel, sparkle, billboard)
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a particle that requires representation by a point (pixel, sparkle,
+ * billboard)
+ */
 class EXPCL_PANDAPHYSICS PointParticle : public BaseParticle {
 public:
   PointParticle(PN_stdfloat lifespan = 0.0f, bool alive = false);

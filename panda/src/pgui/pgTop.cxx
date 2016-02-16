@@ -20,13 +20,11 @@
 
 TypeHandle PGTop::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGTop::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGTop::
-PGTop(const string &name) : 
+PGTop(const string &name) :
   PandaNode(name)
 {
   set_cull_callback();
@@ -45,54 +43,38 @@ PGTop(const string &name) :
   set_attrib(CullBinAttrib::make("unsorted", 0));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGTop::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGTop::
 ~PGTop() {
   set_mouse_watcher((MouseWatcher *)NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGTop::make_copy
-//       Access: Protected, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PGTop::
 make_copy() const {
   return new PGTop(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGTop::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool PGTop::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // We create a new MouseWatcherGroup for the purposes of collecting
@@ -128,16 +110,12 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGTop::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool PGTop::
 is_renderable() const {
   // We flag the PGTop as renderable, even though it technically
@@ -146,13 +124,10 @@ is_renderable() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGTop::set_mouse_watcher
-//       Access: Published
-//  Description: Sets the MouseWatcher pointer that the PGTop object
-//               registers its PG items with.  This must be set before
-//               the PG items are active.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the MouseWatcher pointer that the PGTop object registers its PG items
+ * with.  This must be set before the PG items are active.
+ */
 void PGTop::
 set_mouse_watcher(MouseWatcher *watcher) {
   if (_watcher_group != (PGMouseWatcherGroup *)NULL) {

@@ -23,11 +23,9 @@
 #include "pset.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 QtessSurface::
 QtessSurface(EggNurbsSurface *egg_surface) :
   _egg_surface(egg_surface)
@@ -79,17 +77,12 @@ QtessSurface(EggNurbsSurface *egg_surface) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_score
-//       Access: Public
-//  Description: Computes the curvature/stretch score for the surface,
-//               if it has not been already computed, and returns the
-//               net surface score.  This is used both for
-//               automatically distributing isoparams among the
-//               surfaces by curvature, as well as for automatically
-//               placing the isoparams within each surface by
-//               curvature.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the curvature/stretch score for the surface, if it has not been
+ * already computed, and returns the net surface score.  This is used both for
+ * automatically distributing isoparams among the surfaces by curvature, as well
+ * as for automatically placing the isoparams within each surface by curvature.
+ */
 double QtessSurface::
 get_score(double ratio) {
   if (_nurbs == (NurbsSurfaceEvaluator *)NULL) {
@@ -97,10 +90,10 @@ get_score(double ratio) {
   }
 
   if (!_got_scores) {
-    _u_placer.get_scores(_nurbs->get_num_u_segments() * 100, 
+    _u_placer.get_scores(_nurbs->get_num_u_segments() * 100,
                          _nurbs->get_num_v_segments() * 2,
                          ratio, _nurbs_result, true);
-    _v_placer.get_scores(_nurbs->get_num_v_segments() * 100, 
+    _v_placer.get_scores(_nurbs->get_num_v_segments() * 100,
                          _nurbs->get_num_u_segments() * 2,
                          ratio, _nurbs_result, false);
     _got_scores = true;
@@ -109,14 +102,11 @@ get_score(double ratio) {
   return _u_placer.get_total_score() * _v_placer.get_total_score() * _importance2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::tesselate
-//       Access: Public
-//  Description: Applies the appropriate tesselation to the surface,
-//               and replaces its node in the tree with an EggGroup
-//               containing both the new vertex pool and all of the
-//               polygons.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the appropriate tesselation to the surface, and replaces its node in
+ * the tree with an EggGroup containing both the new vertex pool and all of the
+ * polygons.
+ */
 int QtessSurface::
 tesselate() {
   apply_match();
@@ -137,13 +127,10 @@ tesselate() {
   return tris;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::write_qtess_parameter
-//       Access: Public
-//  Description: Writes a line to the given output file telling qtess
-//               how this surface should be tesselated uniformly.
-//               Returns the number of tris.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a line to the given output file telling qtess how this surface should
+ * be tesselated uniformly.  Returns the number of tris.
+ */
 int QtessSurface::
 write_qtess_parameter(ostream &out) {
   apply_match();
@@ -165,24 +152,19 @@ write_qtess_parameter(ostream &out) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::omit
-//       Access: Public
-//  Description: Sets up the surface to omit itself from the output.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the surface to omit itself from the output.
+ */
 void QtessSurface::
 omit() {
   _tess_u = 0;
   _tess_v = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::tesselate_uv
-//       Access: Public
-//  Description: Sets the surface up to tesselate itself uniformly at
-//               u x v, or if autoplace is true, automatically with u
-//               x v quads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the surface up to tesselate itself uniformly at u x v, or if autoplace
+ * is true, automatically with u x v quads.
+ */
 void QtessSurface::
 tesselate_uv(int u, int v, bool autoplace, double ratio) {
   _tess_u = u;
@@ -194,12 +176,9 @@ tesselate_uv(int u, int v, bool autoplace, double ratio) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::tesselate_specific
-//       Access: Public
-//  Description: Sets the surface up to tesselate itself at specific
-//               isoparams only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the surface up to tesselate itself at specific isoparams only.
+ */
 void QtessSurface::
 tesselate_specific(const pvector<double> &u_list,
                    const pvector<double> &v_list) {
@@ -209,12 +188,9 @@ tesselate_specific(const pvector<double> &u_list,
   _tess_v = (int)_iso_v.size() - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::tesselate_per_isoparam
-//       Access: Public
-//  Description: Sets the surface up to tesselate itself to a uniform
-//               amount per isoparam.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the surface up to tesselate itself to a uniform amount per isoparam.
+ */
 void QtessSurface::
 tesselate_per_isoparam(double pi, bool autoplace, double ratio) {
   if (_num_u == 0 || _num_v == 0) {
@@ -232,12 +208,10 @@ tesselate_per_isoparam(double pi, bool autoplace, double ratio) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::TesselatePerScore
-//       Access: Public
-//  Description: Sets the surface up to tesselate itself according to
-//               its computed curvature score in both dimensions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the surface up to tesselate itself according to its computed curvature
+ * score in both dimensions.
+ */
 void QtessSurface::
 tesselate_per_score(double pi, bool autoplace, double ratio) {
   if (get_score(ratio) <= 0.0) {
@@ -254,13 +228,10 @@ tesselate_per_score(double pi, bool autoplace, double ratio) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::tesselate_auto
-//       Access: Public
-//  Description: Sets the surface up to tesselate itself by
-//               automatically determining the best place to put the
-//               indicated u x v isoparams.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the surface up to tesselate itself by automatically determining the best
+ * place to put the indicated u x v isoparams.
+ */
 void QtessSurface::
 tesselate_auto(int u, int v, double ratio) {
   if (get_score(ratio) <= 0.0) {
@@ -274,14 +245,11 @@ tesselate_auto(int u, int v, double ratio) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::record_vertex_extras
-//       Access: Private
-//  Description: Records the joint membership and morph offsets of
-//               each control vertex in the extra-dimensional space of
-//               the NURBS, so that we can extract this data out again
-//               later to apply to the polygon vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the joint membership and morph offsets of each control vertex in the
+ * extra-dimensional space of the NURBS, so that we can extract this data out
+ * again later to apply to the polygon vertices.
+ */
 void QtessSurface::
 record_vertex_extras() {
   int num_u_vertices = _egg_surface->get_num_u_cvs();
@@ -303,8 +271,8 @@ record_vertex_extras() {
 
       // The xyz morphs.
       EggMorphVertexList::const_iterator dxi;
-      for (dxi = egg_vertex->_dxyzs.begin(); 
-           dxi != egg_vertex->_dxyzs.end(); 
+      for (dxi = egg_vertex->_dxyzs.begin();
+           dxi != egg_vertex->_dxyzs.end();
            ++dxi) {
         const string &morph_name = (*dxi).get_name();
         LVector3 delta = LCAST(PN_stdfloat, (*dxi).get_offset());
@@ -314,8 +282,8 @@ record_vertex_extras() {
 
       // The rgba morphs.
       EggMorphColorList::const_iterator dri;
-      for (dri = egg_vertex->_drgbas.begin(); 
-           dri != egg_vertex->_drgbas.end(); 
+      for (dri = egg_vertex->_drgbas.begin();
+           dri != egg_vertex->_drgbas.end();
            ++dri) {
         const string &morph_name = (*dri).get_name();
         const LVector4 &delta = (*dri).get_offset();
@@ -326,13 +294,10 @@ record_vertex_extras() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: QtessSurface::apply_match
-//       Access: Private
-//  Description: If the surface was set up to copy its tesselation in
-//               either axis from another surface, makes this copy
-//               now.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the surface was set up to copy its tesselation in either axis from another
+ * surface, makes this copy now.
+ */
 void QtessSurface::
 apply_match() {
   if (_match_u != NULL) {
@@ -378,13 +343,10 @@ apply_match() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: do_uniform_tesselate
-//       Access: Private
-//  Description: Subdivide the surface uniformly according to the
-//               parameters specified by an earlier call to omit(),
-//               teseselate_uv(), or tesselate_per_isoparam().
-////////////////////////////////////////////////////////////////////
+/**
+ * Subdivide the surface uniformly according to the parameters specified by an
+ * earlier call to omit(), teseselate_uv(), or tesselate_per_isoparam().
+ */
 PT(EggGroup) QtessSurface::
 do_uniform_tesselate(int &tris) const {
   tris = 0;
@@ -434,7 +396,7 @@ do_uniform_tesselate(int &tris) const {
   typedef pset<EggVertex *> NVertexGroup;
   typedef pmap<LVertexd, NVertexGroup> NVertexCollection;
   NVertexCollection n_collection;
-  
+
   for (vi = 0; vi < num_v; vi++) {
     if (_iso_v.empty()) {
       v = (double)vi / (double)(num_v-1);
@@ -462,7 +424,7 @@ do_uniform_tesselate(int &tris) const {
       PT(EggPolygon) poly = new EggPolygon;
       poly->add_vertex(new_verts[vi*num_u + (ui-1)]);
       poly->add_vertex(new_verts[(vi-1)*num_u + (ui-1)]);
-      poly->add_vertex(new_verts[(vi-1)*num_u + ui]); 
+      poly->add_vertex(new_verts[(vi-1)*num_u + ui]);
       poly->add_vertex(new_verts[vi*num_u + ui]);
 
       poly->copy_attributes(*_egg_surface);
@@ -494,8 +456,8 @@ do_uniform_tesselate(int &tris) const {
     for (ngi = group.begin(); ngi != group.end(); ++ngi) {
       EggVertex *egg_vertex = (*ngi);
       EggVertex::PrimitiveRef::const_iterator pri;
-      for (pri = egg_vertex->pref_begin(); 
-           pri != egg_vertex->pref_end(); 
+      for (pri = egg_vertex->pref_begin();
+           pri != egg_vertex->pref_end();
            ++pri) {
         EggPrimitive *egg_primitive = (*pri);
         nassertr(egg_primitive->has_normal(), NULL);
@@ -529,13 +491,10 @@ do_uniform_tesselate(int &tris) const {
   return group;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: evaluate_vertex
-//       Access: Private
-//  Description: Evaluates the surface at the given u, v position and
-//               sets the vertex to the appropriate values.  Also sets
-//               the joint membership of the vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Evaluates the surface at the given u, v position and sets the vertex to the
+ * appropriate values.  Also sets the joint membership of the vertex.
+ */
 PT(EggVertex) QtessSurface::
 evaluate_vertex(double u, double v) const {
   PT(EggVertex) egg_vertex = new EggVertex;
@@ -599,6 +558,6 @@ evaluate_vertex(double u, double v) const {
       egg_vertex->_drgbas.insert(EggMorphColor(morph_name, delta));
     }
   }
-  
+
   return egg_vertex;
 }

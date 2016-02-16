@@ -20,14 +20,11 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoLayer
-// Description : Signals the start of a new layer.  All the data
-//               chunks which follow will be included in this layer
-//               until another layer chunk is encountered.  If data is
-//               encountered before a layer chunk, it goes into an
-//               arbitrary layer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Signals the start of a new layer.  All the data chunks which follow will be
+ * included in this layer until another layer chunk is encountered.  If data is
+ * encountered before a layer chunk, it goes into an arbitrary layer.
+ */
 class LwoLayer : public LwoChunk {
 public:
   void make_generic();
@@ -65,5 +62,3 @@ private:
 };
 
 #endif
-
-

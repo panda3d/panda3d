@@ -19,15 +19,11 @@
 #include "paramValue.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//
-// This file defines a few more EventStore classes for storing linmath
-// objects in an EventParameter.  These are just for backward
-// compatibility; they are defined as typedefs to ParamVecBase types.
-//
-// See paramValue.h.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * This file defines a few more EventStore classes for storing linmath objects
+ * in an EventParameter.  These are just for backward compatibility; they are
+ * defined as typedefs to ParamVecBase types.  See paramValue.h.
+ */
 
 typedef ParamVecBase2 EventStoreVec2;
 typedef ParamVecBase3 EventStoreVec3;

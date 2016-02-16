@@ -14,12 +14,9 @@
 #include "configVariableFilename.h"
 #include "executionEnvironment.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableFilename::reload_cache
-//       Access: Private
-//  Description: Recopies the config variable into the Filename for
-//               returning its value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recopies the config variable into the Filename for returning its value.
+ */
 void ConfigVariableFilename::
 reload_cache() {
   nassertv(_core != (ConfigVariableCore *)NULL);

@@ -20,29 +20,21 @@
 
 TypeHandle NodeCullCallbackData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeCullCallbackData::output
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void NodeCullCallbackData::
 output(ostream &out) const {
   out << get_type() << "(" << (void *)_trav << ", " << (void *)&_data << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeCullCallbackData::upcall
-//       Access: Published, Virtual
-//  Description: You should make this call during the callback if you
-//               want to continue the normal rendering function that
-//               would have been done in the absence of a callback.
-//
-//               Specifically, this method will add this node to the
-//               draw queue, and continue the cull traversal for all
-//               the nodes below.  If you omit this call, this node
-//               and its children will be pruned from the render
-//               result.
-////////////////////////////////////////////////////////////////////
+/**
+ * You should make this call during the callback if you want to continue the
+ * normal rendering function that would have been done in the absence of a
+ * callback.  Specifically, this method will add this node to the draw queue,
+ * and continue the cull traversal for all the nodes below.  If you omit this
+ * call, this node and its children will be pruned from the render result.
+ */
 void NodeCullCallbackData::
 upcall() {
   PandaNode *node = _data.node();

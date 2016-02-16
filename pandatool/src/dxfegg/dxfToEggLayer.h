@@ -26,14 +26,11 @@ class EggVertex;
 class DXFVertex;
 class DXFToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFToEggLayer
-// Description : The specialization of DXFLayer used by
-//               DXFToEggConverter.  It contains a pointer to an
-//               EggGroup and a vertex pool; these are used to build
-//               up polygons grouped by layer in the egg file as each
-//               polygon is read from the DXF file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The specialization of DXFLayer used by DXFToEggConverter.  It contains a
+ * pointer to an EggGroup and a vertex pool; these are used to build up polygons
+ * grouped by layer in the egg file as each polygon is read from the DXF file.
+ */
 class DXFToEggLayer : public DXFLayer {
 public:
   DXFToEggLayer(const string &name, EggGroupNode *parent);
@@ -41,7 +38,7 @@ public:
   void add_polygon(const DXFToEggConverter *entity);
   void add_line(const DXFToEggConverter *entity);
   EggVertex *add_vertex(const DXFVertex &vertex);
-  
+
   PT(EggVertexPool) _vpool;
   PT(EggGroup) _group;
 };

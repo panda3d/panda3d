@@ -17,20 +17,14 @@
 #include "pandabase.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinkedListNode
-// Description : This just stores the pointers to implement a
-//               doubly-linked list of some kind of object.  There are
-//               occasions when a hand-rolled linked list is more
-//               appropriate than an STL container.
-//
-//               Typically, each node of the linked list, as well as
-//               the root of the list, will inherit from this class.
-//
-//               Note that this class is not inherently thread-safe;
-//               derived classes are responsible for protecting any
-//               calls into it within mutexes, if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This just stores the pointers to implement a doubly-linked list of some kind
+ * of object.  There are occasions when a hand-rolled linked list is more
+ * appropriate than an STL container.  Typically, each node of the linked list,
+ * as well as the root of the list, will inherit from this class.  Note that
+ * this class is not inherently thread-safe; derived classes are responsible for
+ * protecting any calls into it within mutexes, if necessary.
+ */
 class EXPCL_PANDA_PUTIL LinkedListNode {
 protected:
   INLINE LinkedListNode();

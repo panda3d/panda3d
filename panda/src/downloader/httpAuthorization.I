@@ -11,27 +11,20 @@
  * @date 2002-10-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::get_realm
-//       Access: Public
-//  Description: Returns the realm to which this authorization
-//               applies.  This is the server-supplied string that may
-//               have meaning to the user, and describes the general
-//               collection of things protected by this password.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the realm to which this authorization applies.  This is the server-
+ * supplied string that may have meaning to the user, and describes the general
+ * collection of things protected by this password.
+ */
 const string &HTTPAuthorization::
 get_realm() const {
   return _realm;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPAuthorization::get_domain
-//       Access: Public
-//  Description: Returns the set of domain strings on which this
-//               authorization applies.  This is the set of URL
-//               prefixes for which this authorization should be
-//               used.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the set of domain strings on which this authorization applies.  This
+ * is the set of URL prefixes for which this authorization should be used.
+ */
 const vector_string &HTTPAuthorization::
 get_domain() const {
   return _domain;

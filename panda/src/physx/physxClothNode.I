@@ -11,11 +11,9 @@
  * @date 2010-04-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxClothNode::
 PhysxClothNode(const char *name) : GeomNode(name) {
 
@@ -35,11 +33,9 @@ PhysxClothNode(const char *name) : GeomNode(name) {
   _texcoords = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothNode::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxClothNode::
 ~PhysxClothNode() {
 
@@ -47,4 +43,3 @@ INLINE PhysxClothNode::
     delete [] _texcoords;
   }
 }
-

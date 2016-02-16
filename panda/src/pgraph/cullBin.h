@@ -29,17 +29,12 @@ class RenderState;
 class PandaNode;
 class GeomNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBin
-// Description : A collection of Geoms and their associated state, for
-//               a particular scene.  The cull traversal (and the
-//               BinCullHandler) assigns Geoms to bins as it comes
-//               across them.
-//
-//               This is an abstract base class; derived classes like
-//               CullBinStateSorted and CullBinBackToFront provide the
-//               actual implementation.
-////////////////////////////////////////////////////////////////////
+/**
+ * A collection of Geoms and their associated state, for a particular scene.
+ * The cull traversal (and the BinCullHandler) assigns Geoms to bins as it comes
+ * across them.  This is an abstract base class; derived classes like
+ * CullBinStateSorted and CullBinBackToFront provide the actual implementation.
+ */
 class EXPCL_PANDA_PGRAPH CullBin : public TypedReferenceCount, public CullBinEnums {
 protected:
   INLINE CullBin(const CullBin &copy);
@@ -118,6 +113,3 @@ private:
 #include "cullBin.I"
 
 #endif
-
-
-  

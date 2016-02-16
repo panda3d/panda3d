@@ -11,34 +11,27 @@
  * @date 2010-01-24
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBoxShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletBoxShape::
 ~BulletBoxShape() {
 
   delete _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBoxShape::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletBoxShape::
 BulletBoxShape(const BulletBoxShape &copy) :
   _shape(copy._shape) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletBoxShape::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletBoxShape::
 operator = (const BulletBoxShape &copy) {
   _shape = copy._shape;
 }
-

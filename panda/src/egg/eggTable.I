@@ -11,32 +11,26 @@
  * @date 1999-02-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTable::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTable::
 EggTable(const string &name) : EggGroupNode(name) {
   _type = TT_table;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTable::Copy constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTable::
 EggTable(const EggTable &copy) : EggGroupNode(copy), _type(copy._type) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTable::Copy assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTable &EggTable::
 operator = (const EggTable &copy) {
   EggGroupNode::operator = (copy);
@@ -46,22 +40,18 @@ operator = (const EggTable &copy) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTable::set_table_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void EggTable::
 set_table_type(TableType type) {
   _type = type;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggTable::get_table_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggTable::TableType EggTable::
 get_table_type() const {
   return _type;

@@ -18,11 +18,9 @@
 PhysxManager *PhysxManager::_global_ptr;
 PhysxManager::PhysxOutputStream PhysxManager::_outputStream;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxManager::
 PhysxManager() {
 
@@ -44,7 +42,7 @@ PhysxManager() {
 
   nassertv_always(error == NXCE_NO_ERROR);
   nassertv_always(_sdk);
-  
+
   // Set some default parameters
   _sdk->setParameter(NX_VISUALIZATION_SCALE, 0.0f);
   _sdk->setParameter(NX_VISUALIZE_COLLISION_SHAPES, true);
@@ -73,11 +71,9 @@ PhysxManager() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxManager::
 ~PhysxManager() {
 
@@ -93,12 +89,9 @@ PhysxManager::
   NxReleasePhysicsSDK(_sdk);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_global_ptr
-//       Access: Published
-//  Description: Returns a pointer to the global PhysxManager
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global PhysxManager object.
+ */
 PhysxManager *PhysxManager::
 get_global_ptr() {
 
@@ -114,22 +107,18 @@ get_global_ptr() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_num_scenes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxManager::
 get_num_scenes() const {
 
   return _sdk->getNbScenes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::create_scene
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxScene *PhysxManager::
 create_scene(PhysxSceneDesc &sceneDesc) {
 
@@ -146,7 +135,7 @@ create_scene(PhysxSceneDesc &sceneDesc) {
     sceneDesc._desc.flags |= NX_SF_ENABLE_MULTITHREAD;
     sceneDesc._desc.threadMask=0xfffffffe;
     sceneDesc._desc.internalThreadCount = physx_internal_threads;
-    physx_cat.info() << "Multithreading enabled. " 
+    physx_cat.info() << "Multithreading enabled. "
                      << "Additional threads: " << physx_internal_threads << endl;
   }
 
@@ -161,11 +150,9 @@ create_scene(PhysxSceneDesc &sceneDesc) {
   return scene;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_scene
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxScene *PhysxManager::
 get_scene(unsigned int idx) const {
 
@@ -177,22 +164,18 @@ get_scene(unsigned int idx) const {
   return scene;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_num_height_fields
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxManager::
 get_num_height_fields() {
 
   return _sdk->getNbHeightFields();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::create_height_field
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxHeightField *PhysxManager::
 create_height_field(PhysxHeightFieldDesc &desc) {
 
@@ -209,11 +192,9 @@ create_height_field(PhysxHeightFieldDesc &desc) {
   return hf;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_height_field
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxHeightField *PhysxManager::
 get_height_field(unsigned int idx) {
 
@@ -222,22 +203,18 @@ get_height_field(unsigned int idx) {
   return (PhysxHeightField *)_heightfields[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_num_convex_meshes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxManager::
 get_num_convex_meshes() {
 
   return _sdk->getNbConvexMeshes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_convex_mesh
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxConvexMesh *PhysxManager::
 get_convex_mesh(unsigned int idx) {
 
@@ -246,22 +223,18 @@ get_convex_mesh(unsigned int idx) {
   return (PhysxConvexMesh *)_convex_meshes[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_num_triangle_meshes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxManager::
 get_num_triangle_meshes() {
 
   return _sdk->getNbTriangleMeshes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_triangle_mesh
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxTriangleMesh *PhysxManager::
 get_triangle_mesh(unsigned int idx) {
 
@@ -270,22 +243,18 @@ get_triangle_mesh(unsigned int idx) {
   return (PhysxTriangleMesh *)_triangle_meshes[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_num_cloth_meshes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxManager::
 get_num_cloth_meshes() {
 
   return _sdk->getNbClothMeshes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_cloth_mesh
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxClothMesh *PhysxManager::
 get_cloth_mesh(unsigned int idx) {
 
@@ -294,22 +263,18 @@ get_cloth_mesh(unsigned int idx) {
   return (PhysxClothMesh *)_cloth_meshes[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_num_soft_body_meshes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxManager::
 get_num_soft_body_meshes() {
 
   return _sdk->getNbSoftBodyMeshes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_soft_body_mesh
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxSoftBodyMesh *PhysxManager::
 get_soft_body_mesh(unsigned int idx) {
 
@@ -318,22 +283,18 @@ get_soft_body_mesh(unsigned int idx) {
   return (PhysxSoftBodyMesh *)_softbody_meshes[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_num_ccd_skeletons
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxManager::
 get_num_ccd_skeletons() {
 
   return _sdk->getNbCCDSkeletons();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::create_ccd_skeleton
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxCcdSkeleton *PhysxManager::
 create_ccd_skeleton(PhysxCcdSkeletonDesc &desc) {
 
@@ -351,11 +312,9 @@ create_ccd_skeleton(PhysxCcdSkeletonDesc &desc) {
   return skel;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_ccd_skeleton
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxCcdSkeleton *PhysxManager::
 get_ccd_skeleton(unsigned int idx) {
 
@@ -364,49 +323,37 @@ get_ccd_skeleton(unsigned int idx) {
   return (PhysxCcdSkeleton *)_ccd_skeletons[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::is_hardware_available
-//       Access: Published
-//  Description: Returns TRUE if a physcis hardware is available
-//               on the host system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns TRUE if a physcis hardware is available on the host system.
+ */
 bool PhysxManager::
 is_hardware_available() {
 
   return _sdk->getHWVersion() != NX_HW_VERSION_NONE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_num_ppus
-//       Access: Published
-//  Description: Reports the number of PPUs installed in the host
-//               system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports the number of PPUs installed in the host system.
+ */
 unsigned int PhysxManager::
 get_num_ppus() {
 
   return _sdk->getNbPPUs();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_hw_version
-//       Access: Published
-//  Description: Reports the available revision of the PhysX
-//               Hardware. Returns 0 if there is no hardware present
-//               in the machine, 1 for the PhysX Athena revision
-//               1.0 card.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports the available revision of the PhysX Hardware.  Returns 0 if there is
+ * no hardware present in the machine, 1 for the PhysX Athena revision 1.0 card.
+ */
 unsigned int PhysxManager::
 get_hw_version() {
 
   return _sdk->getHWVersion();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_internal_version
-//       Access: Published
-//  Description: Reports the internal API version number of the SDK.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports the internal API version number of the SDK.
+ */
 const char *PhysxManager::
 get_internal_version() {
 
@@ -426,33 +373,27 @@ get_internal_version() {
   return version.str().c_str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::set_parameter
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxManager::
 set_parameter(PhysxParameter param, float value) {
 
   _sdk->setParameter((NxParameter)param, value);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_parameter
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxManager::
 get_parameter(PhysxParameter param) {
 
   return _sdk->getParameter((NxParameter)param);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxManager::get_sdk_error_string
-//       Access: Private
-//  Description: Returns the NxSDKCreateError enum as string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the NxSDKCreateError enum as string.
+ */
 const char *PhysxManager::
 get_sdk_error_string(const NxSDKCreateError &error) {
 
@@ -469,26 +410,22 @@ get_sdk_error_string(const NxSDKCreateError &error) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOutputStream::reportError
-//       Access: Private
-//  Description: Reports an error code from the PhysX SDK.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports an error code from the PhysX SDK.
+ */
 void PhysxManager::PhysxOutputStream::
 reportError(NxErrorCode code, const char *message, const char *file, int line) {
 
-  physx_cat.error() << get_error_code_string(code) << ": " 
+  physx_cat.error() << get_error_code_string(code) << ": "
                     << message << endl;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOutputStream::get_error_code_string
-//       Access: Private
-//  Description: Returns the NxSDKCreateError enum as string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the NxSDKCreateError enum as string.
+ */
 const char *PhysxManager::PhysxOutputStream::
 get_error_code_string(NxErrorCode code) {
-  
+
   switch (code) {
   case NXE_NO_ERROR:           return "NO_ERROR"; break;
   case NXE_INVALID_PARAMETER:  return "INVALID_PARAMETER"; break;
@@ -503,11 +440,9 @@ get_error_code_string(NxErrorCode code) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOutputStream::reportAssertViolation
-//       Access: Private
-//  Description: Reports an assertion violation from the PhysX SDK.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports an assertion violation from the PhysX SDK.
+ */
 NxAssertResponse PhysxManager::PhysxOutputStream::
 reportAssertViolation(const char *message, const char *file, int line) {
 
@@ -516,14 +451,11 @@ reportAssertViolation(const char *message, const char *file, int line) {
   return NX_AR_CONTINUE;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxOutputStream::print
-//       Access: Private
-//  Description: Prints some debug text from the PhysX SDK.
-////////////////////////////////////////////////////////////////////
+/**
+ * Prints some debug text from the PhysX SDK.
+ */
 void PhysxManager::PhysxOutputStream::
 print(const char *message) {
 
   nout << message;
 }
-

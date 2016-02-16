@@ -28,17 +28,12 @@
 #pragma implementation
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::Constructor
-//       Access: Private
-//  Description: Defines a new InputDevice for the window.  Most
-//               windows will have exactly one InputDevice: a
-//               keyboard/mouse pair.  Some may also add joystick
-//               data, or additional mice or something.
-//
-//               This private constructor is only used internally by
-//               the named constructors, below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new InputDevice for the window.  Most windows will have exactly one
+ * InputDevice: a keyboard/mouse pair.  Some may also add joystick data, or
+ * additional mice or something.  This private constructor is only used
+ * internally by the named constructors, below.
+ */
 GraphicsWindowInputDevice::
 GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags) :
   _host(host),
@@ -52,56 +47,46 @@ GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::pointer_only
-//       Access: Public
-//  Description: This named constructor returns an input device that
-//               only has a pointing device, no keyboard.
-////////////////////////////////////////////////////////////////////
+/**
+ * This named constructor returns an input device that only has a pointing
+ * device, no keyboard.
+ */
 GraphicsWindowInputDevice GraphicsWindowInputDevice::
 pointer_only(GraphicsWindow *host, const string &name) {
   return GraphicsWindowInputDevice(host, name, IDF_has_pointer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::keyboard_only
-//       Access: Public
-//  Description: This named constructor returns an input device that
-//               only has a keyboard, no pointing device.
-////////////////////////////////////////////////////////////////////
+/**
+ * This named constructor returns an input device that only has a keyboard, no
+ * pointing device.
+ */
 GraphicsWindowInputDevice GraphicsWindowInputDevice::
 keyboard_only(GraphicsWindow *host, const string &name) {
   return GraphicsWindowInputDevice(host, name, IDF_has_keyboard);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::pointer_and_keyboard
-//       Access: Public
-//  Description: This named constructor returns an input device that
-//               has both a keyboard and pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This named constructor returns an input device that has both a keyboard and
+ * pointer.
+ */
 GraphicsWindowInputDevice GraphicsWindowInputDevice::
 pointer_and_keyboard(GraphicsWindow *host, const string &name) {
   return
     GraphicsWindowInputDevice(host, name, IDF_has_pointer | IDF_has_keyboard);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsWindowInputDevice::
 GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy)
 {
     *this = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void GraphicsWindowInputDevice::
 operator = (const GraphicsWindowInputDevice &copy)
 {
@@ -121,36 +106,28 @@ operator = (const GraphicsWindowInputDevice &copy)
   _pointer_events = copy._pointer_events;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 GraphicsWindowInputDevice::
 ~GraphicsWindowInputDevice() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::has_button_event
-//       Access: Public
-//  Description: Returns true if this device has a pending button
-//               event (a mouse button or keyboard button down/up),
-//               false otherwise.  If this returns true, the
-//               particular event may be extracted via
-//               get_button_event().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this device has a pending button event (a mouse button or
+ * keyboard button down/up), false otherwise.  If this returns true, the
+ * particular event may be extracted via get_button_event().
+ */
 bool GraphicsWindowInputDevice::
 has_button_event() const {
   LightMutexHolder holder(_lock);
   return !_button_events.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::get_button_event
-//       Access: Public
-//  Description: Assuming a previous call to has_button_event()
-//               returned true, this returns the pending button event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assuming a previous call to has_button_event() returned true, this returns
+ * the pending button event.
+ */
 ButtonEvent GraphicsWindowInputDevice::
 get_button_event() {
   LightMutexHolder holder(_lock);
@@ -159,26 +136,20 @@ get_button_event() {
   return be;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::has_pointer_event
-//       Access: Public
-//  Description: Returns true if this device has a pending pointer
-//               event (a mouse movement), or false otherwise.  If
-//               this returns true, the particular event may be
-//               extracted via get_pointer_event().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this device has a pending pointer event (a mouse movement),
+ * or false otherwise.  If this returns true, the particular event may be
+ * extracted via get_pointer_event().
+ */
 bool GraphicsWindowInputDevice::
 has_pointer_event() const {
   LightMutexHolder holder(_lock);
   return (_pointer_events != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::get_pointer_events
-//       Access: Public
-//  Description: Returns a PointerEventList containing all the recent
-//               pointer events.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PointerEventList containing all the recent pointer events.
+ */
 PT(PointerEventList) GraphicsWindowInputDevice::
 get_pointer_events() {
   LightMutexHolder holder(_lock);
@@ -187,24 +158,17 @@ get_pointer_events() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::enable_pointer_mode
-//       Access: Public
-//  Description: There are two modes: raw mode, and pointer mode.
-//               In pointer mode, the mouse stops when it reaches the
-//               edges of the window.  In raw mode, the mouse ignores
-//               the screen boundaries and can continue indefinitely,
-//               even into negative coordinates.  In raw mode, each
-//               "blip" from the mouse hardware corresponds to a
-//               change of 1 unit in the mouse's (x,y) coordinate.
-//               In pointer mode, a variety of speed adjustment factors
-//               and concepts like "mouse acceleration" may be applied.
-//
-//               Mouse zero represents the system mouse pointer.  This
-//               is by definition a pointer, not a raw mouse.  It is
-//               an error to try to enable or disable pointer mode on
-//               mouse zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * There are two modes: raw mode, and pointer mode.  In pointer mode, the mouse
+ * stops when it reaches the edges of the window.  In raw mode, the mouse
+ * ignores the screen boundaries and can continue indefinitely, even into
+ * negative coordinates.  In raw mode, each "blip" from the mouse hardware
+ * corresponds to a change of 1 unit in the mouse's (x,y) coordinate.  In
+ * pointer mode, a variety of speed adjustment factors and concepts like "mouse
+ * acceleration" may be applied.  Mouse zero represents the system mouse
+ * pointer.  This is by definition a pointer, not a raw mouse.  It is an error
+ * to try to enable or disable pointer mode on mouse zero.
+ */
 void GraphicsWindowInputDevice::
 enable_pointer_mode(double speed) {
   LightMutexHolder holder(_lock);
@@ -216,11 +180,9 @@ enable_pointer_mode(double speed) {
   _mouse_data._in_window = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::disable_pointer_mode
-//       Access: Public
-//  Description: see enable_pointer_mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * see enable_pointer_mode.
+ */
 void GraphicsWindowInputDevice::
 disable_pointer_mode() {
   LightMutexHolder holder(_lock);
@@ -230,11 +192,9 @@ disable_pointer_mode() {
   _mouse_data = _true_mouse_data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::set_pointer
-//       Access: Published
-//  Description: Records that a mouse movement has taken place.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that a mouse movement has taken place.
+ */
 void GraphicsWindowInputDevice::
 set_pointer(bool inwin, double x, double y, double time) {
   LightMutexHolder holder(_lock);
@@ -275,11 +235,9 @@ set_pointer(bool inwin, double x, double y, double time) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::button_down
-//       Access: Published
-//  Description: Records that the indicated button has been depressed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that the indicated button has been depressed.
+ */
 void GraphicsWindowInputDevice::
 button_down(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
@@ -287,14 +245,11 @@ button_down(ButtonHandle button, double time) {
   _buttons_held.insert(button);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::button_resume_down
-//       Access: Published
-//  Description: Records that the indicated button was depressed
-//               earlier, and we only just detected the event after
-//               the fact.  This is mainly useful for tracking the
-//               state of modifier keys.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that the indicated button was depressed earlier, and we only just
+ * detected the event after the fact.  This is mainly useful for tracking the
+ * state of modifier keys.
+ */
 void GraphicsWindowInputDevice::
 button_resume_down(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
@@ -302,11 +257,9 @@ button_resume_down(ButtonHandle button, double time) {
   _buttons_held.insert(button);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::button_up
-//       Access: Published
-//  Description: Records that the indicated button has been released.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that the indicated button has been released.
+ */
 void GraphicsWindowInputDevice::
 button_up(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
@@ -314,26 +267,20 @@ button_up(ButtonHandle button, double time) {
   _buttons_held.erase(button);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::keystroke
-//       Access: Published
-//  Description: Records that the indicated keystroke has been
-//               generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that the indicated keystroke has been generated.
+ */
 void GraphicsWindowInputDevice::
 keystroke(int keycode, double time) {
   LightMutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(keycode, time));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::candidate
-//       Access: Published
-//  Description: Records that the indicated candidate string has been
-//               highlighted.  This is used to implement IME support
-//               for typing in international languages, especially
-//               Chinese/Japanese/Korean.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that the indicated candidate string has been highlighted.  This is
+ * used to implement IME support for typing in international languages,
+ * especially Chinese/Japanese/Korean.
+ */
 void GraphicsWindowInputDevice::
 candidate(const wstring &candidate_string, size_t highlight_start,
           size_t highlight_end, size_t cursor_pos) {
@@ -343,17 +290,13 @@ candidate(const wstring &candidate_string, size_t highlight_start,
                                        cursor_pos));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::focus_lost
-//       Access: Published
-//  Description: This should be called when the window focus is lost,
-//               so that we may miss upcoming button events
-//               (especially "up" events) for the next period of time.
-//               It generates keyboard and mouse "up" events for those
-//               buttons that we previously sent unpaired "down"
-//               events, so that the Panda application will believe
-//               all buttons are now released.
-////////////////////////////////////////////////////////////////////
+/**
+ * This should be called when the window focus is lost, so that we may miss
+ * upcoming button events (especially "up" events) for the next period of time.
+ * It generates keyboard and mouse "up" events for those buttons that we
+ * previously sent unpaired "down" events, so that the Panda application will
+ * believe all buttons are now released.
+ */
 void GraphicsWindowInputDevice::
 focus_lost(double time) {
   LightMutexHolder holder(_lock);
@@ -364,22 +307,18 @@ focus_lost(double time) {
   _buttons_held.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::raw_button_down
-//       Access: Published
-//  Description: Records that the indicated button has been depressed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that the indicated button has been depressed.
+ */
 void GraphicsWindowInputDevice::
 raw_button_down(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(button, ButtonEvent::T_raw_down, time));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::raw_button_up
-//       Access: Published
-//  Description: Records that the indicated button has been released.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records that the indicated button has been released.
+ */
 void GraphicsWindowInputDevice::
 raw_button_up(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);

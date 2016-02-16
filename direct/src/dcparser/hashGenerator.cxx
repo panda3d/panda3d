@@ -25,22 +25,18 @@
 
 static const int max_prime_numbers = 10000;
 
-////////////////////////////////////////////////////////////////////
-//     Function: HashGenerator::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HashGenerator::
 HashGenerator() {
   _hash = 0;
   _index = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HashGenerator::add_int
-//       Access: Public
-//  Description: Adds another integer to the hash so far.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds another integer to the hash so far.
+ */
 void HashGenerator::
 add_int(int num) {
   nassertv(_index >= 0 && _index < max_prime_numbers);
@@ -48,12 +44,9 @@ add_int(int num) {
   _index = (_index + 1) % max_prime_numbers;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HashGenerator::add_string
-//       Access: Public
-//  Description: Adds a string to the hash, by breaking it down into a
-//               sequence of integers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a string to the hash, by breaking it down into a sequence of integers.
+ */
 void HashGenerator::
 add_string(const string &str) {
   add_int(str.length());
@@ -63,11 +56,9 @@ add_string(const string &str) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HashGenerator::get_hash
-//       Access: Public
-//  Description: Returns the hash number generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the hash number generated.
+ */
 unsigned long HashGenerator::
 get_hash() const {
   return (unsigned long)(_hash & 0xffffffff);

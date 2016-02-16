@@ -25,10 +25,9 @@
 #include "transformState.h"
 #include "nodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletCharacterControllerNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletCharacterControllerNode : public BulletBaseCharacterControllerNode {
 
 PUBLISHED:
@@ -85,7 +84,7 @@ public:
   }
   static void init_type() {
     BulletBaseCharacterControllerNode::init_type();
-    register_type(_type_handle, "BulletCharacterControllerNode", 
+    register_type(_type_handle, "BulletCharacterControllerNode",
                   BulletBaseCharacterControllerNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -103,4 +102,3 @@ private:
 #include "bulletCharacterControllerNode.I"
 
 #endif // __BULLET_CHARACTER_CONTROLLER_NODE_H__
-

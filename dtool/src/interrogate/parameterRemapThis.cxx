@@ -19,11 +19,9 @@
 #include "cppPointerType.h"
 #include "cppConstType.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapThis::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParameterRemapThis::
 ParameterRemapThis(CPPType *type, bool is_const) :
   ParameterRemap(TypeManager::get_void_type())
@@ -36,35 +34,27 @@ ParameterRemapThis(CPPType *type, bool is_const) :
   _orig_type = _new_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapThis::pass_parameter
-//       Access: Public, Virtual
-//  Description: Outputs an expression that converts the indicated
-//               variable from the new type to the original type, for
-//               passing into the actual C++ function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs an expression that converts the indicated variable from the new type
+ * to the original type, for passing into the actual C++ function.
+ */
 void ParameterRemapThis::
 pass_parameter(ostream &out, const string &variable_name) {
   out << "(*" << variable_name << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapThis::get_return_expr
-//       Access: Public, Virtual
-//  Description: Returns an expression that evalutes to the
-//               appropriate value type for returning from the
-//               function, given an expression of the original type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an expression that evalutes to the appropriate value type for
+ * returning from the function, given an expression of the original type.
+ */
 string ParameterRemapThis::
 get_return_expr(const string &) {
   return "**invalid**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapThis::is_this
-//       Access: Public, Virtual
-//  Description: Returns true if this is the "this" parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this is the "this" parameter.
+ */
 bool ParameterRemapThis::
 is_this() {
   return true;

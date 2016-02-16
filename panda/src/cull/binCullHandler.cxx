@@ -14,13 +14,10 @@
 #include "binCullHandler.h"
 #include "pStatTimer.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: BinCullHandler::record_object
-//       Access: Public, Virtual
-//  Description: This callback function is intended to be overridden
-//               by a derived class.  This is called as each Geom is
-//               discovered by the CullTraverser.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is intended to be overridden by a derived class.  This
+ * is called as each Geom is discovered by the CullTraverser.
+ */
 void BinCullHandler::
 record_object(CullableObject *object, const CullTraverser *traverser) {
   _cull_result->add_object(object, traverser);

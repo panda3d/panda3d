@@ -27,11 +27,9 @@
 #include "pset.h"
 #include "vector_string.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DEmbed
-// Description : This program is constructed to self-embed a p3d file
-//               and execute it directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This program is constructed to self-embed a p3d file and execute it directly.
+ */
 class P3DEmbed : public Panda3DBase {
 public:
   P3DEmbed(bool console_environment);

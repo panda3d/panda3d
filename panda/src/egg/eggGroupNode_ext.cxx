@@ -19,11 +19,9 @@
 extern struct Dtool_PyTypedObject Dtool_EggNode;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::get_children
-//       Access: Published
-//  Description: Returns a Python list containing the node's children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a Python list containing the node's children.
+ */
 PyObject *Extension<EggGroupNode>::
 get_children() const {
   EggGroupNode::iterator it;

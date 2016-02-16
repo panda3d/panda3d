@@ -14,4 +14,3 @@
 #include "eggSurface.h"
 
 TypeHandle EggSurface::_type_handle;
-

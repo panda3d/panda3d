@@ -23,29 +23,23 @@
 
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::_global_ptr;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LoaderFileTypeRegistry::
 LoaderFileTypeRegistry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LoaderFileTypeRegistry::
 ~LoaderFileTypeRegistry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::register_type
-//       Access: Public
-//  Description: Defines a new LoaderFileType in the universe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new LoaderFileType in the universe.
+ */
 void LoaderFileTypeRegistry::
 register_type(LoaderFileType *type) {
   // Make sure we haven't already registered this type.
@@ -72,16 +66,12 @@ register_type(LoaderFileType *type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::register_deferred_type
-//       Access: Public
-//  Description: Records a type associated with a particular extension
-//               to be loaded in the future.  The named library will
-//               be dynamically loaded the first time files of this
-//               extension are loaded; presumably this library will
-//               call register_type() when it initializes, thus making
-//               the extension loadable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a type associated with a particular extension to be loaded in the
+ * future.  The named library will be dynamically loaded the first time files of
+ * this extension are loaded; presumably this library will call register_type()
+ * when it initializes, thus making the extension loadable.
+ */
 void LoaderFileTypeRegistry::
 register_deferred_type(const string &extension, const string &library) {
   string dcextension = downcase(extension);
@@ -121,34 +111,27 @@ register_deferred_type(const string &extension, const string &library) {
   _deferred_types[dcextension] = library;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_num_types
-//       Access: Published
-//  Description: Returns the total number of types registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total number of types registered.
+ */
 int LoaderFileTypeRegistry::
 get_num_types() const {
   return _types.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_type
-//       Access: Published
-//  Description: Returns the nth type registered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth type registered.
+ */
 LoaderFileType *LoaderFileTypeRegistry::
 get_type(int n) const {
   nassertr(n >= 0 && n < (int)_types.size(), NULL);
   return _types[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_type_from_extension
-//       Access: Published
-//  Description: Determines the type of the file based on the indicated
-//               extension (without a leading dot).  Returns NULL if
-//               the extension matches no known file types.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the type of the file based on the indicated extension (without a
+ * leading dot).  Returns NULL if the extension matches no known file types.
+ */
 LoaderFileType *LoaderFileTypeRegistry::
 get_type_from_extension(const string &extension) {
   string dcextension = downcase(extension);
@@ -174,7 +157,7 @@ get_type_from_extension(const string &extension) {
       void *tmp = load_dso(get_plugin_path().get_value(), dlname);
       if (tmp == (void *)NULL) {
         loader_cat->warning()
-          << "Unable to load " << dlname.to_os_specific() << ": " 
+          << "Unable to load " << dlname.to_os_specific() << ": "
           << load_dso_error() << endl;
         return NULL;
       } else if (loader_cat.is_debug()) {
@@ -196,12 +179,10 @@ get_type_from_extension(const string &extension) {
   return (*ei).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::write
-//       Access: Published
-//  Description: Writes a list of supported file types to the
-//               indicated output stream, one per line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of supported file types to the indicated output stream, one per
+ * line.
+ */
 void LoaderFileTypeRegistry::
 write(ostream &out, int indent_level) const {
   if (_types.empty()) {
@@ -246,12 +227,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::get_global_ptr
-//       Access: Published, Static
-//  Description: Returns a pointer to the global LoaderFileTypeRegistry
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the global LoaderFileTypeRegistry object.
+ */
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::
 get_global_ptr() {
   if (_global_ptr == (LoaderFileTypeRegistry *)NULL) {
@@ -260,12 +238,9 @@ get_global_ptr() {
   return _global_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderFileTypeRegistry::record_extension
-//       Access: Private
-//  Description: Records a filename extension recognized by a loader
-//               file type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a filename extension recognized by a loader file type.
+ */
 void LoaderFileTypeRegistry::
 record_extension(const string &extension, LoaderFileType *type) {
   string dcextension = downcase(extension);

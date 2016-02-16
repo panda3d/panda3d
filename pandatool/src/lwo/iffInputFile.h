@@ -24,11 +24,9 @@
 
 class Datagram;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IffInputFile
-// Description : A wrapper around an istream used for reading an IFF
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A wrapper around an istream used for reading an IFF file.
+ */
 class IffInputFile : public TypedObject {
 public:
   IffInputFile();
@@ -98,5 +96,3 @@ private:
 #include "iffInputFile.I"
 
 #endif
-
-

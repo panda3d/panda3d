@@ -51,11 +51,9 @@ struct BoneWeight {
 };
 typedef pvector<BoneWeight> BoneWeightList;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AssimpLoader::
 AssimpLoader() :
   _error (false),
@@ -65,22 +63,18 @@ AssimpLoader() :
   _importer.SetIOHandler(new PandaIOSystem);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AssimpLoader::
 ~AssimpLoader() {
   _importer.FreeScene();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::get_extensions
-//       Access: Public
-//  Description: Returns a space-separated list of extensions that
-//               Assimp can load, without the leading dots.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a space-separated list of extensions that Assimp can load, without
+ * the leading dots.
+ */
 void AssimpLoader::
 get_extensions(string &ext) const {
   aiString aexts;
@@ -98,11 +92,9 @@ get_extensions(string &ext) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::read
-//       Access: Public
-//  Description: Reads from the indicated file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads from the indicated file.
+ */
 bool AssimpLoader::
 read(const Filename &filename) {
   _filename = filename;
@@ -119,12 +111,10 @@ read(const Filename &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::build_graph
-//       Access: Public
-//  Description: Converts scene graph structures into a Panda3D
-//               scene graph, with _root being the root node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts scene graph structures into a Panda3D scene graph, with _root being
+ * the root node.
+ */
 void AssimpLoader::
 build_graph() {
   nassertv(_scene != NULL); // read() must be called first
@@ -170,11 +160,9 @@ build_graph() {
   delete[] _geom_matindices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::find_node
-//       Access: Private
-//  Description: Finds a node by name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds a node by name.
+ */
 const aiNode *AssimpLoader::
 find_node(const aiNode &root, const aiString &name) {
   const aiNode *node;
@@ -193,11 +181,9 @@ find_node(const aiNode &root, const aiString &name) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_texture
-//       Access: Private
-//  Description: Converts an aiTexture into a Texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiTexture into a Texture.
+ */
 void AssimpLoader::
 load_texture(size_t index) {
   const aiTexture &tex = *_scene->mTextures[index];
@@ -257,11 +243,9 @@ load_texture(size_t index) {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_texture_stage
-//       Access: Private
-//  Description: Converts an aiMaterial into a RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiMaterial into a RenderState.
+ */
 void AssimpLoader::
 load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(TextureAttrib) &tattr) {
   aiString path;
@@ -332,11 +316,9 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_material
-//       Access: Private
-//  Description: Converts an aiMaterial into a RenderState.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiMaterial into a RenderState.
+ */
 void AssimpLoader::
 load_material(size_t index) {
   const aiMaterial &mat = *_scene->mMaterials[index];
@@ -414,11 +396,9 @@ load_material(size_t index) {
   _mat_states[index] = state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::create_joint
-//       Access: Private
-//  Description: Creates a CharacterJoint from an aiNode
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a CharacterJoint from an aiNode
+ */
 void AssimpLoader::
 create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *parent, const aiNode &node) {
   const aiMatrix4x4 &t = node.mTransformation;
@@ -438,11 +418,9 @@ create_joint(Character *character, CharacterJointBundle *bundle, PartGroup *pare
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::create_anim_channel
-//       Access: Private
-//  Description: Creates a AnimChannelMatrixXfmTable from an aiNodeAnim
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a AnimChannelMatrixXfmTable from an aiNodeAnim
+ */
 void AssimpLoader::
 create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *parent, const aiNode &node) {
   PT(AnimChannelMatrixXfmTable) group = new AnimChannelMatrixXfmTable(parent, node.mName.C_Str());
@@ -519,11 +497,9 @@ create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *pare
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_mesh
-//       Access: Private
-//  Description: Converts an aiMesh into a Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiMesh into a Geom.
+ */
 void AssimpLoader::
 load_mesh(size_t index) {
   const aiMesh &mesh = *_scene->mMeshes[index];
@@ -801,11 +777,9 @@ load_mesh(size_t index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_node
-//       Access: Private
-//  Description: Converts an aiNode into a PandaNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiNode into a PandaNode.
+ */
 void AssimpLoader::
 load_node(const aiNode &node, PandaNode *parent) {
   PT(PandaNode) pnode;
@@ -870,11 +844,9 @@ load_node(const aiNode &node, PandaNode *parent) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AssimpLoader::load_light
-//       Access: Private
-//  Description: Converts an aiLight into a LightNode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an aiLight into a LightNode.
+ */
 void AssimpLoader::
 load_light(const aiLight &light) {
   string name (light.mName.data, light.mName.length);

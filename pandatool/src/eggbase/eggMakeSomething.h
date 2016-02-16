@@ -18,15 +18,13 @@
 
 #include "eggWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMakeSomething
-// Description : A base class for a family of programs that generate
-//               egg models of various fundamental shapes.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for a family of programs that generate egg models of various
+ * fundamental shapes.
+ */
 class EggMakeSomething : public EggWriter {
 public:
   EggMakeSomething();
 };
 
 #endif
-

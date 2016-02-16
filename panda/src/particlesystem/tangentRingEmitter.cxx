@@ -13,22 +13,18 @@
 
 #include "tangentRingEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: tangentRingEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 TangentRingEmitter::
 TangentRingEmitter() {
   _radius = 1.0f;
   _radius_spread = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: tangentRingEmitter
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 TangentRingEmitter::
 TangentRingEmitter(const TangentRingEmitter &copy) :
   BaseParticleEmitter(copy) {
@@ -36,30 +32,24 @@ TangentRingEmitter(const TangentRingEmitter &copy) :
   _radius_spread = copy._radius_spread;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~tangentringemitter
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 TangentRingEmitter::
 ~TangentRingEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public, Virtual
-//  Description: child copier
-////////////////////////////////////////////////////////////////////
+/**
+ * child copier
+ */
 BaseParticleEmitter *TangentRingEmitter::
 make_copy() {
   return new TangentRingEmitter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TangentRingEmitter::assign_initial_position
-//       Access: Public
-//  Description: Generates a location for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a location for a new particle
+ */
 void TangentRingEmitter::
 assign_initial_position(LPoint3& pos) {
   PN_stdfloat theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
@@ -71,22 +61,17 @@ assign_initial_position(LPoint3& pos) {
   pos.set(new_radius * _x, new_radius * _y, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TangentRingEmitter::assign_initial_velocity
-//       Access: Public
-//  Description: Generates a velocity for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a velocity for a new particle
+ */
 void TangentRingEmitter::
 assign_initial_velocity(LVector3& vel) {
   vel.set(-_y, _x, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void TangentRingEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -94,12 +79,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void TangentRingEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

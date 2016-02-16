@@ -11,12 +11,9 @@
  * @date 2000-06-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramGenerator::Constructor
-//       Access: Published
-//  Description: Does nothing since this is class is just
-//               the definition of an interface
-////////////////////////////////////////////////////////////////////
+/**
+ * Does nothing since this is class is just the definition of an interface
+ */
 INLINE DatagramGenerator::
 DatagramGenerator() {
 }

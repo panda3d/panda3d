@@ -14,11 +14,9 @@
 #include "dxfPoints.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFPoints::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXFPoints::
 DXFPoints() :
   WithOutputFile(true, true, false)
@@ -40,24 +38,19 @@ DXFPoints() :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFPoints::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DXFPoints::
 run() {
   // Invoke the DXFFile base class to process the input file.
   process(_input_filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFPoints::done_entity
-//       Access: Public, Virtual
-//  Description: This is inherited from DXFFile, and gets called as
-//               each entity (face, line, whatever) has finished
-//               processing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is inherited from DXFFile, and gets called as each entity (face, line,
+ * whatever) has finished processing.
+ */
 void DXFPoints::
 done_entity() {
   if (_entity == EN_point) {
@@ -69,11 +62,9 @@ done_entity() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFPoints::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool DXFPoints::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {

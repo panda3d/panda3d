@@ -17,19 +17,17 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableInt
-// Description : This is a convenience class to specialize
-//               ConfigVariable as an integer type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as an integer type.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableInt : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableInt(const string &name);
   INLINE ConfigVariableInt(const string &name, int default_value,
-                           const string &description = string(), 
+                           const string &description = string(),
                            int flags = 0);
   INLINE ConfigVariableInt(const string &name, const string &default_value,
-                           const string &description = string(), 
+                           const string &description = string(),
                            int flags = 0);
 
   INLINE void operator = (int value);

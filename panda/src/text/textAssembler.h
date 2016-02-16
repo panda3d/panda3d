@@ -33,15 +33,12 @@ class TextEncoder;
 class TextGraphic;
 class TextAssembler;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextAssembler
-// Description : This class is not normally used directly by user
-//               code, but is used by the TextNode to lay out a block
-//               of text and convert it into rows of Geoms according
-//               to the TextProperties.  However, user code may take
-//               advantage of it, if desired, for very low-level text
-//               operations.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is not normally used directly by user code, but is used by the
+ * TextNode to lay out a block of text and convert it into rows of Geoms
+ * according to the TextProperties.  However, user code may take advantage of
+ * it, if desired, for very low-level text operations.
+ */
 class EXPCL_PANDA_TEXT TextAssembler {
 PUBLISHED:
   TextAssembler(TextEncoder *encoder);
@@ -117,7 +114,7 @@ private:
   class ComputedProperties : public ReferenceCount {
   public:
     INLINE ComputedProperties(const TextProperties &orig_properties);
-    INLINE ComputedProperties(ComputedProperties *based_on, 
+    INLINE ComputedProperties(ComputedProperties *based_on,
                               const wstring &wname, TextEncoder *encoder);
     void append_delta(wstring &wtext, ComputedProperties *other);
 
@@ -134,7 +131,7 @@ private:
   class TextCharacter {
   public:
     INLINE TextCharacter(wchar_t character, ComputedProperties *cprops);
-    INLINE TextCharacter(const TextGraphic *graphic, 
+    INLINE TextCharacter(const TextGraphic *graphic,
                          const wstring &graphic_wname,
                          ComputedProperties *cprops);
     INLINE TextCharacter(const TextCharacter &copy);
@@ -171,7 +168,7 @@ private:
   TextBlock _text_block;
 
   void scan_wtext(TextString &output_string,
-                  wstring::const_iterator &si, 
+                  wstring::const_iterator &si,
                   const wstring::const_iterator &send,
                   ComputedProperties *current_cprops);
 
@@ -263,7 +260,7 @@ private:
   void assemble_paragraph(PlacedGlyphs &placed_glyphs);
   void assemble_row(TextRow &row,
                     PlacedGlyphs &row_placed_glyphs,
-                    PN_stdfloat &row_width, PN_stdfloat &line_height, 
+                    PN_stdfloat &row_width, PN_stdfloat &line_height,
                     TextProperties::Alignment &align, PN_stdfloat &wordwrap);
 
   // These interfaces are for implementing cheesy accent marks and
@@ -297,7 +294,7 @@ private:
 
   static void
   draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
-                  PN_stdfloat underscore_start, PN_stdfloat underscore_end, 
+                  PN_stdfloat underscore_start, PN_stdfloat underscore_end,
                   const TextProperties *underscore_properties);
 
   static void
@@ -313,7 +310,7 @@ private:
                  const LPoint3 &min_vert, const LPoint3 &max_vert,
                  const LPoint3 &centroid,
                  const TextProperties *properties, GlyphPlacement &placement) const;
-  bool 
+  bool
   tack_on_accent(wchar_t accent_mark, CheesyPosition position,
                  CheesyTransform transform,
                  const LPoint3 &min_vert, const LPoint3 &max_vert,
@@ -336,4 +333,3 @@ private:
 #include "textAssembler.I"
 
 #endif
-

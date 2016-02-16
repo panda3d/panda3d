@@ -22,14 +22,12 @@
 #endif
 
 #ifdef DO_DCAST
-////////////////////////////////////////////////////////////////////
-//     Function: _dcast_verify
-//  Description: This function performs the actual check that the
-//               indicated TypedObject pointer is of the intended
-//               type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function performs the actual check that the indicated TypedObject
+ * pointer is of the intended type.
+ */
 bool
-_dcast_verify(TypeHandle want_handle, size_t want_size, 
+_dcast_verify(TypeHandle want_handle, size_t want_size,
               const TypedObject *ptr) {
   if (get_verify_dcast()) {
     if (ptr == (const TypedObject *)NULL) {
@@ -40,7 +38,7 @@ _dcast_verify(TypeHandle want_handle, size_t want_size,
 #if defined(_DEBUG) && defined(_WIN32)
     if (IsBadWritePtr((TypedObject *)ptr, want_size)) {
       express_cat->warning()
-        << "Attempt to cast invalid pointer to " 
+        << "Attempt to cast invalid pointer to "
         << want_handle << "\n";
       return false;
     }
@@ -60,5 +58,3 @@ _dcast_verify(TypeHandle want_handle, size_t want_size,
   return true;
 }
 #endif  // DO_DCAST
-
-

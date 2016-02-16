@@ -11,11 +11,9 @@
  * @date 2002-03-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LODNode::
 LODNode(const string &name) :
   PandaNode(name)
@@ -23,11 +21,9 @@ LODNode(const string &name) :
   set_cull_callback();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LODNode::
 LODNode(const LODNode &copy) :
   PandaNode(copy),
@@ -35,19 +31,13 @@ LODNode(const LODNode &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::add_switch
-//       Access: Published
-//  Description: Adds a switch range to the LODNode.  This implies
-//               that the corresponding child node has been parented
-//               to the node.
-//
-//               The sense of in vs. out distances is as if the object
-//               were coming towards you from far away: it switches
-//               "in" at the far distance, and switches "out" at the
-//               close distance.  Thus, "in" should be larger than
-//               "out".
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a switch range to the LODNode.  This implies that the corresponding
+ * child node has been parented to the node.  The sense of in vs.  out distances
+ * is as if the object were coming towards you from far away: it switches "in"
+ * at the far distance, and switches "out" at the close distance.  Thus, "in"
+ * should be larger than "out".
+ */
 INLINE void LODNode::
 add_switch(PN_stdfloat in, PN_stdfloat out) {
   nassertv(in >= out);
@@ -61,12 +51,10 @@ add_switch(PN_stdfloat in, PN_stdfloat out) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::set_switch
-//       Access: Published
-//  Description: Changes the switching range of a particular child of
-//               the LODNode.  See add_switch().
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the switching range of a particular child of the LODNode.  See
+ * add_switch().
+ */
 INLINE bool LODNode::
 set_switch(int index, PN_stdfloat in, PN_stdfloat out) {
   nassertr(in >= out, false);
@@ -83,13 +71,10 @@ set_switch(int index, PN_stdfloat in, PN_stdfloat out) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::clear_switches
-//       Access: Published
-//  Description: Removes the set of switching ranges for the LODNode,
-//               presumably in conjunction with removing all of its
-//               children.  See add_switch().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the set of switching ranges for the LODNode, presumably in
+ * conjunction with removing all of its children.  See add_switch().
+ */
 INLINE void LODNode::
 clear_switches() {
   CDWriter cdata(_cycler);
@@ -102,37 +87,30 @@ clear_switches() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_num_switches
-//       Access: Published
-//  Description: Returns the number of switch ranges added to the
-//               LODNode.  This should correspond to the number of
-//               children of the node in order for the LODNode to
-//               function correctly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of switch ranges added to the LODNode.  This should
+ * correspond to the number of children of the node in order for the LODNode to
+ * function correctly.
+ */
 INLINE int LODNode::
 get_num_switches() const {
   CDReader cdata(_cycler);
   return cdata->_switch_vector.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_lod_scale
-//       Access: Published
-//  Description: Returns the multiplier for lod distances
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the multiplier for lod distances
+ */
 INLINE PN_stdfloat LODNode::
 get_lod_scale() const {
   CDReader cdata(_cycler);
   return cdata->_lod_scale;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::set_lod_scale
-//       Access: Published
-//  Description: Sets the multiplier for lod distances. A higher 
-//               value means you'll see farther switchs than normal
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the multiplier for lod distances.  A higher value means you'll see
+ * farther switchs than normal
+ */
 INLINE void LODNode::
 set_lod_scale(PN_stdfloat value) {
   CDWriter cdata(_cycler);
@@ -140,13 +118,10 @@ set_lod_scale(PN_stdfloat value) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_in
-//       Access: Published
-//  Description: Returns the "in" distance of the indicated switch
-//               range.  This should be larger than the "out" distance
-//               of the same range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "in" distance of the indicated switch range.  This should be
+ * larger than the "out" distance of the same range.
+ */
 INLINE PN_stdfloat LODNode::
 get_in(int index) const {
   CDReader cdata(_cycler);
@@ -154,13 +129,10 @@ get_in(int index) const {
   return cdata->_switch_vector[index].get_in();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_out
-//       Access: Published
-//  Description: Returns the "out" distance of the indicated switch
-//               range.  This should be smaller than the "in" distance
-//               of the same range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "out" distance of the indicated switch range.  This should be
+ * smaller than the "in" distance of the same range.
+ */
 INLINE PN_stdfloat LODNode::
 get_out(int index) const {
   CDReader cdata(_cycler);
@@ -168,41 +140,32 @@ get_out(int index) const {
   return cdata->_switch_vector[index].get_out();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_lowest_switch
-//       Access: Published
-//  Description: Returns the index number of the child with the lowest
-//               level of detail; that is, the one that is designed to
-//               be seen from the farthest away.  This is usually the
-//               first child, but it is not necessarily so.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the child with the lowest level of detail; that
+ * is, the one that is designed to be seen from the farthest away.  This is
+ * usually the first child, but it is not necessarily so.
+ */
 INLINE int LODNode::
 get_lowest_switch() const {
   CDReader cdata(_cycler);
   return cdata->_lowest;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_highest_switch
-//       Access: Published
-//  Description: Returns the index number of the child with the highest
-//               level of detail; that is, the one that is designed to
-//               be seen from the closest to the camera.  This is
-//               usually the last child, but it is not necessarily so.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of the child with the highest level of detail; that
+ * is, the one that is designed to be seen from the closest to the camera.  This
+ * is usually the last child, but it is not necessarily so.
+ */
 INLINE int LODNode::
 get_highest_switch() const {
   CDReader cdata(_cycler);
   return cdata->_highest;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::force_switch
-//       Access: Published
-//  Description: Forces the LODNode to show the indicated level
-//               instead of the level that would normally be shown
-//               based on the distance from the camera.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces the LODNode to show the indicated level instead of the level that
+ * would normally be shown based on the distance from the camera.
+ */
 INLINE void LODNode::
 force_switch(int index) {
   CDWriter cdata(_cycler);
@@ -210,26 +173,21 @@ force_switch(int index) {
   cdata->_got_force_switch = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::clear_force_switch
-//       Access: Published
-//  Description: Undoes the effect of a previous call to
-//               force_switch() and releases the LODNode to once again
-//               display the normal level.
-////////////////////////////////////////////////////////////////////
+/**
+ * Undoes the effect of a previous call to force_switch() and releases the
+ * LODNode to once again display the normal level.
+ */
 INLINE void LODNode::
 clear_force_switch() {
   CDWriter cdata(_cycler);
   cdata->_got_force_switch = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::set_center
-//       Access: Published
-//  Description: Specifies the center of the LOD.  This is the point
-//               that is compared to the camera (in camera space) to
-//               determine the particular LOD that should be chosen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the center of the LOD.  This is the point that is compared to the
+ * camera (in camera space) to determine the particular LOD that should be
+ * chosen.
+ */
 INLINE void LODNode::
 set_center(const LPoint3 &center) {
   CDWriter cdata(_cycler);
@@ -240,40 +198,32 @@ set_center(const LPoint3 &center) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::get_center
-//       Access: Published
-//  Description: Returns the center of the LOD.  This is the point
-//               that is compared to the camera (in camera space) to
-//               determine the particular LOD that should be chosen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the center of the LOD.  This is the point that is compared to the
+ * camera (in camera space) to determine the particular LOD that should be
+ * chosen.
+ */
 INLINE const LPoint3 &LODNode::
 get_center() const {
   CDReader cdata(_cycler);
   return cdata->_center;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::is_any_shown
-//       Access: Published
-//  Description: Returns true if any switch has been shown with
-//               show_switch(), indicating the LODNode is in debug
-//               show mode; or false if it is in the normal mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any switch has been shown with show_switch(), indicating the
+ * LODNode is in debug show mode; or false if it is in the normal mode.
+ */
 INLINE bool LODNode::
 is_any_shown() const {
   CDReader cdata(_cycler);
   return (cdata->_num_shown != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::consider_verify_lods
-//       Access: Protected
-//  Description: To be called internally when the node is rendered,
-//               this will raise an assertion if verify-lods is
-//               configured true, and verify_child_bounds() returns
-//               false.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called internally when the node is rendered, this will raise an
+ * assertion if verify-lods is configured true, and verify_child_bounds()
+ * returns false.
+ */
 INLINE void LODNode::
 consider_verify_lods(CullTraverser *trav, CullTraverserData &data) {
 #ifndef NDEBUG
@@ -283,11 +233,9 @@ consider_verify_lods(CullTraverser *trav, CullTraverserData &data) {
 #endif  // NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LODNode::CData::
 CData() :
   _center(0.0f, 0.0f, 0.0f),
@@ -300,11 +248,9 @@ CData() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LODNode::CData::
 CData(const LODNode::CData &copy) :
   _center(copy._center),
@@ -319,13 +265,11 @@ CData(const LODNode::CData &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE LODNode::Switch::
-Switch(PN_stdfloat in, PN_stdfloat out) : 
+Switch(PN_stdfloat in, PN_stdfloat out) :
   _shown(false),
   _bounds_seq(UpdateSeq::old()),
   _verify_ok(false)
@@ -333,31 +277,25 @@ Switch(PN_stdfloat in, PN_stdfloat out) :
   set_range(in, out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::get_in
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat LODNode::Switch::
 get_in() const {
   return _in;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::get_out
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat LODNode::Switch::
 get_out() const {
   return _out;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::set_range
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void LODNode::Switch::
 set_range(PN_stdfloat in, PN_stdfloat out) {
   _in = in;
@@ -365,35 +303,27 @@ set_range(PN_stdfloat in, PN_stdfloat out) {
   clear_ring_viz();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::in_range
-//       Access: Public
-//  Description: Returns true if the indicated distance is within the
-//               range for the LOD.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated distance is within the range for the LOD.
+ */
 INLINE bool LODNode::Switch::
 in_range(PN_stdfloat dist) const {
   return (dist >= _out && dist < _in);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::in_range_2
-//       Access: Public
-//  Description: Returns true if the indicated distance squared is
-//               within the range for the LOD.  (The distance value is
-//               understood to be the square of the distance from the
-//               camera to the object.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated distance squared is within the range for the
+ * LOD.  (The distance value is understood to be the square of the distance from
+ * the camera to the object.)
+ */
 INLINE bool LODNode::Switch::
 in_range_2(PN_stdfloat dist2) const {
   return (dist2 >= _out * _out && dist2 < _in * _in);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::rescale
-//       Access: Public
-//  Description: Scales the switching distances by the indicated factor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Scales the switching distances by the indicated factor.
+ */
 INLINE void LODNode::Switch::
 rescale(PN_stdfloat factor) {
   _in *= factor;
@@ -401,44 +331,35 @@ rescale(PN_stdfloat factor) {
   clear_ring_viz();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::is_shown
-//       Access: Public
-//  Description: Returns true if show() has been called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if show() has been called.
+ */
 INLINE bool LODNode::Switch::
 is_shown() const {
   return _shown;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::show
-//       Access: Public
-//  Description: Shows this ring in debug mode using the indicated
-//               color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Shows this ring in debug mode using the indicated color.
+ */
 INLINE void LODNode::Switch::
 show(const LColor &color) {
   _shown = true;
   _show_color = color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::hide
-//       Access: Public
-//  Description: Undoes a previous call to show().
-////////////////////////////////////////////////////////////////////
+/**
+ * Undoes a previous call to show().
+ */
 INLINE void LODNode::Switch::
 hide() {
   _shown = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::get_ring_viz
-//       Access: Public
-//  Description: Returns a PandaNode suitable for rendering the ring
-//               associated with this switch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PandaNode suitable for rendering the ring associated with this
+ * switch.
+ */
 INLINE PandaNode *LODNode::Switch::
 get_ring_viz() const {
   if (_ring_viz.is_null()) {
@@ -448,12 +369,10 @@ get_ring_viz() const {
   return _ring_viz;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::get_spindle_viz
-//       Access: Public
-//  Description: Returns a PandaNode suitable for rendering the center
-//               spindle of the LODNode, in the color of this switch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PandaNode suitable for rendering the center spindle of the LODNode,
+ * in the color of this switch.
+ */
 INLINE PandaNode *LODNode::Switch::
 get_spindle_viz() const {
   if (_spindle_viz.is_null()) {
@@ -463,13 +382,10 @@ get_spindle_viz() const {
   return _spindle_viz;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::get_viz_model_state
-//       Access: Public
-//  Description: Returns a RenderState suitable for drawing the
-//               visible children of this switch level when the
-//               show_switch() debugging mode is enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState suitable for drawing the visible children of this
+ * switch level when the show_switch() debugging mode is enabled.
+ */
 INLINE const RenderState *LODNode::Switch::
 get_viz_model_state() const {
   if (_viz_model_state.is_null()) {
@@ -479,38 +395,30 @@ get_viz_model_state() const {
   return _viz_model_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::write_datagram
-//       Access: Public
-//  Description: Writes the contents of the Switch out to the
-//               datagram, presumably in preparation to writing to a
-//               Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of the Switch out to the datagram, presumably in
+ * preparation to writing to a Bam file.
+ */
 INLINE void LODNode::Switch::
 write_datagram(Datagram &destination) const {
   destination.add_stdfloat(_in);
   destination.add_stdfloat(_out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::read_datagram
-//       Access: Public
-//  Description: Reads the contents of the Switch from the datagram,
-//               presumably in response to reading a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the contents of the Switch from the datagram, presumably in response to
+ * reading a Bam file.
+ */
 INLINE void LODNode::Switch::
 read_datagram(DatagramIterator &source) {
   _in = source.get_stdfloat();
   _out = source.get_stdfloat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LODNode::Switch::clear_ring_viz
-//       Access: Private
-//  Description: Resets the internal cache values for the ring and
-//               spindle viz, and related pointers, for the
-//               set_switch() debugging mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the internal cache values for the ring and spindle viz, and related
+ * pointers, for the set_switch() debugging mode.
+ */
 INLINE void LODNode::Switch::
 clear_ring_viz() {
   _ring_viz.clear();

@@ -11,11 +11,9 @@
  * @date 2006-02-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConditionVarWin32Impl::
 ConditionVarWin32Impl(MutexWin32Impl &mutex) {
   _external_mutex = &mutex._lock;
@@ -24,21 +22,17 @@ ConditionVarWin32Impl(MutexWin32Impl &mutex) {
   _event_signal = CreateEvent(NULL, false, false, NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConditionVarWin32Impl::
 ~ConditionVarWin32Impl() {
   CloseHandle(_event_signal);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarWin32Impl::
 wait() {
   LeaveCriticalSection(_external_mutex);
@@ -49,11 +43,9 @@ wait() {
   EnterCriticalSection(_external_mutex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarWin32Impl::
 wait(double timeout) {
   LeaveCriticalSection(_external_mutex);
@@ -64,11 +56,9 @@ wait(double timeout) {
   EnterCriticalSection(_external_mutex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarWin32Impl::notify
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarWin32Impl::
 notify() {
   SetEvent(_event_signal);

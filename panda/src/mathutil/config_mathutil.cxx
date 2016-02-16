@@ -53,14 +53,12 @@ ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type
           "also use 'fastest' if you don't want Panda to waste much time "
           "computing the most optimal bounding volume."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libmathutil
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libmathutil() {
   static bool initialized = false;

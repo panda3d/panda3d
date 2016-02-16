@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
   // get on with life
 
   b.add_linear_force(new LinearJitterForce(0.1f));
-  
+
   int i=0;
   for (PhysicsObject::Vector::const_iterator co=b.get_object_vector().begin();
        co != b.get_object_vector().end();
@@ -85,4 +85,3 @@ int main(int argc, char **argv) {
 
   return 0;
 }
-

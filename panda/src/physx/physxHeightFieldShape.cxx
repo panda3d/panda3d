@@ -16,11 +16,9 @@
 
 TypeHandle PhysxHeightFieldShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldShape::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightFieldShape::
 link(NxShape *shapePtr) {
 
@@ -34,11 +32,9 @@ link(NxShape *shapePtr) {
   actor->_shapes.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldShape::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxHeightFieldShape::
 unlink() {
 
@@ -49,16 +45,12 @@ unlink() {
   actor->_shapes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxHeightFieldShape::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the shape object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the shape object to a descriptor.
+ */
 void PhysxHeightFieldShape::
 save_to_desc(PhysxHeightFieldShapeDesc &shapeDesc) const {
 
   nassertv(_error_type == ET_ok);
   _ptr->saveToDesc(shapeDesc._desc);
 }
-

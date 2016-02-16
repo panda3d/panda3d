@@ -14,47 +14,37 @@
 #include "physxDistanceJointDesc.h"
 #include "physxSpringDesc.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::set_max_distance
-//       Access: Published
-//  Description: Sets the maximum rest length of the rope or rod
-//               between the two anchor points.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the maximum rest length of the rope or rod between the two anchor
+ * points.
+ */
 void PhysxDistanceJointDesc::
 set_max_distance(float distance) {
 
   _desc.maxDistance = distance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::set_min_distance
-//       Access: Published
-//  Description: Sets the minimum rest length of the rope or rod
-//               between the two anchor points
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the minimum rest length of the rope or rod between the two anchor points
+ */
 void PhysxDistanceJointDesc::
 set_min_distance(float distance) {
 
   _desc.minDistance = distance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::set_spring
-//       Access: Published
-//  Description: Makes the joint springy. The spring.targetValue
-//               is not used. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the joint springy.  The spring.targetValue is not used.
+ */
 void PhysxDistanceJointDesc::
 set_spring(const PhysxSpringDesc &spring) {
 
   _desc.spring = spring._desc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::set_flag
-//       Access: Published
-//  Description: Sets or clears a single DistanceJointFlag flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets or clears a single DistanceJointFlag flag.
+ */
 void PhysxDistanceJointDesc::
 set_flag(PhysxDistanceJointFlag flag, bool value) {
 
@@ -66,33 +56,27 @@ set_flag(PhysxDistanceJointFlag flag, bool value) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::get_max_distance
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxDistanceJointDesc::
 get_max_distance() const {
 
   return _desc.maxDistance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::get_min_distance
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxDistanceJointDesc::
 get_min_distance() const {
 
   return _desc.minDistance;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::get_spring
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxSpringDesc PhysxDistanceJointDesc::
 get_spring() const {
 
@@ -101,14 +85,11 @@ get_spring() const {
   return value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxDistanceJointDesc::get_flag
-//       Access: Published
-//  Description: Return a single DistanceJointFlag flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return a single DistanceJointFlag flag.
+ */
 bool PhysxDistanceJointDesc::
 get_flag(PhysxDistanceJointFlag flag) const {
 
   return (_desc.flags & flag) ? true : false;
 }
-

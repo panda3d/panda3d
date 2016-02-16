@@ -22,10 +22,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeSoftImage
-// Description : For reading and SoftImage native image files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and SoftImage native image files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeSoftImage : public PNMFileType {
 public:
   PNMFileTypeSoftImage();
@@ -94,5 +93,3 @@ private:
 #endif  // HAVE_SOFTIMAGE_PIC
 
 #endif
-
-

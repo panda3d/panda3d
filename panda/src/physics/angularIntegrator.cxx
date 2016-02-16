@@ -16,29 +16,23 @@
 ConfigVariableDouble AngularIntegrator::_max_angular_dt
 ("default_max_angular_dt", 1.0f / 30.0f);
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularIntegrator
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 AngularIntegrator::
 AngularIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~AngularIntegrator
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 AngularIntegrator::
 ~AngularIntegrator() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Integrate
-//       Access: Public
-//  Description: high-level integration.  API.
-////////////////////////////////////////////////////////////////////
+/**
+ * high-level integration.  API.
+ */
 void AngularIntegrator::
 integrate(Physical *physical, AngularForceVector& forces,
           PN_stdfloat dt) {
@@ -51,12 +45,9 @@ integrate(Physical *physical, AngularForceVector& forces,
   child_integrate(physical, forces, dt);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularIntegrator::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -64,12 +55,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularIntegrator::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

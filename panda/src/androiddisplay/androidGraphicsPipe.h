@@ -34,12 +34,10 @@ class AndroidGraphicsBuffer;
 class AndroidGraphicsPixmap;
 class AndroidGraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AndroidGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating OpenGL ES graphics windows on an X-based
-//               (e.g. Unix) client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating OpenGL ES graphics
+ * windows on an X-based (e.g.  Unix) client.
+ */
 class AndroidGraphicsPipe : public GraphicsPipe {
 public:
   AndroidGraphicsPipe();

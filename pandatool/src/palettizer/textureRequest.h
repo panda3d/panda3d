@@ -21,12 +21,10 @@
 #include "eggTexture.h"
 #include "eggRenderMode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureRequest
-// Description : These are the things that a user might explicitly
-//               request to adjust on a texture via a line in the .txa
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * These are the things that a user might explicitly request to adjust on a
+ * texture via a line in the .txa file.
+ */
 class TextureRequest {
 public:
   TextureRequest();
@@ -54,4 +52,3 @@ public:
 };
 
 #endif
-

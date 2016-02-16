@@ -18,10 +18,9 @@
 
 #include "fltBeadID.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltGroup
-// Description : The main grouping bead of the flt file.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main grouping bead of the flt file.
+ */
 class FltGroup : public FltBeadID {
 public:
   FltGroup(FltHeader *header);
@@ -63,5 +62,3 @@ private:
 };
 
 #endif
-
-

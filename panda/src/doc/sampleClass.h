@@ -29,13 +29,11 @@
 
 #include <systemHeaderFile.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : SampleClass
-// Description : A basic description of the function and purpose of
-//               SampleClass.  Note that class names are generally
-//               mixed case, no underscore, beginning with a capital
-//               letter.
-////////////////////////////////////////////////////////////////////
+/**
+ * A basic description of the function and purpose of SampleClass.  Note that
+ * class names are generally mixed case, no underscore, beginning with a capital
+ * letter.
+ */
 class EXPCL_PANDA SampleClass : public TypedObject {
 public:
   enum NestedEnum {

@@ -165,14 +165,12 @@ ConfigVariableInt egg_precision
           "an egg file.  Leave this at 0 to use the default setting for the "
           "stream."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libegg
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libegg() {
   static bool initialized = false;

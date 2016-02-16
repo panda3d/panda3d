@@ -27,12 +27,10 @@ extern "C" {
 struct URLContext;
 struct AVFormatContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FfmpegVirtualFile
-// Description : Enables ffmpeg to access panda's VFS.  Create an
-//               instance of the FfmpegVirtualFile for each ffmpeg
-//               stream you wish to open.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables ffmpeg to access panda's VFS.  Create an instance of the
+ * FfmpegVirtualFile for each ffmpeg stream you wish to open.
+ */
 class EXPCL_FFMPEG FfmpegVirtualFile {
 public:
   FfmpegVirtualFile();

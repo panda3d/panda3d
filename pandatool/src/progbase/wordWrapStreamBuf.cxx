@@ -22,11 +22,9 @@
 typedef int streamsize;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: WordWrapStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WordWrapStreamBuf::
 WordWrapStreamBuf(WordWrapStream *owner, ProgramBase *program) :
   _owner(owner),
@@ -35,23 +33,18 @@ WordWrapStreamBuf(WordWrapStream *owner, ProgramBase *program) :
   _literal_mode = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WordWrapStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WordWrapStreamBuf::
 ~WordWrapStreamBuf() {
   sync();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WordWrapStreamBuf::sync
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when the
-//               buffer should be flushed to output (for instance, on
-//               destruction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when the buffer should be flushed
+ * to output (for instance, on destruction).
+ */
 int WordWrapStreamBuf::
 sync() {
   streamsize n = pptr() - pbase();
@@ -63,12 +56,10 @@ sync() {
   return 0;  // EOF to indicate write full.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WordWrapStreamBuf::overflow
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int WordWrapStreamBuf::
 overflow(int ch) {
   streamsize n = pptr() - pbase();
@@ -87,13 +78,10 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WordWrapStreamBuf::write_chars
-//       Access: Public
-//  Description: An internal function called by sync() and overflow()
-//               to store one or more characters written to the stream
-//               into the memory buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * An internal function called by sync() and overflow() to store one or more
+ * characters written to the stream into the memory buffer.
+ */
 void WordWrapStreamBuf::
 write_chars(const char *start, int length) {
   if (length > 0) {
@@ -114,13 +102,10 @@ write_chars(const char *start, int length) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WordWrapStreamBuf::flush_data
-//       Access: Private
-//  Description: Writes the contents of _data to the actual output
-//               stream, either word-wrapped or not as appropriate,
-//               and empties the contents of _data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of _data to the actual output stream, either word-wrapped
+ * or not as appropriate, and empties the contents of _data.
+ */
 void WordWrapStreamBuf::
 flush_data() {
   if (!_data.empty()) {

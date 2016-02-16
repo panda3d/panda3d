@@ -38,45 +38,31 @@ istream *Patchfile::_tar_istream = NULL;
 // this actually slows things down...
 //#define USE_MD5_FOR_HASHTABLE_INDEX_VALUES
 
-////////////////////////////////////////////////////////////////////
-// Patch File Format
-// IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE INSTALLER
-//
-// [ HEADER ]
-//   4 bytes  0xfeebfaac ("magic number")
-//            (older patch files have a magic number 0xfeebfaab,
-//            indicating they are version number 0.)
-//   2 bytes  version number (if magic number == 0xfeebfaac)
-//   4 bytes  length of starting file (if version >= 1)
-//  16 bytes  MD5 of starting file    (if version >= 1)
-//   4 bytes  length of resulting patched file
-//  16 bytes  MD5 of resultant patched file
-//
-// Note that MD5 hashes are written in the order observed by
-// HashVal::read_stream() and HashVal::write_stream(), which is not
-// the normal linear order.  (Each group of four bytes is reversed.)
-////////////////////////////////////////////////////////////////////
+/*
+ * Patch File Format IF THIS CHANGES, UPDATE installerApplyPatch.cxx IN THE
+ * INSTALLER [ HEADER ] 4 bytes  0xfeebfaac ("magic number") (older patch files
+ * have a magic number 0xfeebfaab, indicating they are version number 0.) 2
+ * bytes  version number (if magic number == 0xfeebfaac) 4 bytes  length of
+ * starting file (if version >= 1) 16 bytes  MD5 of starting file    (if version
+ * >= 1) 4 bytes  length of resulting patched file 16 bytes  MD5 of resultant
+ * patched file Note that MD5 hashes are written in the order observed by
+ * HashVal::read_stream() and HashVal::write_stream(), which is not the normal
+ * linear order.  (Each group of four bytes is reversed.)
+ */
 
 const int _v0_header_length = 4 + 4 + 16;
 const int _v1_header_length = 4 + 2 + 4 + 16 + 4 + 16;
-////////////////////////////////////////////////////////////////////
-// [ ADD/COPY pairs; repeated N times ]
-//   2 bytes  AL = ADD length
-//  AL bytes  bytes to add
-//   2 bytes  CL = COPY length
-//   4 bytes  offset of data to copy from original file, if CL != 0.
-//            If version >= 2, offset is relative to end of previous
-//            copy block; if version < 2, offset is relative to
-//            beginning of file.
-//
-// [ TERMINATOR ]
-//   2 bytes  zero-length ADD
-//   2 bytes  zero-length COPY
-////////////////////////////////////////////////////////////////////
+/*
+ * [ ADDCOPY pairs; repeated N times ] 2 bytes  AL = ADD length AL bytes  bytes
+ * to add 2 bytes  CL = COPY length 4 bytes  offset of data to copy from
+ * original file, if CL != 0. If version >= 2, offset is relative to end of
+ * previous copy block; if version < 2, offset is relative to beginning of file.
+ * [ TERMINATOR ] 2 bytes  zero-length ADD 2 bytes  zero-length COPY
+ */
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+/*
+ * Defines
+ */
 const PN_uint32 Patchfile::_v0_magic_number = 0xfeebfaab;
 const PN_uint32 Patchfile::_magic_number = 0xfeebfaac;
 
@@ -91,32 +77,26 @@ const PN_uint32 Patchfile::_NULL_VALUE = PN_uint32(0) - 1;
 const PN_uint32 Patchfile::_MAX_RUN_LENGTH = (PN_uint32(1) << 16) - 1;
 const PN_uint32 Patchfile::_HASH_MASK = (PN_uint32(1) << Patchfile::_HASH_BITS) - 1;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::Constructor
-//       Access: Public
-//  Description: Create a patch file and initializes internal data
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a patch file and initializes internal data
+ */
 Patchfile::
 Patchfile() {
   PT(Buffer) buffer = new Buffer(patchfile_buffer_size);
   init(buffer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::Constructor
-//       Access: Public
-//  Description: Create patch file with buffer to patch
-////////////////////////////////////////////////////////////////////
+/**
+ * Create patch file with buffer to patch
+ */
 Patchfile::
 Patchfile(PT(Buffer) buffer) {
   init(buffer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::init
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Patchfile::
 init(PT(Buffer) buffer) {
   _rename_output_to_orig = false;
@@ -135,11 +115,9 @@ init(PT(Buffer) buffer) {
   reset_footprint_length();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Patchfile::
 ~Patchfile() {
   if (_hash_table != (PN_uint32 *)NULL) {
@@ -154,11 +132,9 @@ Patchfile::
   nassertv(_origfile_stream == NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::cleanup
-//       Access: Private
-//  Description: Closes and clean up internal data structures
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes and clean up internal data structures
+ */
 void Patchfile::
 cleanup() {
   if (!_initiated) {
@@ -183,12 +159,10 @@ cleanup() {
   _initiated = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::initiate
-//       Access: Published
-//  Description: Set up to apply the patch to the file (original
-//               file and patch are destroyed in the process).
-////////////////////////////////////////////////////////////////////
+/**
+ * Set up to apply the patch to the file (original file and patch are destroyed
+ * in the process).
+ */
 int Patchfile::
 initiate(const Filename &patch_file, const Filename &file) {
   int result = initiate(patch_file, file, Filename::temporary("", "patch_"));
@@ -197,13 +171,10 @@ initiate(const Filename &patch_file, const Filename &file) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::initiate
-//       Access: Published
-//  Description: Set up to apply the patch to the file.  In this form,
-//               neither the original file nor the patch file are
-//               destroyed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set up to apply the patch to the file.  In this form, neither the original
+ * file nor the patch file are destroyed.
+ */
 int Patchfile::
 initiate(const Filename &patch_file, const Filename &orig_file,
          const Filename &target_file) {
@@ -250,14 +221,11 @@ initiate(const Filename &patch_file, const Filename &orig_file,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::read_header
-//       Access: Published
-//  Description: Opens the patch file for reading, and gets the header
-//               information from the file but does not begin to do
-//               any real work.  This can be used to query the data
-//               stored in the patch.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the patch file for reading, and gets the header information from the
+ * file but does not begin to do any real work.  This can be used to query the
+ * data stored in the patch.
+ */
 int Patchfile::
 read_header(const Filename &patch_file) {
   if (_initiated) {
@@ -276,18 +244,13 @@ read_header(const Filename &patch_file) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::run
-//       Access: Published
-//  Description: Perform one buffer's worth of patching
-//               Returns EU_ok while patching
-//               Returns EU_success when done
-//               If error happens will return one of:
-//               EU_error_abort : Patching has not been initiated
-//               EU_error_file_invalid : file is corrupted
-//               EU_error_invalid_checksum : incompatible patch file
-//               EU_error_write_file_rename : could not rename file
-////////////////////////////////////////////////////////////////////
+/**
+ * Perform one buffer's worth of patching Returns EU_ok while patching Returns
+ * EU_success when done If error happens will return one of: EU_error_abort :
+ * Patching has not been initiated EU_error_file_invalid : file is corrupted
+ * EU_error_invalid_checksum : incompatible patch file
+ * EU_error_write_file_rename : could not rename file
+ */
 int Patchfile::
 run() {
   // Now patch the file using the given buffer
@@ -501,15 +464,11 @@ run() {
   return EU_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::apply
-//       Access: Public
-//  Description: Patches the entire file in one call
-//               returns true on success and false on error
-//
-//               This version will delete the patch file and overwrite
-//               the original file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Patches the entire file in one call returns true on success and false on
+ * error  This version will delete the patch file and overwrite the original
+ * file.
+ */
 bool Patchfile::
 apply(Filename &patch_file, Filename &file) {
   int ret = initiate(patch_file, file);
@@ -525,14 +484,10 @@ apply(Filename &patch_file, Filename &file) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::apply
-//       Access: Public
-//  Description: Patches the entire file in one call
-//               returns true on success and false on error
-//
-//               This version will not delete any files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Patches the entire file in one call returns true on success and false on
+ * error  This version will not delete any files.
+ */
 bool Patchfile::
 apply(Filename &patch_file, Filename &orig_file, const Filename &target_file) {
   int ret = initiate(patch_file, orig_file, target_file);
@@ -549,11 +504,9 @@ apply(Filename &patch_file, Filename &orig_file, const Filename &target_file) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::internal_read_header
-//       Access: Private
-//  Description: Reads the header and leaves the patch file open.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the header and leaves the patch file open.
+ */
 int Patchfile::
 internal_read_header(const Filename &patch_file) {
   // Open the patch file for read
@@ -611,11 +564,9 @@ internal_read_header(const Filename &patch_file) {
   return EU_success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::calc_hash
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_uint32 Patchfile::
 calc_hash(const char *buffer) {
 #ifdef USE_MD5_FOR_HASHTABLE_INDEX_VALUES
@@ -645,28 +596,19 @@ calc_hash(const char *buffer) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::build_hash_link_tables
-//       Access: Private
-//  Description:
-//               The hash and link tables allow for a quick, linear
-//               search of all locations in the file that begin with
-//               a particular sequence of bytes, or "footprint."
-//
-//               The hash table is a table of offsets into the file,
-//               with one entry for every possible footprint hash
-//               value. For a hash of a footprint, the entry at the
-//               offset of the hash value provides an initial location
-//               in the file that has a matching footprint.
-//
-//               The link table is a large linked list of file offsets,
-//               with one entry for every byte in the file. Each offset
-//               in the link table will point to another offset that
-//               has the same footprint at the corresponding offset in the
-//               actual file. Starting with an offset taken from the hash
-//               table, one can rapidly produce a list of offsets that
-//               all have the same footprint.
-////////////////////////////////////////////////////////////////////
+/**
+ * The hash and link tables allow for a quick, linear search of all locations in
+ * the file that begin with a particular sequence of bytes, or "footprint."  The
+ * hash table is a table of offsets into the file, with one entry for every
+ * possible footprint hash value.  For a hash of a footprint, the entry at the
+ * offset of the hash value provides an initial location in the file that has a
+ * matching footprint.  The link table is a large linked list of file offsets,
+ * with one entry for every byte in the file.  Each offset in the link table
+ * will point to another offset that has the same footprint at the corresponding
+ * offset in the actual file.  Starting with an offset taken from the hash
+ * table, one can rapidly produce a list of offsets that all have the same
+ * footprint.
+ */
 void Patchfile::
 build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
   PN_uint32 *hash_table, PN_uint32 *link_table) {
@@ -726,13 +668,9 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::calc_match_length
-//       Access: Private
-//  Description:
-//               This function calculates the length of a match between
-//               two strings of bytes
-////////////////////////////////////////////////////////////////////
+/**
+ * This function calculates the length of a match between two strings of bytes
+ */
 PN_uint32 Patchfile::
 calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
                   PN_uint32 min_length) {
@@ -754,13 +692,10 @@ calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
   return length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::find_longest_match
-//       Access: Private
-//  Description:
-//               This function will find the longest string in the
-//               original file that matches a string in the new file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will find the longest string in the original file that matches
+ * a string in the new file.
+ */
 void Patchfile::
 find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_length,
   PN_uint32 *hash_table, PN_uint32 *link_table, const char* buffer_orig,
@@ -810,11 +745,9 @@ find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_pos, PN_uint16 &copy_lengt
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::emit_ADD
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Patchfile::
 emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer) {
   nassertv(length == (PN_uint16)length); //we only write a uint16
@@ -836,11 +769,9 @@ emit_ADD(ostream &write_stream, PN_uint32 length, const char* buffer) {
   _add_pos += length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::emit_COPY
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Patchfile::
 emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 copy_pos) {
   nassertv(length == (PN_uint16)length); //we only write a uint16
@@ -865,13 +796,10 @@ emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 copy_pos) {
   _add_pos += length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::emit_add_and_copy
-//       Access: Private
-//  Description: Emits an add/copy pair.  If necessary, repeats the
-//               pair as needed to work around the 16-bit chunk size
-//               limit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Emits an add/copy pair.  If necessary, repeats the pair as needed to work
+ * around the 16-bit chunk size limit.
+ */
 void Patchfile::
 emit_add_and_copy(ostream &write_stream,
                   PN_uint32 add_length, const char *add_buffer,
@@ -904,13 +832,10 @@ emit_add_and_copy(ostream &write_stream,
   emit_COPY(write_stream, copy_length, copy_pos);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::cache_add_and_copy
-//       Access: Private
-//  Description: Potentially emits one or more add/copy pairs.  The
-//               current state is saved, so as to minimize wasted
-//               emits from consecutive adds or copies.
-////////////////////////////////////////////////////////////////////
+/**
+ * Potentially emits one or more add/copy pairs.  The current state is saved, so
+ * as to minimize wasted emits from consecutive adds or copies.
+ */
 void Patchfile::
 cache_add_and_copy(ostream &write_stream,
                    PN_uint32 add_length, const char *add_buffer,
@@ -943,12 +868,10 @@ cache_add_and_copy(ostream &write_stream,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::cache_flush
-//       Access: Private
-//  Description: Closes any copy or add phases that are still open
-//               after a previous call to cache_add_and_copy().
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes any copy or add phases that are still open after a previous call to
+ * cache_add_and_copy().
+ */
 void Patchfile::
 cache_flush(ostream &write_stream) {
   emit_add_and_copy(write_stream,
@@ -959,12 +882,9 @@ cache_flush(ostream &write_stream) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::write_header
-//       Access: Private
-//  Description:
-//               Writes the patchfile header.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the patchfile header.
+ */
 void Patchfile::
 write_header(ostream &write_stream,
              istream &stream_orig, istream &stream_new) {
@@ -1004,11 +924,9 @@ write_header(ostream &write_stream,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::write_terminator
-//       Access: Private
-//  Description: Writes the patchfile terminator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the patchfile terminator.
+ */
 void Patchfile::
 write_terminator(ostream &write_stream) {
   cache_flush(write_stream);
@@ -1017,14 +935,10 @@ write_terminator(ostream &write_stream) {
   emit_COPY(write_stream, 0, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::compute_file_patches
-//       Access: Private
-//  Description: Computes the patches for the entire file (if it is
-//               not a multifile) or for a single subfile (if it is)
-//
-//               Returns true if successful, false on error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the patches for the entire file (if it is not a multifile) or for a
+ * single subfile (if it is)  Returns true if successful, false on error.
+ */
 bool Patchfile::
 compute_file_patches(ostream &write_stream,
                      PN_uint32 offset_orig, PN_uint32 offset_new,
@@ -1135,15 +1049,11 @@ compute_file_patches(ostream &write_stream,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::compute_mf_patches
-//       Access: Private
-//  Description: Computes patches for the files, knowing that they are
-//               both Panda Multifiles.  This will build patches one
-//               subfile at a time, which can potentially be much,
-//               much faster for large Multifiles that contain many
-//               small subfiles.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes patches for the files, knowing that they are both Panda Multifiles.
+ * This will build patches one subfile at a time, which can potentially be much,
+ * much faster for large Multifiles that contain many small subfiles.
+ */
 bool Patchfile::
 compute_mf_patches(ostream &write_stream,
                    PN_uint32 offset_orig, PN_uint32 offset_new,
@@ -1223,14 +1133,11 @@ compute_mf_patches(ostream &write_stream,
 }
 
 #ifdef HAVE_TAR
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::read_tar
-//       Access: Private
-//  Description: Uses libtar to extract the location within the tar
-//               file of each of the subfiles.  Returns true if the
-//               tar file is read successfully, false if there is an
-//               error (e.g. it is not a tar file).
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses libtar to extract the location within the tar file of each of the
+ * subfiles.  Returns true if the tar file is read successfully, false if there
+ * is an error (e.g.  it is not a tar file).
+ */
 bool Patchfile::
 read_tar(TarDef &tar, istream &stream) {
   TAR *tfile;
@@ -1286,16 +1193,11 @@ read_tar(TarDef &tar, istream &stream) {
 #endif  // HAVE_TAR
 
 #ifdef HAVE_TAR
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::compute_tar_patches
-//       Access: Private
-//  Description: Computes patches for the files, knowing that they are
-//               both tar files.  This is similar to
-//               compute_mf_patches().
-//
-//               The tar indexes should have been built up by a
-//               previous call to read_tar().
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes patches for the files, knowing that they are both tar files.  This
+ * is similar to compute_mf_patches().  The tar indexes should have been built
+ * up by a previous call to read_tar().
+ */
 bool Patchfile::
 compute_tar_patches(ostream &write_stream,
                     PN_uint32 offset_orig, PN_uint32 offset_new,
@@ -1375,12 +1277,10 @@ compute_tar_patches(ostream &write_stream,
 #endif  // HAVE_TAR
 
 #ifdef HAVE_TAR
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::tar_openfunc
-//       Access: Private, Static
-//  Description: A callback function to redirect libtar to read from
-//               our istream instead of using low-level Unix I/O.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback function to redirect libtar to read from our istream instead of
+ * using low-level Unix I/O.
+ */
 int Patchfile::
 tar_openfunc(const char *, int, ...) {
   // Since we don't actually open a file--the stream is already
@@ -1390,12 +1290,10 @@ tar_openfunc(const char *, int, ...) {
 #endif  // HAVE_TAR
 
 #ifdef HAVE_TAR
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::tar_closefunc
-//       Access: Private, Static
-//  Description: A callback function to redirect libtar to read from
-//               our istream instead of using low-level Unix I/O.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback function to redirect libtar to read from our istream instead of
+ * using low-level Unix I/O.
+ */
 int Patchfile::
 tar_closefunc(int) {
   // Since we don't actually open a file, no need to close it either.
@@ -1404,12 +1302,10 @@ tar_closefunc(int) {
 #endif  // HAVE_TAR
 
 #ifdef HAVE_TAR
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::tar_readfunc
-//       Access: Private, Static
-//  Description: A callback function to redirect libtar to read from
-//               our istream instead of using low-level Unix I/O.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback function to redirect libtar to read from our istream instead of
+ * using low-level Unix I/O.
+ */
 ssize_t Patchfile::
 tar_readfunc(int, void *buffer, size_t nbytes) {
   nassertr(_tar_istream != NULL, 0);
@@ -1419,12 +1315,10 @@ tar_readfunc(int, void *buffer, size_t nbytes) {
 #endif  // HAVE_TAR
 
 #ifdef HAVE_TAR
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::tar_writefunc
-//       Access: Private, Static
-//  Description: A callback function to redirect libtar to read from
-//               our istream instead of using low-level Unix I/O.
-////////////////////////////////////////////////////////////////////
+/**
+ * A callback function to redirect libtar to read from our istream instead of
+ * using low-level Unix I/O.
+ */
 ssize_t Patchfile::
 tar_writefunc(int, const void *, size_t) {
   // Since we use libtar only for reading, it is an error if this
@@ -1434,19 +1328,13 @@ tar_writefunc(int, const void *, size_t) {
 }
 #endif  // HAVE_TAR
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::build
-//       Access: Public
-//  Description:
-//               This implementation uses the "greedy differencing
-//               algorithm" described in the masters thesis
-//               "Differential Compression: A Generalized Solution
-//               for Binary Files" by Randal C. Burns (p.13).
-//               For an original file of size M and a new file of
-//               size N, this algorithm is O(M) in space and
-//               O(M*N) (worst-case) in time.
-//               return false on error
-////////////////////////////////////////////////////////////////////
+/**
+ * This implementation uses the "greedy differencing algorithm" described in the
+ * masters thesis "Differential Compression: A Generalized Solution for Binary
+ * Files" by Randal C. Burns (p.13). For an original file of size M and a new
+ * file of size N, this algorithm is O(M) in space and O(M*N) (worst-case) in
+ * time.  return false on error
+ */
 bool Patchfile::
 build(Filename file_orig, Filename file_new, Filename patch_name) {
   patch_name.set_binary();
@@ -1510,13 +1398,10 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   return (_last_copy_pos != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::do_compute_patches
-//       Access: Private
-//  Description: Computes the patches for the indicated A to B files,
-//               or subfiles.  Checks for multifiles or tar files
-//               before falling back to whole-file patching.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the patches for the indicated A to B files, or subfiles.  Checks for
+ * multifiles or tar files before falling back to whole-file patching.
+ */
 bool Patchfile::
 do_compute_patches(const Filename &file_orig, const Filename &file_new,
                    ostream &write_stream,
@@ -1597,12 +1482,9 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::patch_subfile
-//       Access: Private
-//  Description: Generates patches for a nested subfile of a Panda
-//               Multifile or a tar file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates patches for a nested subfile of a Panda Multifile or a tar file.
+ */
 bool Patchfile::
 patch_subfile(ostream &write_stream,
               PN_uint32 offset_orig, PN_uint32 offset_new,

@@ -21,11 +21,9 @@
 #include "dcast.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltCopy::
 FltCopy() {
   set_program_brief("copy MultiGen .flt files into a CVS source hierarchy");
@@ -46,11 +44,9 @@ FltCopy() {
   add_path_replace_options();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FltCopy::
 run() {
   SourceFiles::iterator fi;
@@ -65,14 +61,11 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::copy_file
-//       Access: Protected, Virtual
-//  Description: Called by import() if verify_file() indicates that a
-//               file needs to be copied.  This does the actual copy
-//               of a file from source to destination.  If new_file is
-//               true, then dest does not already exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by import() if verify_file() indicates that a file needs to be copied.
+ * This does the actual copy of a file from source to destination.  If new_file
+ * is true, then dest does not already exist.
+ */
 bool FltCopy::
 copy_file(const Filename &source, const Filename &dest,
           CVSSourceDirectory *dir, void *extra_data, bool new_file) {
@@ -89,11 +82,9 @@ copy_file(const Filename &source, const Filename &dest,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::copy_flt_file
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltCopy::
 copy_flt_file(const Filename &source, const Filename &dest,
               CVSSourceDirectory *dir) {
@@ -181,11 +172,9 @@ copy_flt_file(const Filename &source, const Filename &dest,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::copy_texture
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltCopy::
 copy_texture(const Filename &source, const Filename &dest,
              CVSSourceDirectory *dir, FltTexture *tex, bool new_file) {
@@ -208,13 +197,10 @@ copy_texture(const Filename &source, const Filename &dest,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCopy::scan_flt
-//       Access: Private
-//  Description: Recursively walks through the flt file hierarchy,
-//               looking for texture references and external flt file
-//               references.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks through the flt file hierarchy, looking for texture
+ * references and external flt file references.
+ */
 void FltCopy::
 scan_flt(FltRecord *record, FltCopy::Refs &refs, FltCopy::Textures &textures) {
   if (record->is_of_type(FltFace::get_class_type())) {

@@ -24,12 +24,10 @@
 class PhysxShape;
 class PhysxContactPoint;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxContactPair
-// Description : An instance of this class is send with contact
-//               reporting events. It contains detailed information
-//               on the contact.
-////////////////////////////////////////////////////////////////////
+/**
+ * An instance of this class is send with contact reporting events.  It contains
+ * detailed information on the contact.
+ */
 class EXPCL_PANDAPHYSX PhysxContactPair : public TypedReferenceCount {
 
 PUBLISHED:
@@ -59,7 +57,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "PhysxContactPair", 
+    register_type(_type_handle, "PhysxContactPair",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

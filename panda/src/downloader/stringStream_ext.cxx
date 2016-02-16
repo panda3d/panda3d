@@ -15,21 +15,17 @@
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::__init__
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Extension<StringStream>::
 __init__(PyObject *source) {
   set_data(source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::get_data
-//       Access: Published
-//  Description: Returns the contents of the data stream as a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the contents of the data stream as a string.
+ */
 PyObject *Extension<StringStream>::
 get_data() {
   _this->flush();
@@ -48,12 +44,9 @@ get_data() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::set_data
-//       Access: Published
-//  Description: Replaces the contents of the data stream.  This
-//               implicitly reseeks to 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the contents of the data stream.  This implicitly reseeks to 0.
+ */
 void Extension<StringStream>::
 set_data(PyObject *data) {
   _this->_buf.clear();

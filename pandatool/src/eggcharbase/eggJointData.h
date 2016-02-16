@@ -22,14 +22,12 @@
 
 class EggCharacterDb;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggJointData
-// Description : This is one node of a hierarchy of EggJointData
-//               nodes, each of which represents a single joint of the
-//               character hierarchy across all loaded files: the
-//               various models, the LOD's of each model, and the
-//               various animation channel files.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is one node of a hierarchy of EggJointData nodes, each of which
+ * represents a single joint of the character hierarchy across all loaded files:
+ * the various models, the LOD's of each model, and the various animation
+ * channel files.
+ */
 class EggJointData : public EggComponentData {
 public:
   EggJointData(EggCharacterCollection *collection,

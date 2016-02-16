@@ -19,13 +19,11 @@
 #include "luse.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : STBasicTerrain
-// Description : A specific implementation of STTerrain that supports
-//               basic heightmaps loaded from an image file, as
-//               described in a terrain.txt file similar to those
-//               provided with the SpeedTree example application.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specific implementation of STTerrain that supports basic heightmaps loaded
+ * from an image file, as described in a terrain.txt file similar to those
+ * provided with the SpeedTree example application.
+ */
 class EXPCL_PANDASPEEDTREE STBasicTerrain : public STTerrain {
 PUBLISHED:
   STBasicTerrain();
@@ -61,7 +59,7 @@ protected:
   INLINE PN_stdfloat interpolate(PN_stdfloat a, PN_stdfloat b, PN_stdfloat t);
 
 private:
-  static void read_quoted_filename(Filename &result, istream &in, 
+  static void read_quoted_filename(Filename &result, istream &in,
                                    const Filename &dirname);
 
 protected:

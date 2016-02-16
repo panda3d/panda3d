@@ -15,11 +15,9 @@
 
 TypeHandle BulletCylinderShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCylinderShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletCylinderShape::
 BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up) {
 
@@ -43,11 +41,9 @@ BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCylinderShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletCylinderShape::
 BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
 
@@ -69,14 +65,11 @@ BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletCylinderShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletCylinderShape::
 ptr() const {
 
   return _shape;
 }
-

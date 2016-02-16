@@ -21,12 +21,10 @@
 
 TypeHandle EggSAnimData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSAnimData::optimize
-//       Access: Public
-//  Description: Optimizes the data by collapsing a long table of
-//               duplicate values into a single value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Optimizes the data by collapsing a long table of duplicate values into a
+ * single value.
+ */
 void EggSAnimData::
 optimize() {
   if (get_num_rows() > 1) {
@@ -45,12 +43,9 @@ optimize() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSAnimData::write
-//       Access: Public, Virtual
-//  Description: Writes the data to the indicated output stream in Egg
-//               format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the data to the indicated output stream in Egg format.
+ */
 void EggSAnimData::
 write(ostream &out, int indent_level) const {
   if (get_num_rows() <= 1) {

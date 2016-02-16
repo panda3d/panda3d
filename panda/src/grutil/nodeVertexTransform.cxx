@@ -15,26 +15,21 @@
 
 TypeHandle NodeVertexTransform::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeVertexTransform::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NodeVertexTransform::
-NodeVertexTransform(const PandaNode *node, 
+NodeVertexTransform(const PandaNode *node,
                     const VertexTransform *prev) :
   _node(node),
   _prev(prev)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeVertexTransform::get_matrix
-//       Access: Published, Virtual
-//  Description: Returns the transform of the associated node,
-//               composed with the previous VertexTransform if any,
-//               expressed as a matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the transform of the associated node, composed with the previous
+ * VertexTransform if any, expressed as a matrix.
+ */
 void NodeVertexTransform::
 get_matrix(LMatrix4 &matrix) const {
   if (_prev != (const VertexTransform *)NULL) {
@@ -47,11 +42,9 @@ get_matrix(LMatrix4 &matrix) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeVertexTransform::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void NodeVertexTransform::
 output(ostream &out) const {
   if (_prev != (const VertexTransform *)NULL) {

@@ -23,13 +23,11 @@
 
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FindApproxPath
-// Description : This class is local to this package only; it doesn't
-//               get exported.  It chops a string path, as supplied to
-//               find_up() or find_down(), and breaks it up into its
-//               component pieces.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is local to this package only; it doesn't get exported.  It chops
+ * a string path, as supplied to find_up() or find_down(), and breaks it up into
+ * its component pieces.
+ */
 class FindApproxPath {
 public:
   INLINE FindApproxPath();

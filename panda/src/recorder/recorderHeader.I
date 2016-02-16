@@ -11,22 +11,18 @@
  * @date 2004-01-29
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderHeader::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE RecorderHeader::
 RecorderHeader() {
   time(&_start_time);
   _random_seed = (int)_start_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderHeader::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE RecorderHeader::
 RecorderHeader(const RecorderHeader &copy) :
   _start_time(copy._start_time),
@@ -34,22 +30,18 @@ RecorderHeader(const RecorderHeader &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderHeader::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void RecorderHeader::
 operator = (const RecorderHeader &copy) {
   _start_time = copy._start_time;
   _random_seed = copy._random_seed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RecorderHeader::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE RecorderHeader::
 ~RecorderHeader() {
 }

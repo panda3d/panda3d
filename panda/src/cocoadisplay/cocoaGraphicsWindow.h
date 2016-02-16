@@ -23,11 +23,9 @@
 #import <AppKit/NSView.h>
 #import <AppKit/NSWindow.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : CocoaGraphicsWindow
-// Description : An interface to the Cocoa system for managing
-//               OpenGL windows under Mac OS X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the Cocoa system for managing OpenGL windows under Mac OS X.
+ */
 class CocoaGraphicsWindow : public GraphicsWindow {
 public:
   CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,

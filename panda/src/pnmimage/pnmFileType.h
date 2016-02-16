@@ -25,12 +25,10 @@ class PNMReader;
 class PNMWriter;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileType
-// Description : This is the base class of a family of classes that
-//               represent particular image file types that PNMImage
-//               supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class of a family of classes that represent particular image
+ * file types that PNMImage supports.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMFileType : public TypedWritable {
 protected:
   PNMFileType();
@@ -88,4 +86,3 @@ private:
 };
 
 #endif
-

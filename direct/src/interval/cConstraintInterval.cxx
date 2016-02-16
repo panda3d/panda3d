@@ -15,11 +15,9 @@
 
 TypeHandle CConstraintInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstraintInterval::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CConstraintInterval::
 CConstraintInterval(const string &name, double duration) :
   CInterval(name, duration, true)

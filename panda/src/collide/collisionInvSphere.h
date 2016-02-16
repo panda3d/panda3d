@@ -18,15 +18,12 @@
 
 #include "collisionSphere.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionInvSphere
-// Description : An inverted sphere: this is a sphere whose collision
-//               surface is the inside surface of the sphere.
-//               Everything outside the sphere is solid matter;
-//               everything inside is empty space.  Useful for
-//               constraining objects to remain within a spherical
-//               perimeter.
-////////////////////////////////////////////////////////////////////
+/**
+ * An inverted sphere: this is a sphere whose collision surface is the inside
+ * surface of the sphere.  Everything outside the sphere is solid matter;
+ * everything inside is empty space.  Useful for constraining objects to remain
+ * within a spherical perimeter.
+ */
 class EXPCL_PANDA_COLLIDE CollisionInvSphere : public CollisionSphere {
 PUBLISHED:
   INLINE CollisionInvSphere(const LPoint3 &center, PN_stdfloat radius);
@@ -94,5 +91,3 @@ private:
 #include "collisionInvSphere.I"
 
 #endif
-
-

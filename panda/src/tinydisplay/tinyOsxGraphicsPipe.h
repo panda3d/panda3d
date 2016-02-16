@@ -26,11 +26,10 @@
 #include "graphicsPipe.h"
 #include "tinyGraphicsStateGuardian.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyOsxGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               creating TinyPanda graphics windows on a Mac client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This graphics pipe represents the interface for creating TinyPanda graphics
+ * windows on a Mac client.
+ */
 class EXPCL_TINYDISPLAY TinyOsxGraphicsPipe : public GraphicsPipe {
 public:
   TinyOsxGraphicsPipe();

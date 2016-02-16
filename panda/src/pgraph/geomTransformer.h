@@ -27,22 +27,16 @@ class InternalName;
 class GeomMunger;
 class Texture;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomTransformer
-// Description : An object specifically designed to transform the
-//               vertices of a Geom without disturbing indexing or
-//               affecting any other Geoms that may share the same
-//               vertex arrays, and without needlessly wasting memory
-//               when different Geoms sharing the same vertex arrays
-//               are transformed by the same amount.
-//
-//               If you create a single GeomTransformer and use it to
-//               transform a number of different Geoms by various
-//               transformations, then those Geoms which happen to
-//               share the same arrays and are transformed by the same
-//               amounts will still share the same arrays as each
-//               other (but different from the original arrays).
-////////////////////////////////////////////////////////////////////
+/**
+ * An object specifically designed to transform the vertices of a Geom without
+ * disturbing indexing or affecting any other Geoms that may share the same
+ * vertex arrays, and without needlessly wasting memory when different Geoms
+ * sharing the same vertex arrays are transformed by the same amount.  If you
+ * create a single GeomTransformer and use it to transform a number of different
+ * Geoms by various transformations, then those Geoms which happen to share the
+ * same arrays and are transformed by the same amounts will still share the same
+ * arrays as each other (but different from the original arrays).
+ */
 class EXPCL_PANDA_PGRAPH GeomTransformer {
 public:
   GeomTransformer();
@@ -69,7 +63,7 @@ public:
   bool transform_colors(Geom *geom, const LVecBase4 &scale);
   bool transform_colors(GeomNode *node, const LVecBase4 &scale);
 
-  bool apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex, 
+  bool apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
                             const TexMatrixAttrib *tma,
                             const LColor &base_color, bool keep_vertex_color);
   bool apply_texture_colors(GeomNode *node, const RenderState *state);
@@ -253,7 +247,7 @@ private:
     static void init_type() {
       register_type(_type_handle, "GeomTransformer::NewCollectedData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
   };
@@ -276,7 +270,7 @@ private:
   static PStatCollector _apply_scale_color_collector;
   static PStatCollector _apply_texture_color_collector;
   static PStatCollector _apply_set_format_collector;
-    
+
 public:
   static void init_type() {
     NewCollectedData::init_type();
@@ -286,4 +280,3 @@ public:
 #include "geomTransformer.I"
 
 #endif
-

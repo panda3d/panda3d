@@ -21,44 +21,36 @@
 
 PStatCollector PhysxContactReport::_pcollector("App:PhysX:Contact Reporting");
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxContactReport::enable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxContactReport::
 enable() {
 
   _enabled = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxContactReport::disable
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxContactReport::
 disable() {
 
   _enabled = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxContactReport::is_enabled
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxContactReport::
 is_enabled() const {
 
   return _enabled;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxContactReport::onContactNotify
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxContactReport::
 onContactNotify(NxContactPair &pair, NxU32 flags) {
 
@@ -97,4 +89,3 @@ onContactNotify(NxContactPair &pair, NxU32 flags) {
 
   _pcollector.stop();
 }
-

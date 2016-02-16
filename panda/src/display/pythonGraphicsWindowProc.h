@@ -20,11 +20,10 @@
 
 #ifdef HAVE_PYTHON
 
-////////////////////////////////////////////////////////////////////
-//       Class : PythonGraphicsWindowProc
-// Description : Extends GraphicsWindowProc to provde callback functionality
-//               to a python program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extends GraphicsWindowProc to provde callback functionality to a python
+ * program.
+ */
 class PythonGraphicsWindowProc: public GraphicsWindowProc,
                                 public PythonCallbackObject {
 public:

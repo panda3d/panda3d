@@ -22,14 +22,12 @@
 
 class P3DInstance;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DAuthSession
-// Description : This is an instance of a p3dcert program running in a
-//               subprocess.  There's no communication with the
-//               process, or none of that complicated stuff the
-//               P3DSession has to do; all we do here is fire off the
-//               process, then wait for it to exit.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an instance of a p3dcert program running in a subprocess.  There's no
+ * communication with the process, or none of that complicated stuff the
+ * P3DSession has to do; all we do here is fire off the process, then wait for
+ * it to exit.
+ */
 class P3DAuthSession : public P3DReferenceCount {
 public:
   P3DAuthSession(P3DInstance *inst);

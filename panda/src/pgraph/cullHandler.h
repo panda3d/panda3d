@@ -20,19 +20,17 @@
 
 class CullTraverser;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullHandler
-// Description : This defines the abstract interface for an object
-//               that receives Geoms identified by the CullTraverser.
-//               By itself, it's not a particularly useful class; to
-//               use it, derive from it and redefine record_object().
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the abstract interface for an object that receives Geoms
+ * identified by the CullTraverser.  By itself, it's not a particularly useful
+ * class; to use it, derive from it and redefine record_object().
+ */
 class EXPCL_PANDA_PGRAPH CullHandler {
 public:
   CullHandler();
   virtual ~CullHandler();
 
-  virtual void record_object(CullableObject *object, 
+  virtual void record_object(CullableObject *object,
                              const CullTraverser *traverser);
   virtual void end_traverse();
 
@@ -44,6 +42,3 @@ public:
 #include "cullHandler.I"
 
 #endif
-
-
-  

@@ -17,18 +17,14 @@
 #include "dtoolbase.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : UnicodeLatinMap
-// Description : This class mainly serves as a container for a largish
-//               table of the subset of the Unicode character set that
-//               corresponds to the Latin alphabet, with its various
-//               accent marks and so on.  Specifically, this table
-//               indicates how to map between the Unicode accented
-//               character and the corresponding ASCII equivalent
-//               without the accent mark; as well as how to switch
-//               case from upper to lower while retaining the Unicode
-//               accent marks.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class mainly serves as a container for a largish table of the subset of
+ * the Unicode character set that corresponds to the Latin alphabet, with its
+ * various accent marks and so on.  Specifically, this table indicates how to
+ * map between the Unicode accented character and the corresponding ASCII
+ * equivalent without the accent mark; as well as how to switch case from upper
+ * to lower while retaining the Unicode accent marks.
+ */
 class EXPCL_DTOOL UnicodeLatinMap {
 public:
   enum AccentType {
@@ -107,7 +103,7 @@ public:
     AF_smallcap   = 0x0008,
     AF_dotless    = 0x0010,
   };
-  
+
   enum CharType {
     CT_upper,
     CT_lower,

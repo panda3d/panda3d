@@ -19,12 +19,10 @@
 
 class DCClass;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCClassParameter
-// Description : This represents a class (or struct) object used as a
-//               parameter itself.  This means that all the fields of
-//               the class get packed into the message.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a class (or struct) object used as a parameter itself.  This
+ * means that all the fields of the class get packed into the message.
+ */
 class EXPCL_DIRECT DCClassParameter : public DCParameter {
 public:
   DCClassParameter(const DCClass *dclass);
@@ -41,7 +39,7 @@ PUBLISHED:
 public:
   virtual DCPackerInterface *get_nested_field(int n) const;
 
-  virtual void output_instance(ostream &out, bool brief, const string &prename, 
+  virtual void output_instance(ostream &out, bool brief, const string &prename,
                                const string &name, const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 

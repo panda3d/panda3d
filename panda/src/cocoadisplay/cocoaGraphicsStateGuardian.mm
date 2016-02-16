@@ -26,11 +26,9 @@
 
 TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CocoaGraphicsStateGuardian::
 CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            CocoaGraphicsStateGuardian *share_with) :
@@ -45,11 +43,9 @@ CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CocoaGraphicsStateGuardian::
 ~CocoaGraphicsStateGuardian() {
   if (_context != nil) {
@@ -58,12 +54,9 @@ CocoaGraphicsStateGuardian::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::get_properties
-//       Access: Private
-//  Description: Gets the FrameBufferProperties to match the
-//               indicated config.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties to match the indicated config.
+ */
 void CocoaGraphicsStateGuardian::
 get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_format, int screen) {
 
@@ -119,13 +112,10 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::choose_pixel_format
-//       Access: Private
-//  Description: Selects a visual or fbconfig for all the windows
-//               and buffers that use this gsg.  Also creates the GL
-//               context and obtains the visual.
-////////////////////////////////////////////////////////////////////
+/**
+ * Selects a visual or fbconfig for all the windows and buffers that use this
+ * gsg.  Also creates the GL context and obtains the visual.
+ */
 void CocoaGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
                     CGDirectDisplayID display,
@@ -242,11 +232,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
     << "Created context " << _context << ": " << _fbprops << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::query_gl_version
-//       Access: Protected, Virtual
-//  Description: Queries the runtime version of OpenGL in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the runtime version of OpenGL in use.
+ */
 void CocoaGraphicsStateGuardian::
 query_gl_version() {
   GLGraphicsStateGuardian::query_gl_version();
@@ -266,16 +254,12 @@ query_gl_version() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsStateGuardian::do_get_extension_func
-//       Access: Public, Virtual
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name.  It is the responsibility of the
-//               caller to ensure that the required extension is
-//               defined in the OpenGL runtime prior to calling this;
-//               it is an error to call this for a function that is
-//               not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the pointer to the GL extension function with the indicated name.  It
+ * is the responsibility of the caller to ensure that the required extension is
+ * defined in the OpenGL runtime prior to calling this; it is an error to call
+ * this for a function that is not defined.
+ */
 void *CocoaGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   char* fullname = (char*) malloc(strlen(name) + 2);

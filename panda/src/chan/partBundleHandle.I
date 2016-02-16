@@ -11,43 +11,33 @@
  * @date 2007-10-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleHandle::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PartBundleHandle::
 PartBundleHandle(PartBundle *bundle) :
   _bundle(bundle)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleHandle::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PartBundleHandle::
 ~PartBundleHandle() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleHandle::get_bundle
-//       Access: Published
-//  Description: Returns the actual PartBundle embedded within the
-//               handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the actual PartBundle embedded within the handle.
+ */
 INLINE PartBundle *PartBundleHandle::
 get_bundle() {
   return _bundle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundleHandle::set_bundle
-//       Access: Published
-//  Description: Changes the actual PartBundle embedded within the
-//               handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the actual PartBundle embedded within the handle.
+ */
 INLINE void PartBundleHandle::
 set_bundle(PartBundle *bundle) {
   _bundle = bundle;

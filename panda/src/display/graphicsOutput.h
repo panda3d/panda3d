@@ -44,26 +44,18 @@
 class PNMImage;
 class GraphicsEngine;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsOutput
-// Description : This is a base class for the various different
-//               classes that represent the result of a frame of
-//               rendering.  The most common kind of GraphicsOutput is
-//               a GraphicsWindow, which is a real-time window on the
-//               desktop, but another example is GraphicsBuffer, which
-//               is an offscreen buffer.
-//
-//               The actual rendering, and anything associated with
-//               the graphics context itself, is managed by the
-//               associated GraphicsStateGuardian (which might output
-//               to multiple GraphicsOutput objects).
-//
-//               GraphicsOutputs are not actually writable to bam
-//               files, of course, but they may be passed as event
-//               parameters, so they inherit from
-//               TypedWritableReferenceCount instead of
-//               TypedReferenceCount for that convenience.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for the various different classes that represent the
+ * result of a frame of rendering.  The most common kind of GraphicsOutput is a
+ * GraphicsWindow, which is a real-time window on the desktop, but another
+ * example is GraphicsBuffer, which is an offscreen buffer.  The actual
+ * rendering, and anything associated with the graphics context itself, is
+ * managed by the associated GraphicsStateGuardian (which might output to
+ * multiple GraphicsOutput objects).  GraphicsOutputs are not actually writable
+ * to bam files, of course, but they may be passed as event parameters, so they
+ * inherit from TypedWritableReferenceCount instead of TypedReferenceCount for
+ * that convenience.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsOutput : public GraphicsOutputBase, public DrawableRegion {
 protected:
   GraphicsOutput(GraphicsEngine *engine,

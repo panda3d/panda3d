@@ -18,11 +18,9 @@
 
 #include "eggReader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggListTextures
-// Description : Reads an egg file and outputs the list of textures it
-//               uses.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads an egg file and outputs the list of textures it uses.
+ */
 class EggListTextures : public EggReader {
 public:
   EggListTextures();
@@ -31,4 +29,3 @@ public:
 };
 
 #endif
-

@@ -14,11 +14,9 @@
 #include "physxRaycastReport.h"
 #include "physxRaycastHit.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRaycastReport::onRaycast
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxRaycastReport::
 onHit(const NxRaycastHit& hit) {
 
@@ -26,22 +24,18 @@ onHit(const NxRaycastHit& hit) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRaycastReport::get_num_hits
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxRaycastReport::
 get_num_hits() const {
 
   return _hits.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRaycastReport::get_first_hit
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxRaycastHit PhysxRaycastReport::
 get_first_hit() {
 
@@ -49,11 +43,9 @@ get_first_hit() {
   return get_next_hit();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRaycastReport::get_next_hit
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxRaycastHit PhysxRaycastReport::
 get_next_hit() {
 
@@ -67,11 +59,9 @@ get_next_hit() {
   return PhysxRaycastHit(hit);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxRaycastReport::get_hit
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxRaycastHit PhysxRaycastReport::
 get_hit(unsigned int idx) {
 
@@ -85,4 +75,3 @@ get_hit(unsigned int idx) {
 
   return _hits[idx];
 }
-

@@ -23,10 +23,9 @@
 #include "pandaNode.h"
 #include "collideMask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletRayHit
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 struct EXPCL_PANDABULLET BulletRayHit {
 
 PUBLISHED:
@@ -41,7 +40,7 @@ PUBLISHED:
   int get_triangle_index() const;
 
 private:
-  const btCollisionObject *_object; 
+  const btCollisionObject *_object;
   btVector3 _normal;
   btVector3 _pos;
   btScalar _fraction;
@@ -52,10 +51,9 @@ private:
   friend struct BulletAllHitsRayResult;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletAllHitsRayResult
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 struct EXPCL_PANDABULLET BulletAllHitsRayResult : public btCollisionWorld::AllHitsRayResultCallback {
 
 PUBLISHED:

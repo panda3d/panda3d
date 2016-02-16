@@ -46,14 +46,12 @@ ConfigVariableBool handle_datagrams_internally
           "for performance reasons.  When it is false, all datagrams "
           "are handled by the Python implementation."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libdistributed
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libdistributed() {
   static bool initialized = false;
@@ -63,4 +61,3 @@ init_libdistributed() {
   initialized = true;
 
 }
-

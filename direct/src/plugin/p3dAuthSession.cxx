@@ -30,11 +30,9 @@
 #include <unistd.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DAuthSession::
 P3DAuthSession(P3DInstance *inst) :
   _inst(inst)
@@ -83,11 +81,9 @@ P3DAuthSession(P3DInstance *inst) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DAuthSession::
 ~P3DAuthSession() {
   shutdown(false);
@@ -97,11 +93,9 @@ P3DAuthSession::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::shutdown
-//       Access: Public
-//  Description: Terminates the session by killing the subprocess.
-////////////////////////////////////////////////////////////////////
+/**
+ * Terminates the session by killing the subprocess.
+ */
 void P3DAuthSession::
 shutdown(bool send_message) {
   if (!send_message) {
@@ -142,12 +136,9 @@ shutdown(bool send_message) {
   _inst = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::start_p3dcert
-//       Access: Private
-//  Description: Starts the p3dcert program running in a child
-//               process.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the p3dcert program running in a child process.
+ */
 void P3DAuthSession::
 start_p3dcert() {
   if (_p3dcert_started) {
@@ -267,24 +258,19 @@ start_p3dcert() {
   spawn_wait_thread();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::spawn_wait_thread
-//       Access: Private
-//  Description: Starts the wait thread.  This thread is responsible
-//               for waiting for the process to finish, and notifying
-//               the instance when it does.
-////////////////////////////////////////////////////////////////////
+/**
+ * Starts the wait thread.  This thread is responsible for waiting for the
+ * process to finish, and notifying the instance when it does.
+ */
 void P3DAuthSession::
 spawn_wait_thread() {
   SPAWN_THREAD(_wait_thread, wt_thread_run, this);
   _started_wait_thread = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::join_wait_thread
-//       Access: Private
-//  Description: Waits for the wait thread to stop.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits for the wait thread to stop.
+ */
 void P3DAuthSession::
 join_wait_thread() {
   if (!_started_wait_thread) {
@@ -295,14 +281,10 @@ join_wait_thread() {
   _started_wait_thread = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::write_env
-//       Access: Private
-//  Description: Writes _env, which is formatted as a string
-//               containing zero-byte-terminated environment
-//               defintions, to the nout stream, one definition per
-//               line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes _env, which is formatted as a string containing zero-byte-terminated
+ * environment defintions, to the nout stream, one definition per line.
+ */
 void P3DAuthSession::
 write_env() const {
   size_t p = 0;
@@ -316,11 +298,9 @@ write_env() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::wt_thread_run
-//       Access: Private
-//  Description: The main function for the wait thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The main function for the wait thread.
+ */
 void P3DAuthSession::
 wt_thread_run() {
   // All we do here is wait for the process to terminate.
@@ -365,16 +345,11 @@ wt_thread_run() {
 }
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::win_create_process
-//       Access: Private
-//  Description: Creates a sub-process to run _p3dcert_exe, with
-//               the appropriate command-line arguments, and the
-//               environment string defined in _env.
-//
-//               Returns the handle to the created process on success,
-//               or INVALID_HANDLE_VALUE on falure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a sub-process to run _p3dcert_exe, with the appropriate command-line
+ * arguments, and the environment string defined in _env.  Returns the handle to
+ * the created process on success, or INVALID_HANDLE_VALUE on falure.
+ */
 HANDLE P3DAuthSession::
 win_create_process() {
   // Make sure we see an error dialog if there is a missing DLL.
@@ -430,16 +405,11 @@ win_create_process() {
 
 
 #ifndef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DAuthSession::posix_create_process
-//       Access: Private
-//  Description: Creates a sub-process to run _p3dcert_exe, with
-//               the appropriate command-line arguments, and the
-//               environment string defined in _env.
-//
-//               Returns the pid of the created process on success, or
-//               -1 on falure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a sub-process to run _p3dcert_exe, with the appropriate command-line
+ * arguments, and the environment string defined in _env.  Returns the pid of
+ * the created process on success, or -1 on falure.
+ */
 int P3DAuthSession::
 posix_create_process() {
   // Fork and exec.

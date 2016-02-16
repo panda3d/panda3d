@@ -45,7 +45,7 @@ DirectDClient::cli_command(const string& cmd) {
 void
 DirectDClient::run_client(const string& host, int port) {
   nout<<"client"<<endl;
-  
+
   connect_to(host, port);
 
   while (!cin.fail() && _connections.size()!=0) {
@@ -80,6 +80,6 @@ main(int argc, char *argv[]) {
   }
   DirectDClient directd;
   directd.run_client(host, port);
-  
+
   return 0;
 }

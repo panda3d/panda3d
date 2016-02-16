@@ -32,11 +32,9 @@
 
 TypeHandle PortalClipper::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PortalClipper::
 PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup):
 _reduced_viewport_min(-1,-1),
@@ -51,23 +49,18 @@ _clip_state(0)
   _scene_setup = scene_setup;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PortalClipper::
 ~PortalClipper() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::move_to
-//       Access: Public
-//  Description: Moves the pen to the given point without drawing a
-//               line.  When followed by draw_to(), this marks the
-//               first point of a line segment; when followed by
-//               move_to() or create(), this creates a single point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the pen to the given point without drawing a line.  When followed by
+ * draw_to(), this marks the first point of a line segment; when followed by
+ * move_to() or create(), this creates a single point.
+ */
 void PortalClipper::
 move_to(const LVecBase3 &v) {
   // We create a new SegmentList with the initial point in it.
@@ -78,15 +71,11 @@ move_to(const LVecBase3 &v) {
   _list.push_back(segs);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::draw_to
-//       Access: Public
-//  Description: Draws a line segment from the pen's last position
-//               (the last call to move_to or draw_to) to the
-//               indicated point.  move_to() and draw_to() only update
-//               tables; the actual drawing is performed when create()
-//               is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a line segment from the pen's last position (the last call to move_to
+ * or draw_to) to the indicated point.  move_to() and draw_to() only update
+ * tables; the actual drawing is performed when create() is called.
+ */
 void PortalClipper::
 draw_to(const LVecBase3 &v) {
   if (_list.empty()) {
@@ -103,12 +92,9 @@ draw_to(const LVecBase3 &v) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::draw a portal frustum
-//       Access: Public
-//  Description: Given the BoundingHexahedron draw it using lines
-//           
-////////////////////////////////////////////////////////////////////
+/**
+ * Given the BoundingHexahedron draw it using lines
+ */
 void PortalClipper::
 draw_hexahedron(BoundingHexahedron *frustum) {
   // walk the view frustum as it should be drawn
@@ -132,12 +118,9 @@ draw_hexahedron(BoundingHexahedron *frustum) {
   draw_to(frustum->get_point(6));
   draw_to(frustum->get_point(2));
 }
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::draw the current visible portal
-//       Access: Public
-//  Description: _portal_node is the current portal, draw it.
-//           
-////////////////////////////////////////////////////////////////////
+/**
+ * _portal_node is the current portal, draw it.
+ */
 void PortalClipper::
 draw_current_portal()
 {
@@ -147,35 +130,31 @@ draw_current_portal()
   draw_to(_portal_node->get_vertex(3));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::draw the lines
-//       Access: Public
-//  Description: Draw all the lines in the buffer
-//               Cyan portal is the original geometry of the portal
-//               Yellow portal is the AA minmax & clipped portal
-//               Blue frustum is the frustum through portal
-//               White frustum is the camera frustum
-////////////////////////////////////////////////////////////////////
+/**
+ * Draw all the lines in the buffer Cyan portal is the original geometry of the
+ * portal Yellow portal is the AA minmax & clipped portal Blue frustum is the
+ * frustum through portal White frustum is the camera frustum
+ */
 void PortalClipper::
 draw_lines() {
   if (!_list.empty()) {
     _created_data = NULL;
-      
+
     PT(GeomVertexData) vdata = new GeomVertexData
       ("portal", GeomVertexFormat::get_v3cp(), Geom::UH_static);
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
     GeomVertexWriter color(vdata, InternalName::get_color());
-    
+
     PT(GeomLinestrips) lines = new GeomLinestrips(Geom::UH_static);
     PT(GeomPoints) points = new GeomPoints(Geom::UH_static);
-    
+
     int v = 0;
     LineList::const_iterator ll;
     SegmentList::const_iterator sl;
-    
+
     for (ll = _list.begin(); ll != _list.end(); ll++) {
       const SegmentList &segs = (*ll);
-      
+
       if (segs.size() < 2) {
         // A segment of length 1 is just a point.
         for (sl = segs.begin(); sl != segs.end(); sl++) {
@@ -185,7 +164,7 @@ draw_lines() {
           v++;
         }
         points->close_primitive();
-        
+
       } else {
         // A segment of length 2 or more is a line segment or
         // segments.
@@ -211,23 +190,21 @@ draw_lines() {
     }
   }
 }
-////////////////////////////////////////////////////////////////////
-//     Function: PortalClipper::prepare the portal
-//       Access: Public
-//  Description: Given the portal draw the frustum with line segs
-//               for now. More functionalities coming up
-////////////////////////////////////////////////////////////////////
+/**
+ * Given the portal draw the frustum with line segs for now.  More
+ * functionalities coming up
+ */
 bool PortalClipper::
 prepare_portal(const NodePath &node_path)
 {
   // Get the Portal Node from this node_path
   PandaNode *node = node_path.node();
   _portal_node = NULL;
-  if (node->is_of_type(PortalNode::get_class_type())) {  
+  if (node->is_of_type(PortalNode::get_class_type())) {
     _portal_node = DCAST(PortalNode, node);
   }
 
-  // Get the geometry from the portal    
+  // Get the geometry from the portal
   portal_cat.spam() << *_portal_node << endl;
 
   // Get the camera transformation matrix
@@ -235,7 +212,7 @@ prepare_portal(const NodePath &node_path)
   //CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_camera_path());
   LMatrix4 cmat = ctransform->get_mat();
   portal_cat.spam() << cmat << endl;
- 
+
   LVertex temp[4];
   temp[0] = _portal_node->get_vertex(0);
   temp[1] = _portal_node->get_vertex(1);
@@ -247,7 +224,7 @@ prepare_portal(const NodePath &node_path)
   portal_cat.spam() << temp[1] << endl;
   portal_cat.spam() << temp[2] << endl;
   portal_cat.spam() << temp[3] << endl;
-  
+
   temp[0] = temp[0]*cmat;
   temp[1] = temp[1]*cmat;
   temp[2] = temp[2]*cmat;
@@ -287,7 +264,7 @@ prepare_portal(const NodePath &node_path)
     portal_cat.debug() << "portal intersects with center of projection.." << endl;
     return true;
   }
-  
+
   // project portal points, so they are in the -1..1 range
   LPoint3 projected_coords[4];
   lens->project(temp[0], projected_coords[0]);
@@ -336,7 +313,7 @@ prepare_portal(const NodePath &node_path)
   lens->extrude(LPoint2(min_x, max_y), near_point[3], far_point[3]);
 
   // With these points, construct the new reduced frustum
-  _reduced_frustum = new BoundingHexahedron(far_point[0], far_point[1], far_point[2], far_point[3],  
+  _reduced_frustum = new BoundingHexahedron(far_point[0], far_point[1], far_point[2], far_point[3],
                                             near_point[0], near_point[1], near_point[2], near_point[3]);
 
   portal_cat.debug() << *_reduced_frustum << endl;
@@ -349,13 +326,13 @@ prepare_portal(const NodePath &node_path)
 
     // lets first add the clipped portal (in yellow)
     _color = LColor(1,1,0,1);
-    move_to((near_point[0]*0.99+far_point[0]*0.01)); // I choose a point in the middle between near and far.. could also be some other z value.. 
+    move_to((near_point[0]*0.99+far_point[0]*0.01)); // I choose a point in the middle between near and far.. could also be some other z value..
     draw_to((near_point[1]*0.99+far_point[1]*0.01));
     draw_to((near_point[2]*0.99+far_point[2]*0.01));
     draw_to((near_point[3]*0.99+far_point[3]*0.01));
     draw_to((near_point[0]*0.99+far_point[0]*0.01));
 
-    // ok, now lets add the original portal (in cyan) 
+    // ok, now lets add the original portal (in cyan)
     _color = LColor(0,1,1,1);
     move_to(temp[0]);
     draw_to(temp[1]);
@@ -366,4 +343,3 @@ prepare_portal(const NodePath &node_path)
 
   return true;
 }
-

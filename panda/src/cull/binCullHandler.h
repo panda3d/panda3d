@@ -19,18 +19,16 @@
 #include "cullResult.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BinCullHandler
-// Description : This CullHandler sends all of the geoms it receives
-//               into a CullResult object, for binning (and later
-//               drawing).  This is the kind of CullHandler to use for
-//               most normal rendering needs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This CullHandler sends all of the geoms it receives into a CullResult object,
+ * for binning (and later drawing).  This is the kind of CullHandler to use for
+ * most normal rendering needs.
+ */
 class EXPCL_PANDA_CULL BinCullHandler : public CullHandler {
 public:
   INLINE BinCullHandler(CullResult *cull_result);
 
-  virtual void record_object(CullableObject *object, 
+  virtual void record_object(CullableObject *object,
                              const CullTraverser *traverser);
 
 private:
@@ -40,6 +38,3 @@ private:
 #include "binCullHandler.I"
 
 #endif
-
-
-  

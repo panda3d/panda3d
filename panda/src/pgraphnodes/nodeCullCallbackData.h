@@ -19,12 +19,10 @@
 #include "cullTraverser.h"
 #include "cullTraverserData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NodeCullCallbackData
-// Description : This kind of CallbackData is passed to the
-//               CallbackObject added to
-//               CallbackNode:set_cull_callback().
-////////////////////////////////////////////////////////////////////
+/**
+ * This kind of CallbackData is passed to the CallbackObject added to
+ * CallbackNode:set_cull_callback().
+ */
 class EXPCL_PANDA_PGRAPHNODES NodeCullCallbackData : public CallbackData {
 public:
   INLINE NodeCullCallbackData(CullTraverser *trav, CullTraverserData &data);

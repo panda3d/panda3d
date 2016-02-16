@@ -11,10 +11,9 @@
  * @date 2000-07-31
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_coef
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void LinearFrictionForce::
 set_coef(PN_stdfloat coef) {
   // friction shouldn't be outside of [0, 1]
@@ -26,10 +25,9 @@ set_coef(PN_stdfloat coef) {
   _coef = coef;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_coef
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat LinearFrictionForce::
 get_coef() const {
   return _coef;

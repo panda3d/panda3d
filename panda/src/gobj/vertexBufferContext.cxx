@@ -16,21 +16,17 @@
 
 TypeHandle VertexBufferContext::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VertexBufferContext::
 output(ostream &out) const {
   out << *get_data() << ", " << get_data_size_bytes();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexBufferContext::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void VertexBufferContext::
 write(ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);

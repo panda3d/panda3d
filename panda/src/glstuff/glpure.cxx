@@ -21,4 +21,3 @@
 __declspec(dllexport)
 #endif
 int glpure;
-

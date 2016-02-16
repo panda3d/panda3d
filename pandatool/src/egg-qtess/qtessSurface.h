@@ -24,12 +24,10 @@
 #include "referenceCount.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : QtessSurface
-// Description : A reference to an EggNurbsSurface in the egg file,
-//               and its parameters as set by the user input file and
-//               as computed in relation to the other surfaces.
-////////////////////////////////////////////////////////////////////
+/**
+ * A reference to an EggNurbsSurface in the egg file, and its parameters as set
+ * by the user input file and as computed in relation to the other surfaces.
+ */
 class QtessSurface : public ReferenceCount {
 public:
   QtessSurface(EggNurbsSurface *egg_surface);
@@ -47,7 +45,7 @@ public:
   INLINE int count_tris() const;
 
   double get_score(double ratio);
-  
+
   int tesselate();
   int write_qtess_parameter(ostream &out);
   void omit();
@@ -114,4 +112,3 @@ private:
 #include "qtessSurface.I"
 
 #endif
-

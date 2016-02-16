@@ -18,13 +18,11 @@
 
 #include "iffChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoChunk
-// Description : A specialization of IffChunk for Lightwave Object
-//               files.  Each kind of chunk that is specific to a
-//               Lightwave file should inherit directly or indirectly
-//               from LwoChunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization of IffChunk for Lightwave Object files.  Each kind of chunk
+ * that is specific to a Lightwave file should inherit directly or indirectly
+ * from LwoChunk.
+ */
 class LwoChunk : public IffChunk {
 public:
   // No particular interface here.
@@ -48,5 +46,3 @@ private:
 };
 
 #endif
-
-

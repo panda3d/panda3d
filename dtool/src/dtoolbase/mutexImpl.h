@@ -64,6 +64,3 @@ typedef MutexPosixImpl TrueMutexImpl;
 #endif
 
 #endif
-
-
-

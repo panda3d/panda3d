@@ -19,11 +19,9 @@
 #include "config_lwo.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LwoToEgg::
 LwoToEgg() :
   SomethingToEgg("Lightwave", ".lwo")
@@ -56,11 +54,9 @@ LwoToEgg() :
   _coordinate_system = CS_yup_left;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LwoToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void LwoToEgg::
 run() {
   _data->set_coordinate_system(_coordinate_system);

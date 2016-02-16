@@ -20,12 +20,10 @@
 
 class PandaIOSystem;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaIOStream
-// Description : Custom implementation of Assimp::IOStream.  It
-//               simply wraps around an istream object, and is
-//               unable to write.
-////////////////////////////////////////////////////////////////////
+/**
+ * Custom implementation of Assimp::IOStream.  It simply wraps around an istream
+ * object, and is unable to write.
+ */
 class PandaIOStream : public Assimp::IOStream {
 public:
   PandaIOStream(istream &stream);

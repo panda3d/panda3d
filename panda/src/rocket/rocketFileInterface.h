@@ -20,11 +20,10 @@
 
 class VirtualFileSystem;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RocketFileInterface
-// Description : Implementation of FileInterface to allow libRocket
-//               to read files from the virtual file system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implementation of FileInterface to allow libRocket to read files from the
+ * virtual file system.
+ */
 class RocketFileInterface : public Rocket::Core::FileInterface {
 public:
   RocketFileInterface(VirtualFileSystem *vfs = NULL);

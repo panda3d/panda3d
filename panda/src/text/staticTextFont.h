@@ -29,14 +29,12 @@
 class Node;
 class GeomPoint;
 
-////////////////////////////////////////////////////////////////////
-//       Class : StaticTextFont
-// Description : A StaticTextFont is loaded up from a model that was
-//               previously generated via egg-mkfont, and contains all
-//               of its glyphs already generated and available for
-//               use.  It doesn't require linking with any external
-//               libraries like FreeType.
-////////////////////////////////////////////////////////////////////
+/**
+ * A StaticTextFont is loaded up from a model that was previously generated via
+ * egg-mkfont, and contains all of its glyphs already generated and available
+ * for use.  It doesn't require linking with any external libraries like
+ * FreeType.
+ */
 class EXPCL_PANDA_TEXT StaticTextFont : public TextFont {
 PUBLISHED:
   StaticTextFont(PandaNode *font_def, CoordinateSystem cs = CS_default);

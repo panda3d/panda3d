@@ -11,24 +11,19 @@
  * @date 2010-03-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyWorldInfo::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletSoftBodyWorldInfo::
 ~BulletSoftBodyWorldInfo() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyWorldInfo::get_info
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE btSoftBodyWorldInfo &BulletSoftBodyWorldInfo::
 get_info() const {
 
   return _info;
 }
-

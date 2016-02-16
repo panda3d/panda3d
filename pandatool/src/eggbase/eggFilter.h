@@ -19,12 +19,10 @@
 #include "eggReader.h"
 #include "eggWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggFilter
-// Description : This is the base class for a program that reads an
-//               egg file, operates on it, and writes another egg file
-//               out.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a program that reads an egg file, operates on it,
+ * and writes another egg file out.
+ */
 class EggFilter : public EggReader, public EggWriter {
 public:
   EggFilter(bool allow_last_param = false, bool allow_stdout = true);
@@ -35,5 +33,3 @@ protected:
 };
 
 #endif
-
-

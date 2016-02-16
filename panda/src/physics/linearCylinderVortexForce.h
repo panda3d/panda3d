@@ -16,16 +16,13 @@
 
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearCylinderVortexForce
-// Description : Defines a cylinder inside of which all forces are
-//               tangential to the theta of the particle wrt the
-//               z-axis in local coord. space.  This happens by
-//               assigning the force a node by which the cylinder is
-//               transformed.  Be warned- this will suck anything
-//               that it can reach directly into orbit and will NOT
-//               let go.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a cylinder inside of which all forces are tangential to the theta of
+ * the particle wrt the z-axis in local coord.  space.  This happens by
+ * assigning the force a node by which the cylinder is transformed.  Be warned-
+ * this will suck anything that it can reach directly into orbit and will NOT
+ * let go.
+ */
 class EXPCL_PANDAPHYSICS LinearCylinderVortexForce : public LinearForce {
 PUBLISHED:
   LinearCylinderVortexForce(PN_stdfloat radius = 1.0f,
@@ -44,7 +41,7 @@ PUBLISHED:
 
   INLINE void set_length(PN_stdfloat length);
   INLINE PN_stdfloat get_length() const;
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

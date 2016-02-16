@@ -17,43 +17,34 @@
 
 TypeHandle FltTransformGeneralMatrix::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformGeneralMatrix::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltTransformGeneralMatrix::
 FltTransformGeneralMatrix(FltHeader *header) : FltTransformRecord(header) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformGeneralMatrix::set_matrix
-//       Access: Public
-//  Description: Directly sets the general matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Directly sets the general matrix.
+ */
 void FltTransformGeneralMatrix::
 set_matrix(const LMatrix4d &matrix) {
   _matrix = matrix;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformGeneralMatrix::set_matrix
-//       Access: Public
-//  Description: Directly sets the general matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Directly sets the general matrix.
+ */
 void FltTransformGeneralMatrix::
 set_matrix(const LMatrix4f &matrix) {
   _matrix = LCAST(double, matrix);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformGeneralMatrix::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltTransformGeneralMatrix::
 extract_record(FltRecordReader &reader) {
   if (!FltTransformRecord::extract_record(reader)) {
@@ -73,14 +64,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformGeneralMatrix::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltTransformGeneralMatrix::
 build_record(FltRecordWriter &writer) const {
   if (!FltTransformRecord::build_record(writer)) {

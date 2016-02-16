@@ -22,12 +22,10 @@
 #include "typedWritable.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<TypedWritable>
-// Description : This class defines the extension methods for
-//               StreamReader, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for StreamReader, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<TypedWritable> : public ExtensionBase<TypedWritable> {
 public:

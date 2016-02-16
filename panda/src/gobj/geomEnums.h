@@ -16,13 +16,11 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomEnums
-// Description : This class exists just to provide scoping for the
-//               various enumerated types used by Geom,
-//               GeomVertexData, GeomVertexArrayData, GeomPrimitive,
-//               and other related classes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class exists just to provide scoping for the various enumerated types
+ * used by Geom, GeomVertexData, GeomVertexArrayData, GeomPrimitive, and other
+ * related classes.
+ */
 class EXPCL_PANDA_GOBJ GeomEnums {
 PUBLISHED:
 

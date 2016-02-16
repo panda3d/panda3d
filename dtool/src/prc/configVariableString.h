@@ -17,11 +17,9 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableString
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a string type.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a string type.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableString : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableString(const string &name);

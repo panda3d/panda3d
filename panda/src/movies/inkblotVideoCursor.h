@@ -20,21 +20,19 @@
 #include "inkblotVideo.h"
 #include "movieVideoCursor.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : InkblotVideoCursor
-// Description : A cellular automaton that generates an amusing
-//               pattern of swirling colors.
-////////////////////////////////////////////////////////////////////
+/**
+ * A cellular automaton that generates an amusing pattern of swirling colors.
+ */
 class EXPCL_PANDA_MOVIES InkblotVideoCursor : public MovieVideoCursor {
 
  PUBLISHED:
   InkblotVideoCursor(InkblotVideo *src);
   virtual ~InkblotVideoCursor();
-  
+
  public:
   virtual bool set_time(double time, int loop_count);
   virtual PT(Buffer) fetch_buffer();
-  
+
  protected:
   int _current_frame;
   int _last_frame;

@@ -22,11 +22,9 @@
 
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltVertexList
-// Description : A list of vertices, typically added as a child of a
-//               face bead.
-////////////////////////////////////////////////////////////////////
+/**
+ * A list of vertices, typically added as a child of a face bead.
+ */
 class FltVertexList : public FltRecord {
 public:
   FltVertexList(FltHeader *header);
@@ -65,5 +63,3 @@ private:
 };
 
 #endif
-
-

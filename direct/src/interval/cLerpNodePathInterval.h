@@ -19,14 +19,13 @@
 #include "nodePath.h"
 #include "textureStage.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLerpNodePathInterval
-// Description : An interval that lerps one or more properties (like
-//               pos, hpr, etc.) on a NodePath over time.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interval that lerps one or more properties (like pos, hpr, etc.) on a
+ * NodePath over time.
+ */
 class EXPCL_DIRECT CLerpNodePathInterval : public CLerpInterval {
 PUBLISHED:
-  CLerpNodePathInterval(const string &name, double duration, 
+  CLerpNodePathInterval(const string &name, double duration,
                         BlendType blend_type, bool bake_in_start,
                         bool fluid,
                         const NodePath &node, const NodePath &other);
@@ -102,10 +101,10 @@ private:
 
     F_fluid              = 0x10000000,
     F_bake_in_start      = 0x20000000,
-    
+
     F_slerp_setup        = 0x40000000,
   };
-  
+
   unsigned int _flags;
   LPoint3 _start_pos, _end_pos;
   LVecBase3 _start_hpr, _end_hpr;
@@ -131,7 +130,7 @@ private:
 
   // Define a pointer to one of the above three methods.
   void (CLerpNodePathInterval::*_slerp)(LQuaternion &result, PN_stdfloat t) const;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -153,4 +152,3 @@ private:
 #include "cLerpNodePathInterval.I"
 
 #endif
-

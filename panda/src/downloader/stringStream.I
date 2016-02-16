@@ -11,53 +11,41 @@
  * @date 2007-07-03
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE StringStream::
 StringStream() : iostream(&_buf) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::Constructor
-//       Access: Published
-//  Description: This version of the constructor preloads the buffer
-//               with the indicated data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This version of the constructor preloads the buffer with the indicated data.
+ */
 INLINE StringStream::
 StringStream(const string &source) : iostream(&_buf) {
   set_data(source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::clear_data
-//       Access: Published
-//  Description: Empties the buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the buffer.
+ */
 INLINE void StringStream::
 clear_data() {
   _buf.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::get_data_size
-//       Access: Published
-//  Description: Returns the number of characters available to be read
-//               from the data stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of characters available to be read from the data stream.
+ */
 INLINE size_t StringStream::
 get_data_size() {
   flush();
   return _buf.get_data().size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::get_data
-//       Access: Published
-//  Description: Returns the contents of the data stream as a string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the contents of the data stream as a string.
+ */
 INLINE string StringStream::
 get_data() {
   flush();
@@ -68,12 +56,9 @@ get_data() {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::set_data
-//       Access: Published
-//  Description: Replaces the contents of the data stream.  This
-//               implicitly reseeks to 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the contents of the data stream.  This implicitly reseeks to 0.
+ */
 INLINE void StringStream::
 set_data(const string &data) {
   _buf.clear();
@@ -82,12 +67,9 @@ set_data(const string &data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::swap_data
-//       Access: Published
-//  Description: Swaps the indicated buffer for the contents of the
-//               internal buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Swaps the indicated buffer for the contents of the internal buffer.
+ */
 INLINE void StringStream::
 swap_data(vector_uchar &data) {
   flush();

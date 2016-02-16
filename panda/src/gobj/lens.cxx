@@ -26,21 +26,17 @@
 TypeHandle Lens::_type_handle;
 TypeHandle Lens::CData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Lens::
 Lens() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Lens::
 Lens(const Lens &copy) : _cycler(copy._cycler) {
   // We don't copy the _geom_data.  That's unique to each Lens.
@@ -48,11 +44,9 @@ Lens(const Lens &copy) : _cycler(copy._cycler) {
   cdata->_geom_data = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 operator = (const Lens &copy) {
   _cycler = copy._cycler;
@@ -62,13 +56,10 @@ operator = (const Lens &copy) {
   cdata->_geom_data = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::set_coordinate_system
-//       Access: Published
-//  Description: Specifies the coordinate system that all 3-d
-//               computations are performed within for this
-//               Lens.  Normally, this is CS_default.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the coordinate system that all 3-d computations are performed
+ * within for this Lens.  Normally, this is CS_default.
+ */
 void Lens::
 set_coordinate_system(CoordinateSystem cs) {
   CDWriter cdata(_cycler, true);
@@ -77,12 +68,9 @@ set_coordinate_system(CoordinateSystem cs) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::clear
-//       Access: Published
-//  Description: Resets all lens parameters to their initial default
-//               settings.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all lens parameters to their initial default settings.
+ */
 void Lens::
 clear() {
   CDWriter cdata(_cycler, true);
@@ -93,21 +81,15 @@ clear() {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::set_min_fov
-//       Access: Published
-//  Description: Sets the field of view of the smallest dimension of
-//               the window.  If the window is wider than it is tall,
-//               this specifies the vertical field of view; if it is
-//               taller than it is wide, this specifies the horizontal
-//               field of view.
-//
-//               In many cases, this is preferable to setting either
-//               the horizontal or vertical field of view explicitly.
-//               Setting this parameter means that pulling the window
-//               wider will widen the field of view, which is usually
-//               what you expect to happen.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the field of view of the smallest dimension of the window.  If the
+ * window is wider than it is tall, this specifies the vertical field of view;
+ * if it is taller than it is wide, this specifies the horizontal field of view.
+ * In many cases, this is preferable to setting either the horizontal or
+ * vertical field of view explicitly.  Setting this parameter means that pulling
+ * the window wider will widen the field of view, which is usually what you
+ * expect to happen.
+ */
 void Lens::
 set_min_fov(PN_stdfloat min_fov) {
   nassertv(!cnan(min_fov));
@@ -139,12 +121,10 @@ set_min_fov(PN_stdfloat min_fov) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_min_fov
-//       Access: Published
-//  Description: Returns the field of view of the narrowest dimension
-//               of the window.  See set_min_fov().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the field of view of the narrowest dimension of the window.  See
+ * set_min_fov().
+ */
 PN_stdfloat Lens::
 get_min_fov() const {
   CDReader cdata(_cycler);
@@ -154,41 +134,31 @@ get_min_fov() const {
   }
   return cdata->_min_fov;
 }
-                
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_default_near
-//       Access: Published, Static
-//  Description: Returns the default near plane distance that will be
-//               assigned to each newly-created lens.  This is read
-//               from the Configrc file.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Returns the default near plane distance that will be assigned to each newly-
+ * created lens.  This is read from the Configrc file.
+ */
 PN_stdfloat Lens::
 get_default_near() {
   return default_near;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_default_far
-//       Access: Published, Static
-//  Description: Returns the default far plane distance that will be
-//               assigned to each newly-created lens.  This is read
-//               from the Configrc file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default far plane distance that will be assigned to each newly-
+ * created lens.  This is read from the Configrc file.
+ */
 PN_stdfloat Lens::
 get_default_far() {
   return default_far;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::set_view_hpr
-//       Access: Published
-//  Description: Sets the direction in which the lens is facing.
-//               Normally, this is down the forward axis (usually the
-//               Y axis), but it may be rotated.  This is only one way
-//               of specifying the rotation; you may also specify an
-//               explicit vector in which to look, or you may give a
-//               complete transformation matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the direction in which the lens is facing.  Normally, this is down the
+ * forward axis (usually the Y axis), but it may be rotated.  This is only one
+ * way of specifying the rotation; you may also specify an explicit vector in
+ * which to look, or you may give a complete transformation matrix.
+ */
 void Lens::
 set_view_hpr(const LVecBase3 &view_hpr) {
   nassertv(!view_hpr.is_nan());
@@ -201,11 +171,9 @@ set_view_hpr(const LVecBase3 &view_hpr) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_view_hpr
-//       Access: Published
-//  Description: Returns the direction in which the lens is facing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the direction in which the lens is facing.
+ */
 const LVecBase3 &Lens::
 get_view_hpr() const {
   CDReader cdata(_cycler);
@@ -215,15 +183,11 @@ get_view_hpr() const {
   return cdata->_view_hpr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::set_view_vector
-//       Access: Published
-//  Description: Specifies the direction in which the lens is facing
-//               by giving an axis to look along, and a perpendicular
-//               (or at least non-parallel) up axis.
-//
-//               See also set_view_hpr().
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the direction in which the lens is facing by giving an axis to look
+ * along, and a perpendicular (or at least non-parallel) up axis.  See also
+ * set_view_hpr().
+ */
 void Lens::
 set_view_vector(const LVector3 &view_vector, const LVector3 &up_vector) {
   nassertv(!view_vector.is_nan());
@@ -237,11 +201,9 @@ set_view_vector(const LVector3 &view_vector, const LVector3 &up_vector) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_view_vector
-//       Access: Published
-//  Description: Returns the axis along which the lens is facing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the axis along which the lens is facing.
+ */
 const LVector3 &Lens::
 get_view_vector() const {
   CDReader cdata(_cycler);
@@ -251,12 +213,10 @@ get_view_vector() const {
   return cdata->_view_vector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_up_vector
-//       Access: Published
-//  Description: Returns the axis perpendicular to the camera's view
-//               vector that indicates the "up" direction.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the axis perpendicular to the camera's view vector that indicates the
+ * "up" direction.
+ */
 const LVector3 &Lens::
 get_up_vector() const {
   CDReader cdata(_cycler);
@@ -266,51 +226,40 @@ get_up_vector() const {
   return cdata->_up_vector;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_nodal_point
-//       Access: Published
-//  Description: Returns the center point of the lens: the point from
-//               which the lens is viewing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the center point of the lens: the point from which the lens is
+ * viewing.
+ */
 LPoint3 Lens::
 get_nodal_point() const {
   return get_view_mat().get_row3(3);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::clear_view_mat
-//       Access: Published
-//  Description: Resets the lens transform to identity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the lens transform to identity.
+ */
 void Lens::
 clear_view_mat() {
   CDWriter cdata(_cycler, true);
   cdata->_lens_mat = LMatrix4::ident_mat();
   do_adjust_user_flags(cdata, 0, UF_view_vector | UF_view_hpr | UF_view_mat);
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv | 
-                       CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv |
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv |
                        CF_lens_mat_inv | CF_view_hpr | CF_view_vector,
                        CF_lens_mat);
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::set_keystone
-//       Access: Published
-//  Description: Indicates the ratio of keystone correction to perform
-//               on the lens, in each of three axes.  This will build
-//               a special non-affine scale factor into the projection
-//               matrix that will compensate for keystoning of a
-//               projected image; this can be used to compensate for a
-//               projector that for physical reasons cannot be aimed
-//               directly at its screen.  
-//
-//               The default value is taken from the default-keystone
-//               Config variable.  0, 0 indicates no keystone
-//               correction; specify a small value (usually in the
-//               range -1 .. 1) in either the x or y position to
-//               generate a keystone correction in that axis.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the ratio of keystone correction to perform on the lens, in each of
+ * three axes.  This will build a special non-affine scale factor into the
+ * projection matrix that will compensate for keystoning of a projected image;
+ * this can be used to compensate for a projector that for physical reasons
+ * cannot be aimed directly at its screen.  The default value is taken from the
+ * default-keystone Config variable.  0, 0 indicates no keystone correction;
+ * specify a small value (usually in the range -1 .. 1) in either the x or y
+ * position to generate a keystone correction in that axis.
+ */
 void Lens::
 set_keystone(const LVecBase2 &keystone) {
   nassertv(!keystone.is_nan());
@@ -318,39 +267,33 @@ set_keystone(const LVecBase2 &keystone) {
   cdata->_keystone = keystone;
   do_adjust_user_flags(cdata, 0, UF_keystone);
   do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv |
-                       CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv |
                        CF_film_mat | CF_film_mat_inv, 0);
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::clear_keystone
-//       Access: Published
-//  Description: Disables the lens keystone correction.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables the lens keystone correction.
+ */
 void Lens::
 clear_keystone() {
   CDWriter cdata(_cycler, true);
   cdata->_keystone.set(0.0f, 0.0f);
   do_adjust_user_flags(cdata, UF_keystone, 0);
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv | 
-                       CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv |
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv |
                        CF_film_mat | CF_film_mat_inv, 0);
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::set_custom_film_mat
-//       Access: Published
-//  Description: Specifies a custom matrix to transform the points on
-//               the film after they have been converted into nominal
-//               film space (-1 .. 1 in U and V).  This can be used to
-//               introduce arbitrary scales, rotations, or other
-//               linear transforms to the media plane.  This is
-//               normally a 2-d matrix, but a full 4x4 matrix may be
-//               specified.  This is applied on top of any film size,
-//               lens shift, and/or keystone correction.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies a custom matrix to transform the points on the film after they have
+ * been converted into nominal film space (-1 .. 1 in U and V).  This can be
+ * used to introduce arbitrary scales, rotations, or other linear transforms to
+ * the media plane.  This is normally a 2-d matrix, but a full 4x4 matrix may be
+ * specified.  This is applied on top of any film size, lens shift, and/or
+ * keystone correction.
+ */
 void Lens::
 set_custom_film_mat(const LMatrix4 &custom_film_mat) {
   nassertv(!custom_film_mat.is_nan());
@@ -358,86 +301,55 @@ set_custom_film_mat(const LMatrix4 &custom_film_mat) {
   cdata->_custom_film_mat = custom_film_mat;
   do_adjust_user_flags(cdata, 0, UF_custom_film_mat);
   do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv |
-                       CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv |
                        CF_film_mat | CF_film_mat_inv, 0);
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::clear_custom_film_mat
-//       Access: Published
-//  Description: Disables the lens custom_film_mat correction.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables the lens custom_film_mat correction.
+ */
 void Lens::
 clear_custom_film_mat() {
   CDWriter cdata(_cycler, true);
   cdata->_custom_film_mat = LMatrix4::ident_mat();
   do_adjust_user_flags(cdata, UF_custom_film_mat, 0);
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv | 
-                       CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv |
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv |
                        CF_film_mat | CF_film_mat_inv, 0);
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::set_frustum_from_corners
-//       Access: Published
-//  Description: Sets up the lens to use the frustum defined by the
-//               four indicated points.  This is most useful for a
-//               PerspectiveLens, but it may be called for other kinds
-//               of lenses as well.
-//
-//               The frustum will be rooted at the origin (or by
-//               whatever translation might have been specified in a
-//               previous call to set_view_mat).
-//
-//               It is legal for the four points not to be arranged in
-//               a rectangle; if this is the case, the frustum will be
-//               fitted as tightly as possible to cover all four
-//               points.
-//
-//               The flags parameter contains the union of one or more
-//               of the following bits to control the behavior of this
-//               function:
-//
-//               FC_roll - If this is included, the camera may be
-//               rotated so that its up vector is perpendicular to the
-//               top line.  Otherwise, the standard up vector is used.
-//
-//               FC_camera_plane - This allows the camera plane to be
-//               adjusted to be as nearly perpendicular to the center
-//               of the frustum as possible.  Without this bit, the
-//               orientation camera plane is defined by position of
-//               the four points (which should all be coplanar).  With
-//               this bit, the camera plane is arbitarary, and may be
-//               chosen so that the four points do not themselves lie
-//               in the camera plane (but the points will still be
-//               within the frustum).
-//
-//               FC_off_axis - This allows the resulting frustum to be
-//               off-axis to get the tightest possible fit.  Without
-//               this bit, the viewing axis will be centered within
-//               the frustum, but there may be more wasted space along
-//               the edges.
-//
-//               FC_aspect_ratio - This allows the frustum to be
-//               scaled non-proportionately in the vertical and
-//               horizontal dimensions, if necessary, to get a tighter
-//               fit.  Without this bit, the current aspect ratio will
-//               be preserved.
-//
-//               FC_shear - This allows the frustum to be sheared, if
-//               necessary, to get the tightest possible fit.  This
-//               may result in a parallelogram-based frustum, which
-//               will give a slanted appearance to the rendered image.
-//               Without this bit, the frustum will be
-//               rectangle-based.
-//
-//               In general, if 0 is passed in as the value for flags,
-//               the generated frustum will be a loose fit but sane;
-//               if -1 is passed in, it will be a tighter fit and
-//               possibly screwy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the lens to use the frustum defined by the four indicated points.
+ * This is most useful for a PerspectiveLens, but it may be called for other
+ * kinds of lenses as well.  The frustum will be rooted at the origin (or by
+ * whatever translation might have been specified in a previous call to
+ * set_view_mat).  It is legal for the four points not to be arranged in a
+ * rectangle; if this is the case, the frustum will be fitted as tightly as
+ * possible to cover all four points.  The flags parameter contains the union of
+ * one or more of the following bits to control the behavior of this function:
+ * FC_roll - If this is included, the camera may be rotated so that its up
+ * vector is perpendicular to the top line.  Otherwise, the standard up vector
+ * is used.  FC_camera_plane - This allows the camera plane to be adjusted to be
+ * as nearly perpendicular to the center of the frustum as possible.  Without
+ * this bit, the orientation camera plane is defined by position of the four
+ * points (which should all be coplanar).  With this bit, the camera plane is
+ * arbitarary, and may be chosen so that the four points do not themselves lie
+ * in the camera plane (but the points will still be within the frustum).
+ * FC_off_axis - This allows the resulting frustum to be off-axis to get the
+ * tightest possible fit.  Without this bit, the viewing axis will be centered
+ * within the frustum, but there may be more wasted space along the edges.
+ * FC_aspect_ratio - This allows the frustum to be scaled non-proportionately in
+ * the vertical and horizontal dimensions, if necessary, to get a tighter fit.
+ * Without this bit, the current aspect ratio will be preserved.  FC_shear -
+ * This allows the frustum to be sheared, if necessary, to get the tightest
+ * possible fit.  This may result in a parallelogram-based frustum, which will
+ * give a slanted appearance to the rendered image.  Without this bit, the
+ * frustum will be rectangle-based.  In general, if 0 is passed in as the value
+ * for flags, the generated frustum will be a loose fit but sane; if -1 is
+ * passed in, it will be a tighter fit and possibly screwy.
+ */
 void Lens::
 set_frustum_from_corners(const LVecBase3 &ul, const LVecBase3 &ur,
                          const LVecBase3 &ll, const LVecBase3 &lr,
@@ -506,7 +418,7 @@ set_frustum_from_corners(const LVecBase3 &ul, const LVecBase3 &ur,
   if ((flags & FC_shear) != 0) {
     build_shear_mat(shear_mat, cul, cur, cll, clr);
     inv_shear_mat.invert_from(shear_mat);
-  } 
+  }
 
   // Now build the complete view matrix.
   LMatrix4 inv_view_mat =
@@ -589,65 +501,49 @@ set_frustum_from_corners(const LVecBase3 &ul, const LVecBase3 &ur,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::recompute_all
-//       Access: Published
-//  Description: Forces all internal parameters of the Lens to be
-//               recomputed.  Normally, this should never need to be
-//               called; it is provided only to assist in debugging.
-////////////////////////////////////////////////////////////////////
+/**
+ * Forces all internal parameters of the Lens to be recomputed.  Normally, this
+ * should never need to be called; it is provided only to assist in debugging.
+ */
 void Lens::
 recompute_all() {
   CDWriter cdata(_cycler);
   cdata->_comp_flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::is_linear
-//       Access: Published, Virtual
-//  Description: Returns true if the lens represents a linear
-//               projection (e.g. PerspectiveLens, OrthographicLens),
-//               and therefore there is a valid matrix returned by
-//               get_projection_mat(), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the lens represents a linear projection (e.g.
+ * PerspectiveLens, OrthographicLens), and therefore there is a valid matrix
+ * returned by get_projection_mat(), or false otherwise.
+ */
 bool Lens::
 is_linear() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::is_perspective
-//       Access: Published, Virtual
-//  Description: Returns true if the lens represents a perspective
-//               projection (i.e. it is a PerspectiveLens), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the lens represents a perspective projection (i.e.  it is a
+ * PerspectiveLens), false otherwise.
+ */
 bool Lens::
 is_perspective() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::is_orthographic
-//       Access: Published, Virtual
-//  Description: Returns true if the lens represents a orthographic
-//               projection (i.e. it is a OrthographicLens), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the lens represents a orthographic projection (i.e.  it is a
+ * OrthographicLens), false otherwise.
+ */
 bool Lens::
 is_orthographic() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::make_geometry
-//       Access: Published, Virtual
-//  Description: Allocates and returns a new Geom that can be rendered
-//               to show a visible representation of the frustum used
-//               for this kind of lens, if it makes sense to do
-//               so.  If a visible representation cannot be created,
-//               returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new Geom that can be rendered to show a visible
+ * representation of the frustum used for this kind of lens, if it makes sense
+ * to do so.  If a visible representation cannot be created, returns NULL.
+ */
 PT(Geom) Lens::
 make_geometry() {
   CDWriter cdata(_cycler, true);
@@ -667,10 +563,10 @@ make_geometry() {
     cdata->_geom_data.clear();
     return (Geom *)NULL;
   }
-  
+
   // Now string together the line segments.
   PT(GeomLinestrips) line = new GeomLinestrips(Geom::UH_static);
-  
+
   // Draw a frame around the near plane.
   int i, si;
   for (i = 0; i < 4; ++i) {
@@ -680,7 +576,7 @@ make_geometry() {
   }
   line->add_vertex(0);
   line->close_primitive();
-  
+
   // Draw a frame around the far plane.
   for (i = 0; i < 4; ++i) {
     for (si = 0; si < num_segments; ++si) {
@@ -689,43 +585,40 @@ make_geometry() {
   }
   line->add_vertex(1);
   line->close_primitive();
-  
+
   // Draw connecting lines at the corners.
   line->add_vertex(0 * 2 + 0);
   line->add_vertex(0 * 2 + 1);
   line->close_primitive();
-  
+
   line->add_vertex(1 * 2 + 0);
   line->add_vertex(1 * 2 + 1);
   line->close_primitive();
-  
+
   line->add_vertex(2 * 2 + 0);
   line->add_vertex(2 * 2 + 1);
   line->close_primitive();
-  
+
   line->add_vertex(3 * 2 + 0);
   line->add_vertex(3 * 2 + 1);
   line->close_primitive();
-  
+
   // And one more line for the viewing axis.
   line->add_vertex(num_segments * (4 * 2) + 0);
   line->add_vertex(num_segments * (4 * 2) + 1);
   line->close_primitive();
-  
+
   PT(Geom) geom = new Geom(cdata->_geom_data);
   geom->add_primitive(line);
-  
+
   return geom.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::make_bounds
-//       Access: Published, Virtual
-//  Description: Allocates and returns a new BoundingVolume that
-//               encloses the frustum used for this kind of
-//               lens, if possible.  If a suitable bounding
-//               volume cannot be created, returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new BoundingVolume that encloses the frustum used for
+ * this kind of lens, if possible.  If a suitable bounding volume cannot be
+ * created, returns NULL.
+ */
 PT(BoundingVolume) Lens::
 make_bounds() const {
   CDReader cdata(_cycler);
@@ -763,31 +656,25 @@ make_bounds() const {
   return new BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 output(ostream &out) const {
   out << get_type();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " fov = " << get_fov() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_film_size
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_film_size(CData *cdata, PN_stdfloat width) {
   nassertv(!cnan(width));
@@ -812,11 +699,9 @@ do_set_film_size(CData *cdata, PN_stdfloat width) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_film_size
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_film_size(CData *cdata, const LVecBase2 &film_size) {
   nassertv(!film_size.is_nan());
@@ -847,11 +732,9 @@ do_set_film_size(CData *cdata, const LVecBase2 &film_size) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_film_size
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LVecBase2 &Lens::
 do_get_film_size(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_film_size) == 0) {
@@ -863,11 +746,9 @@ do_get_film_size(const CData *cdata) const {
   return cdata->_film_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_focal_length
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_focal_length(CData *cdata, PN_stdfloat focal_length) {
   nassertv(!cnan(focal_length));
@@ -893,11 +774,9 @@ do_set_focal_length(CData *cdata, PN_stdfloat focal_length) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_focal_length
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat Lens::
 do_get_focal_length(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_focal_length) == 0) {
@@ -906,11 +785,9 @@ do_get_focal_length(const CData *cdata) const {
   return cdata->_focal_length;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_fov
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_fov(CData *cdata, PN_stdfloat hfov) {
   nassertv(!cnan(hfov));
@@ -941,11 +818,9 @@ do_set_fov(CData *cdata, PN_stdfloat hfov) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_fov
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_fov(CData *cdata, const LVecBase2 &fov) {
   nassertv(!fov.is_nan());
@@ -976,11 +851,9 @@ do_set_fov(CData *cdata, const LVecBase2 &fov) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_fov
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LVecBase2 &Lens::
 do_get_fov(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_fov) == 0) {
@@ -989,11 +862,9 @@ do_get_fov(const CData *cdata) const {
   return cdata->_fov;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_aspect_ratio
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_aspect_ratio(CData *cdata, PN_stdfloat aspect_ratio) {
   nassertv(!cnan(aspect_ratio));
@@ -1005,11 +876,9 @@ do_set_aspect_ratio(CData *cdata, PN_stdfloat aspect_ratio) {
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_aspect_ratio
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat Lens::
 do_get_aspect_ratio(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_aspect_ratio) == 0) {
@@ -1018,11 +887,9 @@ do_get_aspect_ratio(const CData *cdata) const {
   return cdata->_aspect_ratio;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_projection_mat
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LMatrix4 &Lens::
 do_get_projection_mat(const CData *cdata, StereoChannel channel) const {
   if ((cdata->_comp_flags & CF_projection_mat) == 0) {
@@ -1042,11 +909,9 @@ do_get_projection_mat(const CData *cdata, StereoChannel channel) const {
   return cdata->_projection_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_projection_mat_inv
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LMatrix4 &Lens::
 do_get_projection_mat_inv(const CData *cdata, StereoChannel stereo_channel) const {
   switch (stereo_channel) {
@@ -1083,11 +948,9 @@ do_get_projection_mat_inv(const CData *cdata, StereoChannel stereo_channel) cons
   return cdata->_projection_mat_inv;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_film_mat
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LMatrix4 &Lens::
 do_get_film_mat(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_film_mat) == 0) {
@@ -1096,11 +959,9 @@ do_get_film_mat(const CData *cdata) const {
   return cdata->_film_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_film_mat_inv
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LMatrix4 &Lens::
 do_get_film_mat_inv(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_film_mat_inv) == 0) {
@@ -1111,11 +972,9 @@ do_get_film_mat_inv(const CData *cdata) const {
   return cdata->_film_mat_inv;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_lens_mat
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LMatrix4 &Lens::
 do_get_lens_mat(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_lens_mat) == 0) {
@@ -1124,11 +983,9 @@ do_get_lens_mat(const CData *cdata) const {
   return cdata->_lens_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_lens_mat_inv
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LMatrix4 &Lens::
 do_get_lens_mat_inv(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_lens_mat_inv) == 0) {
@@ -1139,11 +996,9 @@ do_get_lens_mat_inv(const CData *cdata) const {
   return cdata->_lens_mat_inv;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_interocular_distance
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_interocular_distance(CData *cdata, PN_stdfloat interocular_distance) {
   nassertv(!cnan(interocular_distance));
@@ -1157,11 +1012,9 @@ do_set_interocular_distance(CData *cdata, PN_stdfloat interocular_distance) {
   do_adjust_comp_flags(cdata, CF_mat, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_convergence_distance
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_convergence_distance(CData *cdata, PN_stdfloat convergence_distance) {
   nassertv(!cnan(convergence_distance));
@@ -1175,29 +1028,25 @@ do_set_convergence_distance(CData *cdata, PN_stdfloat convergence_distance) {
   do_adjust_comp_flags(cdata, CF_mat, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_set_view_mat
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::
 do_set_view_mat(CData *cdata, const LMatrix4 &view_mat) {
   nassertv(!view_mat.is_nan());
   cdata->_lens_mat = view_mat;
   do_adjust_user_flags(cdata, UF_view_vector | UF_view_hpr,
                        UF_view_mat);
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv | 
-                       CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv |
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv |
                        CF_lens_mat_inv | CF_view_hpr | CF_view_vector,
                        CF_lens_mat);
   do_throw_change_event(cdata);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_get_view_mat
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LMatrix4 &Lens::
 do_get_view_mat(const CData *cdata) const {
   if ((cdata->_comp_flags & CF_lens_mat) == 0) {
@@ -1206,12 +1055,9 @@ do_get_view_mat(const CData *cdata) const {
   return cdata->_lens_mat;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_throw_change_event
-//       Access: Protected
-//  Description: Throws the event associated with changing properties
-//               on this Lens, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Throws the event associated with changing properties on this Lens, if any.
+ */
 void Lens::
 do_throw_change_event(CData *cdata) {
   ++(cdata->_last_change);
@@ -1234,23 +1080,15 @@ do_throw_change_event(CData *cdata) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_extrude
-//       Access: Protected, Virtual
-//  Description: Given a 2-d point in the range (-1,1) in both
-//               dimensions, where (0,0) is the center of the
-//               lens and (-1,-1) is the lower-left corner,
-//               compute the corresponding vector in space that maps
-//               to this point, if such a vector can be determined.
-//               The vector is returned by indicating the points on
-//               the near plane and far plane that both map to the
-//               indicated 2-d point.
-//
-//               The z coordinate of the 2-d point is ignored.
-//
-//               Returns true if the vector is defined, or false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a 2-d point in the range (-1,1) in both dimensions, where (0,0) is the
+ * center of the lens and (-1,-1) is the lower-left corner, compute the
+ * corresponding vector in space that maps to this point, if such a vector can
+ * be determined.  The vector is returned by indicating the points on the near
+ * plane and far plane that both map to the indicated 2-d point.  The z
+ * coordinate of the 2-d point is ignored.  Returns true if the vector is
+ * defined, or false otherwise.
+ */
 bool Lens::
 do_extrude(const CData *cdata,
            const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
@@ -1260,8 +1098,8 @@ do_extrude(const CData *cdata,
     full = projection_mat_inv.xform(full);
 
     PN_stdfloat recip_full3 = 1.0 / max((double)full[3], (double)lens_far_limit);
-    near_point.set(full[0] * recip_full3, 
-                   full[1] * recip_full3, 
+    near_point.set(full[0] * recip_full3,
+                   full[1] * recip_full3,
                    full[2] * recip_full3);
   }
   {
@@ -1274,20 +1112,18 @@ do_extrude(const CData *cdata,
     // crazy.  Truncating it to zero keeps the far plane from moving
     // too far out.
     PN_stdfloat recip_full3 = 1.0 / max((double)full[3], (double)lens_far_limit);
-    far_point.set(full[0] * recip_full3, 
-                  full[1] * recip_full3, 
+    far_point.set(full[0] * recip_full3,
+                  full[1] * recip_full3,
                   full[2] * recip_full3);
   }
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_extrude_depth
-//       Access: Protected, Virtual
-//  Description: This is the generic implementation, which is based on
-//               do_extrude() and assumes a linear distribution of
-//               depth values between the near and far points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the generic implementation, which is based on do_extrude() and
+ * assumes a linear distribution of depth values between the near and far
+ * points.
+ */
 bool Lens::
 do_extrude_depth(const CData *cdata,
                  const LPoint3 &point2d, LPoint3 &point3d) const {
@@ -1301,13 +1137,10 @@ do_extrude_depth(const CData *cdata,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_extrude_depth_with_mat
-//       Access: Protected
-//  Description: Implements do_extrude_depth() by using the projection
-//               matrix.  This is efficient, but works only for a
-//               linear (Perspective or Orthographic) lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements do_extrude_depth() by using the projection matrix.  This is
+ * efficient, but works only for a linear (Perspective or Orthographic) lens.
+ */
 bool Lens::
 do_extrude_depth_with_mat(const CData *cdata,
                           const LPoint3 &point2d, LPoint3 &point3d) const {
@@ -1316,59 +1149,37 @@ do_extrude_depth_with_mat(const CData *cdata,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_extrude_vec
-//       Access: Protected, Virtual
-//  Description: Given a 2-d point in the range (-1,1) in both
-//               dimensions, where (0,0) is the center of the
-//               lens and (-1,-1) is the lower-left corner,
-//               compute the vector that corresponds to the view
-//               direction.  This will be parallel to the normal on
-//               the surface (the far plane) corresponding to the lens
-//               shape at this point.
-//
-//               Generally, for all rational lenses, the center of the
-//               film at (0,0) computes a vector that is in the same
-//               direction as the vector specified by
-//               set_view_vector().
-//
-//               For all linear lenses, including perspective and
-//               orthographic lenses, all points on the film compute
-//               this same vector (the far plane is a flat plane, so
-//               the normal is the same everywhere).  For curved
-//               lenses like fisheye and cylindrical lenses, different
-//               points may compute different vectors (the far "plane"
-//               on these lenses is a curved surface).
-//
-//               The z coordinate of the 2-d point is ignored.
-//
-//               Returns true if the vector is defined, or false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a 2-d point in the range (-1,1) in both dimensions, where (0,0) is the
+ * center of the lens and (-1,-1) is the lower-left corner, compute the vector
+ * that corresponds to the view direction.  This will be parallel to the normal
+ * on the surface (the far plane) corresponding to the lens shape at this point.
+ * Generally, for all rational lenses, the center of the film at (0,0) computes
+ * a vector that is in the same direction as the vector specified by
+ * set_view_vector().  For all linear lenses, including perspective and
+ * orthographic lenses, all points on the film compute this same vector (the far
+ * plane is a flat plane, so the normal is the same everywhere).  For curved
+ * lenses like fisheye and cylindrical lenses, different points may compute
+ * different vectors (the far "plane" on these lenses is a curved surface).  The
+ * z coordinate of the 2-d point is ignored.  Returns true if the vector is
+ * defined, or false otherwise.
+ */
 bool Lens::
 do_extrude_vec(const CData *cdata, const LPoint3 &point2d, LVector3 &vec) const {
   vec = LVector3::forward(cdata->_cs) * do_get_lens_mat(cdata);
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_project
-//       Access: Protected, Virtual
-//  Description: Given a 3-d point in space, determine the 2-d point
-//               this maps to, in the range (-1,1) in both dimensions,
-//               where (0,0) is the center of the lens and
-//               (-1,-1) is the lower-left corner.
-//
-//               The z coordinate will also be set to a value in the
-//               range (-1, 1), where -1 represents a point on the near
-//               plane, and 1 represents a point on the far plane.
-//
-//               Returns true if the 3-d point is in front of the lens
-//               and within the viewing frustum (in which case point2d
-//               is filled in), or false otherwise (in which case
-//               point2d will be filled in with something, which may
-//               or may not be meaningful).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a 3-d point in space, determine the 2-d point this maps to, in the
+ * range (-1,1) in both dimensions, where (0,0) is the center of the lens and
+ * (-1,-1) is the lower-left corner.  The z coordinate will also be set to a
+ * value in the range (-1, 1), where -1 represents a point on the near plane,
+ * and 1 represents a point on the far plane.  Returns true if the 3-d point is
+ * in front of the lens and within the viewing frustum (in which case point2d is
+ * filled in), or false otherwise (in which case point2d will be filled in with
+ * something, which may or may not be meaningful).
+ */
 bool Lens::
 do_project(const CData *cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   const LMatrix4 &projection_mat = do_get_projection_mat(cdata);
@@ -1382,16 +1193,14 @@ do_project(const CData *cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   point2d.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
   return
     (full[3] > 0.0f) &&
-    (point2d[0] >= -1.0f) && (point2d[0] <= 1.0f) && 
+    (point2d[0] >= -1.0f) && (point2d[0] <= 1.0f) &&
     (point2d[1] >= -1.0f) && (point2d[1] <= 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_film_size
-//       Access: Protected, Virtual
-//  Description: Computes the size and shape of the film behind the
-//               camera, based on the aspect ratio and fov.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the size and shape of the film behind the camera, based on the
+ * aspect ratio and fov.
+ */
 void Lens::
 do_compute_film_size(CData *cdata) {
   if ((cdata->_user_flags & (UF_min_fov | UF_focal_length)) == (UF_min_fov | UF_focal_length)) {
@@ -1419,11 +1228,11 @@ do_compute_film_size(CData *cdata) {
         cdata->_film_size[0] = 1.0f;
       }
     }
-    
+
     if ((cdata->_user_flags & UF_film_height) == 0) {
       if ((cdata->_user_flags & (UF_vfov | UF_focal_length)) == (UF_vfov | UF_focal_length)) {
         cdata->_film_size[1] = fov_to_film(cdata->_fov[1], cdata->_focal_length, false);
-        
+
       } else if ((cdata->_user_flags & (UF_hfov | UF_vfov)) == (UF_hfov | UF_vfov)) {
         // If we don't have a focal length, but we have an explicit vfov
         // and hfov, we can infer the focal length is whatever makes the
@@ -1433,11 +1242,11 @@ do_compute_film_size(CData *cdata) {
           do_adjust_comp_flags(cdata, 0, CF_focal_length);
         }
         cdata->_film_size[1] = fov_to_film(cdata->_fov[1], cdata->_focal_length, false);
-        
+
       } else if ((cdata->_user_flags & UF_aspect_ratio) != 0 ||
                  (cdata->_comp_flags & CF_aspect_ratio) != 0) {
         cdata->_film_size[1] = cdata->_film_size[0] / cdata->_aspect_ratio;
-        
+
       } else {
         // Default is an aspect ratio of 1.
         cdata->_film_size[1] = cdata->_film_size[0];
@@ -1448,13 +1257,10 @@ do_compute_film_size(CData *cdata) {
   do_adjust_comp_flags(cdata, 0, CF_film_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_focal_length
-//       Access: Protected, Virtual
-//  Description: Computes the focal length of the lens, based on the
-//               fov and film size.  This is based on the horizontal
-//               dimension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the focal length of the lens, based on the fov and film size.  This
+ * is based on the horizontal dimension.
+ */
 void Lens::
 do_compute_focal_length(CData *cdata) {
   if ((cdata->_user_flags & UF_focal_length) == 0) {
@@ -1466,12 +1272,10 @@ do_compute_focal_length(CData *cdata) {
   do_adjust_comp_flags(cdata, 0, CF_focal_length);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_fov
-//       Access: Protected, Virtual
-//  Description: Computes the field of view of the lens, based on the
-//               film size and focal length.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the field of view of the lens, based on the film size and focal
+ * length.
+ */
 void Lens::
 do_compute_fov(CData *cdata) {
   const LVecBase2 &film_size = do_get_film_size(cdata);
@@ -1521,7 +1325,7 @@ do_compute_fov(CData *cdata) {
     cdata->_fov[0] = film_to_fov(film_size[0], cdata->_focal_length, false);
     got_hfov = true;
   }
-  
+
   if (!got_vfov) {
     if ((cdata->_user_flags & UF_focal_length) == 0 &&
         (cdata->_comp_flags & CF_focal_length) == 0) {
@@ -1544,12 +1348,10 @@ do_compute_fov(CData *cdata) {
   do_adjust_comp_flags(cdata, 0, CF_fov);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_aspect_ratio
-//       Access: Protected, Virtual
-//  Description: Computes the aspect ratio of the film rectangle, as a
-//               ratio of width to height.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the aspect ratio of the film rectangle, as a ratio of width to
+ * height.
+ */
 void Lens::
 do_compute_aspect_ratio(CData *cdata) {
   if ((cdata->_user_flags & UF_aspect_ratio) == 0) {
@@ -1563,12 +1365,9 @@ do_compute_aspect_ratio(CData *cdata) {
   do_adjust_comp_flags(cdata, 0, CF_aspect_ratio);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_view_hpr
-//       Access: Protected, Virtual
-//  Description: Computes the Euler angles representing the lens'
-//               rotation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the Euler angles representing the lens' rotation.
+ */
 void Lens::
 do_compute_view_hpr(CData *cdata) {
   if ((cdata->_user_flags & UF_view_hpr) == 0) {
@@ -1579,11 +1378,9 @@ do_compute_view_hpr(CData *cdata) {
   do_adjust_comp_flags(cdata, 0, CF_view_hpr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_view_vector
-//       Access: Protected, Virtual
-//  Description: Computes the view vector and up vector for the lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the view vector and up vector for the lens.
+ */
 void Lens::
 do_compute_view_vector(CData *cdata) {
   if ((cdata->_user_flags & UF_view_vector) == 0) {
@@ -1594,12 +1391,10 @@ do_compute_view_vector(CData *cdata) {
   do_adjust_comp_flags(cdata, 0, CF_view_vector);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_projection_mat
-//       Access: Protected, Virtual
-//  Description: Computes the complete transformation matrix from 3-d
-//               point to 2-d point, if the lens is linear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the complete transformation matrix from 3-d point to 2-d point, if
+ * the lens is linear.
+ */
 void Lens::
 do_compute_projection_mat(CData *lens_cdata) {
   // This is the implementation used by non-linear lenses.  The linear
@@ -1626,12 +1421,10 @@ do_compute_projection_mat(CData *lens_cdata) {
                        CF_projection_mat_left_inv | CF_projection_mat_right_inv);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_film_mat
-//       Access: Protected, Virtual
-//  Description: Computes the matrix that transforms from a point
-//               behind the lens to a point on the film.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the matrix that transforms from a point behind the lens to a point
+ * on the film.
+ */
 void Lens::
 do_compute_film_mat(CData *cdata) {
   // The lens will return a point in the range [-film_size/2,
@@ -1664,12 +1457,10 @@ do_compute_film_mat(CData *cdata) {
   do_adjust_comp_flags(cdata, CF_film_mat_inv, CF_film_mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_compute_lens_mat
-//       Access: Protected, Virtual
-//  Description: Computes the matrix that transforms from a point
-//               in front of the lens to a point in space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the matrix that transforms from a point in front of the lens to a
+ * point in space.
+ */
 void Lens::
 do_compute_lens_mat(CData *cdata) {
   if ((cdata->_user_flags & UF_view_mat) == 0) {
@@ -1690,62 +1481,47 @@ do_compute_lens_mat(CData *cdata) {
   do_adjust_comp_flags(cdata, CF_lens_mat_inv, CF_lens_mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::fov_to_film
-//       Access: Protected, Virtual
-//  Description: Given a field of view in degrees and a focal length,
-//               compute the corresponding width (or height) on the
-//               film.  If horiz is true, this is in the horizontal
-//               direction; otherwise, it is in the vertical direction
-//               (some lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a field of view in degrees and a focal length, compute the
+ * corresponding width (or height) on the film.  If horiz is true, this is in
+ * the horizontal direction; otherwise, it is in the vertical direction (some
+ * lenses behave differently in each direction).
+ */
 PN_stdfloat Lens::
 fov_to_film(PN_stdfloat, PN_stdfloat, bool) const {
   return 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::fov_to_focal_length
-//       Access: Protected, Virtual
-//  Description: Given a field of view in degrees and a width (or
-//               height) on the film, compute the focal length of the
-//               lens.  If horiz is true, this is in the horizontal
-//               direction; otherwise, it is in the vertical direction
-//               (some lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a field of view in degrees and a width (or height) on the film, compute
+ * the focal length of the lens.  If horiz is true, this is in the horizontal
+ * direction; otherwise, it is in the vertical direction (some lenses behave
+ * differently in each direction).
+ */
 PN_stdfloat Lens::
 fov_to_focal_length(PN_stdfloat, PN_stdfloat, bool) const {
   return 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::film_to_fov
-//       Access: Protected, Virtual
-//  Description: Given a width (or height) on the film and a focal
-//               length, compute the field of view in degrees.  If
-//               horiz is true, this is in the horizontal direction;
-//               otherwise, it is in the vertical direction (some
-//               lenses behave differently in each direction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a width (or height) on the film and a focal length, compute the field
+ * of view in degrees.  If horiz is true, this is in the horizontal direction;
+ * otherwise, it is in the vertical direction (some lenses behave differently in
+ * each direction).
+ */
 PN_stdfloat Lens::
 film_to_fov(PN_stdfloat, PN_stdfloat, bool) const {
   return default_fov;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_resequence_fov_triad
-//       Access: Private
-//  Description: Called whenever the user changes one of the three FOV
-//               parameters: fov, focal length, or film size.  This
-//               rearranges the three sequence numbers so the newest
-//               parameter has value 2, and the older parameters are
-//               kept in sequence order.
-//
-//               This is used to determine which two parameters of the
-//               three are the most recently changed, and conversely,
-//               which one the user has *not* changed recently.  It is
-//               this third value which should be discarded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the user changes one of the three FOV parameters: fov, focal
+ * length, or film size.  This rearranges the three sequence numbers so the
+ * newest parameter has value 2, and the older parameters are kept in sequence
+ * order.  This is used to determine which two parameters of the three are the
+ * most recently changed, and conversely, which one the user has *not* changed
+ * recently.  It is this third value which should be discarded.
+ */
 void Lens::
 do_resequence_fov_triad(const CData *cdata, char &newest, char &older_a, char &older_b) const {
   nassertv(newest + older_a + older_b == 3);
@@ -1800,16 +1576,12 @@ do_resequence_fov_triad(const CData *cdata, char &newest, char &older_a, char &o
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::do_define_geom_data
-//       Access: Private
-//  Description: Adjusts (or defines for the first time) all the
-//               vertices in the _geom_data to match the properties of
-//               the lens.  This will update the visual representation
-//               of the lens's frustum to match the changing
-//               parameters.  Returns the number of line segments per
-//               edge.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts (or defines for the first time) all the vertices in the _geom_data to
+ * match the properties of the lens.  This will update the visual representation
+ * of the lens's frustum to match the changing parameters.  Returns the number
+ * of line segments per edge.
+ */
 int Lens::
 do_define_geom_data(CData *cdata) {
   int num_segments = 1;
@@ -1881,13 +1653,10 @@ do_define_geom_data(CData *cdata) {
   return num_segments;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::build_shear_mat
-//       Access: Private, Static
-//  Description: A support function for set_frustum_from_corners(),
-//               this computes a matrix that will shear the four
-//               indicated points to the most nearly rectangular.
-////////////////////////////////////////////////////////////////////
+/**
+ * A support function for set_frustum_from_corners(), this computes a matrix
+ * that will shear the four indicated points to the most nearly rectangular.
+ */
 void Lens::
 build_shear_mat(LMatrix4 &shear_mat,
                 const LPoint3 &cul, const LPoint3 &cur,
@@ -2030,21 +1799,18 @@ build_shear_mat(LMatrix4 &shear_mat,
     shear_mat.set_row(0, adjacent_norm_vec);
     shear_mat.set_row(2, base_norm_vec);
     break;
-    
+
   default:
     nassertv(false);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::sqr_dist_to_line
-//       Access: Private, Static
-//  Description: A support function for build_shear_mat(), this
-//               computes the minimum distance from a point to a line,
-//               and returns the distance squared.
-////////////////////////////////////////////////////////////////////
+/**
+ * A support function for build_shear_mat(), this computes the minimum distance
+ * from a point to a line, and returns the distance squared.
+ */
 PN_stdfloat Lens::
-sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
+sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin,
                  const LVector3 &vec) {
   LVector3 norm = vec;
   norm.normalize();
@@ -2054,46 +1820,37 @@ sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin,
   return hyp_2 - leg * leg;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void Lens::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritable::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new Lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new Lens.
+ */
 void Lens::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::CData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Lens::CData::
 CData() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::CData::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Lens::CData::
 CData(const Lens::CData &copy) {
   _change_event = copy._change_event;
@@ -2128,22 +1885,18 @@ CData(const Lens::CData &copy) {
   _geom_data = copy._geom_data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::CData::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CycleData *Lens::CData::
 make_copy() const {
   return new CData(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::CData::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void Lens::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_string(_change_event);
@@ -2158,13 +1911,10 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint16(_user_flags);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::CData::fillin
-//       Access: Public, Virtual
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new Geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new Geom.
+ */
 void Lens::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _change_event = scan.get_string();
@@ -2181,11 +1931,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _comp_flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Lens::CData::clear
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void Lens::CData::
 clear() {
   _change_event = "";

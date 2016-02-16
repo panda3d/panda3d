@@ -13,22 +13,18 @@
 
 #include "ringEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: RingEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 RingEmitter::
 RingEmitter() :
   _radius(1.0f), _radius_spread(0.0f), _aoe(0.0f), _uniform_emission(0), _theta(0.0f)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RingEmitter
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 RingEmitter::
 RingEmitter(const RingEmitter &copy) :
   BaseParticleEmitter(copy) {
@@ -42,30 +38,24 @@ RingEmitter(const RingEmitter &copy) :
   _cos_theta = copy._cos_theta;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~RingEmitter
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 RingEmitter::
 ~RingEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 BaseParticleEmitter *RingEmitter::
 make_copy() {
   return new RingEmitter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RingEmitter::assign_initial_position
-//       Access: Public
-//  Description: Generates a location for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a location for a new particle
+ */
 void RingEmitter::
 assign_initial_position(LPoint3& pos) {
   if (_uniform_emission > 0)
@@ -89,11 +79,9 @@ assign_initial_position(LPoint3& pos) {
   pos.set(new_x, new_y, 0.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RingEmitter::assign_initial_velocity
-//       Access: Public
-//  Description: Generates a velocity for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a velocity for a new particle
+ */
 void RingEmitter::
 assign_initial_velocity(LVector3& vel) {
   PN_stdfloat vel_z = sinf(deg_2_rad(_aoe));
@@ -113,12 +101,9 @@ assign_initial_velocity(LVector3& vel) {
   vel.set(vel_x, vel_y, vel_z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void RingEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -126,12 +111,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void RingEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

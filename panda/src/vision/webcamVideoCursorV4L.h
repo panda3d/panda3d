@@ -31,10 +31,9 @@ extern "C" {
 
 class WebcamVideoV4L;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideoCursorV4L
-// Description : The Video4Linux implementation of webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Video4Linux implementation of webcams.
+ */
 class WebcamVideoCursorV4L : public MovieVideoCursor {
 public:
   WebcamVideoCursorV4L(WebcamVideoV4L *src);

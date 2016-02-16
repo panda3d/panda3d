@@ -28,13 +28,11 @@ class PNMFileType;
 class EggFile;
 class TextureImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TxaLine
-// Description : This is a single matching line in the .txa file.  It
-//               consists of a list of names (texture names or egg
-//               file names), followed by a colon and an optional size
-//               and a set of keywords.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a single matching line in the .txa file.  It consists of a list of
+ * names (texture names or egg file names), followed by a colon and an optional
+ * size and a set of keywords.
+ */
 class TxaLine {
 public:
   TxaLine();
@@ -101,4 +99,3 @@ INLINE ostream &operator << (ostream &out, const TxaLine &line) {
 }
 
 #endif
-

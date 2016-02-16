@@ -14,21 +14,16 @@
 #ifndef VERTEX_ELEMENT_ARRAY_H
 #define VERTEX_ELEMENT_ARRAY_H
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexElementArray
-// Description : This class gives the ability for a user-friendly way
-//               of creating a vertex declaration for DirectX 9.
-//               Since a vertex shader has a fixed input, the vertex
-//               element array can be cached so that a new vertex
-//               declaration for different vertex buffers can be
-//               quickly created.  Be sure to call
-//               add_end_vertex_element ( ) when finished creating a
-//               vertex element array.
-//               VERTEX_ELEMENT_TYPE is used for a simplified mapping
-//               of vertex buffer data to vertex shader inputs.
-//               This class is used with DXShaderContext9 and in
-//               conjunction with DXVertexBufferContext9.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class gives the ability for a user-friendly way of creating a vertex
+ * declaration for DirectX 9. Since a vertex shader has a fixed input, the
+ * vertex element array can be cached so that a new vertex declaration for
+ * different vertex buffers can be quickly created.  Be sure to call
+ * add_end_vertex_element ( ) when finished creating a vertex element array.
+ * VERTEX_ELEMENT_TYPE is used for a simplified mapping of vertex buffer data to
+ * vertex shader inputs.  This class is used with DXShaderContext9 and in
+ * conjunction with DXVertexBufferContext9.
+ */
 class VertexElementArray
 {
 public:

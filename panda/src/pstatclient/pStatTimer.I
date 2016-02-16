@@ -13,11 +13,9 @@
 
 #ifdef DO_PSTATS
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatTimer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PStatTimer::
 PStatTimer(PStatCollector &collector) :
   _collector(collector),
@@ -26,11 +24,9 @@ PStatTimer(PStatCollector &collector) :
   _collector.start(_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatTimer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PStatTimer::
 PStatTimer(PStatCollector &collector, Thread *current_thread) :
   _collector(collector),
@@ -39,11 +35,9 @@ PStatTimer(PStatCollector &collector, Thread *current_thread) :
   _collector.start(_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatTimer::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PStatTimer::
 ~PStatTimer() {
   _collector.stop(_thread);

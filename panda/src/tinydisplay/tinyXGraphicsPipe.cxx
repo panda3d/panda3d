@@ -23,56 +23,43 @@
 
 TypeHandle TinyXGraphicsPipe::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsPipe::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TinyXGraphicsPipe::
 TinyXGraphicsPipe(const string &display) : x11GraphicsPipe(display) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TinyXGraphicsPipe::
 ~TinyXGraphicsPipe() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsPipe::get_interface_name
-//       Access: Published, Virtual
-//  Description: Returns the name of the rendering interface
-//               associated with this GraphicsPipe.  This is used to
-//               present to the user to allow him/her to choose
-//               between several possible GraphicsPipes available on a
-//               particular platform, so the name should be meaningful
-//               and unique for a given platform.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the rendering interface associated with this
+ * GraphicsPipe.  This is used to present to the user to allow him/her to choose
+ * between several possible GraphicsPipes available on a particular platform, so
+ * the name should be meaningful and unique for a given platform.
+ */
 string TinyXGraphicsPipe::
 get_interface_name() const {
   return "TinyPanda";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsPipe::pipe_constructor
-//       Access: Public, Static
-//  Description: This function is passed to the GraphicsPipeSelection
-//               object to allow the user to make a default
-//               TinyXGraphicsPipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is passed to the GraphicsPipeSelection object to allow the user
+ * to make a default TinyXGraphicsPipe.
+ */
 PT(GraphicsPipe) TinyXGraphicsPipe::
 pipe_constructor() {
   return new TinyXGraphicsPipe;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsPipe::make_output
-//       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new window on the pipe, if possible.
+ */
 PT(GraphicsOutput) TinyXGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
@@ -106,7 +93,7 @@ make_output(const string &name,
     return new TinyXGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                    flags, gsg, host);
   }
-  
+
   // Second thing to try: a TinyGraphicsBuffer
 
   // No need to check _is_valid here.  We can create an offscreen
@@ -118,7 +105,7 @@ make_output(const string &name,
     }
     return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
   }
-  
+
   // Nothing else left to try.
   return NULL;
 }

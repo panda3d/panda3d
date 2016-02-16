@@ -21,14 +21,12 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggVertexAux
-// Description : The set of named auxiliary data that may or may not
-//               be assigned to a vertex.  Panda will import this data
-//               and create a custom column for it in the vertex data,
-//               but will not otherwise interpret it.  Presumably, a
-//               shader will process the data later.
-////////////////////////////////////////////////////////////////////
+/**
+ * The set of named auxiliary data that may or may not be assigned to a vertex.
+ * Panda will import this data and create a custom column for it in the vertex
+ * data, but will not otherwise interpret it.  Presumably, a shader will process
+ * the data later.
+ */
 class EXPCL_PANDAEGG EggVertexAux : public EggNamedObject {
 PUBLISHED:
   EggVertexAux(const string &name, const LVecBase4d &aux);
@@ -71,4 +69,3 @@ private:
 #include "eggVertexAux.I"
 
 #endif
-

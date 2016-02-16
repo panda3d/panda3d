@@ -16,16 +16,12 @@
 
 #include "p3d_plugin_common.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DTemporaryFile
-// Description : This represents a temporary filename for some
-//               transitory purpose.  This returns a filename which is
-//               guaranteed to be unique at the time the constructor
-//               was called.
-//
-//               The file on disk, if it exists, will automatically be
-//               deleted when the destructor is called.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a temporary filename for some transitory purpose.  This
+ * returns a filename which is guaranteed to be unique at the time the
+ * constructor was called.  The file on disk, if it exists, will automatically
+ * be deleted when the destructor is called.
+ */
 class P3DTemporaryFile {
 public:
   P3DTemporaryFile(const string &extension);

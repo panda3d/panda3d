@@ -23,17 +23,12 @@
 #include "pointerTo.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<CallbackObject>
-// Description : This class defines the extension methods for
-//               CallbackObject, which are called instead of
-//               any C++ methods with the same prototype.
-//
-//               This just defines a static constructor, which makes
-//               it possible for Interrogate to automatically accept
-//               a Python function wherever a CallbackObject is
-//               accepted.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for CallbackObject, which are called
+ * instead of any C++ methods with the same prototype.  This just defines a
+ * static constructor, which makes it possible for Interrogate to automatically
+ * accept a Python function wherever a CallbackObject is accepted.
+ */
 template<>
 class Extension<CallbackObject> : public ExtensionBase<CallbackObject> {
 public:

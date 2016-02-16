@@ -21,18 +21,12 @@
 
 #include "zStreamBuf.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : IDecompressStream
-// Description : An input stream object that uses zlib to decompress
-//               (inflate) the input from another source stream
-//               on-the-fly.
-//
-//               Attach an IDecompressStream to an existing istream that
-//               provides compressed data, and read the corresponding
-//               uncompressed data from the IDecompressStream.
-//
-//               Seeking is not supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * An input stream object that uses zlib to decompress (inflate) the input from
+ * another source stream on-the-fly.  Attach an IDecompressStream to an existing
+ * istream that provides compressed data, and read the corresponding
+ * uncompressed data from the IDecompressStream.  Seeking is not supported.
+ */
 class EXPCL_PANDAEXPRESS IDecompressStream : public istream {
 PUBLISHED:
   INLINE IDecompressStream();
@@ -49,18 +43,12 @@ private:
   ZStreamBuf _buf;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : OCompressStream
-// Description : An input stream object that uses zlib to compress
-//               (deflate) data to another destination stream
-//               on-the-fly.
-//
-//               Attach an OCompressStream to an existing ostream that will
-//               accept compressed data, and write your uncompressed
-//               source data to the OCompressStream.
-//
-//               Seeking is not supported.
-////////////////////////////////////////////////////////////////////
+/**
+ * An input stream object that uses zlib to compress (deflate) data to another
+ * destination stream on-the-fly.  Attach an OCompressStream to an existing
+ * ostream that will accept compressed data, and write your uncompressed source
+ * data to the OCompressStream.  Seeking is not supported.
+ */
 class EXPCL_PANDAEXPRESS OCompressStream : public ostream {
 PUBLISHED:
   INLINE OCompressStream();
@@ -85,5 +73,3 @@ private:
 
 
 #endif
-
-

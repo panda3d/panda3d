@@ -18,16 +18,13 @@
 
 #include "fltBead.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltInstanceDefinition
-// Description : This special kind of record marks the top node of an
-//               instance subtree.  This subtree lives outside of the
-//               normal hierarchy, and is MultiGen's way of supporting
-//               instancing--each instance subtree has a unique index,
-//               which may be referenced in a FltInstanceRef object to
-//               make the instance appear in various places in the
-//               hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special kind of record marks the top node of an instance subtree.  This
+ * subtree lives outside of the normal hierarchy, and is MultiGen's way of
+ * supporting instancing--each instance subtree has a unique index, which may be
+ * referenced in a FltInstanceRef object to make the instance appear in various
+ * places in the hierarchy.
+ */
 class FltInstanceDefinition : public FltBead {
 public:
   FltInstanceDefinition(FltHeader *header);
@@ -60,5 +57,3 @@ private:
 };
 
 #endif
-
-

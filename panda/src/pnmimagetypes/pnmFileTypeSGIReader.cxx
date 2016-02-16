@@ -78,11 +78,9 @@ static void       rle_decompress (ScanElem *src, long srclen, ScanElem *dest, lo
 static bool eof_err = false;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Reader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeSGI::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
@@ -143,11 +141,9 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Reader::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PNMFileTypeSGI::Reader::
 ~Reader() {
   if (table != NULL) {
@@ -155,30 +151,23 @@ PNMFileTypeSGI::Reader::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Reader::supports_read_row
-//       Access: Public, Virtual
-//  Description: Returns true if this particular PNMReader supports a
-//               streaming interface to reading the data: that is, it
-//               is capable of returning the data one row at a time,
-//               via repeated calls to read_row().  Returns false if
-//               the only way to read from this file is all at once,
-//               via read_data().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular PNMReader supports a streaming interface to
+ * reading the data: that is, it is capable of returning the data one row at a
+ * time, via repeated calls to read_row().  Returns false if the only way to
+ * read from this file is all at once, via read_data().
+ */
 bool PNMFileTypeSGI::Reader::
 supports_read_row() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypeSGI::Reader::read_row
-//       Access: Public, Virtual
-//  Description: If supports_read_row(), above, returns true, this
-//               function may be called repeatedly to read the image,
-//               one horizontal row at a time, beginning from the top.
-//               Returns true if the row is successfully read, false
-//               if there is an error or end of file.
-////////////////////////////////////////////////////////////////////
+/**
+ * If supports_read_row(), above, returns true, this function may be called
+ * repeatedly to read the image, one horizontal row at a time, beginning from
+ * the top.  Returns true if the row is successfully read, false if there is an
+ * error or end of file.
+ */
 bool PNMFileTypeSGI::Reader::
 read_row(xel *row_data, xelval *alpha_data, int x_size, int y_size) {
   if (!is_valid()) {

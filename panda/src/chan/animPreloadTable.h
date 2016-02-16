@@ -25,16 +25,12 @@ class Datagram;
 class DatagramIterator;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimPreloadTable
-// Description : This table records data about a list of animations
-//               for a particular model, such as number of frames and
-//               frame rate.  It's used for implementating
-//               asynchronous binding.
-//
-//               This table is normally built by an offline tool, such
-//               as egg-optchar.
-////////////////////////////////////////////////////////////////////
+/**
+ * This table records data about a list of animations for a particular model,
+ * such as number of frames and frame rate.  It's used for implementating
+ * asynchronous binding.  This table is normally built by an offline tool, such
+ * as egg-optchar.
+ */
 class EXPCL_PANDA_CHAN AnimPreloadTable : public CopyOnWriteObject {
 public:
   class AnimRecord {
@@ -112,5 +108,3 @@ inline ostream &operator << (ostream &out, const AnimPreloadTable &anim) {
 #include "animPreloadTable.I"
 
 #endif
-
-

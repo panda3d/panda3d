@@ -33,10 +33,9 @@ class PhysxRay;
 class PhysxRaycastHit;
 class PhysxCcdSkeleton;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxShape
-// Description : Abstract base class for shapes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for shapes.
+ */
 class EXPCL_PANDAPHYSX PhysxShape : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -96,7 +95,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxShape", 
+    register_type(_type_handle, "PhysxShape",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

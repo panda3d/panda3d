@@ -160,4 +160,3 @@ get_param_stop_CFM() const {
   nassertr( _id != 0, 0 );
   return dJointGetSliderParam(_id, dParamStopCFM);
 }
-

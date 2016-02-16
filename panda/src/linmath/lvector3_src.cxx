@@ -13,11 +13,9 @@
 
 TypeHandle FLOATNAME(LVector3)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVector3::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LVector3)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -26,5 +24,3 @@ init_type() {
                   FLOATNAME(LVecBase3)::get_class_type());
   }
 }
-
-

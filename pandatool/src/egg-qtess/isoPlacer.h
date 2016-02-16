@@ -20,11 +20,10 @@
 
 class NurbsSurfaceResult;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IsoPlacer
-// Description : Contains the logic used to place isoparams where
-//               they'll do the most good on a surface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Contains the logic used to place isoparams where they'll do the most good on
+ * a surface.
+ */
 class IsoPlacer {
 public:
   INLINE IsoPlacer();
@@ -42,4 +41,3 @@ public:
 #include "isoPlacer.I"
 
 #endif
-

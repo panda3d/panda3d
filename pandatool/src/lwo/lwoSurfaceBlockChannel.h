@@ -18,12 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockChannel
-// Description : Indicates which channel the texture in this
-//               LwoSurfaceBlock is applied to.  This is a subchunk of
-//               LwoSurfaceBlockHeader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates which channel the texture in this LwoSurfaceBlock is applied to.
+ * This is a subchunk of LwoSurfaceBlockHeader.
+ */
 class LwoSurfaceBlockChannel : public LwoChunk {
 public:
   IffId _channel_id;
@@ -51,5 +49,3 @@ private:
 };
 
 #endif
-
-

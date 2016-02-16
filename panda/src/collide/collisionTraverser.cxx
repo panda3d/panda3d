@@ -50,7 +50,7 @@ TypeHandle CollisionTraverser::_type_handle;
 class SortByColliderSort {
 public:
   SortByColliderSort(const CollisionTraverser &trav) :
-    _trav(trav) 
+    _trav(trav)
   {
   }
 
@@ -63,13 +63,11 @@ public:
   const CollisionTraverser &_trav;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionTraverser::
-CollisionTraverser(const string &name) : 
+CollisionTraverser(const string &name) :
   Namable(name),
   _this_pcollector(_collisions_pcollector, name)
 {
@@ -79,11 +77,9 @@ CollisionTraverser(const string &name) :
   #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionTraverser::
 ~CollisionTraverser() {
   #ifdef DO_COLLISION_RECORDING
@@ -91,20 +87,14 @@ CollisionTraverser::
   #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::add_collider
-//       Access: Published
-//  Description: Adds a new CollisionNode, representing an object that
-//               will be tested for collisions into other objects,
-//               along with the handler that will serve each detected
-//               collision.  Each CollisionNode may be served by only
-//               one handler at a time, but a given handler may serve
-//               many CollisionNodes.
-//
-//               The handler that serves a particular node may be
-//               changed from time to time by calling add_collider()
-//               again on the same node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new CollisionNode, representing an object that will be tested for
+ * collisions into other objects, along with the handler that will serve each
+ * detected collision.  Each CollisionNode may be served by only one handler at
+ * a time, but a given handler may serve many CollisionNodes.  The handler that
+ * serves a particular node may be changed from time to time by calling
+ * add_collider() again on the same node.
+ */
 void CollisionTraverser::
 add_collider(const NodePath &collider, CollisionHandler *handler) {
   nassertv(_ordered_colliders.size() == _colliders.size());
@@ -155,15 +145,12 @@ add_collider(const NodePath &collider, CollisionHandler *handler) {
   nassertv(_ordered_colliders.size() == _colliders.size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::remove_collider
-//       Access: Published
-//  Description: Removes the collider (and its associated handler)
-//               from the set of CollisionNodes that will be tested
-//               each frame for collisions into other objects.
-//               Returns true if the definition was found and removed,
-//               false if it wasn't present to begin with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the collider (and its associated handler) from the set of
+ * CollisionNodes that will be tested each frame for collisions into other
+ * objects.  Returns true if the definition was found and removed, false if it
+ * wasn't present to begin with.
+ */
 bool CollisionTraverser::
 remove_collider(const NodePath &collider) {
   nassertr(_ordered_colliders.size() == _colliders.size(), false);
@@ -201,37 +188,30 @@ remove_collider(const NodePath &collider) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::has_collider
-//       Access: Published
-//  Description: Returns true if the indicated node is current in the
-//               set of nodes that will be tested each frame for
-//               collisions into other objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated node is current in the set of nodes that will
+ * be tested each frame for collisions into other objects.
+ */
 bool CollisionTraverser::
 has_collider(const NodePath &collider) const {
   Colliders::const_iterator ci = _colliders.find(collider);
   return (ci != _colliders.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::get_num_colliders
-//       Access: Published
-//  Description: Returns the number of CollisionNodes that have been
-//               added to the traverser via add_collider().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of CollisionNodes that have been added to the traverser
+ * via add_collider().
+ */
 int CollisionTraverser::
 get_num_colliders() const {
   nassertr(_ordered_colliders.size() == _colliders.size(), 0);
   return _ordered_colliders.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::get_collider
-//       Access: Published
-//  Description: Returns the nth CollisionNode that has been
-//               added to the traverser via add_collider().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth CollisionNode that has been added to the traverser via
+ * add_collider().
+ */
 NodePath CollisionTraverser::
 get_collider(int n) const {
   nassertr(_ordered_colliders.size() == _colliders.size(), NodePath());
@@ -239,13 +219,11 @@ get_collider(int n) const {
   return _ordered_colliders[n]._node_path;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::get_handler
-//       Access: Published
-//  Description: Returns the handler that is currently assigned to
-//               serve the indicated collision node, or NULL if the
-//               node is not on the traverser's set of active nodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the handler that is currently assigned to serve the indicated
+ * collision node, or NULL if the node is not on the traverser's set of active
+ * nodes.
+ */
 CollisionHandler *CollisionTraverser::
 get_handler(const NodePath &collider) const {
   Colliders::const_iterator ci = _colliders.find(collider);
@@ -255,12 +233,9 @@ get_handler(const NodePath &collider) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::clear_colliders
-//       Access: Published
-//  Description: Completely empties the set of collision nodes and
-//               their associated handlers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Completely empties the set of collision nodes and their associated handlers.
+ */
 void CollisionTraverser::
 clear_colliders() {
   _colliders.clear();
@@ -268,11 +243,9 @@ clear_colliders() {
   _handlers.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::traverse
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 traverse(const NodePath &root) {
   PStatTimer timer(_this_pcollector);
@@ -282,7 +255,7 @@ traverse(const NodePath &root) {
     get_recorder()->begin_traversal();
   }
   #endif  // DO_COLLISION_RECORDING
-  
+
   Handlers::iterator hi;
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
     if ((*hi).first->wants_all_potential_collidees()) {
@@ -375,28 +348,18 @@ traverse(const NodePath &root) {
 }
 
 #ifdef DO_COLLISION_RECORDING
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::set_recorder
-//       Access: Published
-//  Description: Uses the indicated CollisionRecorder object to start
-//               recording the intersection tests made by each
-//               subsequent call to traverse() on this object.  A
-//               particular CollisionRecorder object can only record
-//               one traverser at a time; if this object has already
-//               been assigned to another traverser, that assignment
-//               is broken.
-//
-//               This is intended to be used in a debugging mode to
-//               try to determine what work is being performed by the
-//               collision traversal.  Usually, attaching a recorder
-//               will impose significant runtime overhead.
-//
-//               This does not transfer ownership of the
-//               CollisionRecorder pointer; maintenance of that
-//               remains the caller's responsibility.  If the
-//               CollisionRecorder is destructed, it will cleanly
-//               remove itself from the traverser.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses the indicated CollisionRecorder object to start recording the
+ * intersection tests made by each subsequent call to traverse() on this object.
+ * A particular CollisionRecorder object can only record one traverser at a
+ * time; if this object has already been assigned to another traverser, that
+ * assignment is broken.  This is intended to be used in a debugging mode to try
+ * to determine what work is being performed by the collision traversal.
+ * Usually, attaching a recorder will impose significant runtime overhead.  This
+ * does not transfer ownership of the CollisionRecorder pointer; maintenance of
+ * that remains the caller's responsibility.  If the CollisionRecorder is
+ * destructed, it will cleanly remove itself from the traverser.
+ */
 void CollisionTraverser::
 set_recorder(CollisionRecorder *recorder) {
   if (recorder != _recorder) {
@@ -405,9 +368,9 @@ set_recorder(CollisionRecorder *recorder) {
       nassertv(_recorder->_trav == this);
       _recorder->_trav = (CollisionTraverser *)NULL;
     }
-    
+
     _recorder = recorder;
-    
+
     // Tell the new recorder about his new owner.
     if (_recorder != (CollisionRecorder *)NULL) {
       nassertv(_recorder->_trav != this);
@@ -420,16 +383,12 @@ set_recorder(CollisionRecorder *recorder) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::show_collisions
-//       Access: Published
-//  Description: This is a high-level function to create a
-//               CollisionVisualizer object to render the collision
-//               tests performed by this traverser.  The supplied root
-//               should be any node in the scene graph; typically, the
-//               top node (e.g. render).  The CollisionVisualizer will
-//               be attached to this node.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a high-level function to create a CollisionVisualizer object to
+ * render the collision tests performed by this traverser.  The supplied root
+ * should be any node in the scene graph; typically, the top node (e.g.
+ * render).  The CollisionVisualizer will be attached to this node.
+ */
 CollisionVisualizer *CollisionTraverser::
 show_collisions(const NodePath &root) {
   hide_collisions();
@@ -439,12 +398,9 @@ show_collisions(const NodePath &root) {
   return viz;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::hide_collisions
-//       Access: Published
-//  Description: Undoes the effect of a previous call to
-//               show_collisions().
-////////////////////////////////////////////////////////////////////
+/**
+ * Undoes the effect of a previous call to show_collisions().
+ */
 void CollisionTraverser::
 hide_collisions() {
   if (!_collision_visualizer_np.is_empty()) {
@@ -455,22 +411,18 @@ hide_collisions() {
 
 #endif  // DO_COLLISION_RECORDING
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 output(ostream &out) const {
   out << "CollisionTraverser, " << _colliders.size()
       << " colliders and " << _handlers.size() << " handlers.\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
@@ -478,19 +430,19 @@ write(ostream &out, int indent_level) const {
     << " colliders and " << _handlers.size() << " handlers:\n";
 
   OrderedColliders::const_iterator oci;
-  for (oci = _ordered_colliders.begin(); 
-       oci != _ordered_colliders.end(); 
+  for (oci = _ordered_colliders.begin();
+       oci != _ordered_colliders.end();
        ++oci) {
     NodePath cnode_path = (*oci)._node_path;
     bool in_graph = (*oci)._in_graph;
-    
+
     Colliders::const_iterator ci;
     ci = _colliders.find(cnode_path);
     nassertv(ci != _colliders.end());
 
     CollisionHandler *handler = (*ci).second;
     nassertv(handler != (CollisionHandler *)NULL);
-    
+
     indent(out, indent_level + 2)
       << cnode_path;
     if (in_graph) {
@@ -501,7 +453,7 @@ write(ostream &out, int indent_level) const {
 
     if (!cnode_path.is_empty() && cnode_path.node()->is_collision_node()) {
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
-      
+
       int num_solids = cnode->get_num_solids();
       for (int i = 0; i < num_solids; ++i) {
         cnode->get_solid(i)->write(out, indent_level + 4);
@@ -510,18 +462,13 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::prepare_colliders_single
-//       Access: Private
-//  Description: Fills up the set of LevelStates corresponding to the
-//               active colliders in use.
-//
-//               This flavor uses a CollisionLevelStateSingle, which is
-//               limited to a certain number of colliders per pass
-//               (typically 32).
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the set of LevelStates corresponding to the active colliders in use.
+ * This flavor uses a CollisionLevelStateSingle, which is limited to a certain
+ * number of colliders per pass (typically 32).
+ */
 void CollisionTraverser::
-prepare_colliders_single(CollisionTraverser::LevelStatesSingle &level_states, 
+prepare_colliders_single(CollisionTraverser::LevelStatesSingle &level_states,
                          const NodePath &root) {
   int num_colliders = _colliders.size();
   int max_colliders = CollisionLevelStateSingle::get_max_colliders();
@@ -560,11 +507,11 @@ prepare_colliders_single(CollisionTraverser::LevelStatesSingle &level_states,
     } else {
       ocd._in_graph = true;
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
-      
+
       CollisionLevelStateSingle::ColliderDef def;
       def._node = cnode;
       def._node_path = cnode_path;
-      
+
       int num_solids = cnode->get_num_solids();
       for (int s = 0; s < num_solids; ++s) {
         CPT(CollisionSolid) collider = cnode->get_solid(s);
@@ -591,11 +538,9 @@ prepare_colliders_single(CollisionTraverser::LevelStatesSingle &level_states,
   nassertv(num_remaining_colliders == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::r_traverse_single
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
   if (!level_state.any_in_bounds()) {
@@ -636,7 +581,7 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
           entry._from = level_state.get_collider(c);
 
           compare_collider_to_node(
-              entry, 
+              entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
               node_gbv);
@@ -651,7 +596,7 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
         << "Reached " << *node << "\n";
     }
     #endif
-    
+
     GeomNode *gnode;
     DCAST_INTO_V(gnode, node);
     CPT(BoundingVolume) node_bv = gnode->get_bounds();
@@ -681,7 +626,7 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
           entry._from = level_state.get_collider(c);
 
           compare_collider_to_geom_node(
-              entry, 
+              entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
               node_gbv);
@@ -729,18 +674,13 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::prepare_colliders_double
-//       Access: Private
-//  Description: Fills up the set of LevelStates corresponding to the
-//               active colliders in use.
-//
-//               This flavor uses a CollisionLevelStateDouble, which is
-//               limited to a certain number of colliders per pass
-//               (typically 32).
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the set of LevelStates corresponding to the active colliders in use.
+ * This flavor uses a CollisionLevelStateDouble, which is limited to a certain
+ * number of colliders per pass (typically 32).
+ */
 void CollisionTraverser::
-prepare_colliders_double(CollisionTraverser::LevelStatesDouble &level_states, 
+prepare_colliders_double(CollisionTraverser::LevelStatesDouble &level_states,
                          const NodePath &root) {
   int num_colliders = _colliders.size();
   int max_colliders = CollisionLevelStateDouble::get_max_colliders();
@@ -779,11 +719,11 @@ prepare_colliders_double(CollisionTraverser::LevelStatesDouble &level_states,
     } else {
       ocd._in_graph = true;
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
-      
+
       CollisionLevelStateDouble::ColliderDef def;
       def._node = cnode;
       def._node_path = cnode_path;
-      
+
       int num_solids = cnode->get_num_solids();
       for (int s = 0; s < num_solids; ++s) {
         CPT(CollisionSolid) collider = cnode->get_solid(s);
@@ -810,11 +750,9 @@ prepare_colliders_double(CollisionTraverser::LevelStatesDouble &level_states,
   nassertv(num_remaining_colliders == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::r_traverse_double
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
   if (!level_state.any_in_bounds()) {
@@ -855,7 +793,7 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
           entry._from = level_state.get_collider(c);
 
           compare_collider_to_node(
-              entry, 
+              entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
               node_gbv);
@@ -870,7 +808,7 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
         << "Reached " << *node << "\n";
     }
     #endif
-    
+
     GeomNode *gnode;
     DCAST_INTO_V(gnode, node);
     CPT(BoundingVolume) node_bv = gnode->get_bounds();
@@ -900,7 +838,7 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
           entry._from = level_state.get_collider(c);
 
           compare_collider_to_geom_node(
-              entry, 
+              entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
               node_gbv);
@@ -948,18 +886,13 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::prepare_colliders_quad
-//       Access: Private
-//  Description: Fills up the set of LevelStates corresponding to the
-//               active colliders in use.
-//
-//               This flavor uses a CollisionLevelStateQuad, which is
-//               limited to a certain number of colliders per pass
-//               (typically 32).
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the set of LevelStates corresponding to the active colliders in use.
+ * This flavor uses a CollisionLevelStateQuad, which is limited to a certain
+ * number of colliders per pass (typically 32).
+ */
 void CollisionTraverser::
-prepare_colliders_quad(CollisionTraverser::LevelStatesQuad &level_states, 
+prepare_colliders_quad(CollisionTraverser::LevelStatesQuad &level_states,
                          const NodePath &root) {
   int num_colliders = _colliders.size();
   int max_colliders = CollisionLevelStateQuad::get_max_colliders();
@@ -998,11 +931,11 @@ prepare_colliders_quad(CollisionTraverser::LevelStatesQuad &level_states,
     } else {
       ocd._in_graph = true;
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
-      
+
       CollisionLevelStateQuad::ColliderDef def;
       def._node = cnode;
       def._node_path = cnode_path;
-      
+
       int num_solids = cnode->get_num_solids();
       for (int s = 0; s < num_solids; ++s) {
         CPT(CollisionSolid) collider = cnode->get_solid(s);
@@ -1029,11 +962,9 @@ prepare_colliders_quad(CollisionTraverser::LevelStatesQuad &level_states,
   nassertv(num_remaining_colliders == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::r_traverse_quad
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
   if (!level_state.any_in_bounds()) {
@@ -1074,7 +1005,7 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
           entry._from = level_state.get_collider(c);
 
           compare_collider_to_node(
-              entry, 
+              entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
               node_gbv);
@@ -1089,7 +1020,7 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
         << "Reached " << *node << "\n";
     }
     #endif
-    
+
     GeomNode *gnode;
     DCAST_INTO_V(gnode, node);
     CPT(BoundingVolume) node_bv = gnode->get_bounds();
@@ -1119,7 +1050,7 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
           entry._from = level_state.get_collider(c);
 
           compare_collider_to_geom_node(
-              entry, 
+              entry,
               level_state.get_parent_bound(c),
               level_state.get_local_bound(c),
               node_gbv);
@@ -1167,11 +1098,9 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::compare_collider_to_node
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 compare_collider_to_node(CollisionEntry &entry,
                          const GeometricBoundingVolume *from_parent_gbv,
@@ -1209,17 +1138,15 @@ compare_collider_to_node(CollisionEntry &entry,
         // tested, is the same as the solid's bounding volume.)
         DCAST_INTO_V(solid_gbv, solid_bv);
       }
-      
+
       compare_collider_to_solid(entry, from_node_gbv, solid_gbv);
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::compare_collider_to_geom_node
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 compare_collider_to_geom_node(CollisionEntry &entry,
                               const GeometricBoundingVolume *from_parent_gbv,
@@ -1258,11 +1185,9 @@ compare_collider_to_geom_node(CollisionEntry &entry,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::compare_collider_to_solid
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 compare_collider_to_solid(CollisionEntry &entry,
                           const GeometricBoundingVolume *from_node_gbv,
@@ -1278,7 +1203,7 @@ compare_collider_to_solid(CollisionEntry &entry,
     if (collide_cat.is_spam()) {
       collide_cat.spam(false)
         << "Comparing to solid: " << *from_node_gbv
-        << " to " << *solid_gbv << ", within_solid_bounds = " 
+        << " to " << *solid_gbv << ", within_solid_bounds = "
         << within_solid_bounds << "\n";
     }
 #endif  // NDEBUG
@@ -1291,11 +1216,9 @@ compare_collider_to_solid(CollisionEntry &entry,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::compare_collider_to_geom
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CollisionTraverser::
 compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
                          const GeometricBoundingVolume *from_node_gbv,
@@ -1315,7 +1238,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
       Thread *current_thread = Thread::get_current_thread();
       CPT(GeomVertexData) data = geom->get_vertex_data()->animate_vertices(true, current_thread);
       GeomVertexReader vertex(data, InternalName::get_vertex());
-      
+
       int num_primitives = geom->get_num_primitives();
       for (int i = 0; i < num_primitives; ++i) {
         const GeomPrimitive *primitive = geom->get_primitive(i);
@@ -1327,14 +1250,14 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
           GeomVertexReader index(tris->get_vertices(), 0);
           while (!index.is_at_end()) {
             LPoint3 v[3];
-            
+
             vertex.set_row_unsafe(index.get_data1i());
             v[0] = vertex.get_data3();
             vertex.set_row_unsafe(index.get_data1i());
             v[1] = vertex.get_data3();
             vertex.set_row_unsafe(index.get_data1i());
             v[2] = vertex.get_data3();
-            
+
             // Generate a temporary CollisionGeom on the fly for each
             // triangle in the Geom.
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
@@ -1360,11 +1283,11 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
           int num_vertices = primitive->get_num_vertices();
           for (int i = 0; i < num_vertices; i += 3) {
             LPoint3 v[3];
-            
+
             v[0] = vertex.get_data3();
             v[1] = vertex.get_data3();
             v[2] = vertex.get_data3();
-            
+
             // Generate a temporary CollisionGeom on the fly for each
             // triangle in the Geom.
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
@@ -1390,18 +1313,13 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::remove_handler
-//       Access: Private
-//  Description: Removes the indicated CollisionHandler from the list
-//               of handlers to be processed, and returns the iterator
-//               to the next handler in the list.  This is designed to
-//               be called safely from within a traversal of the handler
-//               list.
-//
-//               This also removes any colliders that depend on this
-//               handler, to keep internal structures intact.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated CollisionHandler from the list of handlers to be
+ * processed, and returns the iterator to the next handler in the list.  This is
+ * designed to be called safely from within a traversal of the handler list.
+ * This also removes any colliders that depend on this handler, to keep internal
+ * structures intact.
+ */
 CollisionTraverser::Handlers::iterator CollisionTraverser::
 remove_handler(CollisionTraverser::Handlers::iterator hi) {
   nassertr(hi != _handlers.end(), hi);
@@ -1434,7 +1352,7 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
       }
       nassertr(oci != _ordered_colliders.end(), hi);
       _ordered_colliders.erase(oci);
-      
+
       nassertr(_ordered_colliders.size() == _colliders.size(), hi);
 
     } else {
@@ -1446,12 +1364,9 @@ remove_handler(CollisionTraverser::Handlers::iterator hi) {
   return hi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::get_pass_collector
-//       Access: Private
-//  Description: Returns the PStatCollector suitable for timing the
-//               nth pass.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the PStatCollector suitable for timing the nth pass.
+ */
 PStatCollector &CollisionTraverser::
 get_pass_collector(int pass) {
   nassertr(pass >= 0, _this_pcollector);

@@ -11,11 +11,9 @@
  * @date 2009-10-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMeshDesc::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxConvexMeshDesc::
 PhysxConvexMeshDesc() {
 
@@ -26,11 +24,9 @@ PhysxConvexMeshDesc() {
   _vertices = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMeshDesc::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxConvexMeshDesc::
 ~PhysxConvexMeshDesc() {
 
@@ -39,14 +35,11 @@ INLINE PhysxConvexMeshDesc::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMeshDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxConvexMeshDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

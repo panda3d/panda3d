@@ -18,13 +18,11 @@
 #include "numeric_types.h"
 #include "lookup3.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AddHash
-// Description : This class is used just as a namespace scope to
-//               collect together a handful of static functions, which
-//               are used to wrap calls to Bob Jenkins' public-domain
-//               hash generation function (defined in lookup3.c).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used just as a namespace scope to collect together a handful of
+ * static functions, which are used to wrap calls to Bob Jenkins' public-domain
+ * hash generation function (defined in lookup3.c).
+ */
 class EXPCL_DTOOL AddHash {
 public:
   INLINE static size_t add_hash(size_t start, const PN_uint32 *words, size_t num_words);

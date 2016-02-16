@@ -21,11 +21,10 @@
 class ProgramBase;
 class WordWrapStream;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WordWrapStreamBuf
-// Description : Used by WordWrapStream to implement an ostream that
-//               flushes its output to ProgramBase::show_text().
-////////////////////////////////////////////////////////////////////
+/**
+ * Used by WordWrapStream to implement an ostream that flushes its output to
+ * ProgramBase::show_text().
+ */
 class WordWrapStreamBuf : public streambuf {
 public:
   WordWrapStreamBuf(WordWrapStream *owner, ProgramBase *program);

@@ -19,11 +19,10 @@
 
 class AssimpLoader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypeAssimp
-// Description : This defines the Loader interface that uses the
-//               Assimp library to load various model formats.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the Loader interface that uses the Assimp library to load
+ * various model formats.
+ */
 class EXPCL_ASSIMP LoaderFileTypeAssimp : public LoaderFileType {
 public:
   LoaderFileTypeAssimp();
@@ -59,4 +58,3 @@ private:
 };
 
 #endif
-

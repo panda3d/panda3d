@@ -29,17 +29,13 @@
 class Multifile;
 class VirtualFileComposite;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileSystem
-// Description : A hierarchy of directories and files that appears to
-//               be one continuous file system, even though the files
-//               may originate from several different sources that may
-//               not be related to the actual OS's file system.
-//
-//               For instance, a VirtualFileSystem can transparently
-//               mount one or more Multifiles as their own
-//               subdirectory hierarchies.
-////////////////////////////////////////////////////////////////////
+/**
+ * A hierarchy of directories and files that appears to be one continuous file
+ * system, even though the files may originate from several different sources
+ * that may not be related to the actual OS's file system.  For instance, a
+ * VirtualFileSystem can transparently mount one or more Multifiles as their own
+ * subdirectory hierarchies.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileSystem {
 PUBLISHED:
   VirtualFileSystem();
@@ -50,9 +46,9 @@ PUBLISHED:
   };
 
   BLOCKING bool mount(Multifile *multifile, const Filename &mount_point, int flags);
-  BLOCKING bool mount(const Filename &physical_filename, const Filename &mount_point, 
+  BLOCKING bool mount(const Filename &physical_filename, const Filename &mount_point,
                       int flags, const string &password = "");
-  BLOCKING bool mount_loop(const Filename &virtual_filename, const Filename &mount_point, 
+  BLOCKING bool mount_loop(const Filename &virtual_filename, const Filename &mount_point,
                       int flags, const string &password = "");
   bool mount(VirtualFileMount *mount, const Filename &mount_point, int flags);
   BLOCKING int unmount(Multifile *multifile);
@@ -72,7 +68,7 @@ PUBLISHED:
 
   BLOCKING PT(VirtualFile) get_file(const Filename &filename, bool status_only = false) const;
   BLOCKING PT(VirtualFile) create_file(const Filename &filename);
-  BLOCKING PT(VirtualFile) find_file(const Filename &filename, 
+  BLOCKING PT(VirtualFile) find_file(const Filename &filename,
                                      const DSearchPath &searchpath,
                                      bool status_only = false) const;
   BLOCKING bool delete_file(const Filename &filename);
@@ -123,7 +119,7 @@ public:
   INLINE bool write_file(const Filename &filename, const unsigned char *data, size_t data_size, bool auto_wrap);
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
- 
+
   static void parse_options(const string &options,
                             int &flags, string &password);
   static void parse_option(const string &option,

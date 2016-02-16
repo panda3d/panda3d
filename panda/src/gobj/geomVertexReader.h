@@ -21,37 +21,24 @@
 #include "luse.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexReader
-// Description : This object provides a high-level interface for
-//               quickly reading a sequence of numeric values from a
-//               vertex table. 
-//
-//               It is particularly optimized for reading a single
-//               column of data values for a series of vertices,
-//               without changing columns between each number.
-//               Although you can also use one GeomVertexReader to
-//               read across the columns if it is convenient, by
-//               calling set_column() repeatedly at each vertex, it is
-//               faster to read down the columns, and to use a
-//               different GeomVertexReader for each column.
-//
-//               Note that a GeomVertexReader does not keep a
-//               reference count to the actual vertex data buffer (it
-//               grabs the current data buffer from the GeomVertexData
-//               whenever set_column() is called).  This means that it
-//               is important not to keep a GeomVertexReader object
-//               around over a long period of time in which the data
-//               buffer is likely to be deallocated; it is intended
-//               for making a quick pass over the data in one session.
-//
-//               It also means that you should create any
-//               GeomVertexWriters *before* creating GeomVertexReaders
-//               on the same data, since the writer itself might cause
-//               the vertex buffer to be deallocated.  Better yet, use
-//               a GeomVertexRewriter if you are going to create both
-//               of them anyway.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object provides a high-level interface for quickly reading a sequence of
+ * numeric values from a vertex table.  It is particularly optimized for reading
+ * a single column of data values for a series of vertices, without changing
+ * columns between each number.  Although you can also use one GeomVertexReader
+ * to read across the columns if it is convenient, by calling set_column()
+ * repeatedly at each vertex, it is faster to read down the columns, and to use
+ * a different GeomVertexReader for each column.  Note that a GeomVertexReader
+ * does not keep a reference count to the actual vertex data buffer (it grabs
+ * the current data buffer from the GeomVertexData whenever set_column() is
+ * called).  This means that it is important not to keep a GeomVertexReader
+ * object around over a long period of time in which the data buffer is likely
+ * to be deallocated; it is intended for making a quick pass over the data in
+ * one session.  It also means that you should create any GeomVertexWriters
+ * *before* creating GeomVertexReaders on the same data, since the writer itself
+ * might cause the vertex buffer to be deallocated.  Better yet, use a
+ * GeomVertexRewriter if you are going to create both of them anyway.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexReader : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexReader(Thread *current_thread = Thread::get_current_thread());

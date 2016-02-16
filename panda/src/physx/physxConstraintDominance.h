@@ -21,16 +21,12 @@
 
 class PhysxShape;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxConstraintDominance
-// Description : Expresses the dominance relationship of a
-//               constraint. For the time being only three settings
-//               are permitted:. (1.0f, 1.0f), (0.0f, 1.0f), and
-//               (1.0f, 0.0f). 
-//
-//               See PhysxScene::set_dominance_group_pair for a
-//               detailed explanation of dominance behaviour.
-////////////////////////////////////////////////////////////////////
+/**
+ * Expresses the dominance relationship of a constraint.  For the time being
+ * only three settings are permitted:. (1.0f, 1.0f), (0.0f, 1.0f), and (1.0f,
+ * 0.0f).  See PhysxScene::set_dominance_group_pair for a detailed explanation
+ * of dominance behaviour.
+ */
 class EXPCL_PANDAPHYSX PhysxConstraintDominance {
 
 PUBLISHED:

@@ -18,12 +18,10 @@
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::Constructor
-//       Access: Public
-//  Description: This constructor creates a header based on an
-//               already-constructed NetDatagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor creates a header based on an already-constructed
+ * NetDatagram.
+ */
 DatagramUDPHeader::
 DatagramUDPHeader(const NetDatagram &datagram) {
   const string &str = datagram.get_message();
@@ -37,24 +35,18 @@ DatagramUDPHeader(const NetDatagram &datagram) {
   nassertv((int)_header.get_length() == datagram_udp_header_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::Constructor
-//       Access: Public
-//  Description: This constructor decodes a header from a block of
-//               data of length datagram_udp_header_size, presumably
-//               just read from a socket.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor decodes a header from a block of data of length
+ * datagram_udp_header_size, presumably just read from a socket.
+ */
 DatagramUDPHeader::
 DatagramUDPHeader(const void *data) : _header(data, datagram_udp_header_size) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::verify_datagram
-//       Access: Public
-//  Description: Verifies that the indicated datagram has the
-//               appropriate length and checksum.  Returns true if it
-//               matches, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the indicated datagram has the appropriate length and checksum.
+ * Returns true if it matches, false otherwise.
+ */
 bool DatagramUDPHeader::
 verify_datagram(const NetDatagram &datagram) const {
   const string &str = datagram.get_message();

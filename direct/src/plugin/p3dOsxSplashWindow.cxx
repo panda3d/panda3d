@@ -26,13 +26,11 @@
   #endif
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DOsxSplashWindow::
-P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) : 
+P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) :
   P3DSplashWindow(inst, make_visible)
 {
   _font_attribs = NULL;
@@ -46,11 +44,9 @@ P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) :
   _toplevel_window = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DOsxSplashWindow::
 ~P3DOsxSplashWindow() {
   if (_toplevel_window != NULL) {
@@ -64,13 +60,10 @@ P3DOsxSplashWindow::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::set_wparams
-//       Access: Public, Virtual
-//  Description: Changes the window parameters, e.g. to resize or
-//               reposition the window; or sets the parameters for the
-//               first time, creating the initial window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the window parameters, e.g.  to resize or reposition the window; or
+ * sets the parameters for the first time, creating the initial window.
+ */
 void P3DOsxSplashWindow::
 set_wparams(const P3DWindowParams &wparams) {
   P3DSplashWindow::set_wparams(wparams);
@@ -83,7 +76,7 @@ set_wparams(const P3DWindowParams &wparams) {
       Rect r;
       r.top = _wparams.get_win_y();
       r.left = _wparams.get_win_x();
-      
+
       // These are the same defaults used by Panda's osxGraphicsWindow.
       if (r.left == -1) r.left = 10;
       if (r.top == -1) r.top = 50;
@@ -98,12 +91,12 @@ set_wparams(const P3DWindowParams &wparams) {
 
       r.right = r.left + _win_width;
       r.bottom = r.top + _win_height;
-      WindowAttributes attrib = 
+      WindowAttributes attrib =
         kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute;
       CreateNewWindow(kDocumentWindowClass, attrib, &r, &_toplevel_window);
- 
+
       EventHandlerRef application_event_ref_ref1;
-      EventTypeSpec list1[] = { 
+      EventTypeSpec list1[] = {
         { kEventClassWindow, kEventWindowDrawContent },
         { kEventClassWindow, kEventWindowBoundsChanged },
         { kEventClassWindow, kEventWindowClose },
@@ -112,9 +105,9 @@ set_wparams(const P3DWindowParams &wparams) {
         { kEventClassMouse, kEventMouseMoved },
         { kEventClassMouse, kEventMouseDragged },
       };
-        
+
       EventHandlerUPP gEvtHandler = NewEventHandlerUPP(st_event_callback);
-      InstallWindowEventHandler(_toplevel_window, gEvtHandler, 
+      InstallWindowEventHandler(_toplevel_window, gEvtHandler,
                                 GetEventTypeCount(list1), list1, this, &application_event_ref_ref1);
 
       ProcessSerialNumber psn = { 0, kCurrentProcess };
@@ -163,13 +156,10 @@ set_wparams(const P3DWindowParams &wparams) {
   CFRelease(symbolic_ref);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::set_visible
-//       Access: Public, Virtual
-//  Description: Makes the splash window visible or invisible, so as
-//               not to compete with the embedded Panda window in the
-//               same space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes the splash window visible or invisible, so as not to compete with the
+ * embedded Panda window in the same space.
+ */
 void P3DOsxSplashWindow::
 set_visible(bool visible) {
   P3DSplashWindow::set_visible(visible);
@@ -184,12 +174,10 @@ set_visible(bool visible) {
   refresh();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::set_image_filename
-//       Access: Public, Virtual
-//  Description: Specifies the name of a JPEG image file that is
-//               displayed in the center of the splash window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the name of a JPEG image file that is displayed in the center of
+ * the splash window.
+ */
 void P3DOsxSplashWindow::
 set_image_filename(const string &image_filename, ImagePlacement image_placement) {
   switch (image_placement) {
@@ -205,7 +193,7 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
   case IP_button_rollover:
     load_image(_button_rollover_image, image_filename);
     break;
-   
+
   case IP_button_click:
     load_image(_button_click_image, image_filename);
     break;
@@ -217,23 +205,18 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
   refresh();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::set_install_label
-//       Access: Public, Virtual
-//  Description: Specifies the text that is displayed above the
-//               install progress bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the text that is displayed above the install progress bar.
+ */
 void P3DOsxSplashWindow::
 set_install_label(const string &install_label) {
   _install_label = install_label;
   refresh();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::set_install_progress
-//       Access: Public, Virtual
-//  Description: Moves the install progress bar from 0.0 to 1.0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves the install progress bar from 0.0 to 1.0.
+ */
 void P3DOsxSplashWindow::
 set_install_progress(double install_progress,
                      bool is_progress_known, size_t received_data) {
@@ -245,7 +228,7 @@ set_install_progress(double install_progress,
       refresh();
     }
   } else {
-    if ((int)(received_data * _unknown_progress_rate) != 
+    if ((int)(received_data * _unknown_progress_rate) !=
         (int)(_received_data * _unknown_progress_rate)) {
       refresh();
     }
@@ -256,13 +239,10 @@ set_install_progress(double install_progress,
   _received_data = received_data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::handle_event
-//       Access: Public, Virtual
-//  Description: Deals with the event callback from the OS window
-//               system.  Returns true if the event is handled, false
-//               if ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deals with the event callback from the OS window system.  Returns true if the
+ * event is handled, false if ignored.
+ */
 bool P3DOsxSplashWindow::
 handle_event(const P3D_event_data &event) {
   bool retval = false;
@@ -278,37 +258,33 @@ handle_event(const P3D_event_data &event) {
   return retval;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::refresh
-//       Access: Protected, Virtual
-//  Description: Requests that the window will be repainted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Requests that the window will be repainted.
+ */
 void P3DOsxSplashWindow::
 refresh() {
   if (!_visible) {
     return;
   }
   if (_toplevel_window != NULL) {
-    Rect r = { 0, 0, _win_height, _win_width }; 
+    Rect r = { 0, 0, _win_height, _win_width };
     InvalWindowRect(_toplevel_window, &r);
-    
+
   } else {
     _inst->request_refresh();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::paint_window
-//       Access: Private
-//  Description: Redraws the current splash window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Redraws the current splash window.
+ */
 void P3DOsxSplashWindow::
 paint_window() {
   if (!_visible) {
     return;
   }
 
-  if (_toplevel_window != NULL || 
+  if (_toplevel_window != NULL ||
       _wparams.get_parent_window()._window_handle_type == P3D_WHT_osx_port) {
 
     // The old QuickDraw-style window handle.  We use
@@ -317,37 +293,37 @@ paint_window() {
     GrafPtr out_port = NULL;
     if (_toplevel_window != NULL) {
       GetPort(&out_port);
-      
+
     } else {
       const P3D_window_handle &handle = _wparams.get_parent_window();
       assert(handle._window_handle_type == P3D_WHT_osx_port);
       out_port = handle._handle._osx_port._port;
     }
-    
+
     CGContextRef context;
     OSStatus err = CreateCGContextForPort(out_port, &context);
     if (err != noErr) {
       nout << "Couldn't create CG context\n";
       return;
     }
-    
+
     //  Adjust for any SetOrigin calls on out_port
     SyncCGContextOriginWithPort(context, out_port);
-    
+
     //  Move the CG origin to the upper left of the port
     Rect port_rect;
     GetPortBounds(out_port, &port_rect);
     CGContextTranslateCTM(context, 0, (float)(port_rect.bottom - port_rect.top));
-    
+
     //  Flip the y axis so that positive Y points down
     CGContextScaleCTM(context, 1.0, -1.0);
-    
+
     paint_window_osx_cgcontext(context);
 
     // We need to synchronize, or we don't see the update every frame.
     CGContextSynchronize(context);
     CGContextRelease(context);
-    
+
   } else {
     // The new CoreGraphics-style window handle.  We can draw to this
     // directly.
@@ -360,12 +336,9 @@ paint_window() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::paint_window_osx_cgcontext
-//       Access: Private
-//  Description: Redraws the current splash window, using the new
-//               CoreGraphics interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Redraws the current splash window, using the new CoreGraphics interface.
+ */
 void P3DOsxSplashWindow::
 paint_window_osx_cgcontext(CGContextRef context) {
   // Clear the whole region to the background color before beginning.
@@ -407,12 +380,9 @@ paint_window_osx_cgcontext(CGContextRef context) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::handle_event_osx_event_record
-//       Access: Private
-//  Description: Responds to the deprecated Carbon event types in Mac
-//               OSX.
-////////////////////////////////////////////////////////////////////
+/**
+ * Responds to the deprecated Carbon event types in Mac OSX.
+ */
 bool P3DOsxSplashWindow::
 handle_event_osx_event_record(const P3D_event_data &event) {
   assert(event._event_type == P3D_ET_osx_event_record);
@@ -428,7 +398,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     GrafPtr out_port = handle._handle._osx_port._port;
     GrafPtr port_save = NULL;
     Boolean port_changed = QDSwapPort(out_port, &port_save);
-  
+
     GlobalToLocal(&pt);
 
     if (port_changed) {
@@ -447,7 +417,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     pt.h = (short)(cgpt.x - _wparams.get_win_x());
     pt.v = (short)(cgpt.y - _wparams.get_win_y());
   }
-  
+
   switch (er->what) {
   case updateEvt:
     paint_window();
@@ -476,12 +446,9 @@ handle_event_osx_event_record(const P3D_event_data &event) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::handle_event_osx_cocoa
-//       Access: Private
-//  Description: Responds to the new Cocoa event types in Mac
-//               OSX.
-////////////////////////////////////////////////////////////////////
+/**
+ * Responds to the new Cocoa event types in Mac OSX.
+ */
 bool P3DOsxSplashWindow::
 handle_event_osx_cocoa(const P3D_event_data &event) {
   assert(event._event_type == P3D_ET_osx_cocoa);
@@ -519,11 +486,9 @@ handle_event_osx_cocoa(const P3D_event_data &event) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::load_image
-//       Access: Private
-//  Description: Loads the named image file into an OsxImageData object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Loads the named image file into an OsxImageData object.
+ */
 void P3DOsxSplashWindow::
 load_image(OsxImageData &image, const string &image_filename) {
   image.dump_image();
@@ -574,40 +539,37 @@ load_image(OsxImageData &image, const string &image_filename) {
   }
 
   image._data =
-    CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data, 
+    CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data,
                                 image._height * new_row_stride, kCFAllocatorNull);
   image._provider = CGDataProviderCreateWithCFData(image._data);
   image._color_space = CGColorSpaceCreateDeviceRGB();
 
   image._image =
-    CGImageCreate(image._width, image._height, 8, 32, 
+    CGImageCreate(image._width, image._height, 8, 32,
                   new_row_stride, image._color_space,
-                  kCGImageAlphaFirst | kCGBitmapByteOrder32Little, 
+                  kCGImageAlphaFirst | kCGBitmapByteOrder32Little,
                   image._provider, NULL, false, kCGRenderingIntentDefault);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::paint_image
-//       Access: Private
-//  Description: Draws the indicated image, centered within the
-//               window.  Returns true on success, false if the image
-//               is not defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the indicated image, centered within the window.  Returns true on
+ * success, false if the image is not defined.
+ */
 bool P3DOsxSplashWindow::
 paint_image(CGContextRef context, const OsxImageData &image) {
   if (image._image == NULL) {
     return false;
   }
-    
+
   // Determine the relative size of image and window.
   int win_cx = _win_width / 2;
   int win_cy = _win_height / 2;
 
   CGRect rect = { { 0, 0 }, { 0, 0 } };
-    
+
   if (image._width <= _win_width && image._height <= _win_height) {
     // The bitmap fits within the window; center it.
-      
+
     // This is the top-left corner of the bitmap in window coordinates.
     int p_x = win_cx - image._width / 2;
     int p_y = win_cy - image._height / 2;
@@ -616,7 +578,7 @@ paint_image(CGContextRef context, const OsxImageData &image) {
     rect.origin.y += p_y;
     rect.size.width = image._width;
     rect.size.height = image._height;
-      
+
   } else {
     // The bitmap is larger than the window; scale it down.
     double x_scale = (double)_win_width / (double)image._width;
@@ -624,7 +586,7 @@ paint_image(CGContextRef context, const OsxImageData &image) {
     double scale = min(x_scale, y_scale);
     int sc_width = (int)(image._width * scale);
     int sc_height = (int)(image._height * scale);
-      
+
     int p_x = win_cx - sc_width / 2;
     int p_y = win_cy - sc_height / 2;
 
@@ -635,16 +597,13 @@ paint_image(CGContextRef context, const OsxImageData &image) {
   }
 
   CGContextDrawImage(context, rect, image._image);
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::paint_progress_bar
-//       Access: Private
-//  Description: Draws the progress bar and the label within the
-//               window.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the progress bar and the label within the window.
+ */
 void P3DOsxSplashWindow::
 paint_progress_bar(CGContextRef context) {
   CGFloat fg_components[] = { _fgcolor_r / 255.0f, _fgcolor_g / 255.0f, _fgcolor_b / 255.0f, 1 };
@@ -744,30 +703,26 @@ paint_progress_bar(CGContextRef context) {
   CGColorSpaceRelease(rgb_space);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::st_event_callback
-//       Access: Private, Static
-//  Description: The event callback on the toplevel window.
-////////////////////////////////////////////////////////////////////
+/**
+ * The event callback on the toplevel window.
+ */
 pascal OSStatus P3DOsxSplashWindow::
-st_event_callback(EventHandlerCallRef my_handler, EventRef event, 
+st_event_callback(EventHandlerCallRef my_handler, EventRef event,
                   void *user_data) {
   return ((P3DOsxSplashWindow *)user_data)->event_callback(my_handler, event);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::event_callback
-//       Access: Private
-//  Description: The event callback on the toplevel window.
-////////////////////////////////////////////////////////////////////
+/**
+ * The event callback on the toplevel window.
+ */
 OSStatus P3DOsxSplashWindow::
 event_callback(EventHandlerCallRef my_handler, EventRef event) {
   OSStatus result = eventNotHandledErr;
 
-  WindowRef window = NULL; 
+  WindowRef window = NULL;
   UInt32 the_class = GetEventClass(event);
   UInt32 kind = GetEventKind(event);
-  GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, 
+  GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL,
                     sizeof(WindowRef), NULL, (void*) &window);
   switch (the_class) {
   case kEventClassWindow:
@@ -843,11 +798,9 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DOsxSplashWindow::OsxImageData::dump_image
-//       Access: Public
-//  Description: Frees the previous image data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees the previous image data.
+ */
 void P3DOsxSplashWindow::OsxImageData::
 dump_image() {
   if (_image != NULL) {

@@ -11,32 +11,26 @@
  * @date 2009-11-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShapeDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxBoxForceFieldShapeDesc::
 PhysxBoxForceFieldShapeDesc() : PhysxForceFieldShapeDesc() {
 
   set_to_default();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShapeDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxBoxForceFieldShapeDesc::
 ~PhysxBoxForceFieldShapeDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShapeDesc::set_to_default
-//       Access: Published
-//  Description: (re)sets the structure to the default.
-////////////////////////////////////////////////////////////////////
+/**
+ * (re)sets the structure to the default.
+ */
 INLINE void PhysxBoxForceFieldShapeDesc::
 set_to_default() {
 
@@ -44,14 +38,11 @@ set_to_default() {
   set_name("");
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShapeDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxBoxForceFieldShapeDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

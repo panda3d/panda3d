@@ -18,15 +18,12 @@
 #include "dcast.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_textures_by_filename
-//  Description: Extracts from the egg subgraph beginning at the
-//               indicated node a set of all the texture objects
-//               referenced, grouped together by filename.  Texture
-//               objects that share a common filename (but possibly
-//               differ in other properties) are returned together in
-//               the same element of the map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts from the egg subgraph beginning at the indicated node a set of all
+ * the texture objects referenced, grouped together by filename.  Texture
+ * objects that share a common filename (but possibly differ in other
+ * properties) are returned together in the same element of the map.
+ */
 void
 get_textures_by_filename(const EggNode *node, EggTextureFilenames &result) {
   if (node->is_of_type(EggPrimitive::get_class_type())) {
@@ -47,4 +44,3 @@ get_textures_by_filename(const EggNode *node, EggTextureFilenames &result) {
     }
   }
 }
-

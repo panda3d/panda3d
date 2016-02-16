@@ -15,16 +15,12 @@
 
 TypeHandle OcclusionQueryContext::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: OcclusionQueryContext::get_num_fragments
-//       Access: Public, Virtual
-//  Description: Returns the number of fragments (pixels) of the
-//               specified geometry that passed the depth test.
-//               If is_answer_ready() did not return true, this
-//               function may block before it returns.
-//
-//               It is only valid to call this from the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of fragments (pixels) of the specified geometry that
+ * passed the depth test.  If is_answer_ready() did not return true, this
+ * function may block before it returns.  It is only valid to call this from the
+ * draw thread.
+ */
 int OcclusionQueryContext::
 get_num_fragments() const {
   return 0;

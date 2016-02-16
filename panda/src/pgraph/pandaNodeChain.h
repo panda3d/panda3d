@@ -20,13 +20,11 @@
 
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaNodeChain
-// Description : This class maintains a linked list of PandaNodes.
-//               It's used to maintain a list of PandaNodes whose
-//               _prev_transform is different from their _transform
-//               (in pipeline stage 0).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class maintains a linked list of PandaNodes.  It's used to maintain a
+ * list of PandaNodes whose _prev_transform is different from their _transform
+ * (in pipeline stage 0).
+ */
 class EXPCL_PANDA_PGRAPH PandaNodeChain : private LinkedListNode {
 public:
   INLINE PandaNodeChain(const char *lock_name);
@@ -40,4 +38,3 @@ public:
 #include "pandaNodeChain.I"
 
 #endif
-

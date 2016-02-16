@@ -19,11 +19,9 @@
 
 TypeHandle Transform2SG::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: Transform2SG::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Transform2SG::
 Transform2SG(const string &name) :
   DataNode(name)
@@ -33,41 +31,32 @@ Transform2SG(const string &name) :
   _node = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Transform2SG::set_node
-//       Access: Public
-//  Description: Sets the node that this object will adjust.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the node that this object will adjust.
+ */
 void Transform2SG::
 set_node(PandaNode *node) {
   _node = node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Transform2SG::get_node
-//       Access: Public
-//  Description: Returns the node that this object will adjust, or NULL
-//               if the node has not yet been set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the node that this object will adjust, or NULL if the node has not
+ * yet been set.
+ */
 PandaNode *Transform2SG::
 get_node() const {
   return _node;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Transform2SG::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output parameters.
+ * The input parameters may be accessed with the index numbers returned by the
+ * define_input() calls that were made earlier (presumably in the constructor);
+ * likewise, the output parameters should be set with the index numbers returned
+ * by the define_output() calls.
+ */
 void Transform2SG::
 do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
                  DataNodeTransmit &) {

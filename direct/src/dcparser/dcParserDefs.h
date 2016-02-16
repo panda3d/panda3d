@@ -27,7 +27,7 @@ class DCKeyword;
 class DCPacker;
 
 void dc_init_parser(istream &in, const string &filename, DCFile &file);
-void dc_init_parser_parameter_value(istream &in, const string &filename, 
+void dc_init_parser_parameter_value(istream &in, const string &filename,
                                     DCPacker &packer);
 void dc_init_parser_parameter_description(istream &in, const string &filename,
                                           DCFile *file);

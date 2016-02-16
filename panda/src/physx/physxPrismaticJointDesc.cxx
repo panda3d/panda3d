@@ -12,4 +12,3 @@
  */
 
 #include "physxPrismaticJointDesc.h"
-

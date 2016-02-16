@@ -24,11 +24,9 @@
 
 #include <android/asset_manager.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMountAndroidAsset
-// Description : Maps a Multifile's contents into the
-//               VirtualFileSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps a Multifile's contents into the VirtualFileSystem.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMountAndroidAsset : public VirtualFileMount {
 PUBLISHED:
   INLINE VirtualFileMountAndroidAsset(AAssetManager *mgr, const string &apk_path);
@@ -50,7 +48,7 @@ public:
   virtual time_t get_timestamp(const Filename &file) const;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
 private:

@@ -21,23 +21,16 @@
 class CPPType;
 class CPPExpression;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParameterRemap
-// Description : An abstract base class for a number of different
-//               kinds of ways to remap parameters for passing to
-//               wrapper functions.
-//
-//               Certain kinds of function parameters that are legal
-//               in C++ (for instance, passing by reference, or
-//               passing structures as concrete values) are not legal
-//               for a typical scripting language.  We map these types
-//               of parameters to something equivalent (for instance,
-//               a reference becomes a pointer).
-//
-//               For each kind of possible remapping, we define a
-//               class derived from ParameterRemap that defines the
-//               exact nature of the remap.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for a number of different kinds of ways to remap
+ * parameters for passing to wrapper functions.  Certain kinds of function
+ * parameters that are legal in C++ (for instance, passing by reference, or
+ * passing structures as concrete values) are not legal for a typical scripting
+ * language.  We map these types of parameters to something equivalent (for
+ * instance, a reference becomes a pointer).  For each kind of possible
+ * remapping, we define a class derived from ParameterRemap that defines the
+ * exact nature of the remap.
+ */
 class ParameterRemap {
 public:
   INLINE ParameterRemap(CPPType *orig_type);

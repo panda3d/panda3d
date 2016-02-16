@@ -21,14 +21,11 @@
 class VrpnClient;
 class VrpnButton;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VrpnButtonDevice
-// Description : The Panda interface to a VRPN button.  This object
-//               will be returned by VrpnClient::make_device(), for
-//               attaching to a ButtonNode.
-//
-//               This class does not need to be exported from the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Panda interface to a VRPN button.  This object will be returned by
+ * VrpnClient::make_device(), for attaching to a ButtonNode.  This class does
+ * not need to be exported from the DLL.
+ */
 class VrpnButtonDevice : public ClientButtonDevice {
 public:
   VrpnButtonDevice(VrpnClient *client, const string &device_name,

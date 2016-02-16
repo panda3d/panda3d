@@ -11,13 +11,10 @@
  * @date 2001-08-01
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramTCPHeader::get_header
-//       Access: Public
-//  Description: Returns a pointer to a block of data of length
-//               datagram_tcp_header_size, which can be written to the
-//               network as the header information.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to a block of data of length datagram_tcp_header_size,
+ * which can be written to the network as the header information.
+ */
 INLINE string DatagramTCPHeader::
 get_header() const {
   return _header.get_message();

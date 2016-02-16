@@ -26,15 +26,12 @@
 #include "sceneSetup.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : PolylightEffect
-// Description : A PolylightEffect can be used on a node to define a
-//               LightGroup  for that node. A LightGroup contains 
-//               PolylightNodes which are essentially nodes that add 
-//               color to the polygons of a model based on distance.
-//               PolylightNode is a cheap way to get lighting effects
-//               specially for night scenes
-////////////////////////////////////////////////////////////////////
+/**
+ * A PolylightEffect can be used on a node to define a LightGroup  for that
+ * node.  A LightGroup contains PolylightNodes which are essentially nodes that
+ * add color to the polygons of a model based on distance.  PolylightNode is a
+ * cheap way to get lighting effects specially for night scenes
+ */
 class EXPCL_PANDA_PGRAPH PolylightEffect : public RenderEffect {
 PUBLISHED:
   enum ContribType {
@@ -106,6 +103,3 @@ private:
 ostream &operator << (ostream &out, PolylightEffect::ContribType ct);
 
 #endif
-
-
-

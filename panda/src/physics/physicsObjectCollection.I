@@ -11,31 +11,25 @@
  * @date 2006-07-12
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysicsObjectCollection::
 ~PhysicsObjectCollection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::operator +=
-//       Access: Published
-//  Description: Appends the other list onto the end of this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Appends the other list onto the end of this one.
+ */
 INLINE void PhysicsObjectCollection::
 operator += (const PhysicsObjectCollection &other) {
   add_physics_objects_from(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysicsObjectCollection::operator +
-//       Access: Published
-//  Description: Returns a PhysicsObjectCollection representing the
-//               concatenation of the two lists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a PhysicsObjectCollection representing the concatenation of the two
+ * lists.
+ */
 INLINE PhysicsObjectCollection PhysicsObjectCollection::
 operator + (const PhysicsObjectCollection &other) const {
   PhysicsObjectCollection a(*this);

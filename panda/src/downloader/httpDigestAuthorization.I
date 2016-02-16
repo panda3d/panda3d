@@ -11,13 +11,10 @@
  * @date 2002-10-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::hexdigit
-//       Access: Private, Static
-//  Description: Returns the ASCII character corresponding to the
-//               hexadecimal representation of the indicated value,
-//               which must be 0 <= value <= 15.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ASCII character corresponding to the hexadecimal representation
+ * of the indicated value, which must be 0 <= value <= 15.
+ */
 INLINE char HTTPDigestAuthorization::
 hexdigit(int value) {
   return (value < 10) ? (value + '0') : (value - 10 + 'a');

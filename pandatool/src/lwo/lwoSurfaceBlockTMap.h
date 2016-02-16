@@ -18,10 +18,9 @@
 
 #include "lwoGroupChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockTMap
-// Description : The tMap chunk within a LwoSurfaceBlock chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * The tMap chunk within a LwoSurfaceBlock chunk.
+ */
 class LwoSurfaceBlockTMap : public LwoGroupChunk {
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);
@@ -48,7 +47,3 @@ private:
 };
 
 #endif
-
-
-
-

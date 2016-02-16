@@ -21,11 +21,9 @@
 #include "buttonHandle.h"
 #include "get_x11.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : eglGraphicsWindow
-// Description : An interface to the egl system for managing GLES
-//               windows under X.
-////////////////////////////////////////////////////////////////////
+/**
+ * An interface to the egl system for managing GLES windows under X.
+ */
 class eglGraphicsWindow : public GraphicsWindow {
 public:
   eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,

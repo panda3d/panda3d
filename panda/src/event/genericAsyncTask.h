@@ -18,12 +18,10 @@
 
 #include "asyncTask.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GenericAsyncTask
-// Description : Associates a generic C-style function pointer with an
-//               AsyncTask object.  You can use this when you want to
-//               create an AsyncTask without having to subclass.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates a generic C-style function pointer with an AsyncTask object.  You
+ * can use this when you want to create an AsyncTask without having to subclass.
+ */
 class EXPCL_PANDA_PIPELINE GenericAsyncTask : public AsyncTask {
 public:
   typedef DoneStatus TaskFunc(GenericAsyncTask *task, void *user_data);
@@ -79,4 +77,3 @@ private:
 #include "genericAsyncTask.I"
 
 #endif
-

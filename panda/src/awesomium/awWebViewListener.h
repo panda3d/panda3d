@@ -19,19 +19,18 @@
 
 #include "awesomium_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AwWebViewListener
-// Description : Thin bindings, wraps a WebViewListener
-////////////////////////////////////////////////////////////////////
+/**
+ * Thin bindings, wraps a WebViewListener
+ */
 class EXPCL_PANDAAWESOMIUM AwWebViewListener : public TypedReferenceCount, public Awesomium::WebCore {
 PUBLISHED:
 
 
 PUBLISHED:
         AwWebViewListener();
-  
+
         virtual ~AwWebViewListener() {}
-   
+
     /**
     * This event is fired when a WebView begins navigating to a new URL.
     *
@@ -67,7 +66,7 @@ PUBLISHED:
     * @param    args    The arguments passed to the callback.
     */
   void onCallback(const std::string& name, const Awesomium::JSArguments& args);
-    
+
     /**
     * This event is fired when a page title is received.
     *
@@ -92,7 +91,7 @@ PUBLISHED:
     void onChangeKeyboardFocus(bool isFocused) ;
 
     /**
-    * This event is fired when the target URL has changed. This is usually the result of 
+    * This event is fired when the target URL has changed. This is usually the result of
     * hovering over a link on the page.
     *
     * @param    url The updated target URL (or empty if the target URL is cleared).

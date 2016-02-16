@@ -19,17 +19,14 @@
 
 class GraphicsStateGuardianBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DrawCullHandler
-// Description : This special kind of CullHandler immediately draws
-//               its contents as soon as it receives them.  This draws
-//               geometry immediately as it is encountered in the
-//               scene graph by cull, mixing the draw and cull
-//               traversals into one traversal, and prohibiting state
-//               sorting.  However, it has somewhat lower overhead
-//               than separating out draw and cull, if state sorting
-//               and multiprocessing are not required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special kind of CullHandler immediately draws its contents as soon as it
+ * receives them.  This draws geometry immediately as it is encountered in the
+ * scene graph by cull, mixing the draw and cull traversals into one traversal,
+ * and prohibiting state sorting.  However, it has somewhat lower overhead than
+ * separating out draw and cull, if state sorting and multiprocessing are not
+ * required.
+ */
 class EXPCL_PANDA_CULL DrawCullHandler : public CullHandler {
 public:
   INLINE DrawCullHandler(GraphicsStateGuardianBase *gsg);
@@ -44,4 +41,3 @@ private:
 #include "drawCullHandler.I"
 
 #endif
-

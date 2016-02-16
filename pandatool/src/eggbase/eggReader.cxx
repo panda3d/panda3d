@@ -22,11 +22,9 @@
 #include "string_utils.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggReader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggReader::
 EggReader() {
   clear_runlines();
@@ -59,19 +57,14 @@ EggReader() {
   _got_tex_extension = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRead::add_texture_options
-//       Access: Public
-//  Description: Adds -td, -te, etc. as valid options for this
-//               program.  If the user specifies one of the options on
-//               the command line, the textures will be copied and
-//               converted as each egg file is read.
-//
-//               Note that if you call this function to add these
-//               options, you must call do_reader_options() at the
-//               appropriate point before or during processing to
-//               execute the options if the user specified them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds -td, -te, etc.  as valid options for this program.  If the user
+ * specifies one of the options on the command line, the textures will be copied
+ * and converted as each egg file is read.  Note that if you call this function
+ * to add these options, you must call do_reader_options() at the appropriate
+ * point before or during processing to execute the options if the user
+ * specified them.
+ */
 void EggReader::
 add_texture_options() {
   add_option
@@ -99,16 +92,12 @@ add_texture_options() {
      &EggReader::dispatch_image_type, NULL, &_tex_type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggRead::add_delod_options
-//       Access: Public
-//  Description: Adds -delod as a valid option for this program.
-//
-//               Note that if you call this function to add these
-//               options, you must call do_reader_options() at the
-//               appropriate point before or during processing to
-//               execute the options if the user specified them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds -delod as a valid option for this program.  Note that if you call this
+ * function to add these options, you must call do_reader_options() at the
+ * appropriate point before or during processing to execute the options if the
+ * user specified them.
+ */
 void EggReader::
 add_delod_options(double default_delod) {
   _delod = default_delod;
@@ -133,41 +122,30 @@ add_delod_options(double default_delod) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggReader::as_reader
-//       Access: Public, Virtual
-//  Description: Returns this object as an EggReader pointer, if it is
-//               in fact an EggReader, or NULL if it is not.
-//
-//               This is intended to work around the C++ limitation
-//               that prevents downcasts past virtual inheritance.
-//               Since both EggReader and EggWriter inherit virtually
-//               from EggSingleBase, we need functions like this to downcast
-//               to the appropriate pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns this object as an EggReader pointer, if it is in fact an EggReader,
+ * or NULL if it is not.  This is intended to work around the C++ limitation
+ * that prevents downcasts past virtual inheritance.  Since both EggReader and
+ * EggWriter inherit virtually from EggSingleBase, we need functions like this
+ * to downcast to the appropriate pointer.
+ */
 EggReader *EggReader::
 as_reader() {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggReader::pre_process_egg_file
-//       Access: Public, Virtual
-//  Description: Performs any processing of the egg file that is
-//               appropriate after reading it in.
-//
-//               Normally, you should not need to call this function
-//               directly; it is called automatically at startup.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs any processing of the egg file that is appropriate after reading it
+ * in.  Normally, you should not need to call this function directly; it is
+ * called automatically at startup.
+ */
 void EggReader::
 pre_process_egg_file() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggReader::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggReader::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {
@@ -201,7 +179,7 @@ handle_args(ProgramBase::Args &args) {
 
     DSearchPath file_path;
     file_path.append_directory(filename.get_dirname());
-    
+
     if (_force_complete) {
       if (!file_data.load_externals()) {
         exit(1);
@@ -220,29 +198,22 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggReader::post_command_line
-//       Access: Protected, Virtual
-//  Description: This is called after the command line has been
-//               completely processed, and it gives the program a
-//               chance to do some last-minute processing and
-//               validation of the options and arguments.  It should
-//               return true if everything is fine, false if there is
-//               an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called after the command line has been completely processed, and it
+ * gives the program a chance to do some last-minute processing and validation
+ * of the options and arguments.  It should return true if everything is fine,
+ * false if there is an error.
+ */
 bool EggReader::
 post_command_line() {
   return EggSingleBase::post_command_line();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggReader::do_reader_options
-//       Access: Protected
-//  Description: Postprocesses the egg file as the user requested
-//               according to whatever command-line options are in
-//               effect.  Returns true if everything is done
-//               correctly, false if there was some problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Postprocesses the egg file as the user requested according to whatever
+ * command-line options are in effect.  Returns true if everything is done
+ * correctly, false if there was some problem.
+ */
 bool EggReader::
 do_reader_options() {
   bool okflag = true;
@@ -260,14 +231,11 @@ do_reader_options() {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggReader::copy_textures
-//       Access: Private
-//  Description: Renames and copies the textures referenced in the egg
-//               file, if so specified by the -td and -te options.
-//               Returns true if all textures are copied successfully,
-//               false if any one of them failed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renames and copies the textures referenced in the egg file, if so specified
+ * by the -td and -te options.  Returns true if all textures are copied
+ * successfully, false if any one of them failed.
+ */
 bool EggReader::
 copy_textures() {
   bool success = true;
@@ -299,7 +267,7 @@ copy_textures() {
       tex->set_filename(new_filename);
 
       // The new filename is different; does it need copying?
-      int compare = 
+      int compare =
         orig_filename.compare_timestamps(new_filename, true, true);
       if (compare > 0) {
         // Yes, it does.  Copy it!
@@ -322,14 +290,11 @@ copy_textures() {
   return success;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggReader::do_delod
-//       Access: Private
-//  Description: Removes all the LOD's in the egg file by treating the
-//               camera as being _delod distance from each LOD.
-//               Returns true if this particular group should be
-//               preserved, false if it should be removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the LOD's in the egg file by treating the camera as being _delod
+ * distance from each LOD. Returns true if this particular group should be
+ * preserved, false if it should be removed.
+ */
 bool EggReader::
 do_delod(EggNode *node) {
   if (node->is_of_type(EggGroup::get_class_type())) {
@@ -337,12 +302,12 @@ do_delod(EggNode *node) {
     if (group->has_lod()) {
       const EggSwitchCondition &cond = group->get_lod();
       if (cond.is_of_type(EggSwitchConditionDistance::get_class_type())) {
-        const EggSwitchConditionDistance *dist = 
+        const EggSwitchConditionDistance *dist =
           DCAST(EggSwitchConditionDistance, &cond);
         if (_delod >= dist->_switch_out && _delod < dist->_switch_in) {
           // Preserve this group node, but not the LOD information
           // itself.
-          nout << "Preserving LOD " << node->get_name() 
+          nout << "Preserving LOD " << node->get_name()
                << " (" << dist->_switch_out << " to " << dist->_switch_in
                << ")\n";
           group->clear_lod();

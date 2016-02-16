@@ -19,11 +19,10 @@
 #include "datagramSink.h"
 #include "connectionWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramSinkNet
-// Description : This class accepts datagrams one-at-a-time and sends
-//               them over the net, via a TCP connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class accepts datagrams one-at-a-time and sends them over the net, via a
+ * TCP connection.
+ */
 class EXPCL_PANDA_NET DatagramSinkNet : public DatagramSink, public ConnectionWriter {
 PUBLISHED:
   DatagramSinkNet(ConnectionManager *manager, int num_threads);

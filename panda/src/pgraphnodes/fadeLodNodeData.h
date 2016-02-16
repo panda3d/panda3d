@@ -18,11 +18,10 @@
 
 #include "auxSceneData.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FadeLODNodeData
-// Description : This is the data that is associated with a particular
-//               instance of the FadeLODNode for the scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the data that is associated with a particular instance of the
+ * FadeLODNode for the scene graph.
+ */
 class EXPCL_PANDA_PGRAPHNODES FadeLODNodeData : public AuxSceneData {
 public:
   enum FadeMode {
@@ -36,7 +35,7 @@ public:
   int _fade_in;
 
   virtual void output(ostream &out) const;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -56,4 +55,3 @@ private:
 };
 
 #endif
-

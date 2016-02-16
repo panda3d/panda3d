@@ -26,17 +26,13 @@
 
 class SliderTable;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexSlider
-// Description : This is an abstract base class that retains some
-//               slider value, which is a linear value that typically
-//               ranges from 0.0 to 1.0, and is used to control the
-//               animation of morphs (blend shapes).
-//
-//               It is similar to VertexTransform, which keeps a full
-//               4x4 transform matrix, but the VertexSlider only keeps
-//               a single float value.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class that retains some slider value, which is a
+ * linear value that typically ranges from 0.0 to 1.0, and is used to control
+ * the animation of morphs (blend shapes).  It is similar to VertexTransform,
+ * which keeps a full 4x4 transform matrix, but the VertexSlider only keeps a
+ * single float value.
+ */
 class EXPCL_PANDA_GOBJ VertexSlider : public TypedWritableReferenceCount {
 PUBLISHED:
   VertexSlider(const InternalName *name);

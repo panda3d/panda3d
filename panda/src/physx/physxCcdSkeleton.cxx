@@ -16,11 +16,9 @@
 
 TypeHandle PhysxCcdSkeleton::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeleton::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxCcdSkeleton::
 link(NxCCDSkeleton *skeletonPtr) {
 
@@ -30,11 +28,9 @@ link(NxCCDSkeleton *skeletonPtr) {
   _error_type = ET_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeleton::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxCcdSkeleton::
 unlink() {
 
@@ -43,11 +39,9 @@ unlink() {
   PhysxManager::get_global_ptr()->_ccd_skeletons.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeleton::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxCcdSkeleton::
 release() {
 
@@ -60,11 +54,9 @@ release() {
   //TODO PhysxMeshPool::release_ccd_skeleton(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeleton::get_reference_count
-//       Access: Published
-//  Description: Returns the reference count for shared meshes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reference count for shared meshes.
+ */
 unsigned int PhysxCcdSkeleton::
 get_reference_count() const {
 
@@ -72,4 +64,3 @@ get_reference_count() const {
 
   return _ptr->getReferenceCount();
 }
-

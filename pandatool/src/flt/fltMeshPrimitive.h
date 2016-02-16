@@ -22,11 +22,9 @@
 #include "luse.h"
 #include "vector_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltMeshPrimitive
-// Description : A single primitive of a mesh, like a triangle strip
-//               or fan.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single primitive of a mesh, like a triangle strip or fan.
+ */
 class FltMeshPrimitive : public FltBead {
 public:
   FltMeshPrimitive(FltHeader *header);
@@ -69,5 +67,3 @@ private:
 #include "fltMeshPrimitive.I"
 
 #endif
-
-

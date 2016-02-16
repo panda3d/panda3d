@@ -11,11 +11,9 @@
  * @date 2000-06-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritableReferenceCount::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TypedWritableReferenceCount::
 TypedWritableReferenceCount() {
 #ifdef DO_MEMORY_USAGE
@@ -23,11 +21,9 @@ TypedWritableReferenceCount() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritableReferenceCount::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE TypedWritableReferenceCount::
 TypedWritableReferenceCount(const TypedWritableReferenceCount &copy) :
   TypedWritable(copy),
@@ -37,11 +33,9 @@ TypedWritableReferenceCount(const TypedWritableReferenceCount &copy) :
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TypedWritableReferenceCount::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void TypedWritableReferenceCount::
 operator = (const TypedWritableReferenceCount &copy) {
   TypedWritable::operator = (copy);

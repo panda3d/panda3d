@@ -23,13 +23,11 @@ class CollisionEntry;
 
 #ifdef DO_COLLISION_RECORDING
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionRecorder
-// Description : This class is used to help debug the work the
-//               collisions system is doing.  It is a virtual base
-//               class that just provides an interface for recording
-//               collisions tested and detected each frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to help debug the work the collisions system is doing.  It
+ * is a virtual base class that just provides an interface for recording
+ * collisions tested and detected each frame.
+ */
 class EXPCL_PANDA_COLLIDE CollisionRecorder : public TypedObject {
 protected:
   CollisionRecorder();
@@ -75,4 +73,3 @@ private:
 
 
 #endif
-

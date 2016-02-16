@@ -83,7 +83,7 @@ public:
   MyThread(const string &name) : Thread(name, name)
   {
   }
-    
+
   virtual void
   thread_main() {
     OUTPUT(nout << *this << " beginning.\n");
@@ -107,7 +107,7 @@ public:
         }
         int num_del = (int)random_f(max_doobers_per_chunk);
         num_del = min(num_del, (int)doobers.size());
-        
+
         for (int j = 0; j < num_del; ++j) {
           assert(!doobers.empty());
           delete doobers.back();

@@ -18,12 +18,10 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformPut
-// Description : A "put", which is a MultiGen concept of defining a
-//               transformation by mapping three arbitrary points to
-//               three new arbitrary points.
-////////////////////////////////////////////////////////////////////
+/**
+ * A "put", which is a MultiGen concept of defining a transformation by mapping
+ * three arbitrary points to three new arbitrary points.
+ */
 class FltTransformPut : public FltTransformRecord {
 public:
   FltTransformPut(FltHeader *header);
@@ -75,5 +73,3 @@ private:
 };
 
 #endif
-
-

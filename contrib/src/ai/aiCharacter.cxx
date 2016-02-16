@@ -33,13 +33,11 @@ AICharacter::AICharacter(string model_name, NodePath model_np, double mass, doub
 AICharacter::~AICharacter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: update
-//  Description: Each character's update will update its AI and
-//               physics based on his resultant steering force.
-//               This also makes the character look in the direction
-//               of the force.
-////////////////////////////////////////////////////////////////////
+/**
+ * Each character's update will update its AI and physics based on his resultant
+ * steering force.  This also makes the character look in the direction of the
+ * force.
+ */
 void AICharacter::
 update() {
   if (!_steering->is_off(_steering->_none)) {

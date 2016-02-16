@@ -14,4 +14,3 @@
 #include "bulletTickCallbackData.h"
 
 TypeHandle BulletTickCallbackData::_type_handle;
-

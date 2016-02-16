@@ -20,15 +20,11 @@
 
 class PStatClientData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatViewLevel
-// Description : This is a single level value, or band of color,
-//               within a View.
-//
-//               It generally indicates either the elapsed time, or
-//               the "level" value, for a particular Collector within
-//               a given frame for a particular thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a single level value, or band of color, within a View.  It generally
+ * indicates either the elapsed time, or the "level" value, for a particular
+ * Collector within a given frame for a particular thread.
+ */
 class PStatViewLevel {
 public:
   INLINE int get_collector() const;

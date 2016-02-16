@@ -20,22 +20,15 @@
 #include "configVariable.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableColor
-// Description : This is a convenience class to specialize
-//               ConfigVariable as a set of floating-point types
-//               representing a color value.
-//
-//               It interprets the color differently depending on
-//               how many words were specified: if only one, it
-//               is interpreted as a shade of gray with alpha 1.
-//               If two values were specified, a grayscale and
-//               alpha pair.  If three, a set of R, G, B values
-//               with alpha 1, and if four, a complete RGBA color.
-//
-//               This isn't defined in dtool because it relies on
-//               the LColor class, which is defined in linmath.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a convenience class to specialize ConfigVariable as a set of
+ * floating-point types representing a color value.  It interprets the color
+ * differently depending on how many words were specified: if only one, it is
+ * interpreted as a shade of gray with alpha 1. If two values were specified, a
+ * grayscale and alpha pair.  If three, a set of R, G, B values with alpha 1,
+ * and if four, a complete RGBA color.  This isn't defined in dtool because it
+ * relies on the LColor class, which is defined in linmath.
+ */
 class EXPCL_PANDA_LINMATH ConfigVariableColor : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableColor(const string &name);

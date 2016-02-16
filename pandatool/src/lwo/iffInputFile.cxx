@@ -19,11 +19,9 @@
 
 TypeHandle IffInputFile::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 IffInputFile::
 IffInputFile() {
   _input = (istream *)NULL;
@@ -33,11 +31,9 @@ IffInputFile() {
   _bytes_read = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 IffInputFile::
 ~IffInputFile() {
   if (_owns_istream) {
@@ -46,12 +42,10 @@ IffInputFile::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::open_read
-//       Access: Public
-//  Description: Attempts to open the indicated filename for reading.
-//               Returns true if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the indicated filename for reading.  Returns true if
+ * successful, false otherwise.
+ */
 bool IffInputFile::
 open_read(Filename filename) {
   filename.set_binary();
@@ -68,14 +62,11 @@ open_read(Filename filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::set_input
-//       Access: Public
-//  Description: Sets up the input to use an arbitrary istream.  If
-//               owns_istream is true, the istream will be deleted
-//               (via vfs->close_read_file()) when the IffInputFile
-//               destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the input to use an arbitrary istream.  If owns_istream is true, the
+ * istream will be deleted (via vfs->close_read_file()) when the IffInputFile
+ * destructs.
+ */
 void IffInputFile::
 set_input(istream *input, bool owns_istream) {
   if (_owns_istream) {
@@ -89,11 +80,9 @@ set_input(istream *input, bool owns_istream) {
   _bytes_read = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_int8
-//       Access: Public
-//  Description: Extracts a signed 8-bit integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a signed 8-bit integer.
+ */
 PN_int8 IffInputFile::
 get_int8() {
   Datagram dg;
@@ -104,11 +93,9 @@ get_int8() {
   return dgi.get_int8();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_uint8
-//       Access: Public
-//  Description: Extracts an unsigned 8-bit integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts an unsigned 8-bit integer.
+ */
 PN_uint8 IffInputFile::
 get_uint8() {
   Datagram dg;
@@ -119,11 +106,9 @@ get_uint8() {
   return dgi.get_int8();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_be_int16
-//       Access: Public
-//  Description: Extracts a signed 16-bit big-endian integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a signed 16-bit big-endian integer.
+ */
 PN_int16 IffInputFile::
 get_be_int16() {
   Datagram dg;
@@ -134,11 +119,9 @@ get_be_int16() {
   return dgi.get_be_int16();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_be_int32
-//       Access: Public
-//  Description: Extracts a signed 32-bit big-endian integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a signed 32-bit big-endian integer.
+ */
 PN_int32 IffInputFile::
 get_be_int32() {
   Datagram dg;
@@ -149,11 +132,9 @@ get_be_int32() {
   return dgi.get_be_int32();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_be_uint16
-//       Access: Public
-//  Description: Extracts an unsigned 16-bit big-endian integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts an unsigned 16-bit big-endian integer.
+ */
 PN_uint16 IffInputFile::
 get_be_uint16() {
   Datagram dg;
@@ -164,11 +145,9 @@ get_be_uint16() {
   return dgi.get_be_uint16();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_be_uint32
-//       Access: Public
-//  Description: Extracts an unsigned 32-bit big-endian integer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts an unsigned 32-bit big-endian integer.
+ */
 PN_uint32 IffInputFile::
 get_be_uint32() {
   Datagram dg;
@@ -179,12 +158,9 @@ get_be_uint32() {
   return dgi.get_be_uint32();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_be_float32
-//       Access: Public
-//  Description: Extracts a 32-bit big-endian single-precision
-//               floating-point number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a 32-bit big-endian single-precision floating-point number.
+ */
 PN_stdfloat IffInputFile::
 get_be_float32() {
   Datagram dg;
@@ -195,11 +171,9 @@ get_be_float32() {
   return dgi.get_be_float32();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_string
-//       Access: Public
-//  Description: Extracts a null-terminated string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a null-terminated string.
+ */
 string IffInputFile::
 get_string() {
   string result;
@@ -215,11 +189,9 @@ get_string() {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_id
-//       Access: Public
-//  Description: Extracts a 4-character IFF ID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts a 4-character IFF ID.
+ */
 IffId IffInputFile::
 get_id() {
   Datagram dg;
@@ -230,15 +202,12 @@ get_id() {
   return IffId(id);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_chunk
-//       Access: Public
-//  Description: Reads a single IffChunk, determining its type based
-//               on its ID.  Allocates and returns a new IffChunk
-//               object of the appropriate type.  Returns NULL if EOF
-//               is reached before the chunk can be read completely,
-//               or if there is some other error in reading the chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single IffChunk, determining its type based on its ID.  Allocates and
+ * returns a new IffChunk object of the appropriate type.  Returns NULL if EOF
+ * is reached before the chunk can be read completely, or if there is some other
+ * error in reading the chunk.
+ */
 PT(IffChunk) IffInputFile::
 get_chunk() {
   if (is_eof()) {
@@ -283,16 +252,12 @@ get_chunk() {
   return (IffChunk *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::get_subchunk
-//       Access: Public
-//  Description: Similar to get_chunk(), except the chunk size is only
-//               a 16-bit number instead of 32-bit, and it takes a
-//               context, which is the chunk in which this chunk is
-//               encountered.  The parent chunk may (or may not)
-//               decide what kind of chunk is meant by the various
-//               id's encountered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to get_chunk(), except the chunk size is only a 16-bit number instead
+ * of 32-bit, and it takes a context, which is the chunk in which this chunk is
+ * encountered.  The parent chunk may (or may not) decide what kind of chunk is
+ * meant by the various id's encountered.
+ */
 PT(IffChunk) IffInputFile::
 get_subchunk(IffChunk *context) {
   if (is_eof()) {
@@ -337,12 +302,9 @@ get_subchunk(IffChunk *context) {
   return (IffChunk *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::read_byte
-//       Access: Public
-//  Description: Reads a single byte.  Returns true if successful,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single byte.  Returns true if successful, false otherwise.
+ */
 bool IffInputFile::
 read_byte(char &byte) {
   if (is_eof()) {
@@ -355,13 +317,10 @@ read_byte(char &byte) {
   return !is_eof();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::read_bytes
-//       Access: Public
-//  Description: Reads a series of bytes, and stores them in the
-//               indicated Datagram.  Returns true if successful,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a series of bytes, and stores them in the indicated Datagram.  Returns
+ * true if successful, false otherwise.
+ */
 bool IffInputFile::
 read_bytes(Datagram &datagram, int length) {
   if (is_eof()) {
@@ -381,12 +340,10 @@ read_bytes(Datagram &datagram, int length) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::skip_bytes
-//       Access: Public
-//  Description: Reads a series of bytes, but does not store them.
-//               Returns true if successful, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a series of bytes, but does not store them.  Returns true if
+ * successful, false otherwise.
+ */
 bool IffInputFile::
 skip_bytes(int length) {
   if (is_eof()) {
@@ -402,12 +359,10 @@ skip_bytes(int length) {
   return !is_eof();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IffInputFile::make_new_chunk
-//       Access: Protected, Virtual
-//  Description: Allocates and returns a new chunk of the appropriate
-//               type based on the given ID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new chunk of the appropriate type based on the given
+ * ID.
+ */
 IffChunk *IffInputFile::
 make_new_chunk(IffId) {
   return new IffGenericChunk;

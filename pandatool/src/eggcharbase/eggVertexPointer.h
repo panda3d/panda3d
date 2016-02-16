@@ -21,12 +21,10 @@
 #include "eggGroup.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggVertexPointer
-// Description : This stores a pointer back to a <Vertex>, or to a
-//               particular pritimive like a <Polygon>, representing a
-//               morph offset.
-////////////////////////////////////////////////////////////////////
+/**
+ * This stores a pointer back to a <Vertex>, or to a particular pritimive like a
+ * <Polygon>, representing a morph offset.
+ */
 class EggVertexPointer : public EggSliderPointer {
 public:
   EggVertexPointer(EggObject *egg_object);
@@ -55,5 +53,3 @@ private:
 };
 
 #endif
-
-

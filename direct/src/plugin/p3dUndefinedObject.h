@@ -17,12 +17,11 @@
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DUndefinedObject
-// Description : An object type that represents an undefined value.
-//               Python doesn't have such a concept, but JavaScript
-//               does, and it is sometimes an important return value.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object type that represents an undefined value.  Python doesn't have such
+ * a concept, but JavaScript does, and it is sometimes an important return
+ * value.
+ */
 class P3DUndefinedObject : public P3DObject {
 public:
   P3DUndefinedObject();
@@ -34,4 +33,3 @@ public:
 };
 
 #endif
-

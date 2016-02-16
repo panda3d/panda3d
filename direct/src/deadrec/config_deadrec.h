@@ -25,5 +25,3 @@ extern ConfigVariableBool accept_clock_skew;
 extern EXPCL_DIRECT void init_libdeadrec();
 
 #endif
-
-

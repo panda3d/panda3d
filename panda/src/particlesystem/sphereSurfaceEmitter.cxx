@@ -13,51 +13,41 @@
 
 #include "sphereSurfaceEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: SphereSurfaceEmitter
-//       Access: Public
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 SphereSurfaceEmitter::
 SphereSurfaceEmitter() {
   _radius = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SphereSurfaceEmitter
-//       Access: Public
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 SphereSurfaceEmitter::
 SphereSurfaceEmitter(const SphereSurfaceEmitter &copy) :
   BaseParticleEmitter(copy) {
   _radius = copy._radius;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~SphereSurfaceEmitter
-//       Access: Public
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 SphereSurfaceEmitter::
 ~SphereSurfaceEmitter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make_copy
-//       Access: Public
-//  Description: copier
-////////////////////////////////////////////////////////////////////
+/**
+ * copier
+ */
 BaseParticleEmitter *SphereSurfaceEmitter::
 make_copy() {
   return new SphereSurfaceEmitter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SphereSurfaceEmitter::assign_initial_position
-//       Access: Public
-//  Description: Generates a location for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a location for a new particle
+ */
 void SphereSurfaceEmitter::
 assign_initial_position(LPoint3& pos) {
   PN_stdfloat z, theta, r;
@@ -69,22 +59,17 @@ assign_initial_position(LPoint3& pos) {
   pos.set(r * cosf(theta), r * sinf(theta), z);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SphereSurfaceEmitter::assign_initial_velocity
-//       Access: Public
-//  Description: Generates a velocity for a new particle
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a velocity for a new particle
+ */
 void SphereSurfaceEmitter::
 assign_initial_velocity(LVector3& vel) {
   vel.set(0,0,0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void SphereSurfaceEmitter::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -92,12 +77,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void SphereSurfaceEmitter::
 write(ostream &out, int indent) const {
   #ifndef NDEBUG //[

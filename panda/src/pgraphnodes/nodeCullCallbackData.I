@@ -11,11 +11,9 @@
  * @date 2009-03-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeCullCallbackData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE NodeCullCallbackData::
 NodeCullCallbackData(CullTraverser *trav, CullTraverserData &data) :
   _trav(trav),
@@ -23,27 +21,21 @@ NodeCullCallbackData(CullTraverser *trav, CullTraverserData &data) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeCullCallbackData::get_trav
-//       Access: Published
-//  Description: Returns the CullTraverser in use at the time of the
-//               callback.  This object contains data that does not
-//               change during the traversal, such as the
-//               DisplayRegion and Camera in use.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CullTraverser in use at the time of the callback.  This object
+ * contains data that does not change during the traversal, such as the
+ * DisplayRegion and Camera in use.
+ */
 INLINE CullTraverser *NodeCullCallbackData::
 get_trav() const {
   return _trav;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodeCullCallbackData::get_data
-//       Access: Published
-//  Description: Returns the CullTraverserData in use at the time of the
-//               callback.  This object contains data that changes at
-//               each node of the traversal, such as the current node
-//               and the current net transform to that node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CullTraverserData in use at the time of the callback.  This
+ * object contains data that changes at each node of the traversal, such as the
+ * current node and the current net transform to that node.
+ */
 INLINE CullTraverserData &NodeCullCallbackData::
 get_data() const {
   return _data;

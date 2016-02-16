@@ -25,14 +25,11 @@ class ModifierPointers;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointerEventList
-// Description : Records a set of pointer events that happened
-//               recently.  This class is usually used only in the
-//               data graph, to transmit the recent pointer presses,
-//               but it may be used anywhere a list of PointerEvents
-//               is desired.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a set of pointer events that happened recently.  This class is
+ * usually used only in the data graph, to transmit the recent pointer presses,
+ * but it may be used anywhere a list of PointerEvents is desired.
+ */
 class EXPCL_PANDA_EVENT PointerEventList : public ParamValueBase {
 PUBLISHED:
   INLINE PointerEventList();
@@ -95,4 +92,3 @@ INLINE ostream &operator << (ostream &out, const PointerEventList &pointerlist) 
 #include "pointerEventList.I"
 
 #endif
-

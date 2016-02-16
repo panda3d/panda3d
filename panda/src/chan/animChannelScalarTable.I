@@ -11,35 +11,27 @@
  * @date 1999-02-22
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::get_table
-//       Access: Public
-//  Description: Returns a pointer to the table's data,
-//               if it exists, or NULL if it does not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the table's data, if it exists, or NULL if it does not.
+ */
 INLINE CPTA_stdfloat AnimChannelScalarTable::
 get_table() const {
   return _table;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::has_table
-//       Access: Published
-//  Description: Returns true if the data table has been assigned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the data table has been assigned.
+ */
 INLINE bool AnimChannelScalarTable::
 has_table() const {
   return _table != (const PN_stdfloat *)NULL;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelScalarTable::clear_table
-//       Access: Published
-//  Description: Empties the data table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Empties the data table.
+ */
 INLINE void AnimChannelScalarTable::
 clear_table() {
   _table = NULL;
 }
-

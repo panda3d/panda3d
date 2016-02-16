@@ -19,12 +19,11 @@
 #include "thread.h"
 
 #ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//       Class : PythonThread
-// Description : This class is exposed to Python to allow creation of
-//               a Panda thread from the Python level.  It will spawn
-//               a thread that executes an arbitrary Python functor.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is exposed to Python to allow creation of a Panda thread from the
+ * Python level.  It will spawn a thread that executes an arbitrary Python
+ * functor.
+ */
 class EXPCL_PANDA_PIPELINE PythonThread : public Thread {
 PUBLISHED:
   PythonThread(PyObject *function, PyObject *args,
@@ -61,4 +60,3 @@ private:
 #endif  // HAVE_PYTHON
 
 #endif
-

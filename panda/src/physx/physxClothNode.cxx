@@ -20,11 +20,9 @@
 
 TypeHandle PhysxClothNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothNode::allocate
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxClothNode::
 allocate(PhysxCloth *cloth) {
 
@@ -68,11 +66,9 @@ allocate(PhysxCloth *cloth) {
   _cloth->ptr()->setMeshData(_mesh);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothNode::update
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxClothNode::
 update() {
 
@@ -88,11 +84,9 @@ update() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothNode::create_geom
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxClothNode::
 create_geom() {
 
@@ -138,11 +132,9 @@ create_geom() {
   _prim->close_primitive();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothNode::update_geom
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxClothNode::
 update_geom() {
 
@@ -161,11 +153,9 @@ update_geom() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothNode::update_texcoords
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxClothNode::
 update_texcoords() {
 
@@ -184,11 +174,9 @@ update_texcoords() {
   _numTexcoords = numVertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxClothNode::set_texcoords
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxClothNode::
 set_texcoords(const Filename &filename) {
 
@@ -225,4 +213,3 @@ set_texcoords(const Filename &filename) {
 
   return true;
 }
-

@@ -23,18 +23,13 @@
 #include "pmap.h"
 #include "eventParameter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonThrower
-// Description : Throws Panda Events for button down/up events
-//               generated within the data graph.
-//
-//               This is a DataNode which is intended to be parented
-//               to the data graph below a device which is generating
-//               a sequence of button events, like a MouseAndKeyboard
-//               device.  It simply takes each button it finds and
-//               throws a corresponding event based on the button name
-//               via the throw_event() call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Throws Panda Events for button down/up events generated within the data
+ * graph.  This is a DataNode which is intended to be parented to the data graph
+ * below a device which is generating a sequence of button events, like a
+ * MouseAndKeyboard device.  It simply takes each button it finds and throws a
+ * corresponding event based on the button name via the throw_event() call.
+ */
 class EXPCL_PANDA_TFORM ButtonThrower : public DataNode {
 PUBLISHED:
   ButtonThrower(const string &name);

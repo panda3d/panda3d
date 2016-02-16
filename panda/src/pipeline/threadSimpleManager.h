@@ -41,20 +41,14 @@ class ThreadSimpleImpl;
 class BlockerSimple;
 struct ThreadContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSimpleManager
-// Description : This is the global object that selects the
-//               currently-active thread of the various
-//               ThreadSimpleImpl objects running, when the
-//               currently-active thread yields.
-//
-//               This class only exists when we are using the
-//               ThreadSimple implementation, which is to say, we are
-//               not using "real" threads.
-//
-//               Generally, you shouldn't be calling these methods
-//               directly.  Call the interfaces on Thread instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the global object that selects the currently-active thread of the
+ * various ThreadSimpleImpl objects running, when the currently-active thread
+ * yields.  This class only exists when we are using the ThreadSimple
+ * implementation, which is to say, we are not using "real" threads.  Generally,
+ * you shouldn't be calling these methods directly.  Call the interfaces on
+ * Thread instead.
+ */
 class EXPCL_PANDA_PIPELINE ThreadSimpleManager {
 private:
   ThreadSimpleManager();

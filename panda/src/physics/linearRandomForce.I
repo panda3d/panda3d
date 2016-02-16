@@ -11,11 +11,9 @@
  * @date 2000-06-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: random_unit_vector
-//       Access: Protected
-//  Description: generates a random unit vector
-////////////////////////////////////////////////////////////////////
+/**
+ * generates a random unit vector
+ */
 INLINE LVector3 LinearRandomForce::
 random_unit_vector() {
   PN_stdfloat z, r, theta;
@@ -26,4 +24,3 @@ random_unit_vector() {
 
   return LVector3(r * ccos(theta), r * csin(theta), z);
 }
-

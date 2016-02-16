@@ -28,4 +28,3 @@ const PN_stdfloat MathNumbers::pi = 4.0 * atan(1.0);
 const PN_stdfloat MathNumbers::ln2 = log(2.0);
 const PN_stdfloat MathNumbers::rad_2_deg = 180.0 / MathNumbers::pi_d;
 const PN_stdfloat MathNumbers::deg_2_rad = MathNumbers::pi_d / 180.0;
-

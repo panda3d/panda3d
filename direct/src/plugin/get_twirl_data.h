@@ -25,4 +25,3 @@ bool get_twirl_data(unsigned char data[], size_t data_length, int step,
                     int bg_r, int bg_g, int bg_b);
 
 #endif
-

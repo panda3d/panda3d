@@ -27,18 +27,16 @@
 
 class EggMesher;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMesherFanMaker
-// Description : This class is used by EggMesher::find_fans() to
-//               attempt to make an EggTriangleFan out of the polygons
-//               connected to the indicated vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used by EggMesher::find_fans() to attempt to make an
+ * EggTriangleFan out of the polygons connected to the indicated vertex.
+ */
 class EggMesherFanMaker {
 public:
   typedef plist<const EggMesherEdge *> Edges;
   typedef plist<EggMesherStrip *> Strips;
 
-  EggMesherFanMaker(int vertex, EggMesherStrip *tri, 
+  EggMesherFanMaker(int vertex, EggMesherStrip *tri,
                     EggMesher *mesher);
   EggMesherFanMaker(const EggMesherFanMaker &copy);
   void operator = (const EggMesherFanMaker &copy);

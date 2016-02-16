@@ -26,12 +26,9 @@
 TypeHandle EggXfmAnimData::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmAnimData::Conversion constructor
-//       Access: Public
-//  Description: Converts the newer-style XfmSAnim table to the
-//               older-style XfmAnim table.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the newer-style XfmSAnim table to the older-style XfmAnim table.
+ */
 EggXfmAnimData::
 EggXfmAnimData(const EggXfmSAnim &convert_from)
   : EggAnimData(convert_from.get_name())
@@ -79,14 +76,11 @@ EggXfmAnimData(const EggXfmSAnim &convert_from)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmAnimData::get_value
-//       Access: Public
-//  Description: Returns the value of the aggregate row of the table
-//               as a matrix.  This is a convenience function that
-//               treats the 2-d table as if it were a single table of
-//               matrices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the aggregate row of the table as a matrix.  This is a
+ * convenience function that treats the 2-d table as if it were a single table
+ * of matrices.
+ */
 void EggXfmAnimData::
 get_value(int row, LMatrix4d &mat) const {
   LVector3d scale(1.0, 1.0, 1.0);
@@ -113,11 +107,11 @@ get_value(int row, LMatrix4d &mat) const {
     case 'a':
       shear[0] = value;
       break;
-      
+
     case 'b':
       shear[1] = value;
       break;
-      
+
     case 'c':
       shear[2] = value;
       break;
@@ -157,23 +151,18 @@ get_value(int row, LMatrix4d &mat) const {
                                   _coordsys);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmAnimData::is_anim_matrix
-//       Access: Public, Virtual
-//  Description: Returns true if this node represents a table of
-//               animation transformation data, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this node represents a table of animation transformation
+ * data, false otherwise.
+ */
 bool EggXfmAnimData::
 is_anim_matrix() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmAnimData::write
-//       Access: Public, Virtual
-//  Description: Writes the data to the indicated output stream in Egg
-//               format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the data to the indicated output stream in Egg format.
+ */
 void EggXfmAnimData::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Xfm$Anim>");
@@ -200,13 +189,10 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmAnimData::r_transform
-//       Access: Protected, Virtual
-//  Description: Applies the indicated transform to all the rows of
-//               the table.  This actually forces the generation of a
-//               totally new set of rows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transform to all the rows of the table.  This actually
+ * forces the generation of a totally new set of rows.
+ */
 void EggXfmAnimData::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
             CoordinateSystem to_cs) {
@@ -276,15 +262,12 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
   (*this) = copy_table;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggXfmAnimData::r_mark_coordsys
-//       Access: Protected, Virtual
-//  Description: This is only called immediately after loading an egg
-//               file from disk, to propagate the value found in the
-//               CoordinateSystem entry (or the default Y-up
-//               coordinate system) to all nodes that care about what
-//               the coordinate system is.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is only called immediately after loading an egg file from disk, to
+ * propagate the value found in the CoordinateSystem entry (or the default Y-up
+ * coordinate system) to all nodes that care about what the coordinate system
+ * is.
+ */
 void EggXfmAnimData::
 r_mark_coordsys(CoordinateSystem cs) {
   _coordsys = cs;

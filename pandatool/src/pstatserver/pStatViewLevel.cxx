@@ -19,13 +19,10 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatViewLevel::get_net_value
-//       Access: Public
-//  Description: Returns the total level value (or elapsed time)
-//               represented by this Collector, including all values
-//               in its child Collectors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the total level value (or elapsed time) represented by this
+ * Collector, including all values in its child Collectors.
+ */
 double PStatViewLevel::
 get_net_value() const {
   double net = _value_alone;
@@ -54,12 +51,10 @@ public:
   const PStatClientData *_client_data;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatViewLevel::sort_children
-//       Access: Public
-//  Description: Sorts the children of this view level into order as
-//               specified by the client's sort index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sorts the children of this view level into order as specified by the client's
+ * sort index.
+ */
 void PStatViewLevel::
 sort_children(const PStatClientData *client_data) {
   SortCollectorLevels sort_levels(client_data);
@@ -67,24 +62,19 @@ sort_children(const PStatClientData *client_data) {
   sort(_children.begin(), _children.end(), sort_levels);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatViewLevel::get_num_children
-//       Access: Public
-//  Description: Returns the number of children of this
-//               Level/Collector.  These are the Collectors whose
-//               value is considered to be part of the total value of
-//               this level's Collector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of children of this Level/Collector.  These are the
+ * Collectors whose value is considered to be part of the total value of this
+ * level's Collector.
+ */
 int PStatViewLevel::
 get_num_children() const {
   return _children.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatViewLevel::get_child
-//       Access: Public
-//  Description: Returns the nth child of this Level/Collector.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth child of this Level/Collector.
+ */
 const PStatViewLevel *PStatViewLevel::
 get_child(int n) const {
   nassertr(n >= 0 && n < (int)_children.size(), NULL);

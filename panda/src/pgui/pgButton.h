@@ -21,13 +21,11 @@
 #include "nodePath.h"
 #include "pset.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGButton
-// Description : This is a particular kind of PGItem that is
-//               specialized to behave like a normal button object.
-//               It keeps track of its own state, and handles mouse
-//               events sensibly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of PGItem that is specialized to behave like a
+ * normal button object.  It keeps track of its own state, and handles mouse
+ * events sensibly.
+ */
 class EXPCL_PANDA_PGUI PGButton : public PGItem {
 PUBLISHED:
   PGButton(const string &name);
@@ -60,7 +58,7 @@ PUBLISHED:
   void setup(const string &label, PN_stdfloat bevel = 0.1f);
   INLINE void setup(const NodePath &ready);
   INLINE void setup(const NodePath &ready, const NodePath &depressed);
-  INLINE void setup(const NodePath &ready, const NodePath &depressed, 
+  INLINE void setup(const NodePath &ready, const NodePath &depressed,
                     const NodePath &rollover);
   void setup(const NodePath &ready, const NodePath &depressed,
              const NodePath &rollover, const NodePath &inactive);

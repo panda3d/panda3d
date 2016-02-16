@@ -19,25 +19,16 @@
 #include <string>
 using namespace std;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SubprocessWindowBuffer
-// Description : This is a special class that is designed to faciliate
-//               SubprocessWindow.  It's intended to be allocated
-//               within a shared memory buffer, and it contains space
-//               for a framebuffer image to be stored for transferring
-//               between processes, as well as appropriate
-//               synchronization primitives.
-//
-//               It's designed to be compiled outside of Panda, so
-//               that code that doesn't link with Panda (in
-//               particular, the Panda3D plugin core API) may still
-//               link with this and use it.
-//
-//               At the moment, and maybe indefinitely, it is only
-//               compiled on OSX, and only when we are building
-//               support for the plugin; because it is only needed
-//               then.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special class that is designed to faciliate SubprocessWindow.  It's
+ * intended to be allocated within a shared memory buffer, and it contains space
+ * for a framebuffer image to be stored for transferring between processes, as
+ * well as appropriate synchronization primitives.  It's designed to be compiled
+ * outside of Panda, so that code that doesn't link with Panda (in particular,
+ * the Panda3D plugin core API) may still link with this and use it.  At the
+ * moment, and maybe indefinitely, it is only compiled on OSX, and only when we
+ * are building support for the plugin; because it is only needed then.
+ */
 class SubprocessWindowBuffer {
 private:
   void *operator new(size_t, void *addr);
@@ -49,7 +40,7 @@ public:
   static SubprocessWindowBuffer *new_buffer(int &fd, size_t &mmap_size,
                                             string &filename,
                                             int x_size, int y_size);
-  static void destroy_buffer(int fd, size_t mmap_size, 
+  static void destroy_buffer(int fd, size_t mmap_size,
                              const string &filename,
                              SubprocessWindowBuffer *buffer);
 
@@ -79,7 +70,7 @@ public:
     ES_mouse,
     ES_keyboard
   };
-  
+
   enum EventType {
     ET_none,
     ET_button_down,

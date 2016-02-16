@@ -11,19 +11,14 @@
  * @date 2000-05-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: FactoryBase::make_instance
-//       Access: Public
-//  Description: Attempts to create a new instance of some class of
-//               the indicated type, or some derivative if necessary.
-//               If an instance of the exact type cannot be created,
-//               the specified priorities will specify which derived
-//               class will be preferred.
-//
-//               This flavor of make_instance() accepts a string name
-//               that indicates the desired type.  It must be the name
-//               of some already-registered type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to create a new instance of some class of the indicated type, or
+ * some derivative if necessary.  If an instance of the exact type cannot be
+ * created, the specified priorities will specify which derived class will be
+ * preferred.  This flavor of make_instance() accepts a string name that
+ * indicates the desired type.  It must be the name of some already-registered
+ * type.
+ */
 INLINE TypedObject *FactoryBase::
 make_instance(const string &type_name, const FactoryParams &params) {
   TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
@@ -33,18 +28,13 @@ make_instance(const string &type_name, const FactoryParams &params) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FactoryBase::make_instance_more_general
-//       Access: Public
-//  Description: Attempts to create an instance of the type requested,
-//               or some base type of the type requested.  Returns the
-//               new instance created, or NULL if the instance could
-//               not be created.
-//
-//               This flavor of make_instance_more_general() accepts a
-//               string name that indicates the desired type.  It must
-//               be the name of some already-registered type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to create an instance of the type requested, or some base type of
+ * the type requested.  Returns the new instance created, or NULL if the
+ * instance could not be created.  This flavor of make_instance_more_general()
+ * accepts a string name that indicates the desired type.  It must be the name
+ * of some already-registered type.
+ */
 INLINE TypedObject *FactoryBase::
 make_instance_more_general(const string &type_name,
                            const FactoryParams &params) {
@@ -53,4 +43,3 @@ make_instance_more_general(const string &type_name,
 
   return make_instance_more_general(handle, params);
 }
-

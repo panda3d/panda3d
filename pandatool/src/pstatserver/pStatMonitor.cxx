@@ -16,32 +16,25 @@
 #include "pStatCollectorDef.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatMonitor::
 PStatMonitor(PStatServer *server) : _server(server) {
   _client_known = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatMonitor::
 ~PStatMonitor() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::hello_from
-//       Access: Public
-//  Description: Called shortly after startup time with the greeting
-//               from the client.  This indicates the client's
-//               reported hostname and program name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called shortly after startup time with the greeting from the client.  This
+ * indicates the client's reported hostname and program name.
+ */
 void PStatMonitor::
 hello_from(const string &hostname, const string &progname) {
   _client_known = true;
@@ -50,15 +43,11 @@ hello_from(const string &hostname, const string &progname) {
   got_hello();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::bad_version
-//       Access: Public
-//  Description: Called shortly after startup time with the greeting
-//               from the client.  In this case, the client seems to
-//               have an incompatible version and will be
-//               automatically disconnected; the server should issue a
-//               message to that effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called shortly after startup time with the greeting from the client.  In this
+ * case, the client seems to have an incompatible version and will be
+ * automatically disconnected; the server should issue a message to that effect.
+ */
 void PStatMonitor::
 bad_version(const string &hostname, const string &progname,
             int client_major, int client_minor,
@@ -70,24 +59,19 @@ bad_version(const string &hostname, const string &progname,
                   server_major, server_minor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::set_client_data
-//       Access: Public
-//  Description: Called by the PStatServer at setup time to set the
-//               new data pointer for the first time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the PStatServer at setup time to set the new data pointer for the
+ * first time.
+ */
 void PStatMonitor::
 set_client_data(PStatClientData *client_data) {
   _client_data = client_data;
   initialized();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::is_alive
-//       Access: Public
-//  Description: Returns true if the client is alive and connected,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the client is alive and connected, false otherwise.
+ */
 bool PStatMonitor::
 is_alive() const {
   if (_client_data.is_null()) {
@@ -97,11 +81,9 @@ is_alive() const {
   return _client_data->is_alive();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::close
-//       Access: Public
-//  Description: Closes the client connection if it is active.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the client connection if it is active.
+ */
 void PStatMonitor::
 close() {
   if (!_client_data.is_null()) {
@@ -109,15 +91,11 @@ close() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::get_collector_color
-//       Access: Public
-//  Description: Returns the color associated with the indicated
-//               collector.  If the collector has no associated color,
-//               or is unknown, a new color will be made up on the
-//               spot and associated with this collector for the rest
-//               of the session.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the color associated with the indicated collector.  If the collector
+ * has no associated color, or is unknown, a new color will be made up on the
+ * spot and associated with this collector for the rest of the session.
+ */
 const LRGBColor &PStatMonitor::
 get_collector_color(int collector_index) {
   Colors::iterator ci;
@@ -161,14 +139,11 @@ get_collector_color(int collector_index) {
   return (*ci).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::get_view
-//       Access: Public
-//  Description: Returns a view on the given thread index.  If there
-//               is no such view already for the indicated thread,
-//               this will create one.  This view can be used to
-//               examine the accumulated data for the given thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a view on the given thread index.  If there is no such view already
+ * for the indicated thread, this will create one.  This view can be used to
+ * examine the accumulated data for the given thread.
+ */
 PStatView &PStatMonitor::
 get_view(int thread_index) {
   Views::iterator vi;
@@ -180,14 +155,11 @@ get_view(int thread_index) {
   return (*vi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::get_level_view
-//       Access: Public
-//  Description: Returns a view on the level value (as opposed to
-//               elapsed time) for the given collector over the given
-//               thread.  If there is no such view already for the
-//               indicated thread, this will create one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a view on the level value (as opposed to elapsed time) for the given
+ * collector over the given thread.  If there is no such view already for the
+ * indicated thread, this will create one.
+ */
 PStatView &PStatMonitor::
 get_level_view(int collector_index, int thread_index) {
   LevelViews::iterator lvi;
@@ -207,147 +179,109 @@ get_level_view(int collector_index, int thread_index) {
   return (*vi).second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::initialized
-//       Access: Public, Virtual
-//  Description: Called after the monitor has been fully set up.  At
-//               this time, it will have a valid _client_data pointer,
-//               and things like is_alive() and close() will be
-//               meaningful.  However, we may not yet know who we're
-//               connected to (is_client_known() may return false),
-//               and we may not know anything about the threads or
-//               collectors we're about to get data on.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the monitor has been fully set up.  At this time, it will have a
+ * valid _client_data pointer, and things like is_alive() and close() will be
+ * meaningful.  However, we may not yet know who we're connected to
+ * (is_client_known() may return false), and we may not know anything about the
+ * threads or collectors we're about to get data on.
+ */
 void PStatMonitor::
 initialized() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::got_hello
-//       Access: Public, Virtual
-//  Description: Called when the "hello" message has been received
-//               from the client.  At this time, the client's hostname
-//               and program name will be known.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the "hello" message has been received from the client.  At this
+ * time, the client's hostname and program name will be known.
+ */
 void PStatMonitor::
 got_hello() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::got_bad_version
-//       Access: Public, Virtual
-//  Description: Like got_hello(), this is called when the "hello"
-//               message has been received from the client.  At this
-//               time, the client's hostname and program name will be
-//               known.  However, the client appears to be an
-//               incompatible version and the connection will be
-//               terminated; the monitor should issue a message to
-//               that effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Like got_hello(), this is called when the "hello" message has been received
+ * from the client.  At this time, the client's hostname and program name will
+ * be known.  However, the client appears to be an incompatible version and the
+ * connection will be terminated; the monitor should issue a message to that
+ * effect.
+ */
 void PStatMonitor::
 got_bad_version(int, int, int, int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::new_collector
-//       Access: Public, Virtual
-//  Description: Called whenever a new Collector definition is
-//               received from the client.  Generally, the client will
-//               send all of its collectors over shortly after
-//               connecting, but there's no guarantee that they will
-//               all be received before the first frames are received.
-//               The monitor should be prepared to accept new Collector
-//               definitions midstream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a new Collector definition is received from the client.
+ * Generally, the client will send all of its collectors over shortly after
+ * connecting, but there's no guarantee that they will all be received before
+ * the first frames are received.  The monitor should be prepared to accept new
+ * Collector definitions midstream.
+ */
 void PStatMonitor::
 new_collector(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::new_thread
-//       Access: Public, Virtual
-//  Description: Called whenever a new Thread definition is
-//               received from the client.  Generally, the client will
-//               send all of its threads over shortly after
-//               connecting, but there's no guarantee that they will
-//               all be received before the first frames are received.
-//               The monitor should be prepared to accept new Thread
-//               definitions midstream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever a new Thread definition is received from the client.
+ * Generally, the client will send all of its threads over shortly after
+ * connecting, but there's no guarantee that they will all be received before
+ * the first frames are received.  The monitor should be prepared to accept new
+ * Thread definitions midstream.
+ */
 void PStatMonitor::
 new_thread(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::new_data
-//       Access: Public, Virtual
-//  Description: Called as each frame's data is made available.  There
-//               is no guarantee the frames will arrive in order, or
-//               that all of them will arrive at all.  The monitor
-//               should be prepared to accept frames received
-//               out-of-order or missing.  The use of the
-//               PStatFrameData / PStatView objects to report the data
-//               will facilitate this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called as each frame's data is made available.  There is no guarantee the
+ * frames will arrive in order, or that all of them will arrive at all.  The
+ * monitor should be prepared to accept frames received out-of-order or missing.
+ * The use of the PStatFrameData / PStatView objects to report the data will
+ * facilitate this.
+ */
 void PStatMonitor::
 new_data(int, int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::lost_connection
-//       Access: Public, Virtual
-//  Description: Called whenever the connection to the client has been
-//               lost.  This is a permanent state change.  The monitor
-//               should update its display to represent this, and may
-//               choose to close down automatically.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called whenever the connection to the client has been lost.  This is a
+ * permanent state change.  The monitor should update its display to represent
+ * this, and may choose to close down automatically.
+ */
 void PStatMonitor::
 lost_connection() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::idle
-//       Access: Public, Virtual
-//  Description: If has_idle() returns true, this will be called
-//               periodically to allow the monitor to update its
-//               display or whatever it needs to do.
-////////////////////////////////////////////////////////////////////
+/**
+ * If has_idle() returns true, this will be called periodically to allow the
+ * monitor to update its display or whatever it needs to do.
+ */
 void PStatMonitor::
 idle() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::has_idle
-//       Access: Public, Virtual
-//  Description: Should be redefined to return true if you want to
-//               redefine idle() and expect it to be called.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be redefined to return true if you want to redefine idle() and expect
+ * it to be called.
+ */
 bool PStatMonitor::
 has_idle() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::is_thread_safe
-//       Access: Public, Virtual
-//  Description: Should be redefined to return true if this monitor
-//               class can handle running in a sub-thread.
-//
-//               This is not related to the question of whether it can
-//               handle multiple different PStatThreadDatas; this is
-//               strictly a question of whether or not the monitor
-//               itself wants to run in a sub-thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be redefined to return true if this monitor class can handle running
+ * in a sub-thread.  This is not related to the question of whether it can
+ * handle multiple different PStatThreadDatas; this is strictly a question of
+ * whether or not the monitor itself wants to run in a sub-thread.
+ */
 bool PStatMonitor::
 is_thread_safe() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatMonitor::user_guide_bars_changed
-//       Access: Public, Virtual
-//  Description: Called when the user guide bars have been changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the user guide bars have been changed.
+ */
 void PStatMonitor::
 user_guide_bars_changed() {
 }

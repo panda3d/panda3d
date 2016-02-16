@@ -13,11 +13,9 @@
 
 #include "weakNodePath.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakNodePath::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void WeakNodePath::
 output(ostream &out) const {
   if (was_deleted()) {

@@ -23,11 +23,10 @@
 #include "geomLines.h"
 #include "pStatCollector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LineParticleRenderer
-// Description : renders a line from last position to current
-//               position -- good for rain, sparks, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * renders a line from last position to current position -- good for rain,
+ * sparks, etc.
+ */
 
 class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
@@ -48,7 +47,7 @@ PUBLISHED:
 
   INLINE const LColor& get_head_color() const;
   INLINE const LColor& get_tail_color() const;
-  
+
   INLINE void set_line_scale_factor(PN_stdfloat sf);
   INLINE PN_stdfloat get_line_scale_factor() const;
 

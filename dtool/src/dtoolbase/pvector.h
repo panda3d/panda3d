@@ -27,13 +27,11 @@
 
 #else
 
-////////////////////////////////////////////////////////////////////
-//       Class : pvector
-// Description : This is our own Panda specialization on the default
-//               STL vector.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL vector.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-allocated
+ * memory.
+ */
 template<class Type>
 class pvector : public vector<Type, pallocator_array<Type> > {
 public:

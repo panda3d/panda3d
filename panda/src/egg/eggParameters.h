@@ -18,21 +18,15 @@
 
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggParameters
-// Description : The values stored in this structure are global
-//               parameters that control some aspects of the egg
-//               library.  User code may adjust these parameters by
-//               meddling with the values in structure directly, or by
-//               fiddling with the pointer to completely replace the
-//               structure.
-//
-//               However, these parameters should not be changed at
-//               any time during the processing of any egg structure:
-//               set the parameters, load an egg file, process it, and
-//               write the egg file out again before resetting the
-//               parameters again.
-////////////////////////////////////////////////////////////////////
+/**
+ * The values stored in this structure are global parameters that control some
+ * aspects of the egg library.  User code may adjust these parameters by
+ * meddling with the values in structure directly, or by fiddling with the
+ * pointer to completely replace the structure.  However, these parameters
+ * should not be changed at any time during the processing of any egg structure:
+ * set the parameters, load an egg file, process it, and write the egg file out
+ * again before resetting the parameters again.
+ */
 class EXPCL_PANDAEGG EggParameters {
 public:
   EggParameters();

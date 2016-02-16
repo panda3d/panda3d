@@ -46,7 +46,7 @@ ConfigureFn(config_interrogatedb) {
     // normally, false means don't do any debug checking.
     if (!use_win32_dbgheap) {
       // deflt disable complete heap verify every 1024 allocations (VC7 deflt).
-      // With vc7 stl small-string-optimization causing more allocs, 
+      // With vc7 stl small-string-optimization causing more allocs,
       // this can cause order-of-magnitude slowdowns in dbg builds
       dbg_flags = 0;
     }
@@ -65,4 +65,3 @@ ConfigureFn(config_interrogatedb) {
 
 ConfigVariableSearchPath interrogatedb_path
 ("interrogatedb-path", "The search path for interrogate's *.in files.");
-

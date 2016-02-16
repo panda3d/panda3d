@@ -18,13 +18,11 @@
 
 #include "typedObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SavedContext
-// Description : This is the base class for all GSG-specific context
-//               objects, such as TextureContext and GeomContext.  It
-//               exists mainly to provide some structural
-//               organization.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for all GSG-specific context objects, such as
+ * TextureContext and GeomContext.  It exists mainly to provide some structural
+ * organization.
+ */
 class EXPCL_PANDA_GOBJ SavedContext : public TypedObject {
 public:
   INLINE SavedContext();
@@ -59,4 +57,3 @@ inline ostream &operator << (ostream &out, const SavedContext &context) {
 #include "savedContext.I"
 
 #endif
-

@@ -31,11 +31,10 @@ static const LVecBase3 zerovec_3 = LVecBase3(0.0f, 0.0f, 0.0f);
 // used from time to time as an initializer.
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: show_vec3
-//  Description: This function writes a LVecBase3, with a specified
-//               number of significant dimensions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function writes a LVecBase3, with a specified number of significant
+ * dimensions.
+ */
 static ostream &
 show_vec3(ostream &out, int indent_level, const LVecBase3 &v,
           int num_dimensions) {
@@ -46,21 +45,17 @@ show_vec3(ostream &out, int indent_level, const LVecBase3 &v,
   return out;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HermiteCurveCV::
 HermiteCurveCV() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::copy_constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HermiteCurveCV::
 HermiteCurveCV(const HermiteCurveCV &c) :
   _p(c._p), _in(c._in), _out(c._out),
@@ -69,22 +64,18 @@ HermiteCurveCV(const HermiteCurveCV &c) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HermiteCurveCV::
 ~HermiteCurveCV() {
 }
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::set_in
-//       Access: Public
-//  Description: Sets the CV's in tangent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the CV's in tangent.
+ */
 void HermiteCurveCV::
 set_in(const LVecBase3 &in) {
   _in = in;
@@ -106,11 +97,9 @@ set_in(const LVecBase3 &in) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::set_out
-//       Access: Public
-//  Description: Sets the CV's out tangent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the CV's out tangent.
+ */
 void HermiteCurveCV::
 set_out(const LVecBase3 &out) {
   _out = out;
@@ -132,18 +121,14 @@ set_out(const LVecBase3 &out) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::set_type
-//       Access: Public
-//  Description: Sets the continuity type of the CV.  Values may be
-//               HC_CUT, indicating a discontinous break in the curve,
-//               HC_FREE, for unconstrained in and out tangents,
-//               HC_G1, for in and out tangents constrained to be
-//               collinear, and HC_SMOOTH, for in and out tangents
-//               constrained to be equal.  Other than HC_CUT, these
-//               are for documentation only; setting this has no
-//               direct effect on the tangents.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the continuity type of the CV.  Values may be HC_CUT, indicating a
+ * discontinous break in the curve, HC_FREE, for unconstrained in and out
+ * tangents, HC_G1, for in and out tangents constrained to be collinear, and
+ * HC_SMOOTH, for in and out tangents constrained to be equal.  Other than
+ * HC_CUT, these are for documentation only; setting this has no direct effect
+ * on the tangents.
+ */
 void HermiteCurveCV::
 set_type(int type) {
   _type = type;
@@ -162,22 +147,18 @@ set_type(int type) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::set_name
-//       Access: Public
-//  Description: Sets the name associated with the CV.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the name associated with the CV.
+ */
 void HermiteCurveCV::
 set_name(const string &name) {
   _name = name;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::format_egg
-//       Access: Public
-//  Description: Formats the CV for output to an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the CV for output to an egg file.
+ */
 void HermiteCurveCV::
 format_egg(ostream &out, int indent_level, int num_dimensions,
        bool show_in, bool show_out,
@@ -222,12 +203,10 @@ format_egg(ostream &out, int indent_level, int num_dimensions,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::write_datagram
-//       Access: Public
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void HermiteCurveCV::
 write_datagram(BamWriter *, Datagram &me) const {
   _p.write_datagram(me);
@@ -237,14 +216,11 @@ write_datagram(BamWriter *, Datagram &me) const {
   me.add_string(_name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurveCV::fillin
-//       Access: Public
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void HermiteCurveCV::
 fillin(DatagramIterator &scan, BamReader *) {
   _p.read_datagram(scan);
@@ -255,21 +231,16 @@ fillin(DatagramIterator &scan, BamReader *) {
   _name = scan.get_string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HermiteCurve::
 HermiteCurve() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::Copy Constructor
-//       Access: Published
-//  Description: Constructs a Hermite from the indicated (possibly
-//               non-hermite) curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a Hermite from the indicated (possibly non-hermite) curve.
+ */
 HermiteCurve::
 HermiteCurve(const ParametricCurve &nc) {
   if (!nc.convert_to_hermite(this)) {
@@ -280,11 +251,9 @@ HermiteCurve(const ParametricCurve &nc) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::Destructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HermiteCurve::
 ~HermiteCurve() {
 }
@@ -294,33 +263,24 @@ HermiteCurve::
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::get_num_cvs
-//       Access: Published
-//  Description: Returns the number of CV's in the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of CV's in the curve.
+ */
 int HermiteCurve::
 get_num_cvs() const {
   return _points.size();
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::insert_cv
-//       Access: Published
-//  Description: Inserts a new CV at the given parametric point along
-//               the curve.  If this parametric point is already on
-//               the curve, the CV is assigned an index between its
-//               two neighbors and the indices of all following CV's
-//               are incremented by 1; its in and out tangents are
-//               chosen to keep the curve consistent.  If the new
-//               parametric point is beyond the end of the existing
-//               curve, the curve is extended to meet it and the new
-//               CV's position, in tangent, and out tangent are set to
-//               zero.
-//
-//               The index number of the new CV is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts a new CV at the given parametric point along the curve.  If this
+ * parametric point is already on the curve, the CV is assigned an index between
+ * its two neighbors and the indices of all following CV's are incremented by 1;
+ * its in and out tangents are chosen to keep the curve consistent.  If the new
+ * parametric point is beyond the end of the existing curve, the curve is
+ * extended to meet it and the new CV's position, in tangent, and out tangent
+ * are set to zero.  The index number of the new CV is returned.
+ */
 int HermiteCurve::
 insert_cv(PN_stdfloat t) {
   if (!is_valid() || t >= get_max_t()) {
@@ -352,13 +312,10 @@ insert_cv(PN_stdfloat t) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::append_cv
-//       Access: Published
-//  Description: Adds a new CV to the end of the curve.  The new CV is
-//               given initial in/out tangents of 0.  The return value
-//               is the index of the new CV.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new CV to the end of the curve.  The new CV is given initial in/out
+ * tangents of 0.  The return value is the index of the new CV.
+ */
 int HermiteCurve::
 append_cv(int type, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   HermiteCurveCV cv;
@@ -380,12 +337,10 @@ append_cv(int type, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::remove_cv
-//       Access: Published
-//  Description: Removes the given CV from the curve.  Returns true if
-//               the CV existed, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the given CV from the curve.  Returns true if the CV existed, false
+ * otherwise.
+ */
 bool HermiteCurve::
 remove_cv(int n) {
   if (n < 0 || n >= (int)_points.size()) {
@@ -403,11 +358,9 @@ remove_cv(int n) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::remove_all_cvs
-//       Access: Published
-//  Description: Removes all CV's from the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all CV's from the curve.
+ */
 void HermiteCurve::
 remove_all_cvs() {
   _points.erase(_points.begin(), _points.end());
@@ -419,23 +372,15 @@ remove_all_cvs() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::set_cv_type
-//       Access: Published
-//  Description: Changes the given CV's continuity type.  Legal values
-//               are HC_CUT, HC_FREE, HC_G1, or HC_SMOOTH.
-//
-//               Other than HC_CUT, these have no effect on the actual
-//               curve; it remains up to user software to impose the
-//               constraints these imply.
-//
-//               HC_CUT implies a disconnection of the curve; HC_FREE
-//               imposes no constraints on the tangents; HC_G1
-//               forces the tangents to be collinear, and HC_SMOOTH
-//               forces the tangents to be identical.  Setting type
-//               type to HC_G1 or HC_SMOOTH may adjust the out
-//               tangent to match the in tangent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the given CV's continuity type.  Legal values are HC_CUT, HC_FREE,
+ * HC_G1, or HC_SMOOTH.  Other than HC_CUT, these have no effect on the actual
+ * curve; it remains up to user software to impose the constraints these imply.
+ * HC_CUT implies a disconnection of the curve; HC_FREE imposes no constraints
+ * on the tangents; HC_G1 forces the tangents to be collinear, and HC_SMOOTH
+ * forces the tangents to be identical.  Setting type type to HC_G1 or HC_SMOOTH
+ * may adjust the out tangent to match the in tangent.
+ */
 bool HermiteCurve::
 set_cv_type(int n, int type) {
   if (n < 0 || n >= (int)_points.size()) {
@@ -454,11 +399,9 @@ set_cv_type(int n, int type) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::set_cv_point
-//       Access: Published
-//  Description: Changes the given CV's position.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the given CV's position.
+ */
 bool HermiteCurve::
 set_cv_point(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   if (n < 0 || n >= (int)_points.size()) {
@@ -469,13 +412,10 @@ set_cv_point(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::set_cv_in
-//       Access: Published
-//  Description: Changes the given CV's in tangent.  Depending on the
-//               continuity type, this may also adjust the out
-//               tangent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the given CV's in tangent.  Depending on the continuity type, this
+ * may also adjust the out tangent.
+ */
 bool HermiteCurve::
 set_cv_in(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   if (n < 0 || n >= (int)_points.size()) {
@@ -486,13 +426,10 @@ set_cv_in(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::set_cv_out
-//       Access: Published
-//  Description: Changes the given CV's out tangent.  Depending on the
-//               continuity type, this may also adjust the in
-//               tangent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the given CV's out tangent.  Depending on the continuity type, this
+ * may also adjust the in tangent.
+ */
 bool HermiteCurve::
 set_cv_out(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   if (n < 0 || n >= (int)_points.size()) {
@@ -503,12 +440,10 @@ set_cv_out(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::set_cv_tstart
-//       Access: Published
-//  Description: Changes the given CV's parametric starting time.
-//               This may affect the shape of the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the given CV's parametric starting time.  This may affect the shape
+ * of the curve.
+ */
 bool HermiteCurve::
 set_cv_tstart(int n, PN_stdfloat tstart) {
   if (n <= 0 || n >= (int)_points.size()) {
@@ -523,11 +458,9 @@ set_cv_tstart(int n, PN_stdfloat tstart) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::set_cv_name
-//       Access: Published
-//  Description: Changes the name associated with a particular CV.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the name associated with a particular CV.
+ */
 bool HermiteCurve::
 set_cv_name(int n, const char *name) {
   if (n < 0 || n >= (int)_points.size()) {
@@ -539,13 +472,10 @@ set_cv_name(int n, const char *name) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::get_cv_type
-//       Access: Published
-//  Description: Returns the given CV's continuity type, HC_CUT,
-//               HC_FREE, HC_G1, or HC_SMOOTH, or 0 if there is
-//               no such CV.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the given CV's continuity type, HC_CUT, HC_FREE, HC_G1, or HC_SMOOTH,
+ * or 0 if there is no such CV.
+ */
 int HermiteCurve::
 get_cv_type(int n) const {
   if (n < 0 || n >= (int)_points.size()) {
@@ -556,11 +486,9 @@ get_cv_type(int n) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::get_cv_point
-//       Access: Published
-//  Description: Returns the position of the given CV.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the position of the given CV.
+ */
 const LVecBase3 &HermiteCurve::
 get_cv_point(int n) const {
   if (n < 0 || n >= (int)_points.size()) {
@@ -575,11 +503,9 @@ get_cv_point(int n, LVecBase3 &v) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::get_cv_in
-//       Access: Published
-//  Description: Returns the in tangent of the given CV.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the in tangent of the given CV.
+ */
 const LVecBase3 &HermiteCurve::
 get_cv_in(int n) const {
   if (n < 0 || n >= (int)_points.size() || _points[n-1]._type==HC_CUT) {
@@ -594,11 +520,9 @@ get_cv_in(int n, LVecBase3 &v) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::get_cv_out
-//       Access: Published
-//  Description: Returns the out tangent of the given CV.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the out tangent of the given CV.
+ */
 const LVecBase3 &HermiteCurve::
 get_cv_out(int n) const {
   if (n < 0 || n >= (int)_points.size() || _points[n]._type==HC_CUT) {
@@ -613,12 +537,9 @@ get_cv_out(int n, LVecBase3 &v) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::get_cv_tstart
-//       Access: Published
-//  Description: Returns the starting point in parametric space of the
-//               given CV.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the starting point in parametric space of the given CV.
+ */
 PN_stdfloat HermiteCurve::
 get_cv_tstart(int n) const {
   if (n<0) {
@@ -630,11 +551,9 @@ get_cv_tstart(int n) const {
   return get_tstart(n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::get_cv_name
-//       Access: Published
-//  Description: Returns the name of the given CV, or NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the given CV, or NULL.
+ */
 string HermiteCurve::
 get_cv_name(int n) const {
   if (n < 0 || n >= (int)_points.size()) {
@@ -645,11 +564,9 @@ get_cv_name(int n) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void HermiteCurve::
 output(ostream &out) const {
   PiecewiseCurve::output(out);
@@ -675,11 +592,9 @@ output(ostream &out) const {
   out << get_num_cvs() << " CV's)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::write_cv
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void HermiteCurve::
 write_cv(ostream &out, int n) const {
   out << "CV";
@@ -717,15 +632,12 @@ write_cv(ostream &out, int n) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::rebuild_curveseg
-//       Access: Public, Virtual
-//  Description: Rebuilds the current curve segment (as selected by
-//               the most recent call to find_curve()) according to
-//               the specified properties (see
-//               CubicCurveseg::compute_seg).  Returns true if
-//               possible, false if something goes horribly wrong.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rebuilds the current curve segment (as selected by the most recent call to
+ * find_curve()) according to the specified properties (see
+ * CubicCurveseg::compute_seg).  Returns true if possible, false if something
+ * goes horribly wrong.
+ */
 bool HermiteCurve::
 rebuild_curveseg(int, PN_stdfloat, const LVecBase4 &,
                  int, PN_stdfloat, const LVecBase4 &,
@@ -735,11 +647,9 @@ rebuild_curveseg(int, PN_stdfloat, const LVecBase4 &,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::format_egg
-//       Access: Public
-//  Description: Formats the Hermite curve for output to an Egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Formats the Hermite curve for output to an Egg file.
+ */
 bool HermiteCurve::
 format_egg(ostream &out, const string &name, const string &curve_type,
            int indent_level) const {
@@ -808,12 +718,9 @@ wrap_hpr(const LVecBase3 &hpr1, LVecBase3 &hpr2) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::invalidate_cv
-//       Access: Protected
-//  Description: Recomputes the CV and its neighbors appropriately
-//               after a change.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the CV and its neighbors appropriately after a change.
+ */
 void HermiteCurve::
 invalidate_cv(int n, bool redo_all) {
   PN_stdfloat t1 = 0.0f, t2 = get_max_t();
@@ -854,12 +761,9 @@ invalidate_cv(int n, bool redo_all) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::find_cv
-//       Access: Protected
-//  Description: Finds the CV immediately preceding the given value of
-//               t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds the CV immediately preceding the given value of t.
+ */
 int HermiteCurve::
 find_cv(PN_stdfloat t) {
   nassertr(is_valid(), 0);
@@ -875,14 +779,11 @@ find_cv(PN_stdfloat t) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::recompute_basis
-//       Access: Protected
-//  Description: Recomputes the coefficients for all the CV's in the
-//               curve.  This is intended to be called whenever the
-//               CV's have been changed in some drastic way, and it's
-//               safest just to recompute everything.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the coefficients for all the CV's in the curve.  This is intended
+ * to be called whenever the CV's have been changed in some drastic way, and
+ * it's safest just to recompute everything.
+ */
 void HermiteCurve::
 recompute_basis() {
   int n;
@@ -903,22 +804,17 @@ recompute_basis() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::register_with_factory
-//       Access: Public, Static
-//  Description: Initializes the factory for reading these things from
-//               Bam files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the factory for reading these things from Bam files.
+ */
 void HermiteCurve::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_HermiteCurve);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::make_HermiteCurve
-//       Access: Protected
-//  Description: Factory method to generate an object of this type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Factory method to generate an object of this type.
+ */
 TypedWritable *HermiteCurve::
 make_HermiteCurve(const FactoryParams &params) {
   HermiteCurve *me = new HermiteCurve;
@@ -930,12 +826,10 @@ make_HermiteCurve(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::write_datagram
-//       Access: Protected, Virtual
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void HermiteCurve::
 write_datagram(BamWriter *manager, Datagram &me) {
   PiecewiseCurve::write_datagram(manager, me);
@@ -947,14 +841,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HermiteCurve::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void HermiteCurve::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PiecewiseCurve::fillin(scan, manager);

@@ -26,4 +26,3 @@ typedef vector_double vector_stdfloat;
 #endif  // STDFLOAT_DOUBLE
 
 #endif
-

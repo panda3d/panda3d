@@ -11,11 +11,9 @@
  * @date 2004-10-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectArray::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileDataObjectArray::
 XFileDataObjectArray(const XFileDataDef *data_def) :
   XFileDataObject(data_def)

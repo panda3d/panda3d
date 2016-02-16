@@ -33,13 +33,11 @@ class PStatFrameData;
 // from this particular client between processing loops.
 static const int queued_frame_records = 500;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatReader
-// Description : This is the class that does all the work for handling
-//               communications from a single Panda client.  It reads
-//               sockets received from the client and boils them down
-//               into PStatData.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the class that does all the work for handling communications from a
+ * single Panda client.  It reads sockets received from the client and boils
+ * them down into PStatData.
+ */
 class PStatReader : public ConnectionReader {
 public:
   PStatReader(PStatServer *manager, PStatMonitor *monitor);

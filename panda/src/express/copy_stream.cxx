@@ -13,14 +13,11 @@
 
 #include "copy_stream.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: copy_stream
-//       Access: Published
-//  Description: Reads the source stream from its current position to
-//               the end of the stream, and writes that data to the
-//               dest stream at its current position.  Returns true on
-//               success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the source stream from its current position to the end of the stream,
+ * and writes that data to the dest stream at its current position.  Returns
+ * true on success, false on failure.
+ */
 bool
 copy_stream(istream &source, ostream &dest) {
   static const size_t buffer_size = 4096;
@@ -33,6 +30,6 @@ copy_stream(istream &source, ostream &dest) {
     source.read(buffer, buffer_size);
     count = source.gcount();
   }
-  
+
   return (!source.fail() || source.eof()) && (!dest.fail());
 }

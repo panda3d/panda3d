@@ -14,24 +14,19 @@
 #include "interfaceMakerPython.h"
 #include "interrogate.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPython::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 InterfaceMakerPython::
 InterfaceMakerPython(InterrogateModuleDef *def) :
   InterfaceMaker(def)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPython::write_includes
-//       Access: Public, Virtual
-//  Description: Generates the list of #include ... whatever that's
-//               required by this particular interface to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the list of #include ... whatever that's required by this
+ * particular interface to the indicated output stream.
+ */
 void InterfaceMakerPython::
 write_includes(ostream &out) {
   InterfaceMaker::write_includes(out);
@@ -45,13 +40,10 @@ write_includes(ostream &out) {
       << "#endif\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPython::test_assert
-//       Access: Protected
-//  Description: Outputs code to check to see if an assertion has
-//               failed while the C++ code was executing, and report
-//               this failure back to Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs code to check to see if an assertion has failed while the C++ code
+ * was executing, and report this failure back to Python.
+ */
 void InterfaceMakerPython::
 test_assert(ostream &out, int indent_level) const {
   if (watch_asserts) {

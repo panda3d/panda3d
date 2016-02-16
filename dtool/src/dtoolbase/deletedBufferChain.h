@@ -44,23 +44,15 @@ enum DeletedChainFlag {
 };
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : DeletedBufferChain
-// Description : This template class can be used to provide faster
-//               allocation/deallocation for many Panda objects.  It
-//               works by maintaining a linked list of deleted buffers
-//               that are all of the same size; when a new object is
-//               allocated that matches that size, the same space is
-//               just reused.
-//
-//               This class manages untyped buffers of a fixed size.
-//               It can be used directly; or it also serves as a
-//               backbone for DeletedChain, which is a template class
-//               that manages object allocations.
-//
-//               Use MemoryHook to get a new DeletedBufferChain of a
-//               particular size.
-////////////////////////////////////////////////////////////////////
+/**
+ * This template class can be used to provide faster allocation/deallocation for
+ * many Panda objects.  It works by maintaining a linked list of deleted buffers
+ * that are all of the same size; when a new object is allocated that matches
+ * that size, the same space is just reused.  This class manages untyped buffers
+ * of a fixed size.  It can be used directly; or it also serves as a backbone
+ * for DeletedChain, which is a template class that manages object allocations.
+ * Use MemoryHook to get a new DeletedBufferChain of a particular size.
+ */
 class EXPCL_DTOOL DeletedBufferChain {
 protected:
   DeletedBufferChain(size_t buffer_size);
@@ -94,7 +86,7 @@ private:
   static INLINE ObjectNode *buffer_to_node(void *buffer);
 
   ObjectNode *_deleted_chain;
-  
+
   MutexImpl _lock;
   size_t _buffer_size;
 
@@ -117,4 +109,3 @@ private:
 #include "deletedBufferChain.I"
 
 #endif
-

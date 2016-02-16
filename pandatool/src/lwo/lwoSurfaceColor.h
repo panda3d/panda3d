@@ -20,11 +20,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceColor
-// Description : Records the base color of a surface, as an entry
-//               within a LwoSurface chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the base color of a surface, as an entry within a LwoSurface chunk.
+ */
 class LwoSurfaceColor : public LwoChunk {
 public:
   LRGBColor _color;
@@ -53,5 +51,3 @@ private:
 };
 
 #endif
-
-

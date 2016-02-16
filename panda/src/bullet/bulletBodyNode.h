@@ -27,10 +27,9 @@
 
 class BulletShape;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletBodyNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletBodyNode : public PandaNode {
 protected:
   BulletBodyNode(const char *name);
@@ -158,7 +157,7 @@ public:
   }
   static void init_type() {
     PandaNode::init_type();
-    register_type(_type_handle, "BulletBodyNode", 
+    register_type(_type_handle, "BulletBodyNode",
                   PandaNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -176,4 +175,3 @@ private:
 #include "bulletBodyNode.I"
 
 #endif // __BULLET_BODY_NODE_H__
-

@@ -33,16 +33,14 @@
 #include "windowHandle.h"
 #include "touchInfo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsWindow
-// Description : A window, fullscreen or on a desktop, into which a
-//               graphics device sends its output for interactive
-//               display.
-////////////////////////////////////////////////////////////////////
+/**
+ * A window, fullscreen or on a desktop, into which a graphics device sends its
+ * output for interactive display.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsWindow : public GraphicsOutput {
 protected:
   GraphicsWindow(GraphicsEngine *engine,
-                 GraphicsPipe *pipe, 
+                 GraphicsPipe *pipe,
                  const string &name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop,
@@ -81,7 +79,7 @@ PUBLISHED:
 
   INLINE WindowHandle *get_window_handle() const;
   MAKE_PROPERTY(window_handle, get_window_handle);
-  
+
   // Mouse and keyboard routines
   int get_num_input_devices() const;
   string get_input_device_name(int device) const;
@@ -158,7 +156,7 @@ protected:
   bool _got_expose_event;
 
 private:
-  LightReMutex _properties_lock; 
+  LightReMutex _properties_lock;
   // protects _requested_properties, _rejected_properties, and
   // _window_event.
 

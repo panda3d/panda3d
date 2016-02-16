@@ -17,10 +17,9 @@
 #include "pandatoolbase.h"
 #include "xFileDataObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectArray
-// Description : An array of nested data elements.
-////////////////////////////////////////////////////////////////////
+/**
+ * An array of nested data elements.
+ */
 class XFileDataObjectArray : public XFileDataObject {
 public:
   INLINE XFileDataObjectArray(const XFileDataDef *data_def);
@@ -39,7 +38,7 @@ protected:
 private:
   typedef pvector< PT(XFileDataObject) > NestedElements;
   NestedElements _nested_elements;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

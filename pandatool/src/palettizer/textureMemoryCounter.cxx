@@ -21,21 +21,17 @@
 #include "indent.h"
 #include <math.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextureMemoryCounter::
 TextureMemoryCounter() {
   reset();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::reset
-//       Access: Public
-//  Description: Resets the count to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the count to zero.
+ */
 void TextureMemoryCounter::
 reset() {
   _num_textures = 0;
@@ -51,11 +47,9 @@ reset() {
   _palettes.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::add_placement
-//       Access: Public
-//  Description: Adds the indicated TexturePlacement to the counter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated TexturePlacement to the counter.
+ */
 void TextureMemoryCounter::
 add_placement(TexturePlacement *placement) {
   TextureImage *texture = placement->get_texture();
@@ -76,18 +70,16 @@ add_placement(TexturePlacement *placement) {
     if (dest != (DestTextureImage *)NULL) {
       int bytes = count_bytes(dest);
       add_texture(texture, bytes);
-      
+
       _bytes += bytes;
       _num_unplaced++;
     }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::report
-//       Access: Public
-//  Description: Reports the measured texture memory usage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reports the measured texture memory usage.
+ */
 void TextureMemoryCounter::
 report(ostream &out, int indent_level) {
   indent(out, indent_level)
@@ -124,13 +116,10 @@ report(ostream &out, int indent_level) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::format_memory_fraction
-//       Access: Private, Static
-//  Description: Writes to the indicated ostream an indication of the
-//               fraction of the total memory usage that is
-//               represented by fraction_bytes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes to the indicated ostream an indication of the fraction of the total
+ * memory usage that is represented by fraction_bytes.
+ */
 ostream &TextureMemoryCounter::
 format_memory_fraction(ostream &out, int fraction_bytes, int palette_bytes) {
   out << floor(1000.0 * (double)fraction_bytes / (double)palette_bytes + 0.5) / 10.0
@@ -138,13 +127,10 @@ format_memory_fraction(ostream &out, int fraction_bytes, int palette_bytes) {
   return out;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::add_palette
-//       Access: Private
-//  Description: Adds the indicated PaletteImage to the count.  If
-//               this is called twice for a given PaletteImage it does
-//               nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated PaletteImage to the count.  If this is called twice for a
+ * given PaletteImage it does nothing.
+ */
 void TextureMemoryCounter::
 add_palette(PaletteImage *image) {
   bool inserted = _palettes.insert(image).second;
@@ -164,13 +150,10 @@ add_palette(PaletteImage *image) {
   _num_palettes++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::add_texture
-//       Access: Private
-//  Description: Adds the given TextureImage to the counter.  If the
-//               texture image has already been added, this counts the
-//               smaller of the two as duplicate bytes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the given TextureImage to the counter.  If the texture image has already
+ * been added, this counts the smaller of the two as duplicate bytes.
+ */
 void TextureMemoryCounter::
 add_texture(TextureImage *texture, int bytes) {
   pair<Textures::iterator, bool> result;
@@ -188,23 +171,19 @@ add_texture(TextureImage *texture, int bytes) {
   (*ti).second = max(bytes, (*ti).second);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::count_bytes
-//       Access: Private
-//  Description: Attempts to estimate the number of bytes the given
-//               image file will use in texture memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to estimate the number of bytes the given image file will use in
+ * texture memory.
+ */
 int TextureMemoryCounter::
 count_bytes(ImageFile *image) {
   return count_bytes(image, image->get_x_size(), image->get_y_size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureMemoryCounter::count_bytes
-//       Access: Private
-//  Description: Attempts to estimate the number of bytes the given
-//               image file will use in texture memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to estimate the number of bytes the given image file will use in
+ * texture memory.
+ */
 int TextureMemoryCounter::
 count_bytes(ImageFile *image, int x_size, int y_size) {
   int pixels = x_size * y_size;

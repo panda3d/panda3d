@@ -18,11 +18,10 @@
 
 #include "lightLensNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointLight
-// Description : A light originating from a single point in space, and
-//               shining in all directions.
-////////////////////////////////////////////////////////////////////
+/**
+ * A light originating from a single point in space, and shining in all
+ * directions.
+ */
 class EXPCL_PANDA_PGRAPHNODES PointLight : public LightLensNode {
 PUBLISHED:
   PointLight(const string &name);

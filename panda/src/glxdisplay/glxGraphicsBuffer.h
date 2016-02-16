@@ -19,14 +19,12 @@
 #include "glxGraphicsPipe.h"
 #include "graphicsBuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : glxGraphicsBuffer
-// Description : An offscreen buffer in the GLX environment.  This
-//               creates a GLXPbuffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen buffer in the GLX environment.  This creates a GLXPbuffer.
+ */
 class glxGraphicsBuffer : public GraphicsBuffer {
 public:
-  glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

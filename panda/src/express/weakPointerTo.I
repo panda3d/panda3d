@@ -11,21 +11,17 @@
  * @date 2004-09-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakPointerTo<T>::
 WeakPointerTo(To *ptr) : WeakPointerToBase<T>(ptr) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakPointerTo<T>::
 WeakPointerTo(const PointerTo<T> &copy) :
@@ -33,11 +29,9 @@ WeakPointerTo(const PointerTo<T> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakPointerTo<T>::
 WeakPointerTo(const WeakPointerTo<T> &copy) :
@@ -45,11 +39,9 @@ WeakPointerTo(const WeakPointerTo<T> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Dereference operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To &WeakPointerTo<T>::
 operator *() const {
@@ -57,11 +49,9 @@ operator *() const {
   return *((To *)WeakPointerToBase<T>::_void_ptr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Member access operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
 operator -> () const {
@@ -69,16 +59,12 @@ operator -> () const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Typecast operator
-//       Access: Public
-//  Description: We also have the typecast operator to automatically
-//               convert WeakPointerTo's to the required kind of actual
-//               pointer.  This introduces ambiguities which the
-//               compiler will resolve one way or the other, but we
-//               don't care which way it goes because either will be
-//               correct.
-////////////////////////////////////////////////////////////////////
+/**
+ * We also have the typecast operator to automatically convert WeakPointerTo's
+ * to the required kind of actual pointer.  This introduces ambiguities which
+ * the compiler will resolve one way or the other, but we don't care which way
+ * it goes because either will be correct.
+ */
 template<class T>
 INLINE WeakPointerTo<T>::
 operator T * () const {
@@ -86,13 +72,10 @@ operator T * () const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::p
-//       Access: Public
-//  Description: Returns an ordinary pointer instead of a WeakPointerTo.
-//               Useful to work around compiler problems, particularly
-//               for implicit upcasts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an ordinary pointer instead of a WeakPointerTo.  Useful to work
+ * around compiler problems, particularly for implicit upcasts.
+ */
 template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
 p() const {
@@ -100,23 +83,19 @@ p() const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::get_orig
-//       Access: Public
-//  Description: Returns the original pointer value, even if the
-//               object has since been deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the original pointer value, even if the object has since been
+ * deleted.
+ */
 template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
 get_orig() const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakPointerTo<T> &WeakPointerTo<T>::
 operator = (To *ptr) {
@@ -124,11 +103,9 @@ operator = (To *ptr) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakPointerTo<T> &WeakPointerTo<T>::
 operator = (const PointerTo<T> &copy) {
@@ -136,11 +113,9 @@ operator = (const PointerTo<T> &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerTo::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakPointerTo<T> &WeakPointerTo<T>::
 operator = (const WeakPointerTo<T> &copy) {
@@ -148,11 +123,9 @@ operator = (const WeakPointerTo<T> &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const To *ptr) :
@@ -160,11 +133,9 @@ WeakConstPointerTo(const To *ptr) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const PointerTo<T> &copy) :
@@ -172,11 +143,9 @@ WeakConstPointerTo(const PointerTo<T> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const ConstPointerTo<T> &copy) :
@@ -184,11 +153,9 @@ WeakConstPointerTo(const ConstPointerTo<T> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const WeakPointerTo<T> &copy) :
@@ -196,11 +163,9 @@ WeakConstPointerTo(const WeakPointerTo<T> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const WeakConstPointerTo<T> &copy) :
@@ -208,11 +173,9 @@ WeakConstPointerTo(const WeakConstPointerTo<T> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Dereference operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To &WeakConstPointerTo<T>::
 operator *() const {
@@ -220,11 +183,9 @@ operator *() const {
   return *((To *)WeakPointerToBase<T>::_void_ptr);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Member access operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 operator -> () const {
@@ -232,16 +193,12 @@ operator -> () const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Typecast operator
-//       Access: Public
-//  Description: We also have the typecast operator to automatically
-//               convert WeakConstPointerTo's to the required kind of actual
-//               pointer.  This introduces ambiguities which the
-//               compiler will resolve one way or the other, but we
-//               don't care which way it goes because either will be
-//               correct.
-////////////////////////////////////////////////////////////////////
+/**
+ * We also have the typecast operator to automatically convert
+ * WeakConstPointerTo's to the required kind of actual pointer.  This introduces
+ * ambiguities which the compiler will resolve one way or the other, but we
+ * don't care which way it goes because either will be correct.
+ */
 
 template<class T>
 INLINE WeakConstPointerTo<T>::
@@ -250,13 +207,10 @@ operator const T * () const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::p
-//       Access: Public
-//  Description: Returns an ordinary pointer instead of a WeakConstPointerTo.
-//               Useful to work around compiler problems, particularly
-//               for implicit upcasts.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an ordinary pointer instead of a WeakConstPointerTo.  Useful to work
+ * around compiler problems, particularly for implicit upcasts.
+ */
 template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 p() const {
@@ -264,23 +218,19 @@ p() const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::get_orig
-//       Access: Public
-//  Description: Returns the original pointer value, even if the
-//               object has since been deleted.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the original pointer value, even if the object has since been
+ * deleted.
+ */
 template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 get_orig() const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
 operator = (const To *ptr) {
@@ -288,11 +238,9 @@ operator = (const To *ptr) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
 operator = (const PointerTo<T> &copy) {
@@ -300,11 +248,9 @@ operator = (const PointerTo<T> &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
 operator = (const ConstPointerTo<T> &copy) {
@@ -312,11 +258,9 @@ operator = (const ConstPointerTo<T> &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
 operator = (const WeakPointerTo<T> &copy) {
@@ -324,11 +268,9 @@ operator = (const WeakPointerTo<T> &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakConstPointerTo::Assignment operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class T>
 INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
 operator = (const WeakConstPointerTo<T> &copy) {

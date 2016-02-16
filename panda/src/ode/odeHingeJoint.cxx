@@ -17,17 +17,17 @@
 TypeHandle OdeHingeJoint::_type_handle;
 
 OdeHingeJoint::
-OdeHingeJoint(dJointID id) : 
+OdeHingeJoint(dJointID id) :
   OdeJoint(id) {
 }
 
 OdeHingeJoint::
-OdeHingeJoint(OdeWorld &world) : 
+OdeHingeJoint(OdeWorld &world) :
   OdeJoint(dJointCreateHinge(world.get_id(), 0)) {
 }
 
 OdeHingeJoint::
-OdeHingeJoint(OdeWorld &world, OdeJointGroup &joint_group) : 
+OdeHingeJoint(OdeWorld &world, OdeJointGroup &joint_group) :
   OdeJoint(dJointCreateHinge(world.get_id(), joint_group.get_id())) {
 }
 

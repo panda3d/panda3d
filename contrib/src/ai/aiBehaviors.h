@@ -35,15 +35,16 @@ class ObstacleAvoidance;
 typedef list<Flee, allocator<Flee> > ListFlee;
 typedef list<Evade, allocator<Evade> > ListEvade;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AIBehaviors
-// Description : This class implements all the steering behaviors of the AI framework, such as
-//               seek, flee, pursue, evade, wander and flock. Each steering behavior has a weight which is used when more than
-//               one type of steering behavior is acting on the same ai character. The weight decides the contribution of each
-//               type of steering behavior. The AICharacter class has a handle to an object of this class and this allows to
-//               invoke the steering behaviors via the AICharacter. This class also provides functionality such as pausing, resuming
-//               and removing the AI behaviors of an AI character at anytime.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements all the steering behaviors of the AI framework, such as
+ * seek, flee, pursue, evade, wander and flock.  Each steering behavior has a
+ * weight which is used when more than one type of steering behavior is acting
+ * on the same ai character.  The weight decides the contribution of each type
+ * of steering behavior.  The AICharacter class has a handle to an object of
+ * this class and this allows to invoke the steering behaviors via the
+ * AICharacter.  This class also provides functionality such as pausing,
+ * resuming and removing the AI behaviors of an AI character at anytime.
+ */
 class EXPCL_PANDAAI AIBehaviors {
 public:
   enum _behavior_type {

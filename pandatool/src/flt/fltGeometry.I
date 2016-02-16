@@ -11,34 +11,26 @@
  * @date 2001-02-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::has_texture
-//       Access: Public
-//  Description: Returns true if the face has a texture applied, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the face has a texture applied, false otherwise.
+ */
 INLINE bool FltGeometry::
 has_texture() const {
   return (_texture_index >= 0 && _header->has_texture(_texture_index));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::get_texture
-//       Access: Public
-//  Description: Returns the texture applied to this face, or NULL if
-//               no texture was applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the texture applied to this face, or NULL if no texture was applied.
+ */
 INLINE FltTexture *FltGeometry::
 get_texture() const {
   return _header->get_texture(_texture_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::set_texture
-//       Access: Public
-//  Description: Applies the indicated texture to this face, or if the
-//               texture is NULL, clears it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated texture to this face, or if the texture is NULL, clears
+ * it.
+ */
 INLINE void FltGeometry::
 set_texture(FltTexture *texture) {
   if (texture == (FltTexture *)NULL) {
@@ -49,34 +41,27 @@ set_texture(FltTexture *texture) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::has_material
-//       Access: Public
-//  Description: Returns true if the face has a material applied, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the face has a material applied, false otherwise.
+ */
 INLINE bool FltGeometry::
 has_material() const {
   return (_material_index >= 0 && _header->has_material(_material_index));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::get_material
-//       Access: Public
-//  Description: Returns the material applied to this face, or NULL if
-//               no material was applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the material applied to this face, or NULL if no material was
+ * applied.
+ */
 INLINE FltMaterial *FltGeometry::
 get_material() const {
   return _header->get_material(_material_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::set_material
-//       Access: Public
-//  Description: Applies the indicated material to this face, or if the
-//               material is NULL, clears it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated material to this face, or if the material is NULL,
+ * clears it.
+ */
 INLINE void FltGeometry::
 set_material(FltMaterial *material) {
   if (material == (FltMaterial *)NULL) {
@@ -87,12 +72,9 @@ set_material(FltMaterial *material) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltGeometry::has_color
-//       Access: Public
-//  Description: Returns true if the face has a primary color
-//               indicated, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the face has a primary color indicated, false otherwise.
+ */
 INLINE bool FltGeometry::
 has_color() const {
   // Even if the no_color bit is not set, if the color_index is -1,

@@ -24,16 +24,14 @@
 
 class BulletRigidBodyNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletHingeConstraint
-// Description : The hinge constraint lets two bodies rotate around
-//               a given axis while adhering to specified limits.
-//               It's motor can apply angular force to them.
-////////////////////////////////////////////////////////////////////
+/**
+ * The hinge constraint lets two bodies rotate around a given axis while
+ * adhering to specified limits.  It's motor can apply angular force to them.
+ */
 class EXPCL_PANDABULLET BulletHingeConstraint : public BulletConstraint {
 
 PUBLISHED:
-  BulletHingeConstraint(const BulletRigidBodyNode *node_a, 
+  BulletHingeConstraint(const BulletRigidBodyNode *node_a,
                         const LPoint3 &pivot_a,
                         const LVector3 &axis_a,
                         bool use_frame_a=false);
@@ -45,7 +43,7 @@ PUBLISHED:
                         const LVector3 &axis_b,
                         bool use_frame_a=false);
 
-  BulletHingeConstraint(const BulletRigidBodyNode *node_a, 
+  BulletHingeConstraint(const BulletRigidBodyNode *node_a,
                         const TransformState *ts_a,
                         bool use_frame_a=false);
   BulletHingeConstraint(const BulletRigidBodyNode *node_a,
@@ -87,7 +85,7 @@ public:
   }
   static void init_type() {
     BulletConstraint::init_type();
-    register_type(_type_handle, "BulletHingeConstraint", 
+    register_type(_type_handle, "BulletHingeConstraint",
                   BulletConstraint::get_class_type());
   }
   virtual TypeHandle get_type() const {

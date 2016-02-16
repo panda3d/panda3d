@@ -22,14 +22,12 @@
 #include "x11GraphicsWindow.h"
 #include "buttonHandle.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TinyXGraphicsWindow
-// Description : Opens a window on X11 to display the TinyPanda
-//               software rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens a window on X11 to display the TinyPanda software rendering.
+ */
 class EXPCL_TINYDISPLAY TinyXGraphicsWindow : public x11GraphicsWindow {
 public:
-  TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       const string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
@@ -54,7 +52,7 @@ private:
   void create_full_frame_buffer();
   void create_reduced_frame_buffer();
   void create_ximage();
-  
+
 private:
   ZBuffer *_reduced_frame_buffer;
   ZBuffer *_full_frame_buffer;
@@ -64,7 +62,7 @@ private:
   int _bytes_per_pixel;
   Visual *_visual;
   int _depth;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -88,4 +86,3 @@ private:
 #endif  // HAVE_X11
 
 #endif
-

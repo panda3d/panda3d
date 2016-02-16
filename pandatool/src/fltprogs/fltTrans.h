@@ -19,12 +19,10 @@
 #include "programBase.h"
 #include "withOutputFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTrans
-// Description : A program to read a flt file and write an equivalent
-//               flt file, possibly performing some minor operations
-//               along the way.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a flt file and write an equivalent flt file, possibly
+ * performing some minor operations along the way.
+ */
 class FltTrans : public ProgramBase, public WithOutputFile {
 public:
   FltTrans();
@@ -40,4 +38,3 @@ protected:
 };
 
 #endif
-

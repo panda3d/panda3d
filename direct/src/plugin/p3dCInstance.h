@@ -25,11 +25,9 @@
 
 class P3DSession;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DCInstance
-// Description : This is an instance of a Panda3D window, as seen in
-//               the child-level process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an instance of a Panda3D window, as seen in the child-level process.
+ */
 class P3DCInstance : public P3D_instance {
 public:
   P3DCInstance(TiXmlElement *xinstance);

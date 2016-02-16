@@ -15,13 +15,10 @@
 
 static const size_t extra_size = 50;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackData::set_used_length
-//       Access: Private
-//  Description: Ensures that the buffer has at least size bytes, and
-//               sets the _used_length to the indicated value; grows
-//               the buffer if it does not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the buffer has at least size bytes, and sets the _used_length to
+ * the indicated value; grows the buffer if it does not.
+ */
 void DCPackData::
 set_used_length(size_t size) {
   if (size > _allocated_size) {

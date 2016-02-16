@@ -23,12 +23,10 @@ class FileReference;
 class Filename;
 class VirtualFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramGenerator
-// Description : This class defines the abstract interace to any
-//               source of datagrams, whether it be from a file or
-//               from the net.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the abstract interace to any source of datagrams, whether
+ * it be from a file or from the net.
+ */
 class EXPCL_PANDAEXPRESS DatagramGenerator {
 PUBLISHED:
   INLINE DatagramGenerator();

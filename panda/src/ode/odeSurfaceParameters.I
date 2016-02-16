@@ -121,5 +121,3 @@ INLINE dReal OdeSurfaceParameters::
 get_slip2() const {
   return _surface_parameters.slip2;
 }
-
-

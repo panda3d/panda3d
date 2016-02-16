@@ -26,11 +26,9 @@
 
 TypeHandle ImageFile::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ImageFile::
 ImageFile() {
   _alpha_file_channel = 0;
@@ -39,22 +37,16 @@ ImageFile() {
   _y_size = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::make_shadow_image
-//       Access: Public
-//  Description: Sets up the ImageFile as a "shadow image" of a
-//               particular PaletteImage.  This is a temporary
-//               ImageFile that's used to read and write the shadow
-//               palette image, which is used to keep a working copy
-//               of the palette.
-//
-//               Returns true if the filename changes from what it was
-//               previously, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the ImageFile as a "shadow image" of a particular PaletteImage.  This
+ * is a temporary ImageFile that's used to read and write the shadow palette
+ * image, which is used to keep a working copy of the palette.  Returns true if
+ * the filename changes from what it was previously, false otherwise.
+ */
 bool ImageFile::
 make_shadow_image(const string &basename) {
   bool any_changed = false;
-  
+
   if (_properties._color_type != pal->_shadow_color_type ||
       _properties._alpha_type != pal->_shadow_alpha_type) {
 
@@ -70,112 +62,84 @@ make_shadow_image(const string &basename) {
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::is_size_known
-//       Access: Public
-//  Description: Returns true if the size of the image file is known,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the size of the image file is known, false otherwise.
+ */
 bool ImageFile::
 is_size_known() const {
   return _size_known;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::get_x_size
-//       Access: Public
-//  Description: Returns the size of the image file in pixels in the X
-//               direction.  It is an error to call this unless
-//               is_size_known() returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size of the image file in pixels in the X direction.  It is an
+ * error to call this unless is_size_known() returns true.
+ */
 int ImageFile::
 get_x_size() const {
   nassertr(is_size_known(), 0);
   return _x_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::get_y_size
-//       Access: Public
-//  Description: Returns the size of the image file in pixels in the Y
-//               direction.  It is an error to call this unless
-//               is_size_known() returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size of the image file in pixels in the Y direction.  It is an
+ * error to call this unless is_size_known() returns true.
+ */
 int ImageFile::
 get_y_size() const {
   nassertr(is_size_known(), 0);
   return _y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::has_num_channels
-//       Access: Public
-//  Description: Returns true if the number of channels in the image
-//               is known, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the number of channels in the image is known, false
+ * otherwise.
+ */
 bool ImageFile::
 has_num_channels() const {
   return _properties.has_num_channels();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::get_num_channels
-//       Access: Public
-//  Description: Returns the number of channels of the image.  It is
-//               an error to call this unless has_num_channels()
-//               returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of channels of the image.  It is an error to call this
+ * unless has_num_channels() returns true.
+ */
 int ImageFile::
 get_num_channels() const {
   return _properties.get_num_channels();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::get_properties
-//       Access: Public
-//  Description: Returns the grouping properties of the image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the grouping properties of the image.
+ */
 const TextureProperties &ImageFile::
 get_properties() const {
   return _properties;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::clear_basic_properties
-//       Access: Public
-//  Description: Resets the properties to a neutral state, for
-//               instance in preparation for calling
-//               update_properties() with all the known contributing
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the properties to a neutral state, for instance in preparation for
+ * calling update_properties() with all the known contributing properties.
+ */
 void ImageFile::
 clear_basic_properties() {
   _properties.clear_basic();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::update_properties
-//       Access: Public
-//  Description: If the indicate TextureProperties structure is more
-//               specific than this one, updates this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the indicate TextureProperties structure is more specific than this one,
+ * updates this one.
+ */
 void ImageFile::
 update_properties(const TextureProperties &properties) {
   _properties.update_properties(properties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::set_filename
-//       Access: Public
-//  Description: Sets the filename, and if applicable, the
-//               alpha_filename, from the indicated basename.  The
-//               extension appropriate to the image file type
-//               specified in _color_type (and _alpha_type) is
-//               automatically applied.
-//
-//               Returns true if the filename changes from what it was
-//               previously, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the filename, and if applicable, the alpha_filename, from the indicated
+ * basename.  The extension appropriate to the image file type specified in
+ * _color_type (and _alpha_type) is automatically applied.  Returns true if the
+ * filename changes from what it was previously, false otherwise.
+ */
 bool ImageFile::
 set_filename(PaletteGroup *group, const string &basename) {
   // Synthesize the directory name based on the map_dirname set to the
@@ -206,23 +170,17 @@ set_filename(PaletteGroup *group, const string &basename) {
   return set_filename(dirname, basename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::set_filename
-//       Access: Public
-//  Description: Sets the filename, and if applicable, the
-//               alpha_filename, from the indicated basename.  The
-//               extension appropriate to the image file type
-//               specified in _color_type (and _alpha_type) is
-//               automatically applied.
-//
-//               Returns true if the filename changes from what it was
-//               previously, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the filename, and if applicable, the alpha_filename, from the indicated
+ * basename.  The extension appropriate to the image file type specified in
+ * _color_type (and _alpha_type) is automatically applied.  Returns true if the
+ * filename changes from what it was previously, false otherwise.
+ */
 bool ImageFile::
 set_filename(const string &dirname, const string &basename) {
   Filename orig_filename = _filename;
   Filename orig_alpha_filename = _alpha_filename;
-  
+
   _filename = Filename(dirname, basename);
   _filename.standardize();
 
@@ -253,51 +211,40 @@ set_filename(const string &dirname, const string &basename) {
           _alpha_filename != orig_alpha_filename);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::get_filename
-//       Access: Public
-//  Description: Returns the primary filename of the image file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the primary filename of the image file.
+ */
 const Filename &ImageFile::
 get_filename() const {
   return _filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::get_alpha_filename
-//       Access: Public
-//  Description: Returns the alpha filename of the image file.  This
-//               is the name of the file that contains the alpha
-//               channel, if it is stored in a separate file, or the
-//               empty string if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the alpha filename of the image file.  This is the name of the file
+ * that contains the alpha channel, if it is stored in a separate file, or the
+ * empty string if it is not.
+ */
 const Filename &ImageFile::
 get_alpha_filename() const {
   return _alpha_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::get_alpha_file_channel
-//       Access: Public
-//  Description: Returns the particular channel number of the alpha
-//               image file from which the alpha channel should be
-//               extracted.  This is normally 0 to represent the
-//               grayscale combination of r, g, and b; or it may be a
-//               1-based channel number (for instance, 4 for the alpha
-//               channel of a 4-component image).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the particular channel number of the alpha image file from which the
+ * alpha channel should be extracted.  This is normally 0 to represent the
+ * grayscale combination of r, g, and b; or it may be a 1-based channel number
+ * (for instance, 4 for the alpha channel of a 4-component image).
+ */
 int ImageFile::
 get_alpha_file_channel() const {
   return _alpha_file_channel;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::exists
-//       Access: Public
-//  Description: Returns true if the file or files named by the image
-//               file exist, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file or files named by the image file exist, false
+ * otherwise.
+ */
 bool ImageFile::
 exists() const {
   if (!_filename.exists()) {
@@ -314,13 +261,10 @@ exists() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::read
-//       Access: Public
-//  Description: Reads in the image (or images, if the alpha_filename
-//               is separate) and stores it in the indicated PNMImage.
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads in the image (or images, if the alpha_filename is separate) and stores
+ * it in the indicated PNMImage.  Returns true on success, false on failure.
+ */
 bool ImageFile::
 read(PNMImage &image) const {
   nassertr(!_filename.empty(), false);
@@ -348,7 +292,7 @@ read(PNMImage &image) const {
 
     image.add_alpha();
 
-    if (_alpha_file_channel == 4 || 
+    if (_alpha_file_channel == 4 ||
         (_alpha_file_channel == 2 && alpha_image.get_num_channels() == 2)) {
       // Use the alpha channel.
       for (int x = 0; x < image.get_x_size(); x++) {
@@ -356,7 +300,7 @@ read(PNMImage &image) const {
           image.set_alpha(x, y, alpha_image.get_alpha(x, y));
         }
       }
-      
+
     } else if (_alpha_file_channel >= 1 && _alpha_file_channel <= 3 &&
                alpha_image.get_num_channels() >= 3) {
       // Use the appropriate red, green, or blue channel.
@@ -365,7 +309,7 @@ read(PNMImage &image) const {
           image.set_alpha(x, y, alpha_image.get_channel_val(x, y, _alpha_file_channel - 1));
         }
       }
-      
+
     } else {
       // Use the grayscale channel.
       for (int x = 0; x < image.get_x_size(); x++) {
@@ -379,13 +323,10 @@ read(PNMImage &image) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::write
-//       Access: Public
-//  Description: Writes out the image in the indicated PNMImage to the
-//               _filename and/or _alpha_filename.  Returns true on
-//               success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the image in the indicated PNMImage to the _filename and/or
+ * _alpha_filename.  Returns true on success, false on failure.
+ */
 bool ImageFile::
 write(const PNMImage &image) const {
   nassertr(!_filename.empty(), false);
@@ -432,11 +373,9 @@ write(const PNMImage &image) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::unlink
-//       Access: Public
-//  Description: Deletes the image file or files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes the image file or files.
+ */
 void ImageFile::
 unlink() {
   if (!_filename.empty() && _filename.exists()) {
@@ -449,11 +388,9 @@ unlink() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::update_egg_tex
-//       Access: Public
-//  Description: Sets the indicated EggTexture to refer to this file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated EggTexture to refer to this file.
+ */
 void ImageFile::
 update_egg_tex(EggTexture *egg_tex) const {
   nassertv(egg_tex != (EggTexture *)NULL);
@@ -472,27 +409,21 @@ update_egg_tex(EggTexture *egg_tex) const {
   _properties.update_egg_tex(egg_tex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::output_filename
-//       Access: Public
-//  Description: Writes the filename (or pair of filenames) to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the filename (or pair of filenames) to the indicated output stream.
+ */
 void ImageFile::
 output_filename(ostream &out) const {
-  out << FilenameUnifier::make_user_filename(_filename); 
+  out << FilenameUnifier::make_user_filename(_filename);
   if (_properties.uses_alpha() && !_alpha_filename.empty()) {
     out << " " << FilenameUnifier::make_user_filename(_alpha_filename);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void ImageFile::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   TypedWritable::write_datagram(writer, datagram);
@@ -505,15 +436,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32(_y_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam file
+ * for each pointer object written.  The return value is the number of pointers
+ * processed from the list.
+ */
 int ImageFile::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
@@ -523,13 +451,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFile::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written by
+ * a previous call to write_datagram().
+ */
 void ImageFile::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);

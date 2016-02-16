@@ -27,10 +27,9 @@
 
 class PhysxCloth;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxClothNode
-// Description : Renderable geometry which represents a cloth mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renderable geometry which represents a cloth mesh.
+ */
 class EXPCL_PANDAPHYSX PhysxClothNode : public GeomNode {
 
 PUBLISHED:
@@ -67,7 +66,7 @@ public:
   }
   static void init_type() {
     GeomNode::init_type();
-    register_type(_type_handle, "PhysxClothNode", 
+    register_type(_type_handle, "PhysxClothNode",
                   GeomNode::get_class_type());
   }
   virtual TypeHandle get_type() const {

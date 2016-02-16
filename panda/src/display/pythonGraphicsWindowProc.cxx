@@ -18,12 +18,10 @@
 
 TypeHandle PythonGraphicsWindowProc::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonGraphicWindowProc::Constructor
-//       Access: Public
-//  Description: Initializes this PythonGraphicsWindowProc to use the
-//               specified callback handler and name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes this PythonGraphicsWindowProc to use the specified callback
+ * handler and name.
+ */
 PythonGraphicsWindowProc::
 PythonGraphicsWindowProc(PyObject* function, PyObject* name) :
   PythonCallbackObject(function)
@@ -32,11 +30,9 @@ PythonGraphicsWindowProc(PyObject* function, PyObject* name) :
   Py_INCREF(_name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonGraphicWindowProc::Constructor
-//       Access: Public, Virtual
-//  Description: Decrements references to the handler and name objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decrements references to the handler and name objects.
+ */
 PythonGraphicsWindowProc::
 ~PythonGraphicsWindowProc(){
   Py_DECREF(_name);
@@ -44,12 +40,10 @@ PythonGraphicsWindowProc::
 
 #ifdef WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonGraphicWindowProc::wnd_proc
-//       Access: Public, Virtual
-//  Description: A WIN32-specific method that is called when a Window
-//               proc event occurrs. Calls the python handler.
-////////////////////////////////////////////////////////////////////
+/**
+ * A WIN32-specific method that is called when a Window proc event occurrs.
+ * Calls the python handler.
+ */
 LONG PythonGraphicsWindowProc::
 wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam){
   GraphicsWindowProcCallbackData cdata(graphicsWindow);
@@ -64,11 +58,9 @@ wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd, UINT msg, WPARAM wparam, LPA
 
 #endif // WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: PythonGraphicWindowProc::get_name
-//       Access: Public
-//  Description: Returns the python name object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the python name object.
+ */
 PyObject* PythonGraphicsWindowProc::
 get_name(){
   return _name;

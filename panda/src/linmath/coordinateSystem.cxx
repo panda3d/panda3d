@@ -40,23 +40,23 @@ parse_coordinate_system_string(const string &str) {
   if (cmp_nocase_uh(str, "default") == 0) {
     return CS_default;
 
-  } else if (cmp_nocase_uh(str, "zup") == 0 || 
+  } else if (cmp_nocase_uh(str, "zup") == 0 ||
              cmp_nocase_uh(str, "zup-right") == 0 ||
-             cmp_nocase_uh(str, "z-up") == 0 || 
+             cmp_nocase_uh(str, "z-up") == 0 ||
              cmp_nocase_uh(str, "z-up-right") == 0) {
     return CS_zup_right;
 
-  } else if (cmp_nocase_uh(str, "yup") == 0 || 
+  } else if (cmp_nocase_uh(str, "yup") == 0 ||
              cmp_nocase_uh(str, "yup-right") == 0 ||
-             cmp_nocase_uh(str, "y-up") == 0 || 
+             cmp_nocase_uh(str, "y-up") == 0 ||
              cmp_nocase_uh(str, "y-up-right") == 0) {
     return CS_yup_right;
 
-  } else if (cmp_nocase_uh(str, "z-up-left") == 0 || 
+  } else if (cmp_nocase_uh(str, "z-up-left") == 0 ||
              cmp_nocase_uh(str, "zup-left") == 0) {
     return CS_zup_left;
 
-  } else if (cmp_nocase_uh(str, "y-up-left") == 0 || 
+  } else if (cmp_nocase_uh(str, "y-up-left") == 0 ||
              cmp_nocase_uh(str, "yup-left") == 0) {
     return CS_yup_left;
   }
@@ -132,4 +132,3 @@ operator >> (istream &in, CoordinateSystem &cs) {
   }
   return in;
 }
-

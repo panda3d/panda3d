@@ -22,10 +22,9 @@
 
 class PhysxController;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxControllersHit
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxControllersHit : public CallbackData {
 
 PUBLISHED:
@@ -43,7 +42,7 @@ public:
   }
   static void init_type() {
     CallbackData::init_type();
-    register_type(_type_handle, "PhysxControllersHit", 
+    register_type(_type_handle, "PhysxControllersHit",
                   CallbackData::get_class_type());
   }
   virtual TypeHandle get_type() const {

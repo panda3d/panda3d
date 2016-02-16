@@ -21,16 +21,12 @@
 #endif
 #include <windows.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsRegistry::set_string_value
-//       Access: Published, Static
-//  Description: Sets the registry key to the indicated value as a
-//               string.  The supplied string value is automatically
-//               converted from whatever encoding is set by
-//               TextEncoder::set_default_encoding() and written as a
-//               Unicode string.  The registry key must already exist
-//               prior to calling this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the registry key to the indicated value as a string.  The supplied
+ * string value is automatically converted from whatever encoding is set by
+ * TextEncoder::set_default_encoding() and written as a Unicode string.  The
+ * registry key must already exist prior to calling this function.
+ */
 bool WindowsRegistry::
 set_string_value(const string &key, const string &name, const string &value,
         WindowsRegistry::RegLevel rl)
@@ -74,13 +70,10 @@ set_string_value(const string &key, const string &name, const string &value,
   return do_set(key, name, REG_SZ, mb_result, mb_result_len, rl);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsRegistry::set_int_value
-//       Access: Published, Static
-//  Description: Sets the registry key to the indicated value as an
-//               integer.  The registry key must already exist prior
-//               to calling this function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the registry key to the indicated value as an integer.  The registry key
+ * must already exist prior to calling this function.
+ */
 bool WindowsRegistry::
 set_int_value(const string &key, const string &name, int value,
         WindowsRegistry::RegLevel rl)
@@ -89,12 +82,10 @@ set_int_value(const string &key, const string &name, int value,
   return do_set(key, name, REG_DWORD, &dw, sizeof(dw), rl);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsRegistry::get_key_type
-//       Access: Published, Static
-//  Description: Returns the type of the indicated key, or T_none if
-//               the key is not known or is some unsupported type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type of the indicated key, or T_none if the key is not known or
+ * is some unsupported type.
+ */
 WindowsRegistry::Type WindowsRegistry::
 get_key_type(const string &key, const string &name,
         WindowsRegistry::RegLevel rl)
@@ -117,16 +108,12 @@ get_key_type(const string &key, const string &name,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsRegistry::get_string_value
-//       Access: Published, Static
-//  Description: Returns the value associated with the indicated
-//               registry key, assuming it is a string value.  The
-//               string value is automatically encoded using
-//               TextEncoder::get_default_encoding().  If the key is
-//               not defined or is not a string type value,
-//               default_value is returned instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value associated with the indicated registry key, assuming it is
+ * a string value.  The string value is automatically encoded using
+ * TextEncoder::get_default_encoding().  If the key is not defined or is not a
+ * string type value, default_value is returned instead.
+ */
 string WindowsRegistry::
 get_string_value(const string &key, const string &name,
                  const string &default_value,
@@ -157,11 +144,11 @@ get_string_value(const string &key, const string &name,
                         NULL, 0);
   if (wide_result_len == 0) {
     express_cat.error()
-      << "Unable to convert '" << data 
+      << "Unable to convert '" << data
       << "' from MultiByte to Unicode form.\n";
     return data;
   }
-    
+
   wchar_t *wide_result = (wchar_t *)alloca(wide_result_len * sizeof(wchar_t));
   MultiByteToWideChar(CP_ACP, 0,
                       data.data(), data.length(),
@@ -180,14 +167,11 @@ get_string_value(const string &key, const string &name,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsRegistry::get_int_value
-//       Access: Published, Static
-//  Description: Returns the value associated with the indicated
-//               registry key, assuming it is an integer value.  If
-//               the key is not defined or is not an integer type
-//               value, default_value is returned instead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value associated with the indicated registry key, assuming it is
+ * an integer value.  If the key is not defined or is not an integer type value,
+ * default_value is returned instead.
+ */
 int WindowsRegistry::
 get_int_value(const string &key, const string &name, int default_value,
         WindowsRegistry::RegLevel rl)
@@ -203,19 +187,17 @@ get_int_value(const string &key, const string &name, int default_value,
       << "Registry key " << key << " does not contain an integer value.\n";
     return default_value;
   }
-  
+
   // Now we have a DWORD encoded in a string.
   nassertr(data.length() == sizeof(DWORD), default_value);
   DWORD dw = *(DWORD *)data.data();
   return dw;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsRegistry::do_set
-//       Access: Private, Static
-//  Description: The internal function to actually make all of the
-//               appropriate windows calls to set the registry value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The internal function to actually make all of the appropriate windows calls
+ * to set the registry value.
+ */
 bool WindowsRegistry::
 do_set(const string &key, const string &name,
        int data_type, const void *data, int data_length,
@@ -239,11 +221,11 @@ do_set(const string &key, const string &name,
   bool okflag = true;
 
   error =
-    RegSetValueEx(hkey, name.c_str(), 0, data_type, 
+    RegSetValueEx(hkey, name.c_str(), 0, data_type,
                   (CONST BYTE *)data, data_length);
   if (error != ERROR_SUCCESS) {
     express_cat.error()
-      << "Unable to set registry key " << key << " name " << name 
+      << "Unable to set registry key " << key << " name " << name
       << ": " << format_message(error) << "\n";
     okflag = false;
   }
@@ -258,13 +240,10 @@ do_set(const string &key, const string &name,
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsRegistry::do_get
-//       Access: Private, Static
-//  Description: The internal function to actually make all of the
-//               appropriate windows calls to retrieve the registry
-//               value.
-////////////////////////////////////////////////////////////////////
+/**
+ * The internal function to actually make all of the appropriate windows calls
+ * to retrieve the registry value.
+ */
 bool WindowsRegistry::
 do_get(const string &key, const string &name, int &data_type, string &data,
        const WindowsRegistry::RegLevel rl)
@@ -294,12 +273,12 @@ do_get(const string &key, const string &name, int &data_type, string &data,
   DWORD dw_data_type;
 
   error =
-    RegQueryValueEx(hkey, name.c_str(), 0, &dw_data_type, 
+    RegQueryValueEx(hkey, name.c_str(), 0, &dw_data_type,
                     (BYTE *)init_buffer, &buffer_size);
   if (error == ERROR_SUCCESS) {
     data_type = dw_data_type;
-    if (data_type == REG_SZ || 
-        data_type == REG_MULTI_SZ || 
+    if (data_type == REG_SZ ||
+        data_type == REG_MULTI_SZ ||
         data_type == REG_EXPAND_SZ) {
       // Eliminate the trailing null character for non-zero lengths.
       if (buffer_size > 0)              // if zero, leave it
@@ -316,12 +295,12 @@ do_get(const string &key, const string &name, int &data_type, string &data,
     // tells us.
     char *new_buffer = (char *)PANDA_MALLOC_ARRAY(buffer_size);
     error =
-      RegQueryValueEx(hkey, name.c_str(), 0, &dw_data_type, 
+      RegQueryValueEx(hkey, name.c_str(), 0, &dw_data_type,
                       (BYTE *)new_buffer, &buffer_size);
     if (error == ERROR_SUCCESS) {
       data_type = dw_data_type;
-      if (data_type == REG_SZ || 
-          data_type == REG_MULTI_SZ || 
+      if (data_type == REG_SZ ||
+          data_type == REG_MULTI_SZ ||
           data_type == REG_EXPAND_SZ) {
         // Eliminate the trailing null character for non-zero lengths.
         if (buffer_size > 0)            // if zero, leave it
@@ -334,7 +313,7 @@ do_get(const string &key, const string &name, int &data_type, string &data,
 
   if (error != ERROR_SUCCESS) {
     express_cat.debug()
-      << "Unable to get registry value " << name 
+      << "Unable to get registry value " << name
       << ": " << format_message(error) << "\n";
     okflag = false;
   }
@@ -361,16 +340,13 @@ do_get(const string &key, const string &name, int &data_type, string &data,
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsRegistry::format_message
-//       Access: Private, Static
-//  Description: Returns the Windows error message associated with the
-//               given error code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Windows error message associated with the given error code.
+ */
 string WindowsRegistry::
 format_message(int error_code) {
   PVOID buffer;
-  DWORD length = 
+  DWORD length =
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                   NULL, error_code, 0, (LPTSTR)&buffer, 0, NULL);
   if (length == 0) {
@@ -380,7 +356,7 @@ format_message(int error_code) {
   const char *text = (const char *)buffer;
 
   // Strip off \n's and \r's trailing the string.
-  while (length > 0 && 
+  while (length > 0 &&
          (text[length - 1] == '\r' || text[length - 1] == '\n')) {
     length--;
   }
@@ -391,6 +367,3 @@ format_message(int error_code) {
 }
 
 #endif
-
-
-

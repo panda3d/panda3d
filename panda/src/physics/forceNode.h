@@ -19,13 +19,11 @@
 
 #include "baseForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ForceNode
-// Description : A force that lives in the scene graph and is
-//                therefore subject to local coordinate systems.
-//                An example of this would be simulating gravity
-//                in a rotating space station.  or something.
-////////////////////////////////////////////////////////////////////
+/**
+ * A force that lives in the scene graph and is therefore subject to local
+ * coordinate systems.  An example of this would be simulating gravity in a
+ * rotating space station.  or something.
+ */
 class EXPCL_PANDAPHYSICS ForceNode : public PandaNode {
 PUBLISHED:
   ForceNode(const string &name);

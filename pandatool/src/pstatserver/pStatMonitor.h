@@ -28,17 +28,14 @@
 class PStatCollectorDef;
 class PStatServer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatMonitor
-// Description : This is an abstract class that presents the interface
-//               to any number of different front-ends for the stats
-//               monitor.  One of these will be created by the
-//               PStatMonitor as each client is connected; this class
-//               is responsible for opening up a new strip-chart graph
-//               or whatever is appropriate.  It defines a number of
-//               empty virtual functions that will be called as new
-//               data becomes available.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract class that presents the interface to any number of
+ * different front-ends for the stats monitor.  One of these will be created by
+ * the PStatMonitor as each client is connected; this class is responsible for
+ * opening up a new strip-chart graph or whatever is appropriate.  It defines a
+ * number of empty virtual functions that will be called as new data becomes
+ * available.
+ */
 class PStatMonitor : public ReferenceCount {
 public:
   // The following functions are primarily for use by internal classes

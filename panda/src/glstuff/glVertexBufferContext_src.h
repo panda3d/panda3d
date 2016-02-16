@@ -17,15 +17,13 @@
 
 class CLP(GraphicsStateGuardian);
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLVertexBufferContext
-// Description : Caches a GeomVertexArrayData on the GL as a buffer
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Caches a GeomVertexArrayData on the GL as a buffer object.
+ */
 class EXPCL_GL CLP(VertexBufferContext) : public VertexBufferContext {
 public:
   INLINE CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
-                                  PreparedGraphicsObjects *pgo, 
+                                  PreparedGraphicsObjects *pgo,
                                   GeomVertexArrayData *data);
   ALLOC_DELETED_CHAIN(CLP(VertexBufferContext));
 
@@ -55,4 +53,3 @@ private:
 };
 
 #include "glVertexBufferContext_src.I"
-

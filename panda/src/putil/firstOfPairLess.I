@@ -11,11 +11,9 @@
  * @date 2000-04-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: FirstOfPairLess::operator ()
-//       Access: Public
-//  Description: Returns true if a sorts before b, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a sorts before b, false otherwise.
+ */
 template<class ObjectType>
 INLINE bool FirstOfPairLess<ObjectType>::
 operator () (const ObjectType &a, const ObjectType &b) const {

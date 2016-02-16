@@ -34,4 +34,3 @@ OdeHashSpace(OdeSpace &space) :
 OdeHashSpace::
 ~OdeHashSpace() {
 }
-

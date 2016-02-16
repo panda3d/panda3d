@@ -22,4 +22,3 @@ NotifyCategoryDecl(ai, EXPCL_PANDAAI, EXPTP_PANDAAI);
 extern EXPCL_PANDAAI void init_libai();
 
 #endif
-

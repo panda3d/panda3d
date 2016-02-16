@@ -15,12 +15,10 @@
 
 #ifndef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//     Function: MutexDirect::output
-//       Access: Public
-//  Description: This method is declared virtual in MutexDebug, but
-//               non-virtual in MutexDirect.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is declared virtual in MutexDebug, but non-virtual in
+ * MutexDirect.
+ */
 void MutexDirect::
 output(ostream &out) const {
   out << "Mutex " << (void *)this;

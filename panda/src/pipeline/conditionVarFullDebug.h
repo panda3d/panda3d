@@ -20,18 +20,13 @@
 
 #ifdef DEBUG_THREADS
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarFullDebug
-// Description : A condition variable, usually used to communicate
-//               information about changing state to a thread that is
-//               waiting for something to happen.  A condition
-//               variable can be used to "wake up" a thread when some
-//               arbitrary condition has changed.
-//
-//               A condition variable is associated with a single
-//               mutex, and several condition variables may share the
-//               same mutex.
-////////////////////////////////////////////////////////////////////
+/**
+ * A condition variable, usually used to communicate information about changing
+ * state to a thread that is waiting for something to happen.  A condition
+ * variable can be used to "wake up" a thread when some arbitrary condition has
+ * changed.  A condition variable is associated with a single mutex, and several
+ * condition variables may share the same mutex.
+ */
 class EXPCL_PANDA_PIPELINE ConditionVarFullDebug {
 public:
   ConditionVarFullDebug(MutexDebug &mutex);

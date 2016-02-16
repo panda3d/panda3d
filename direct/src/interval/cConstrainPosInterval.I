@@ -11,21 +11,17 @@
  * @date 2006-09-29
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainPosInterval::get_node
-//       Access: Published
-//  Description: Returns the "source" node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "source" node.
+ */
 INLINE const NodePath &CConstrainPosInterval::
 get_node() const {
   return _node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainPosInterval::get_target
-//       Access: Published
-//  Description: Returns the "target" node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "target" node.
+ */
 INLINE const NodePath &CConstrainPosInterval::
 get_target() const {
   return _target;

@@ -15,35 +15,29 @@
 
 TypeHandle FilterProperties::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilterProperties::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FilterProperties::
 FilterProperties()
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilterProperties::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FilterProperties::
 ~FilterProperties() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilterProperties::add_filter
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FilterProperties::
 add_filter(FilterType t, PN_stdfloat a, PN_stdfloat b, PN_stdfloat c, PN_stdfloat d,
-	                     PN_stdfloat e, PN_stdfloat f, PN_stdfloat g, PN_stdfloat h,
-	                     PN_stdfloat i, PN_stdfloat j, PN_stdfloat k, PN_stdfloat l,
-	                     PN_stdfloat m, PN_stdfloat n) {
+                       PN_stdfloat e, PN_stdfloat f, PN_stdfloat g, PN_stdfloat h,
+                       PN_stdfloat i, PN_stdfloat j, PN_stdfloat k, PN_stdfloat l,
+                       PN_stdfloat m, PN_stdfloat n) {
   FilterConfig conf;
   conf._type = t;
   conf._a = a;
@@ -62,4 +56,3 @@ add_filter(FilterType t, PN_stdfloat a, PN_stdfloat b, PN_stdfloat c, PN_stdfloa
   conf._n = n;
   _config.push_back(conf);
 }
-

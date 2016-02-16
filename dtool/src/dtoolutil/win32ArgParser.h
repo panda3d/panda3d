@@ -23,16 +23,13 @@
 
 #include <assert.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : Win32ArgParser
-// Description : This class is used to parse the single command-line
-//               string provided by Windows into the standard argc,
-//               argv array of strings.  In this way it duplicates the
-//               functionality of Windows' own CommandLineToArgv()
-//               function, but it is also supports automatic expansion
-//               of glob filenames, e.g. *.egg is turned into an
-//               explicit list of egg files in the directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to parse the single command-line string provided by
+ * Windows into the standard argc, argv array of strings.  In this way it
+ * duplicates the functionality of Windows' own CommandLineToArgv() function,
+ * but it is also supports automatic expansion of glob filenames, e.g.  *.egg is
+ * turned into an explicit list of egg files in the directory.
+ */
 class EXPCL_DTOOL Win32ArgParser {
 public:
   Win32ArgParser();

@@ -67,7 +67,7 @@ INLINE const WantType *_dcast_ref(WantType *&, const TypedObject *ptr);
 #ifdef DO_DCAST
 // _dcast_verify performs the actual verification.
 EXPCL_PANDAEXPRESS bool
-_dcast_verify(TypeHandle want_handle, size_t want_size, 
+_dcast_verify(TypeHandle want_handle, size_t want_size,
               const TypedObject *ptr);
 #endif  // DO_DCAST
 

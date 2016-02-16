@@ -26,10 +26,9 @@
 #include "pvector.h"
 #include "openSSLWrapper.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Multifile
-// Description : A file that contains a set of files.
-////////////////////////////////////////////////////////////////////
+/**
+ * A file that contains a set of files.
+ */
 class EXPCL_PANDAEXPRESS Multifile : public ReferenceCount {
 PUBLISHED:
   Multifile();

@@ -17,17 +17,13 @@
 
 TypeHandle EggNurbsSurface::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsSurface::setup
-//       Access: Public
-//  Description: Prepares a new surface definition with the indicated
-//               order and number of knots in each dimension.  This
-//               also implies a particular number of vertices in each
-//               dimension as well (the number of knots minus the
-//               order), but it is up to the user to add the correct
-//               number of vertices to the surface by repeatedly
-//               calling push_back().
-////////////////////////////////////////////////////////////////////
+/**
+ * Prepares a new surface definition with the indicated order and number of
+ * knots in each dimension.  This also implies a particular number of vertices
+ * in each dimension as well (the number of knots minus the order), but it is up
+ * to the user to add the correct number of vertices to the surface by
+ * repeatedly calling push_back().
+ */
 void EggNurbsSurface::
 setup(int u_order, int v_order,
       int num_u_knots, int num_v_knots) {
@@ -47,17 +43,13 @@ setup(int u_order, int v_order,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsSurface::set_num_u_knots
-//       Access: Public
-//  Description: Directly changes the number of knots in the U
-//               direction.  This will either add zero-valued knots
-//               onto the end, or truncate knot values from the end,
-//               depending on whether the list is being increased or
-//               decreased.  If possible, it is preferable to use the
-//               setup() method instead of directly setting the number
-//               of knots, as this may result in an invalid surface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Directly changes the number of knots in the U direction.  This will either
+ * add zero-valued knots onto the end, or truncate knot values from the end,
+ * depending on whether the list is being increased or decreased.  If possible,
+ * it is preferable to use the setup() method instead of directly setting the
+ * number of knots, as this may result in an invalid surface.
+ */
 void EggNurbsSurface::
 set_num_u_knots(int num) {
   if ((int)_u_knots.size() >= num) {
@@ -72,17 +64,13 @@ set_num_u_knots(int num) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsSurface::set_num_v_knots
-//       Access: Public
-//  Description: Directly changes the number of knots in the V
-//               direction.  This will either add zero-valued knots
-//               onto the end, or truncate knot values from the end,
-//               depending on whether the list is being increased or
-//               decreased.  If possible, it is preferable to use the
-//               setup() method instead of directly setting the number
-//               of knots, as this may result in an invalid surface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Directly changes the number of knots in the V direction.  This will either
+ * add zero-valued knots onto the end, or truncate knot values from the end,
+ * depending on whether the list is being increased or decreased.  If possible,
+ * it is preferable to use the setup() method instead of directly setting the
+ * number of knots, as this may result in an invalid surface.
+ */
 void EggNurbsSurface::
 set_num_v_knots(int num) {
   if ((int)_v_knots.size() >= num) {
@@ -97,14 +85,11 @@ set_num_v_knots(int num) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsSurface::is_valid
-//       Access: Public
-//  Description: Returns true if the NURBS parameters are all
-//               internally consistent (e.g. it has the right number
-//               of vertices to match its number of knots and order in
-//               each dimension), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the NURBS parameters are all internally consistent (e.g.  it
+ * has the right number of vertices to match its number of knots and order in
+ * each dimension), or false otherwise.
+ */
 bool EggNurbsSurface::
 is_valid() const {
   if (_u_order < 1 || _u_order > 4 || _v_order < 1 || _v_order > 4) {
@@ -134,15 +119,11 @@ is_valid() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsSurface::is_closed_u
-//       Access: Public
-//  Description: Returns true if the surface appears to be closed in
-//               the U direction.  Since the Egg syntax does not
-//               provide a means for explicit indication of closure,
-//               this has to be guessed at by examining the surface
-//               itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the surface appears to be closed in the U direction.  Since
+ * the Egg syntax does not provide a means for explicit indication of closure,
+ * this has to be guessed at by examining the surface itself.
+ */
 bool EggNurbsSurface::
 is_closed_u() const {
   // Technically, the surface is closed if the CV's at the end are
@@ -160,15 +141,11 @@ is_closed_u() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsSurface::is_closed_v
-//       Access: Public
-//  Description: Returns true if the surface appears to be closed in
-//               the V direction.  Since the Egg syntax does not
-//               provide a means for explicit indication of closure,
-//               this has to be guessed at by examining the surface
-//               itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the surface appears to be closed in the V direction.  Since
+ * the Egg syntax does not provide a means for explicit indication of closure,
+ * this has to be guessed at by examining the surface itself.
+ */
 bool EggNurbsSurface::
 is_closed_v() const {
   int i;
@@ -180,12 +157,9 @@ is_closed_v() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsSurface::write
-//       Access: Public, Virtual
-//  Description: Writes the nurbsSurface to the indicated output stream in
-//               Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the nurbsSurface to the indicated output stream in Egg format.
+ */
 void EggNurbsSurface::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<NurbsSurface>");
@@ -238,11 +212,9 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNurbsSurface::r_apply_texmats
-//       Access: Protected, Virtual
-//  Description: The recursive implementation of apply_texmats().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of apply_texmats().
+ */
 void EggNurbsSurface::
 r_apply_texmats(EggTextureCollection &textures) {
   // A NURBS cannot safely apply texture matrices, so we leave it

@@ -11,11 +11,9 @@
  * @date 2009-03-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPointerCallbackObject::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CPointerCallbackObject::
 CPointerCallbackObject(CPointerCallbackObject::CallbackFunction *func, void *data) :
   _func(func),

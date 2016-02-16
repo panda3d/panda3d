@@ -33,4 +33,3 @@ main(int argc, char *argv[]) {
 #endif
   return program.run_embedded(p3d_offset, argc, argv);
 }
-

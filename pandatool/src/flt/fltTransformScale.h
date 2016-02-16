@@ -18,11 +18,9 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformScale
-// Description : A transformation that applies a (possibly nonuniform)
-//               scale.
-////////////////////////////////////////////////////////////////////
+/**
+ * A transformation that applies a (possibly nonuniform) scale.
+ */
 class FltTransformScale : public FltTransformRecord {
 public:
   FltTransformScale(FltHeader *header);

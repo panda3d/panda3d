@@ -22,61 +22,48 @@
 
 TypeHandle PiecewiseCurve::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PiecewiseCurve::
 PiecewiseCurve() {
   _last_ti = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::Destructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PiecewiseCurve::
 ~PiecewiseCurve() {
   remove_all_curvesegs();
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::is_valid
-//       Access: Published, Virtual
-//  Description: Returns true if the curve is defined.  In the case of
-//               a PiecewiseCurve, this means we have at least one
-//               segment.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the curve is defined.  In the case of a PiecewiseCurve, this
+ * means we have at least one segment.
+ */
 bool PiecewiseCurve::
 is_valid() const {
   return !_segs.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_max_t
-//       Access: Published, Virtual
-//  Description: Returns the upper bound of t for the entire curve.
-//               The curve is defined in the range 0.0f <= t <=
-//               get_max_t().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the upper bound of t for the entire curve.  The curve is defined in
+ * the range 0.0f <= t <= get_max_t().
+ */
 PN_stdfloat PiecewiseCurve::
 get_max_t() const {
   return _segs.empty() ? 0.0f : _segs.back()._tend;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_point
-//       Access: Published, Virtual
-//  Description: Returns the point of the curve at a given parametric
-//               point t.  Returns true if t is in the valid range 0.0f
-//               <= t <= get_max_t(); if t is outside this range, sets
-//               point to the value of the curve at the beginning or
-//               end (whichever is nearer) and returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the point of the curve at a given parametric point t.  Returns true
+ * if t is in the valid range 0.0f <= t <= get_max_t(); if t is outside this
+ * range, sets point to the value of the curve at the beginning or end
+ * (whichever is nearer) and returns false.
+ */
 bool PiecewiseCurve::
 get_point(PN_stdfloat t, LVecBase3 &point) const {
   const ParametricCurve *curve;
@@ -89,12 +76,9 @@ get_point(PN_stdfloat t, LVecBase3 &point) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_tangent
-//       Access: Published, Virtual
-//  Description: Returns the tangent of the curve at a given parametric
-//               point t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the tangent of the curve at a given parametric point t.
+ */
 bool PiecewiseCurve::
 get_tangent(PN_stdfloat t, LVecBase3 &tangent) const {
   const ParametricCurve *curve;
@@ -105,12 +89,9 @@ get_tangent(PN_stdfloat t, LVecBase3 &tangent) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_2ndtangent
-//       Access: Published, Virtual
-//  Description: Returns the tangent of the first derivative of the
-//               curve at the point t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the tangent of the first derivative of the curve at the point t.
+ */
 bool PiecewiseCurve::
 get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const {
   const ParametricCurve *curve;
@@ -120,13 +101,10 @@ get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const {
   return result | curve->get_2ndtangent(t, tangent2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::adjust_point
-//       Access: Published, Virtual
-//  Description: Recomputes the curve such that it passes through the
-//               point (px, py, pz) at time t, but keeps the same
-//               tangent value at that point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the curve such that it passes through the point (px, py, pz) at
+ * time t, but keeps the same tangent value at that point.
+ */
 bool PiecewiseCurve::
 adjust_point(PN_stdfloat t,
              PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz) {
@@ -151,13 +129,10 @@ adjust_point(PN_stdfloat t,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::adjust_tangent
-//       Access: Published, Virtual
-//  Description: Recomputes the curve such that it has the tangent
-//               (tx, ty, tz) at time t, but keeps the same position
-//               at the point.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the curve such that it has the tangent (tx, ty, tz) at time t, but
+ * keeps the same position at the point.
+ */
 bool PiecewiseCurve::
 adjust_tangent(PN_stdfloat t,
                PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz) {
@@ -176,12 +151,10 @@ adjust_tangent(PN_stdfloat t,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::adjust_pt
-//       Access: Published, Virtual
-//  Description: Recomputes the curve such that it passes through the
-//               point (px, py, pz) with the tangent (tx, ty, tz).
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes the curve such that it passes through the point (px, py, pz) with
+ * the tangent (tx, ty, tz).
+ */
 bool PiecewiseCurve::
 adjust_pt(PN_stdfloat t,
           PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
@@ -202,12 +175,10 @@ adjust_pt(PN_stdfloat t,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_pt
-//       Access: Published, Virtual
-//  Description: Simultaneously returns the point and tangent of the
-//               curve at a given parametric point t.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously returns the point and tangent of the curve at a given
+ * parametric point t.
+ */
 bool PiecewiseCurve::
 get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const {
   const ParametricCurve *curve;
@@ -218,23 +189,17 @@ get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_num_segs
-//       Access: Public
-//  Description: Returns the number of curve segments that make up the
-//               Piecewise curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of curve segments that make up the Piecewise curve.
+ */
 int PiecewiseCurve::
 get_num_segs() const {
   return _segs.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_curveseg
-//       Access: Public
-//  Description: Returns the curve segment corresponding to the given
-//               index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the curve segment corresponding to the given index.
+ */
 ParametricCurve *PiecewiseCurve::
 get_curveseg(int ti) {
   assert(ti >= 0 && ti < (int)_segs.size());
@@ -242,19 +207,13 @@ get_curveseg(int ti) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::insert_curveseg
-//       Access: Public
-//  Description: Inserts a new curve segment at the indicated index.
-//               The curve segment must have been allocated via
-//               new; it will be freed using delete when it is removed
-//               or the PiecewiseCurve destructs.
-//
-//               If the curve segment is not inserted at the end, its
-//               tlength is subtracted from that of the following
-//               segment, so that the overall length of the curve is
-//               not changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts a new curve segment at the indicated index.  The curve segment must
+ * have been allocated via new; it will be freed using delete when it is removed
+ * or the PiecewiseCurve destructs.  If the curve segment is not inserted at the
+ * end, its tlength is subtracted from that of the following segment, so that
+ * the overall length of the curve is not changed.
+ */
 bool PiecewiseCurve::
 insert_curveseg(int ti, ParametricCurve *seg, PN_stdfloat tlength) {
   if (ti < 0 || ti > (int)_segs.size()) {
@@ -277,13 +236,10 @@ insert_curveseg(int ti, ParametricCurve *seg, PN_stdfloat tlength) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::remove_curveseg
-//       Access: Public
-//  Description: Removes the given curve segment from the curve and
-//               frees it.  Returns true if the segment was defined,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the given curve segment from the curve and frees it.  Returns true if
+ * the segment was defined, false otherwise.
+ */
 bool PiecewiseCurve::
 remove_curveseg(int ti) {
   if (ti < 0 || ti >= (int)_segs.size()) {
@@ -304,47 +260,36 @@ remove_curveseg(int ti) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::remove_all_curvesegs
-//       Access: Public
-//  Description: Removes all curve segments from the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all curve segments from the curve.
+ */
 void PiecewiseCurve::
 remove_all_curvesegs() {
   _segs.erase(_segs.begin(), _segs.end());
   _last_ti = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_tlength
-//       Access: Public
-//  Description: Returns the parametric length of the given segment of
-//               the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the parametric length of the given segment of the curve.
+ */
 PN_stdfloat PiecewiseCurve::
 get_tlength(int ti) const {
   assert(ti >= 0 && ti < (int)_segs.size());
   return (ti==0) ? _segs[ti]._tend : _segs[ti]._tend - _segs[ti-1]._tend;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_tstart
-//       Access: Public
-//  Description: Returns the parametric start of the given segment of
-//               the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the parametric start of the given segment of the curve.
+ */
 PN_stdfloat PiecewiseCurve::
 get_tstart(int ti) const {
   assert(ti >= 0 && ti <= (int)_segs.size());
   return (ti==0) ? 0.0f : _segs[ti-1]._tend;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_tend
-//       Access: Public
-//  Description: Returns the parametric end of the given segment of
-//               the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the parametric end of the given segment of the curve.
+ */
 PN_stdfloat PiecewiseCurve::
 get_tend(int ti) const {
   assert(ti >= 0 && ti < (int)_segs.size());
@@ -352,14 +297,11 @@ get_tend(int ti) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::set_tlength
-//       Access: Public
-//  Description: Sets the parametric length of the given segment of
-//               the curve.  The length of the following segment is
-//               lengthened by the corresponding amount to keep the
-//               overall length of the curve the same.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the parametric length of the given segment of the curve.  The length of
+ * the following segment is lengthened by the corresponding amount to keep the
+ * overall length of the curve the same.
+ */
 bool PiecewiseCurve::
 set_tlength(int ti, PN_stdfloat tlength) {
   if (ti < 0 || ti >= (int)_segs.size()) {
@@ -372,20 +314,14 @@ set_tlength(int ti, PN_stdfloat tlength) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::make_nurbs
-//       Access: Public
-//  Description: Defines the curve as a general NURBS curve.  The
-//               order is the degree plus one and must be 1, 2, 3, or
-//               4; cvs is an array of num_cvs points each with a
-//               homogeneous coordinate; knots is an array of
-//               num_cvs+order knot values.
-//
-//               This creates the individual curve segments and sets
-//               up the basis matrices, but does not store the CV's or
-//               knot values so the curve shape is not later
-//               modifiable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the curve as a general NURBS curve.  The order is the degree plus one
+ * and must be 1, 2, 3, or 4; cvs is an array of num_cvs points each with a
+ * homogeneous coordinate; knots is an array of num_cvs+order knot values.  This
+ * creates the individual curve segments and sets up the basis matrices, but
+ * does not store the CV's or knot values so the curve shape is not later
+ * modifiable.
+ */
 void PiecewiseCurve::
 make_nurbs(int order, int num_cvs,
            const PN_stdfloat knots[], const LVecBase4 cvs[]) {
@@ -403,15 +339,11 @@ make_nurbs(int order, int num_cvs,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::get_bezier_segs
-//       Access: Public, Virtual
-//  Description: Fills up the indicated vector with a list of
-//               BezierSeg structs that describe the curve.  This
-//               assumes the curve is a PiecewiseCurve of
-//               CubicCurvesegs.  Returns true if successful, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the indicated vector with a list of BezierSeg structs that describe
+ * the curve.  This assumes the curve is a PiecewiseCurve of CubicCurvesegs.
+ * Returns true if successful, false otherwise.
+ */
 bool PiecewiseCurve::
 get_bezier_segs(BezierSegs &bz_segs) const {
   bz_segs.erase(bz_segs.begin(), bz_segs.end());
@@ -428,15 +360,12 @@ get_bezier_segs(BezierSegs &bz_segs) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::rebuild_curveseg
-//       Access: Public, Virtual
-//  Description: Rebuilds the current curve segment (as selected by
-//               the most recent call to find_curve()) according to
-//               the specified properties (see
-//               CubicCurveseg::compute_seg).  Returns true if
-//               possible, false if something goes horribly wrong.
-////////////////////////////////////////////////////////////////////
+/**
+ * Rebuilds the current curve segment (as selected by the most recent call to
+ * find_curve()) according to the specified properties (see
+ * CubicCurveseg::compute_seg).  Returns true if possible, false if something
+ * goes horribly wrong.
+ */
 bool PiecewiseCurve::
 rebuild_curveseg(int, PN_stdfloat, const LVecBase4 &,
                  int, PN_stdfloat, const LVecBase4 &,
@@ -446,18 +375,13 @@ rebuild_curveseg(int, PN_stdfloat, const LVecBase4 &,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::find_curve
-//       Access: Protected
-//  Description: Finds the curve corresponding to the given value of
-//               t.  If t is inside the curve's defined range, sets
-//               curve to the appropriate segment, translates t to
-//               [0,1] to index into the segment's coordinate system,
-//               and returns true.  If t is outside the curve's
-//               defined range, sets curve to the nearest segment and
-//               t to the nearest point on this segment, and returns
-//               false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds the curve corresponding to the given value of t.  If t is inside the
+ * curve's defined range, sets curve to the appropriate segment, translates t to
+ * [0,1] to index into the segment's coordinate system, and returns true.  If t
+ * is outside the curve's defined range, sets curve to the nearest segment and t
+ * to the nearest point on this segment, and returns false.
+ */
 bool PiecewiseCurve::
 find_curve(const ParametricCurve *&curve, PN_stdfloat &t) const {
   // Check the index computed by the last call to find_curve().  If
@@ -539,20 +463,15 @@ find_curve(const ParametricCurve *&curve, PN_stdfloat &t) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::current_seg_range
-//       Access: Protected
-//  Description: Returns a number in the range [0,1], representing the
-//               conversion of t into the current segment's coordinate
-//               system (the segment last returned by find_curve).
-//               This operation is already performed automatically on
-//               the t passed into find_seg; this function is useful
-//               only to adjust a different value into the same range.
-//
-//               It is an error to call this function if find_curve()
-//               has not yet been called, or if find_curve() returned
-//               false from its previous call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number in the range [0,1], representing the conversion of t into
+ * the current segment's coordinate system (the segment last returned by
+ * find_curve). This operation is already performed automatically on the t
+ * passed into find_seg; this function is useful only to adjust a different
+ * value into the same range.  It is an error to call this function if
+ * find_curve() has not yet been called, or if find_curve() returned false from
+ * its previous call.
+ */
 PN_stdfloat PiecewiseCurve::
 current_seg_range(PN_stdfloat t) const {
   int ti = _last_ti;
@@ -569,12 +488,10 @@ current_seg_range(PN_stdfloat t) const {
   return t;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::write_datagram
-//       Access: Protected, Virtual
-//  Description: Function to write the important information in
-//               the particular object to a Datagram
-////////////////////////////////////////////////////////////////////
+/**
+ * Function to write the important information in the particular object to a
+ * Datagram
+ */
 void PiecewiseCurve::
 write_datagram(BamWriter *manager, Datagram &me) {
   ParametricCurve::write_datagram(manager, me);
@@ -590,14 +507,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
   _last_ti = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::fillin
-//       Access: Protected
-//  Description: Function that reads out of the datagram (or asks
-//               manager to read) all of the data that is needed to
-//               re-create this object and stores it in the appropiate
-//               place
-////////////////////////////////////////////////////////////////////
+/**
+ * Function that reads out of the datagram (or asks manager to read) all of the
+ * data that is needed to re-create this object and stores it in the appropiate
+ * place
+ */
 void PiecewiseCurve::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ParametricCurve::fillin(scan, manager);
@@ -614,13 +528,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PiecewiseCurve::complete_pointers
-//       Access: Protected, Virtual
-//  Description: Takes in a vector of pointes to TypedWritable
-//               objects that correspond to all the requests for
-//               pointers that this object made to BamReader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Takes in a vector of pointes to TypedWritable objects that correspond to all
+ * the requests for pointers that this object made to BamReader.
+ */
 int PiecewiseCurve::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int used = ParametricCurve::complete_pointers(p_list, manager);

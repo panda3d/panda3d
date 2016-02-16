@@ -19,11 +19,9 @@
 #include "referenceCount.h"
 #include "extension.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Ramfile
-// Description : An in-memory buffer specifically designed for
-//               downloading files to memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * An in-memory buffer specifically designed for downloading files to memory.
+ */
 class EXPCL_PANDAEXPRESS Ramfile {
 PUBLISHED:
   INLINE Ramfile();

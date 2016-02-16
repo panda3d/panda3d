@@ -213,9 +213,9 @@ private:
   ALfloat _velocity[3];
   ALfloat _forward_up[6];
 
-////////////////////////////////////////////////////////////////////
-// These are needed for Panda's Pointer System. DO NOT ERASE!
-////////////////////////////////////////////////////////////////////
+/*
+ * These are needed for Panda's Pointer System.  DO NOT ERASE!
+ */
 
  public:
   static TypeHandle get_class_type() {

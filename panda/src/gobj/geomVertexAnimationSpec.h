@@ -22,22 +22,15 @@ class BamReader;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexAnimationSpec
-// Description : This object describes how the vertex animation, if
-//               any, represented in a GeomVertexData is encoded.
-//
-//               Vertex animation includes soft-skinned skeleton
-//               animation and morphs (blend shapes), and might be
-//               performed on the CPU by Panda, or passed down to the
-//               graphics backed to be performed on the hardware
-//               (depending on the hardware's advertised
-//               capabilities).
-//
-//               Changing this setting doesn't by itself change the
-//               way the animation is actually performed; this just
-//               specifies how the vertices are set up to be animated.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object describes how the vertex animation, if any, represented in a
+ * GeomVertexData is encoded.  Vertex animation includes soft-skinned skeleton
+ * animation and morphs (blend shapes), and might be performed on the CPU by
+ * Panda, or passed down to the graphics backed to be performed on the hardware
+ * (depending on the hardware's advertised capabilities).  Changing this setting
+ * doesn't by itself change the way the animation is actually performed; this
+ * just specifies how the vertices are set up to be animated.
+ */
 class EXPCL_PANDA_GOBJ GeomVertexAnimationSpec : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexAnimationSpec();

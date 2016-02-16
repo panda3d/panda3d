@@ -20,10 +20,9 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DepthWriteAttrib
-// Description : Enables or disables writing to the depth buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Enables or disables writing to the depth buffer.
+ */
 class EXPCL_PANDA_PGRAPH DepthWriteAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
@@ -65,7 +64,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -89,4 +88,3 @@ private:
 #include "depthWriteAttrib.I"
 
 #endif
-

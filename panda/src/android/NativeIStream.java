@@ -15,11 +15,10 @@ package org.panda3d.android;
 
 import java.io.InputStream;
 
-////////////////////////////////////////////////////////////////////
-//       Class : NativeIStream
-// Description : An implementation of InputStream that gets its
-//               data from a C++ istream pointer, passed as long.
-////////////////////////////////////////////////////////////////////
+/**
+ * An implementation of InputStream that gets its data from a C++ istream
+ * pointer, passed as long.
+ */
 public class NativeIStream extends InputStream {
     private long streamPtr = 0;
 

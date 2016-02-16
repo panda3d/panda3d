@@ -16,11 +16,10 @@
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//        Enum : OmitReason
-// Description : This enumerates the reasons why a texture may not
-//               have been placed in a palette image.
-////////////////////////////////////////////////////////////////////
+/**
+ * This enumerates the reasons why a texture may not have been placed in a
+ * palette image.
+ */
 enum OmitReason {
   OR_none,
   // Not omitted: the texture appears on a palette image.
@@ -56,4 +55,3 @@ enum OmitReason {
 ostream &operator << (ostream &out, OmitReason omit);
 
 #endif
-

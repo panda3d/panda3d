@@ -18,11 +18,9 @@
 
 TypeHandle EggNamedObject::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNamedObject::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggNamedObject::
 output(ostream &out) const {
   out << get_type();
@@ -31,15 +29,12 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggNamedObject::write_header
-//       Access: Public
-//  Description: Writes the first line of the egg object,
-//               e.g. "<Group> group_name {" or some such.  It
-//               automatically enquotes the name if it contains any
-//               special characters.  egg_keyword is the keyword that
-//               begins the line, e.g. "<Group>".
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the first line of the egg object, e.g.  "<Group> group_name {" or some
+ * such.  It automatically enquotes the name if it contains any special
+ * characters.  egg_keyword is the keyword that begins the line, e.g.
+ * "<Group>".
+ */
 void EggNamedObject::
 write_header(ostream &out, int indent_level, const char *egg_keyword) const {
   indent(out, indent_level) << egg_keyword << " ";

@@ -32,13 +32,11 @@
 
 TypeHandle TinyXGraphicsWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TinyXGraphicsWindow::
-TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -55,11 +53,9 @@ TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   update_pixel_factor();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TinyXGraphicsWindow::
 ~TinyXGraphicsWindow() {
   if (_gc != NULL && _display != NULL) {
@@ -72,15 +68,12 @@ TinyXGraphicsWindow::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool TinyXGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
@@ -108,18 +101,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     tinygsg->_current_frame_buffer = _full_frame_buffer;
   }
   tinygsg->reset_if_new();
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void TinyXGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
@@ -138,16 +128,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::end_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after begin_flip() has been called on all windows, to
-//               finish the exchange of the front and back buffers.
-//
-//               This should cause the window to wait for the flip, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after begin_flip() has
+ * been called on all windows, to finish the exchange of the front and back
+ * buffers.  This should cause the window to wait for the flip, if necessary.
+ */
 void TinyXGraphicsWindow::
 end_flip() {
   if (_xwindow == (X11_Window)NULL || !_flip_ready) {
@@ -157,7 +142,7 @@ end_flip() {
 
   if (_reduced_frame_buffer != (ZBuffer *)NULL) {
     // Zoom the reduced buffer onto the full buffer.
-    ZB_zoomFrameBuffer(_full_frame_buffer, 0, 0, 
+    ZB_zoomFrameBuffer(_full_frame_buffer, 0, 0,
                        _full_frame_buffer->xsize, _full_frame_buffer->ysize,
                        _reduced_frame_buffer, 0, 0,
                        _reduced_frame_buffer->xsize, _reduced_frame_buffer->ysize);
@@ -176,35 +161,24 @@ end_flip() {
   GraphicsWindow::end_flip();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::supports_pixel_zoom
-//       Access: Published, Virtual
-//  Description: Returns true if a call to set_pixel_zoom() will be
-//               respected, false if it will be ignored.  If this
-//               returns false, then get_pixel_factor() will always
-//               return 1.0, regardless of what value you specify for
-//               set_pixel_zoom().
-//
-//               This may return false if the underlying renderer
-//               doesn't support pixel zooming, or if you have called
-//               this on a DisplayRegion that doesn't have both
-//               set_clear_color() and set_clear_depth() enabled.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if a call to set_pixel_zoom() will be respected, false if it
+ * will be ignored.  If this returns false, then get_pixel_factor() will always
+ * return 1.0, regardless of what value you specify for set_pixel_zoom().  This
+ * may return false if the underlying renderer doesn't support pixel zooming, or
+ * if you have called this on a DisplayRegion that doesn't have both
+ * set_clear_color() and set_clear_depth() enabled.
+ */
 bool TinyXGraphicsWindow::
 supports_pixel_zoom() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties()
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via request_properties()
+ * This function is called only within the window thread.
+ */
 void TinyXGraphicsWindow::
 process_events() {
   LightReMutexHolder holder(TinyXGraphicsPipe::_x_mutex);
@@ -214,9 +188,9 @@ process_events() {
   if (_xwindow == (X11_Window)0) {
     return;
   }
-  
+
   poll_raw_mice();
-  
+
   XEvent event;
   XKeyEvent keyrelease_event;
   bool got_keyrelease_event = false;
@@ -296,7 +270,7 @@ process_events() {
       _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
       _input_devices[0].button_down(button);
       break;
-      
+
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
       _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
@@ -395,12 +369,9 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void TinyXGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -409,17 +380,14 @@ close_window() {
     tinygsg->_current_frame_buffer = NULL;
     _gsg.clear();
   }
-  
+
   x11GraphicsWindow::close_window();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool TinyXGraphicsWindow::
 open_window() {
   TinyXGraphicsPipe *tinyx_pipe;
@@ -453,7 +421,7 @@ open_window() {
   int num_vinfos = 0;
   XVisualInfo *vinfo_array;
   while (try_masks[i] != 0 && num_vinfos == 0) {
-    vinfo_array = 
+    vinfo_array =
       XGetVisualInfo(_display, try_masks[i], &vinfo_template, &num_vinfos);
     ++i;
   }
@@ -479,7 +447,7 @@ open_window() {
   case TrueColor:
     tinydisplay_cat.info(false) << "TrueColor\n";
     break;
-      
+
   case DirectColor:
     tinydisplay_cat.info(false) << "DirectColor\n";
     break;
@@ -520,13 +488,13 @@ open_window() {
   nassertr(_ximage != NULL, false);
 
   tinygsg->_current_frame_buffer = _full_frame_buffer;
-  
+
   tinygsg->reset_if_new();
   if (!tinygsg->is_valid()) {
     close_window();
     return false;
   }
-  
+
   XMapWindow(_display, _xwindow);
 
   if (_properties.get_raw_mice()) {
@@ -545,27 +513,22 @@ open_window() {
   if (_parent_window_handle != (WindowHandle *)NULL) {
     _parent_window_handle->attach_child(_window_handle);
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::pixel_factor_changed
-//       Access: Protected, Virtual
-//  Description: Called internally when the pixel factor changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally when the pixel factor changes.
+ */
 void TinyXGraphicsWindow::
 pixel_factor_changed() {
   x11GraphicsWindow::pixel_factor_changed();
   create_reduced_frame_buffer();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::create_full_frame_buffer
-//       Access: Private
-//  Description: Creates a suitable frame buffer for the current
-//               window size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable frame buffer for the current window size.
+ */
 void TinyXGraphicsWindow::
 create_full_frame_buffer() {
   if (_full_frame_buffer != NULL) {
@@ -595,12 +558,9 @@ create_full_frame_buffer() {
   _pitch = (_full_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::create_reduced_frame_buffer
-//       Access: Private
-//  Description: Creates a suitable frame buffer for the current
-//               window size and pixel zoom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable frame buffer for the current window size and pixel zoom.
+ */
 void TinyXGraphicsWindow::
 create_reduced_frame_buffer() {
   if (!_full_frame_buffer) {
@@ -626,12 +586,9 @@ create_reduced_frame_buffer() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::create_ximage
-//       Access: Private
-//  Description: Creates a suitable XImage for the current
-//               window size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a suitable XImage for the current window size.
+ */
 void TinyXGraphicsWindow::
 create_ximage() {
   if (_ximage != NULL) {
@@ -650,4 +607,3 @@ create_ximage() {
 }
 
 #endif  // HAVE_X11
-

@@ -21,16 +21,12 @@ Filename FilenameUnifier::_rel_dirname;
 
 FilenameUnifier::CanonicalFilenames FilenameUnifier::_canonical_filenames;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilenameUnifier::set_txa_filename
-//       Access: Public, Static
-//  Description: Notes the filename the .txa file was found in.  This
-//               may have come from the command line, or it may have
-//               been implicitly located.  This has other implications
-//               for the FilenameUnifier, particularly in locating the bam
-//               file that saves the filenameUnifier state from last
-//               session.
-////////////////////////////////////////////////////////////////////
+/**
+ * Notes the filename the .txa file was found in.  This may have come from the
+ * command line, or it may have been implicitly located.  This has other
+ * implications for the FilenameUnifier, particularly in locating the bam file
+ * that saves the filenameUnifier state from last session.
+ */
 void FilenameUnifier::
 set_txa_filename(const Filename &txa_filename) {
   _txa_filename = txa_filename;
@@ -41,18 +37,14 @@ set_txa_filename(const Filename &txa_filename) {
   make_canonical(_txa_dir);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilenameUnifier::set_rel_dirname
-//       Access: Public, Static
-//  Description: Sets the name of the directory that texture filenames
-//               will be written relative to, when generating egg
-//               files.  This is not the directory the textures are
-//               actually written to (see set_map_dirname()), but
-//               rather is the name of some directory above that,
-//               which will be the starting point for the pathnames
-//               written to the egg files.  If this is empty, the full
-//               pathnames will be written to the egg files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the name of the directory that texture filenames will be written
+ * relative to, when generating egg files.  This is not the directory the
+ * textures are actually written to (see set_map_dirname()), but rather is the
+ * name of some directory above that, which will be the starting point for the
+ * pathnames written to the egg files.  If this is empty, the full pathnames
+ * will be written to the egg files.
+ */
 void FilenameUnifier::
 set_rel_dirname(const Filename &rel_dirname) {
   _rel_dirname = rel_dirname;
@@ -61,12 +53,10 @@ set_rel_dirname(const Filename &rel_dirname) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilenameUnifier::make_bam_filename
-//       Access: Public, Static
-//  Description: Returns a new filename that's made relative to the
-//               bam file itself, suitable for writing to the bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new filename that's made relative to the bam file itself, suitable
+ * for writing to the bam file.
+ */
 Filename FilenameUnifier::
 make_bam_filename(Filename filename) {
   make_canonical(filename);
@@ -74,13 +64,10 @@ make_bam_filename(Filename filename) {
   return filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilenameUnifier::get_bam_filename
-//       Access: Public, Static
-//  Description: Returns an absolute pathname based on the given
-//               relative pathname, presumably read from the bam file
-//               and relative to the bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an absolute pathname based on the given relative pathname, presumably
+ * read from the bam file and relative to the bam file.
+ */
 Filename FilenameUnifier::
 get_bam_filename(Filename filename) {
   if (!filename.empty()) {
@@ -89,13 +76,10 @@ get_bam_filename(Filename filename) {
   return filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilenameUnifier::make_egg_filename
-//       Access: Public, Static
-//  Description: Returns a new filename that's made relative to the
-//               rel_directory, suitable for writing out within egg
-//               files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new filename that's made relative to the rel_directory, suitable
+ * for writing out within egg files.
+ */
 Filename FilenameUnifier::
 make_egg_filename(Filename filename) {
   if (!filename.empty()) {
@@ -105,13 +89,10 @@ make_egg_filename(Filename filename) {
   return filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilenameUnifier::make_user_filename
-//       Access: Public, Static
-//  Description: Returns a new filename that's made relative to the
-//               current directory, suitable for reporting to the
-//               user.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a new filename that's made relative to the current directory,
+ * suitable for reporting to the user.
+ */
 Filename FilenameUnifier::
 make_user_filename(Filename filename) {
   if (!filename.empty()) {
@@ -121,15 +102,11 @@ make_user_filename(Filename filename) {
   return filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FilenameUnifier::make_canonical
-//       Access: Public, Static
-//  Description: Does the same thing as Filename::make_canonical()--it
-//               converts the filename to its canonical form--but
-//               caches the operation so that repeated calls to
-//               filenames in the same directory will tend to be
-//               faster.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the same thing as Filename::make_canonical()--it converts the filename
+ * to its canonical form--but caches the operation so that repeated calls to
+ * filenames in the same directory will tend to be faster.
+ */
 void FilenameUnifier::
 make_canonical(Filename &filename) {
   if (filename.empty()) {

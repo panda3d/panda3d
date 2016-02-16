@@ -22,11 +22,9 @@ class DatagramIterator;
 class PStatClient;
 class PStatClientVersion;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatCollectorDef
-// Description : Defines the details about the Collectors: the name,
-//               the suggested color, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the details about the Collectors: the name, the suggested color, etc.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatCollectorDef {
 public:
   PStatCollectorDef();
@@ -53,4 +51,3 @@ public:
 };
 
 #endif
-

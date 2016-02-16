@@ -11,10 +11,9 @@
  * @date 2000-06-06
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : FLOATNAME(LQuaternion)
-// Description : This is the base quaternion class
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base quaternion class
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LQuaternion) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LQuaternion)();

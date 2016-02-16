@@ -28,13 +28,11 @@ class GraphicsStateGuardianBase;
 class PreparedGraphicsObjects;
 class SamplerContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SamplerState
-// Description : Represents a set of settings that indicate how a
-//               texture is sampled.  This can be used to sample the
-//               same texture using different settings in different
-//               places.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a set of settings that indicate how a texture is sampled.  This
+ * can be used to sample the same texture using different settings in different
+ * places.
+ */
 class EXPCL_PANDA_GOBJ SamplerState {
 PUBLISHED:
   enum FilterType {

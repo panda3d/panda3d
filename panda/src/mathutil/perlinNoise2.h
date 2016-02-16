@@ -17,13 +17,11 @@
 #include "pandabase.h"
 #include "perlinNoise.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PerlinNoise2
-// Description : This class provides an implementation of Perlin noise
-//               for 2 variables.  This code is loosely based on the
-//               reference implementation at
-//               http://mrl.nyu.edu/~perlin/noise/ .
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides an implementation of Perlin noise for 2 variables.  This
+ * code is loosely based on the reference implementation at
+ * http://mrl.nyu.edu/~perlin/noise/ .
+ */
 class EXPCL_PANDA_MATHUTIL PerlinNoise2 : public PerlinNoise {
 PUBLISHED:
   INLINE PerlinNoise2();
@@ -45,7 +43,7 @@ PUBLISHED:
   INLINE double operator ()(double x, double y) const;
   INLINE float operator ()(const LVecBase2f &value) const;
   INLINE double operator ()(const LVecBase2d &value) const;
-  
+
 private:
   void init_unscaled_xform();
   INLINE static double grad(int hash, double x, double y);
@@ -58,4 +56,3 @@ private:
 #include "perlinNoise2.I"
 
 #endif
-

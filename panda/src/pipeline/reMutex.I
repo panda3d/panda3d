@@ -11,11 +11,9 @@
  * @date 2006-01-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
 ReMutex() : MutexDebug(string(), true, false)
@@ -25,11 +23,9 @@ ReMutex()
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
 ReMutex(const char *name) : MutexDebug(string(name), true, false)
@@ -39,11 +35,9 @@ ReMutex(const char *)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
 ReMutex(const string &name) : MutexDebug(name, true, false)
@@ -53,20 +47,16 @@ ReMutex(const string &)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ReMutex::
 ~ReMutex() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReMutex::Copy Assignment Operator
-//       Access: Private
-//  Description: Do not attempt to copy mutexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do not attempt to copy mutexes.
+ */
 INLINE void ReMutex::
 operator = (const ReMutex &copy) {
   nassertv(false);

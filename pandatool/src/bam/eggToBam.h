@@ -27,10 +27,9 @@ class GraphicsEngine;
 class GraphicsStateGuardian;
 class GraphicsOutput;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToBam
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EggToBam : public EggToSomething {
 public:
   EggToBam();

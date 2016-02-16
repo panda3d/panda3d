@@ -21,12 +21,10 @@
 class TexturePlacement;
 class TextureImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DestTextureImage
-// Description : This represents a texture filename as it has been
-//               resized and copied to the map directory (e.g. for an
-//               unplaced texture).
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a texture filename as it has been resized and copied to the
+ * map directory (e.g.  for an unplaced texture).
+ */
 class DestTextureImage : public ImageFile {
 private:
   DestTextureImage();
@@ -74,4 +72,3 @@ operator << (ostream &out, const DestTextureImage &dest) {
 }
 
 #endif
-

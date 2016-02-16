@@ -11,12 +11,10 @@
  * @date 2010-02-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletClosestHitRayResult::empty
-//       Access: Public
-//  Description: Named constructor intended to be used for asserts
-//               with have to return a concrete value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Named constructor intended to be used for asserts with have to return a
+ * concrete value.
+ */
 INLINE BulletClosestHitRayResult BulletClosestHitRayResult::
 empty() {
 
@@ -25,4 +23,3 @@ empty() {
 
   return BulletClosestHitRayResult(from, to, CollideMask::all_on());
 }
-

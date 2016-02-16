@@ -17,14 +17,12 @@
 #include "pandabase.h"
 #include "threadSafePointerToBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSafePointerTo
-// Description : This works exactly like PointerTo, except that the
-//               object is designed to be thread-safe: it is generally
-//               safe to make unprotected assignments to this pointer,
-//               in the sense that the last assignment will win and
-//               the reference counts will be properly maintained.
-////////////////////////////////////////////////////////////////////
+/**
+ * This works exactly like PointerTo, except that the object is designed to be
+ * thread-safe: it is generally safe to make unprotected assignments to this
+ * pointer, in the sense that the last assignment will win and the reference
+ * counts will be properly maintained.
+ */
 template <class T>
 class ThreadSafePointerTo : public ThreadSafePointerToBase<T> {
 public:
@@ -68,10 +66,9 @@ PUBLISHED:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSafeConstPointerTo
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template <class T>
 class ThreadSafeConstPointerTo : public ThreadSafePointerToBase<T> {
 public:

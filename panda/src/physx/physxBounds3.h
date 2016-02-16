@@ -20,14 +20,11 @@
 #include "config_physx.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBounds3
-// Description : Represention of a axis aligned bounding box. 
-//               The box is stored as minimum and maximum extent
-//               corners. Alternate representation would be center
-//               and dimensions. May be empty or nonempty. If not
-//               empty, min <= max has to hold.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represention of a axis aligned bounding box.  The box is stored as minimum
+ * and maximum extent corners.  Alternate representation would be center and
+ * dimensions.  May be empty or nonempty.  If not empty, min <= max has to hold.
+ */
 class EXPCL_PANDAPHYSX PhysxBounds3 {
 
 PUBLISHED:

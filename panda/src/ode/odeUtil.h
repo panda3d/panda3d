@@ -26,10 +26,9 @@ class OdeBody;
 class OdeJoint;
 class OdeGeom;
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeUtil
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeUtil {
 PUBLISHED:
   static OdeJoint get_connecting_joint(const OdeBody &body1,

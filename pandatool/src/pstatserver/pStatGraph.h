@@ -26,12 +26,10 @@
 
 class PStatView;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatGraph
-// Description : This is an abstract base class for several different
-//               kinds of graphs that have a few things in common,
-//               like labels and guide bars.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class for several different kinds of graphs that
+ * have a few things in common, like labels and guide bars.
+ */
 class PStatGraph {
 public:
   PStatGraph(PStatMonitor *monitor, int xsize, int ysize);
@@ -55,7 +53,7 @@ public:
     GBS_target,
     GBS_user,
   };
-  
+
   class GuideBar {
   public:
     GuideBar(double height, const string &label, GuideBarStyle style);

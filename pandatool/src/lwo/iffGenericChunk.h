@@ -21,12 +21,10 @@
 #include "datagram.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : IffGenericChunk
-// Description : A class for a generic kind of IffChunk that is not
-//               understood by a particular IffReader.  It remembers
-//               its entire contents.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class for a generic kind of IffChunk that is not understood by a particular
+ * IffReader.  It remembers its entire contents.
+ */
 class IffGenericChunk : public IffChunk {
 public:
   INLINE IffGenericChunk();
@@ -61,5 +59,3 @@ private:
 #include "iffGenericChunk.I"
 
 #endif
-
-

@@ -81,7 +81,7 @@ DirectDServer::read_command(string& cmd) {
 void
 DirectDServer::run_server(int port) {
   nout<<"server"<<endl;
-  
+
   listen_to(port);
 
   while (!_shutdown) {
@@ -110,6 +110,6 @@ main(int argc, char *argv[]) {
   }
   DirectDServer directd;
   directd.run_server(port);
-  
+
   return 0;
 }

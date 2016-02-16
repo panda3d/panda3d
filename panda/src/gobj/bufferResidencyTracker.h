@@ -20,18 +20,13 @@
 
 class BufferContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BufferResidencyTracker
-// Description : This class is used to keep track of the current state
-//               of all the BufferContexts for a particular graphics
-//               context: whether each one is active (rendered this
-//               frame) or inactive (not rendered this frame), and
-//               whether it is resident or nonresident in video
-//               memory.
-//
-//               The primary purpose of this class is to facilitate
-//               PStats reporting of video card memory usage.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to keep track of the current state of all the
+ * BufferContexts for a particular graphics context: whether each one is active
+ * (rendered this frame) or inactive (not rendered this frame), and whether it
+ * is resident or nonresident in video memory.  The primary purpose of this
+ * class is to facilitate PStats reporting of video card memory usage.
+ */
 class EXPCL_PANDA_GOBJ BufferResidencyTracker {
 public:
   BufferResidencyTracker(const string &pgo_name, const string &type_name);

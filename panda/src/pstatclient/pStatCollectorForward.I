@@ -11,11 +11,9 @@
  * @date 2006-10-30
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatCollectorForward::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PStatCollectorForward::
 PStatCollectorForward(const PStatCollector &col)
 #ifdef DO_PSTATS
@@ -23,4 +21,3 @@ PStatCollectorForward(const PStatCollector &col)
 #endif  // DO_PSTATS
 {
 }
-

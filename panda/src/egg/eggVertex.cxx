@@ -29,11 +29,9 @@
 TypeHandle EggVertex::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggVertex::
 EggVertex() {
   _pool = NULL;
@@ -46,12 +44,10 @@ EggVertex() {
   test_gref_integrity();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::Copy constructor
-//       Access: Published
-//  Description: Copies all properties of the vertex except its vertex
-//               pool, index number, and group membership.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies all properties of the vertex except its vertex pool, index number, and
+ * group membership.
+ */
 EggVertex::
 EggVertex(const EggVertex &copy)
   : EggObject(copy), EggAttributes(copy),
@@ -71,12 +67,10 @@ EggVertex(const EggVertex &copy)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::Copy assignment operator
-//       Access: Published
-//  Description: Copies all properties of the vertex except its vertex
-//               pool, index number, and group membership.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies all properties of the vertex except its vertex pool, index number, and
+ * group membership.
+ */
 EggVertex &EggVertex::
 operator = (const EggVertex &copy) {
   EggObject::operator = (copy);
@@ -95,11 +89,9 @@ operator = (const EggVertex &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggVertex::
 ~EggVertex() {
   // We should never destruct a vertex while it still thinks it
@@ -113,13 +105,10 @@ EggVertex::
   nassertv(_pref.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::has_uv
-//       Access: Published
-//  Description: Returns true if the vertex has the named UV
-//               coordinate pair, and the named UV coordinate pair is
-//               2-d, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex has the named UV coordinate pair, and the named UV
+ * coordinate pair is 2-d, false otherwise.
+ */
 bool EggVertex::
 has_uv(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
@@ -130,13 +119,10 @@ has_uv(const string &name) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::has_uvw
-//       Access: Published
-//  Description: Returns true if the vertex has the named UV
-//               coordinate triple, and the named UV coordinate triple is
-//               3-d, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex has the named UV coordinate triple, and the named
+ * UV coordinate triple is 3-d, false otherwise.
+ */
 bool EggVertex::
 has_uvw(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
@@ -147,12 +133,9 @@ has_uvw(const string &name) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::has_aux
-//       Access: Published
-//  Description: Returns true if the vertex has the named
-//               auxiliary data quadruple.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the vertex has the named auxiliary data quadruple.
+ */
 bool EggVertex::
 has_aux(const string &name) const {
   AuxMap::const_iterator xi = _aux_map.find(name);
@@ -163,13 +146,10 @@ has_aux(const string &name) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::get_uv
-//       Access: Published
-//  Description: Returns the named UV coordinate pair on the vertex.
-//               It is an error to call this if has_uv(name)
-//               returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the named UV coordinate pair on the vertex.  It is an error to call
+ * this if has_uv(name) returned false.
+ */
 LTexCoordd EggVertex::
 get_uv(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
@@ -177,13 +157,10 @@ get_uv(const string &name) const {
   return (*ui).second->get_uv();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::get_uvw
-//       Access: Published
-//  Description: Returns the named UV coordinate triple on the vertex.
-//               It is an error to call this if has_uvw(name)
-//               returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the named UV coordinate triple on the vertex.  It is an error to call
+ * this if has_uvw(name) returned false.
+ */
 const LTexCoord3d &EggVertex::
 get_uvw(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
@@ -191,13 +168,10 @@ get_uvw(const string &name) const {
   return (*ui).second->get_uvw();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::get_aux
-//       Access: Published
-//  Description: Returns the named auxiliary data quadruple on the
-//               vertex. It is an error to call this if has_aux(name)
-//               returned false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the named auxiliary data quadruple on the vertex.  It is an error to
+ * call this if has_aux(name) returned false.
+ */
 const LVecBase4d &EggVertex::
 get_aux(const string &name) const {
   AuxMap::const_iterator xi = _aux_map.find(name);
@@ -205,13 +179,11 @@ get_aux(const string &name) const {
   return (*xi).second->get_aux();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::set_uv
-//       Access: Published
-//  Description: Sets the indicated UV coordinate pair on the vertex.
-//               This replaces any UV coordinate pair with the same
-//               name already on the vertex, but preserves UV morphs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated UV coordinate pair on the vertex.  This replaces any UV
+ * coordinate pair with the same name already on the vertex, but preserves UV
+ * morphs.
+ */
 void EggVertex::
 set_uv(const string &name, const LTexCoordd &uv) {
   string fname = EggVertexUV::filter_name(name);
@@ -227,14 +199,11 @@ set_uv(const string &name, const LTexCoordd &uv) {
   nassertv(get_uv(fname) == uv);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::set_uvw
-//       Access: Published
-//  Description: Sets the indicated UV coordinate triple on the vertex.
-//               This replaces any UV coordinate pair or triple with
-//               the same name already on the vertex, but preserves UV
-//               morphs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated UV coordinate triple on the vertex.  This replaces any UV
+ * coordinate pair or triple with the same name already on the vertex, but
+ * preserves UV morphs.
+ */
 void EggVertex::
 set_uvw(const string &name, const LTexCoord3d &uvw) {
   string fname = EggVertexUV::filter_name(name);
@@ -250,13 +219,10 @@ set_uvw(const string &name, const LTexCoord3d &uvw) {
   nassertv(get_uvw(fname) == uvw);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::set_aux
-//       Access: Published
-//  Description: Sets the indicated auxiliary data quadruple on the
-//               vertex. This replaces any auxiliary data with the
-//               same name already on the vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated auxiliary data quadruple on the vertex.  This replaces any
+ * auxiliary data with the same name already on the vertex.
+ */
 void EggVertex::
 set_aux(const string &name, const LVecBase4d &aux) {
   PT(EggVertexAux) &aux_obj = _aux_map[name];
@@ -271,16 +237,12 @@ set_aux(const string &name, const LVecBase4d &aux) {
   nassertv(get_aux(name) == aux);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::get_uv_obj
-//       Access: Published
-//  Description: Returns the named EggVertexUV object, which defines
-//               both the UV coordinate pair for this name and the UV
-//               morphs.  This object might be shared between multiple
-//               vertices.  You should not attempt to modify this
-//               object; instead, call modify_uv_object to return a
-//               modifiable pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the named EggVertexUV object, which defines both the UV coordinate
+ * pair for this name and the UV morphs.  This object might be shared between
+ * multiple vertices.  You should not attempt to modify this object; instead,
+ * call modify_uv_object to return a modifiable pointer.
+ */
 const EggVertexUV *EggVertex::
 get_uv_obj(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
@@ -290,15 +252,12 @@ get_uv_obj(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::get_aux_obj
-//       Access: Published
-//  Description: Returns the named EggVertexAux object, which defines
-//               the auxiliary data for this name. This object might
-//               be shared between multiple vertices.  You should not
-//               attempt to modify this object; instead, call
-//               modify_aux_object to return a modifiable pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the named EggVertexAux object, which defines the auxiliary data for
+ * this name.  This object might be shared between multiple vertices.  You
+ * should not attempt to modify this object; instead, call modify_aux_object to
+ * return a modifiable pointer.
+ */
 const EggVertexAux *EggVertex::
 get_aux_obj(const string &name) const {
   AuxMap::const_iterator xi = _aux_map.find(name);
@@ -308,14 +267,11 @@ get_aux_obj(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::modify_uv_obj
-//       Access: Published
-//  Description: Returns a modifiable pointer to the named EggVertexUV
-//               object, which defines both the UV coordinate pair for
-//               this name and the UV morphs.  Returns NULL if there
-//               is no such named UV object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable pointer to the named EggVertexUV object, which defines
+ * both the UV coordinate pair for this name and the UV morphs.  Returns NULL if
+ * there is no such named UV object.
+ */
 EggVertexUV *EggVertex::
 modify_uv_obj(const string &name) {
   UVMap::iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
@@ -330,14 +286,11 @@ modify_uv_obj(const string &name) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::modify_aux_obj
-//       Access: Published
-//  Description: Returns a modifiable pointer to the named EggVertexAux
-//               object, which defines the auxiliary data for
-//               this name.  Returns NULL if there is no such
-//               named UV object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a modifiable pointer to the named EggVertexAux object, which defines
+ * the auxiliary data for this name.  Returns NULL if there is no such named UV
+ * object.
+ */
 EggVertexAux *EggVertex::
 modify_aux_obj(const string &name) {
   AuxMap::iterator xi = _aux_map.find(name);
@@ -352,62 +305,48 @@ modify_aux_obj(const string &name) {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::set_uv_obj
-//       Access: Published
-//  Description: Sets the indicated EggVertexUV on the vertex.
-//               This replaces any UV coordinate pair with the same
-//               name already on the vertex, including UV morphs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated EggVertexUV on the vertex.  This replaces any UV
+ * coordinate pair with the same name already on the vertex, including UV
+ * morphs.
+ */
 void EggVertex::
 set_uv_obj(EggVertexUV *uv) {
   _uv_map[uv->get_name()] = uv;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::set_aux_obj
-//       Access: Published
-//  Description: Sets the indicated EggVertexAux on the vertex.
-//               This replaces any auxiliary data with the same
-//               name already on the vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the indicated EggVertexAux on the vertex.  This replaces any auxiliary
+ * data with the same name already on the vertex.
+ */
 void EggVertex::
 set_aux_obj(EggVertexAux *aux) {
   _aux_map[aux->get_name()] = aux;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::clear_uv
-//       Access: Published
-//  Description: Removes the named UV coordinate pair from the vertex,
-//               along with any UV morphs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the named UV coordinate pair from the vertex, along with any UV
+ * morphs.
+ */
 void EggVertex::
 clear_uv(const string &name) {
   _uv_map.erase(EggVertexUV::filter_name(name));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::clear_aux
-//       Access: Published
-//  Description: Removes the named auxiliary data from the vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the named auxiliary data from the vertex.
+ */
 void EggVertex::
 clear_aux(const string &name) {
   _aux_map.erase(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::make_average
-//       Access: Published, Static
-//  Description: Creates a new vertex that lies in between the two
-//               given vertices.  The attributes for the UV sets
-//               they have in common are averaged.
-//
-//               Both vertices need to be either in no pool, or in
-//               the same pool.  In the latter case, the new vertex
-//               will be placed in that pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new vertex that lies in between the two given vertices.  The
+ * attributes for the UV sets they have in common are averaged.  Both vertices
+ * need to be either in no pool, or in the same pool.  In the latter case, the
+ * new vertex will be placed in that pool.
+ */
 PT(EggVertex) EggVertex::
 make_average(const EggVertex *first, const EggVertex *second) {
   PT(EggVertexPool) pool = first->get_pool();
@@ -517,12 +456,10 @@ make_average(const EggVertex *first, const EggVertex *second) {
   return middle;
 }
 
-////////////////////////////////////////////////////////////////////
-//       Class : GroupRefEntry
-// Description : A temporary class used in EggVertex::write(), below,
-//               to hold the groups that reference each vertex prior
-//               to outputting them as a formatted list.
-////////////////////////////////////////////////////////////////////
+/**
+ * A temporary class used in EggVertex::write(), below, to hold the groups that
+ * reference each vertex prior to outputting them as a formatted list.
+ */
 class GroupRefEntry {
 public:
   GroupRefEntry(EggGroup *group, double membership)
@@ -544,12 +481,9 @@ INLINE ostream &operator << (ostream &out, const GroupRefEntry &gre) {
   return out;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::write
-//       Access: Published
-//  Description: Writes the vertex to the indicated output stream in
-//               Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the vertex to the indicated output stream in Egg format.
+ */
 void EggVertex::
 write(ostream &out, int indent_level) const {
   test_pref_integrity();
@@ -601,27 +535,18 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::compare_to
-//       Access: Published
-//  Description: An ordering operator to compare two vertices for
-//               sorting order.  This imposes an arbitrary ordering
-//               useful to identify unique vertices.
-//
-//               Group membership is not considered in this
-//               comparison.  This is somewhat problematic, but cannot
-//               easily be helped, because considering group
-//               membership would make it difficult to add and remove
-//               groups from vertices.  It also makes it impossible to
-//               meaningfully compare with a concrete EggVertex object
-//               (which cannot have group memberships).
-//
-//               However, this is not altogether bad, because two
-//               vertices that are identical in all other properties
-//               should generally also be identical in group
-//               memberships, else the vertices will tend to fly apart
-//               when the joints animate.
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordering operator to compare two vertices for sorting order.  This imposes
+ * an arbitrary ordering useful to identify unique vertices.  Group membership
+ * is not considered in this comparison.  This is somewhat problematic, but
+ * cannot easily be helped, because considering group membership would make it
+ * difficult to add and remove groups from vertices.  It also makes it
+ * impossible to meaningfully compare with a concrete EggVertex object (which
+ * cannot have group memberships).  However, this is not altogether bad, because
+ * two vertices that are identical in all other properties should generally also
+ * be identical in group memberships, else the vertices will tend to fly apart
+ * when the joints animate.
+ */
 int EggVertex::
 compare_to(const EggVertex &other) const {
   if (_external_index != other._external_index) {
@@ -701,13 +626,10 @@ compare_to(const EggVertex &other) const {
   return EggAttributes::compare_to(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::get_num_local_coord
-//       Access: Published
-//  Description: Returns the number of primitives that own this vertex
-//               whose vertices are interpreted to be in a local
-//               coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of primitives that own this vertex whose vertices are
+ * interpreted to be in a local coordinate system.
+ */
 int EggVertex::
 get_num_local_coord() const {
   test_pref_integrity();
@@ -722,13 +644,10 @@ get_num_local_coord() const {
   return count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::get_num_global_coord
-//       Access: Published
-//  Description: Returns the number of primitives that own this vertex
-//               whose vertices are interpreted in the global
-//               coordinate system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of primitives that own this vertex whose vertices are
+ * interpreted in the global coordinate system.
+ */
 int EggVertex::
 get_num_global_coord() const {
   test_pref_integrity();
@@ -744,12 +663,9 @@ get_num_global_coord() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::transform
-//       Access: Published, Virtual
-//  Description: Applies the indicated transformation matrix to the
-//               vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transformation matrix to the vertex.
+ */
 void EggVertex::
 transform(const LMatrix4d &mat) {
   _pos = _pos * mat;
@@ -773,76 +689,52 @@ transform(const LMatrix4d &mat) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::gref_begin
-//       Access: Public
-//  Description: Returns an iterator that can, in conjunction with
-//               gref_end(), be used to traverse the entire set of
-//               groups that reference this vertex.  Each iterator
-//               returns a pointer to a group.
-//
-//               This interface is not safe to use outside of
-//               PANDAEGG.DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that can, in conjunction with gref_end(), be used to
+ * traverse the entire set of groups that reference this vertex.  Each iterator
+ * returns a pointer to a group.  This interface is not safe to use outside of
+ * PANDAEGG.DLL.
+ */
 EggVertex::GroupRef::const_iterator EggVertex::
 gref_begin() const {
   return _gref.begin();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::gref_end
-//       Access: Public
-//  Description: Returns an iterator that can, in conjunction with
-//               gref_begin(), be used to traverse the entire set of
-//               groups that reference this vertex.  Each iterator
-//               returns a pointer to a group.
-//
-//               This interface is not safe to use outside of
-//               PANDAEGG.DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that can, in conjunction with gref_begin(), be used to
+ * traverse the entire set of groups that reference this vertex.  Each iterator
+ * returns a pointer to a group.  This interface is not safe to use outside of
+ * PANDAEGG.DLL.
+ */
 EggVertex::GroupRef::const_iterator EggVertex::
 gref_end() const {
   return _gref.end();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::gref_size
-//       Access: Public
-//  Description: Returns the number of elements between gref_begin()
-//               and gref_end().
-//
-//               This interface is not safe to use outside of
-//               PANDAEGG.DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of elements between gref_begin() and gref_end().  This
+ * interface is not safe to use outside of PANDAEGG.DLL.
+ */
 EggVertex::GroupRef::size_type EggVertex::
 gref_size() const {
   return _gref.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::has_gref
-//       Access: Published
-//  Description: Returns true if the indicated group references this
-//               vertex, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated group references this vertex, false otherwise.
+ */
 bool EggVertex::
 has_gref(const EggGroup *group) const {
   return _gref.count((EggGroup *)group) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::copy_grefs_from
-//       Access: Published
-//  Description: Copies all the group references from the other vertex
-//               onto this one.  This assigns the current vertex to
-//               exactly the same groups, with exactly the same
-//               memberships, as the given one.
-//
-//               Warning: only an EggVertex allocated from the free
-//               store may have groups assigned to it.  Do not attempt
-//               to call this on a temporary concrete EggVertex
-//               object; a core dump will certainly result.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies all the group references from the other vertex onto this one.  This
+ * assigns the current vertex to exactly the same groups, with exactly the same
+ * memberships, as the given one.  Warning: only an EggVertex allocated from the
+ * free store may have groups assigned to it.  Do not attempt to call this on a
+ * temporary concrete EggVertex object; a core dump will certainly result.
+ */
 void EggVertex::
 copy_grefs_from(const EggVertex &other) {
   if (&other == this) {
@@ -864,12 +756,10 @@ copy_grefs_from(const EggVertex &other) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::clear_grefs
-//       Access: Published
-//  Description: Removes all group references from the vertex, so that
-//               it is not assigned to any group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all group references from the vertex, so that it is not assigned to
+ * any group.
+ */
 void EggVertex::
 clear_grefs() {
   GroupRef gref_copy = _gref;
@@ -884,58 +774,41 @@ clear_grefs() {
   nassertv(_gref.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::pref_begin
-//       Access: Public
-//  Description: Returns an iterator that can, in conjunction with
-//               pref_end(), be used to traverse the entire set of
-//               primitives that reference this vertex.  Each iterator
-//               returns a pointer to a primitive.
-//
-//               This interface is not safe to use outside of
-//               PANDAEGG.DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that can, in conjunction with pref_end(), be used to
+ * traverse the entire set of primitives that reference this vertex.  Each
+ * iterator returns a pointer to a primitive.  This interface is not safe to use
+ * outside of PANDAEGG.DLL.
+ */
 EggVertex::PrimitiveRef::const_iterator EggVertex::
 pref_begin() const {
   return _pref.begin();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::pref_end
-//       Access: Public
-//  Description: Returns an iterator that can, in conjunction with
-//               pref_begin(), be used to traverse the entire set of
-//               primitives that reference this vertex.  Each iterator
-//               returns a pointer to a primitive.
-//
-//               This interface is not safe to use outside of
-//               PANDAEGG.DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an iterator that can, in conjunction with pref_begin(), be used to
+ * traverse the entire set of primitives that reference this vertex.  Each
+ * iterator returns a pointer to a primitive.  This interface is not safe to use
+ * outside of PANDAEGG.DLL.
+ */
 EggVertex::PrimitiveRef::const_iterator EggVertex::
 pref_end() const {
   return _pref.end();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::pref_size
-//       Access: Public
-//  Description: Returns the number of elements between pref_begin()
-//               and pref_end().
-//
-//               This interface is not safe to use outside of
-//               PANDAEGG.DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of elements between pref_begin() and pref_end().  This
+ * interface is not safe to use outside of PANDAEGG.DLL.
+ */
 EggVertex::GroupRef::size_type EggVertex::
 pref_size() const {
   return _pref.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::has_pref
-//       Access: Published
-//  Description: Returns the number of times the vertex appears in the
-//               indicated primitive, or 0 if it does not appear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of times the vertex appears in the indicated primitive, or
+ * 0 if it does not appear.
+ */
 int EggVertex::
 has_pref(const EggPrimitive *prim) const {
   return _pref.count((EggPrimitive *)prim);
@@ -943,13 +816,10 @@ has_pref(const EggPrimitive *prim) const {
 
 #ifdef _DEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::test_gref_integrity
-//       Access: Published
-//  Description: Verifies that the gref list is correct and that all
-//               the groups included actually exist and do reference
-//               the vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the gref list is correct and that all the groups included
+ * actually exist and do reference the vertex.
+ */
 void EggVertex::
 test_gref_integrity() const {
   test_ref_count_integrity();
@@ -966,13 +836,10 @@ test_gref_integrity() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::test_pref_integrity
-//       Access: Published
-//  Description: Verifies that the pref list is correct and that all
-//               the primitives included actually exist and do
-//               reference the vertex.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that the pref list is correct and that all the primitives included
+ * actually exist and do reference the vertex.
+ */
 void EggVertex::
 test_pref_integrity() const {
   test_ref_count_integrity();
@@ -992,11 +859,9 @@ test_pref_integrity() const {
 
 #endif  // NDEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggVertex::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggVertex::
 output(ostream &out) const {
   if (get_pool() == NULL) {

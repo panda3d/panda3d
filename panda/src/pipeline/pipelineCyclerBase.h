@@ -41,4 +41,3 @@ typedef PipelineCyclerTrivialImpl PipelineCyclerBase;
 #endif  // DO_PIPELINING
 
 #endif
-

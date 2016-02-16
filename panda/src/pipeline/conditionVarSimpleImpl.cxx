@@ -18,11 +18,9 @@
 #include "conditionVarSimpleImpl.h"
 #include "threadSimpleImpl.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSimpleImpl::
 wait() {
   _mutex.release_quietly();
@@ -35,11 +33,9 @@ wait() {
   _mutex.acquire();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSimpleImpl::
 wait(double timeout) {
   _mutex.release_quietly();
@@ -56,11 +52,9 @@ wait(double timeout) {
   _mutex.acquire();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::do_notify
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSimpleImpl::
 do_notify() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
@@ -73,11 +67,9 @@ do_notify() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::do_notify_all
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarSimpleImpl::
 do_notify_all() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();

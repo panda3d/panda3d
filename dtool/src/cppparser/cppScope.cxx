@@ -31,11 +31,9 @@
 #include "cppBisonDefs.h"
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPScope::
 CPPScope(CPPScope *parent_scope,
          const CPPNameComponent &name, CPPVisibility starting_vis) :
@@ -50,75 +48,58 @@ CPPScope(CPPScope *parent_scope,
   _subst_decl_recursive_protect = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPScope::
 ~CPPScope() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::set_struct_type
-//       Access: Public
-//  Description: Sets the struct or class that owns this scope.  This
-//               should only be done once, when the scope and its
-//               associated struct are created.  It's provided so the
-//               scope can check the struct's ancestry for inherited
-//               symbols.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the struct or class that owns this scope.  This should only be done
+ * once, when the scope and its associated struct are created.  It's provided so
+ * the scope can check the struct's ancestry for inherited symbols.
+ */
 void CPPScope::
 set_struct_type(CPPStructType *struct_type) {
   _struct_type = struct_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::get_struct_type
-//       Access: Public
-//  Description: Returns the class or struct that defines this scope,
-//               if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the class or struct that defines this scope, if any.
+ */
 CPPStructType *CPPScope::
 get_struct_type() const {
   return _struct_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::get_parent_scope
-//       Access: Public
-//  Description: Returns the parent scope of this scope, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the parent scope of this scope, if any.
+ */
 CPPScope *CPPScope::
 get_parent_scope() const {
   return _parent_scope;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::set_current_vis
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPScope::
 set_current_vis(CPPVisibility current_vis) {
   _current_vis = current_vis;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::get_current_vis
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPVisibility CPPScope::
 get_current_vis() const {
   return _current_vis;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::add_declaration
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPScope::
 add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
                 CPPPreprocessor *preprocessor, const cppyyltype &pos) {
@@ -138,11 +119,9 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
   handle_declaration(decl, global_scope, preprocessor);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::add_enum_value
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPScope::
 add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
                const cppyyltype &pos) {
@@ -178,11 +157,9 @@ add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::define_extension_type
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPScope::
 define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   assert(type != NULL);
@@ -290,11 +267,9 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::define_namespace
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPScope::
 define_namespace(CPPNamespace *ns) {
   string name = ns->get_simple_name();
@@ -307,11 +282,9 @@ define_namespace(CPPNamespace *ns) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::add_using
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPScope::
 add_using(CPPUsing *using_decl, CPPScope *global_scope,
           CPPPreprocessor *error_sink) {
@@ -337,14 +310,11 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::is_fully_specified
-//       Access: Public, Virtual
-//  Description: Returns true if this declaration is an actual,
-//               factual declaration, or false if some part of the
-//               declaration depends on a template parameter which has
-//               not yet been instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this declaration is an actual, factual declaration, or false
+ * if some part of the declaration depends on a template parameter which has not
+ * yet been instantiated.
+ */
 bool CPPScope::
 is_fully_specified() const {
   if (_fully_specified_known) {
@@ -379,11 +349,9 @@ is_fully_specified() const {
   return specified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::instantiate
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPScope *CPPScope::
 instantiate(const CPPTemplateParameterList *actual_params,
             CPPScope *current_scope, CPPScope *global_scope,
@@ -460,11 +428,9 @@ instantiate(const CPPTemplateParameterList *actual_params,
   return scope;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::substitute_decl
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPScope *CPPScope::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) const {
@@ -511,11 +477,9 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   return rep;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::find_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPType *CPPScope::
 find_type(const string &name, bool recurse) const {
   Types::const_iterator ti;
@@ -554,11 +518,9 @@ find_type(const string &name, bool recurse) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::find_type
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPType *CPPScope::
 find_type(const string &name, CPPDeclaration::SubstDecl &subst,
           CPPScope *global_scope, bool recurse) const {
@@ -601,11 +563,9 @@ find_type(const string &name, CPPDeclaration::SubstDecl &subst,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::find_scope
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPScope *CPPScope::
 find_scope(const string &name, bool recurse) const {
   Namespaces::const_iterator ni = _namespaces.find(name);
@@ -663,11 +623,9 @@ find_scope(const string &name, bool recurse) const {
   return (CPPScope *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::find_scope
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPScope *CPPScope::
 find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
            CPPScope *global_scope, bool recurse) const {
@@ -694,11 +652,9 @@ find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
   return st->_scope;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::find_symbol
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration *CPPScope::
 find_symbol(const string &name, bool recurse) const {
   if (_struct_type != NULL && name == get_simple_name()) {
@@ -758,11 +714,9 @@ find_symbol(const string &name, bool recurse) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::find_template
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration *CPPScope::
 find_template(const string &name, bool recurse) const {
   Templates::const_iterator ti;
@@ -801,11 +755,9 @@ find_template(const string &name, bool recurse) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::get_simple_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPScope::
 get_simple_name() const {
   /*
@@ -816,11 +768,9 @@ get_simple_name() const {
   return _name.get_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::get_local_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPScope::
 get_local_name(CPPScope *scope) const {
   /*
@@ -842,11 +792,9 @@ get_local_name(CPPScope *scope) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::get_fully_scoped_name
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string CPPScope::
 get_fully_scoped_name() const {
   /*
@@ -863,11 +811,9 @@ get_fully_scoped_name() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPScope::
 output(ostream &out, CPPScope *scope) const {
   //  out << get_local_name(scope);
@@ -878,11 +824,9 @@ output(ostream &out, CPPScope *scope) const {
   out << _name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::write
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPScope::
 write(ostream &out, int indent_level, CPPScope *scope) const {
   CPPVisibility vis = V_unknown;
@@ -905,13 +849,10 @@ write(ostream &out, int indent_level, CPPScope *scope) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::get_template_scope
-//       Access: Public
-//  Description: Returns the nearest ancestor of this scope that is a
-//               template scope, or NULL if the scope is fully
-//               specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nearest ancestor of this scope that is a template scope, or NULL
+ * if the scope is fully specified.
+ */
 CPPTemplateScope *CPPScope::
 get_template_scope() {
   if (as_template_scope()) {
@@ -923,29 +864,21 @@ get_template_scope() {
   return (CPPTemplateScope *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::as_template_scope
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPTemplateScope *CPPScope::
 as_template_scope() {
   return (CPPTemplateScope *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::copy_substitute_decl
-//       Access: Private
-//  Description: This is in support of both substitute_decl() and
-//               instantiate().  It's similar in purpose to
-//               substitute_decl(), but this function assumes the
-//               caller has already created a new, empty scope.  All
-//               of the declarations in this scope are copied to the
-//               new scope, filtering through the subst decl.
-//
-//               The return value is true if the scope is changed,
-//               false if it is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is in support of both substitute_decl() and instantiate().  It's similar
+ * in purpose to substitute_decl(), but this function assumes the caller has
+ * already created a new, empty scope.  All of the declarations in this scope
+ * are copied to the new scope, filtering through the subst decl.  The return
+ * value is true if the scope is changed, false if it is not.
+ */
 bool CPPScope::
 copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
                      CPPScope *global_scope) const {
@@ -1105,13 +1038,10 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPScope::handle_declaration
-//       Access: Private
-//  Description: Does the right thing with a newly given declaration:
-//               adds it to the typedef list, or variables or
-//               functions, or whatever.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does the right thing with a newly given declaration: adds it to the typedef
+ * list, or variables or functions, or whatever.
+ */
 void CPPScope::
 handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
                    CPPPreprocessor *error_sink) {

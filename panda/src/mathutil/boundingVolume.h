@@ -31,16 +31,13 @@ class UnionBoundingVolume;
 class IntersectionBoundingVolume;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingVolume
-// Description : This is an abstract class for any volume in any sense
-//               which can be said to define the locality of reference
-//               of a node in a graph, along with all of its
-//               descendants.  It is not necessarily a geometric
-//               volume (although see GeometricBoundingVolume); this
-//               is simply an abstract interface for bounds of any
-//               sort.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract class for any volume in any sense which can be said to
+ * define the locality of reference of a node in a graph, along with all of its
+ * descendants.  It is not necessarily a geometric volume (although see
+ * GeometricBoundingVolume); this is simply an abstract interface for bounds of
+ * any sort.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingVolume : public TypedReferenceCount {
 public:
   INLINE_MATHUTIL BoundingVolume();

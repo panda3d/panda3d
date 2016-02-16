@@ -22,12 +22,10 @@
 
 class LwoToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLwoClip
-// Description : This class is a wrapper around LwoClip and stores
-//               additional information useful during the
-//               conversion-to-egg process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is a wrapper around LwoClip and stores additional information
+ * useful during the conversion-to-egg process.
+ */
 class CLwoClip {
 public:
   CLwoClip(LwoToEggConverter *converter, const LwoClip *clip);
@@ -45,5 +43,3 @@ public:
 #include "cLwoClip.I"
 
 #endif
-
-

@@ -20,11 +20,9 @@ const FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::_unit_x =
 const FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::_unit_y =
   FLOATNAME(LVecBase2)(0, 1);
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LVecBase2)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {

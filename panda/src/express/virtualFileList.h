@@ -19,11 +19,9 @@
 #include "virtualFile.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileList
-// Description : A list of VirtualFiles, as returned by 
-//               VirtualFile::scan_directory().
-////////////////////////////////////////////////////////////////////
+/**
+ * A list of VirtualFiles, as returned by VirtualFile::scan_directory().
+ */
 class EXPCL_PANDAEXPRESS VirtualFileList : public ReferenceCount {
 public:
   INLINE VirtualFileList();

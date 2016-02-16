@@ -19,11 +19,9 @@
 #include "somethingToEgg.h"
 #include "vrmlToEggConverter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VRMLToEgg
-// Description : A program to read a VRML file and generate an egg
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a VRML file and generate an egg file.
+ */
 class VRMLToEgg : public SomethingToEgg {
 public:
   VRMLToEgg();
@@ -32,5 +30,3 @@ public:
 };
 
 #endif
-
-

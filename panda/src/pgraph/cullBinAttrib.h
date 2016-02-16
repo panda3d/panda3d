@@ -20,12 +20,10 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullBinAttrib
-// Description : Assigns geometry to a particular bin by name.  The
-//               bins must be created separately via the
-//               CullBinManager interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assigns geometry to a particular bin by name.  The bins must be created
+ * separately via the CullBinManager interface.
+ */
 class EXPCL_PANDA_PGRAPH CullBinAttrib : public RenderAttrib {
 private:
   INLINE CullBinAttrib();
@@ -63,7 +61,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -87,4 +85,3 @@ private:
 #include "cullBinAttrib.I"
 
 #endif
-

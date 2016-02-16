@@ -20,13 +20,11 @@
 class DCParameter;
 class HashGenerator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCKeyword
-// Description : This represents a single keyword declaration in the
-//               dc file.  It is used to define a communication
-//               property associated with a field, for instance
-//               "broadcast" or "airecv".
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single keyword declaration in the dc file.  It is used to
+ * define a communication property associated with a field, for instance
+ * "broadcast" or "airecv".
+ */
 class EXPCL_DIRECT DCKeyword : public DCDeclaration {
 public:
   DCKeyword(const string &name, int historical_flag = ~0);

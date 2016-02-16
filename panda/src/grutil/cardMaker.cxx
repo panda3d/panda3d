@@ -21,11 +21,9 @@
 #include "geomVertexWriter.h"
 #include "geomVertexFormat.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::reset
-//       Access: Public
-//  Description: Resets all the parameters to their initial defaults.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all the parameters to their initial defaults.
+ */
 void CardMaker::
 reset() {
   set_frame(0.0f, 1.0f, 0.0f, 1.0f);
@@ -40,12 +38,9 @@ reset() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::generate
-//       Access: Public
-//  Description: Generates a GeomNode that renders the specified
-//               geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a GeomNode that renders the specified geometry.
+ */
 PT(PandaNode) CardMaker::
 generate() {
   if (_source_geometry != (PandaNode *)NULL) {
@@ -88,16 +83,16 @@ generate() {
       format = GeomVertexFormat::get_v3();
     }
   }
-  
+
   PT(GeomVertexData) vdata = new GeomVertexData
     ("card", format, Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  
+
   vertex.add_data3(_ul_pos);
   vertex.add_data3(_ll_pos);
   vertex.add_data3(_ur_pos);
   vertex.add_data3(_lr_pos);
-  
+
   if (_has_uvs) {
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
     texcoord.add_data3(_ul_tex);
@@ -105,7 +100,7 @@ generate() {
     texcoord.add_data3(_ur_tex);
     texcoord.add_data3(_lr_tex);
   }
-  
+
   if (_has_normals) {
     GeomVertexWriter normal(vdata, InternalName::get_normal());
     LVector3 n;
@@ -122,12 +117,12 @@ generate() {
     n.normalize();
     normal.add_data3(n);
   }
-  
+
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   strip->set_shade_model(Geom::SM_uniform);
   strip->add_next_vertices(4);
   strip->close_primitive();
-  
+
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
 
@@ -135,21 +130,18 @@ generate() {
   if (_has_color) {
     state = RenderState::make(ColorAttrib::make_flat(_color));
   }
-  
+
   gnode->add_geom(geom, state);
-  
+
   return gnode.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::set_uv_range
-//       Access: Public
-//  Description: Sets the range of UV's that will be applied to the
-//               vertices.  If set_has_uvs() is true (as it is by
-//               default), the vertices will be generated with the
-//               indicated range of UV's, which will be useful if a
-//               texture is applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the range of UV's that will be applied to the vertices.  If
+ * set_has_uvs() is true (as it is by default), the vertices will be generated
+ * with the indicated range of UV's, which will be useful if a texture is
+ * applied.
+ */
 void CardMaker::
 set_uv_range(const LTexCoord3 &ll, const LTexCoord3 &lr, const LTexCoord3 &ur, const LTexCoord3 &ul) {
   _ll_tex = ll;
@@ -160,15 +152,12 @@ set_uv_range(const LTexCoord3 &ll, const LTexCoord3 &lr, const LTexCoord3 &ur, c
   _has_3d_uvs = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::set_uv_range
-//       Access: Public
-//  Description: Sets the range of UV's that will be applied to the
-//               vertices.  If set_has_uvs() is true (as it is by
-//               default), the vertices will be generated with the
-//               indicated range of UV's, which will be useful if a
-//               texture is applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the range of UV's that will be applied to the vertices.  If
+ * set_has_uvs() is true (as it is by default), the vertices will be generated
+ * with the indicated range of UV's, which will be useful if a texture is
+ * applied.
+ */
 void CardMaker::
 set_uv_range(const LTexCoord &ll, const LTexCoord &lr, const LTexCoord &ur, const LTexCoord &ul) {
   _ll_tex.set(ll[0], ll[1], 0.0f);
@@ -179,15 +168,12 @@ set_uv_range(const LTexCoord &ll, const LTexCoord &lr, const LTexCoord &ur, cons
   _has_3d_uvs = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::set_uv_range
-//       Access: Public
-//  Description: Sets the range of UV's that will be applied to the
-//               vertices.  If set_has_uvs() is true (as it is by
-//               default), the vertices will be generated with the
-//               indicated range of UV's, which will be useful if a
-//               texture is applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the range of UV's that will be applied to the vertices.  If
+ * set_has_uvs() is true (as it is by default), the vertices will be generated
+ * with the indicated range of UV's, which will be useful if a texture is
+ * applied.
+ */
 void CardMaker::
 set_uv_range(const LTexCoord &ll, const LTexCoord &ur) {
   _ll_tex.set(ll[0], ll[1], 0.0f);
@@ -198,15 +184,12 @@ set_uv_range(const LTexCoord &ll, const LTexCoord &ur) {
   _has_3d_uvs = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::set_uv_range
-//       Access: Public
-//  Description: Sets the range of UV's that will be applied to the
-//               vertices.  If set_has_uvs() is true (as it is by
-//               default), the vertices will be generated with the
-//               indicated range of UV's, which will be useful if a
-//               texture is applied.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the range of UV's that will be applied to the vertices.  If
+ * set_has_uvs() is true (as it is by default), the vertices will be generated
+ * with the indicated range of UV's, which will be useful if a texture is
+ * applied.
+ */
 void CardMaker::
 set_uv_range(const LVector4 &x, const LVector4 &y, const LVector4 &z) {
   _ll_tex.set(x[0], y[0], z[0]);
@@ -217,12 +200,10 @@ set_uv_range(const LVector4 &x, const LVector4 &y, const LVector4 &z) {
   _has_3d_uvs = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::set_uv_range_cube
-//       Access: Public
-//  Description: Sets the range of UV's that will be applied to the
-//               vertices appropriately for a cube-map face.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the range of UV's that will be applied to the vertices appropriately for
+ * a cube-map face.
+ */
 void CardMaker::
 set_uv_range_cube(int face) {
   LVector4 varya(-1,  1,  1, -1);
@@ -238,13 +219,10 @@ set_uv_range_cube(int face) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::set_uv_range
-//       Access: Public
-//  Description: Sets the range of UV's that will be applied to the
-//               vertices appropriately to show the non-pad region
-//               of the texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the range of UV's that will be applied to the vertices appropriately to
+ * show the non-pad region of the texture.
+ */
 void CardMaker::
 set_uv_range(const Texture *tex) {
   nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
@@ -255,12 +233,9 @@ set_uv_range(const Texture *tex) {
   set_uv_range(LTexCoord(0.0,0.0), LTexCoord(maxu,maxv));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CardMaker::rescale_source_geometry
-//       Access: Private
-//  Description: Generates the card by rescaling the source geometry
-//               appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the card by rescaling the source geometry appropriately.
+ */
 PT(PandaNode) CardMaker::
 rescale_source_geometry() {
   PT(PandaNode) root = _source_geometry->copy_subgraph();
@@ -269,7 +244,7 @@ rescale_source_geometry() {
   LVector3 frame_max = _ll_pos.fmax(_lr_pos.fmax(_ur_pos.fmax(_ul_pos)));
   LVector3 frame_min = _ll_pos.fmin(_lr_pos.fmin(_ur_pos.fmax(_ul_pos)));
   LVector3 frame_ctr = (frame_max + frame_min) * 0.5f;
-  
+
   LVector3 geom_center((_source_frame[0] + _source_frame[1]) * 0.5f,
                         frame_ctr[1],
                         (_source_frame[2] + _source_frame[3]) * 0.5f);
@@ -277,10 +252,10 @@ rescale_source_geometry() {
   LVector3 scale((frame_max[0] - frame_min[0]) / (_source_frame[1] - _source_frame[0]),
                   0.0,
                   (frame_max[2] - frame_min[2]) / (_source_frame[3] - _source_frame[2]));
-  
+
   LVector3 trans = frame_ctr - geom_center;
 
-  CPT(TransformState) transform = 
+  CPT(TransformState) transform =
     TransformState::make_pos_hpr_scale(trans, LPoint3(0.0f, 0.0f, 0.0f), scale);
   root->set_transform(transform);
 

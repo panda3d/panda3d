@@ -19,17 +19,14 @@
 #include "lens.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : OrthographicLens
-// Description : An orthographic lens.  Although this kind of lens is
-//               linear, like a PerspectiveLens, it doesn't respect
-//               field-of-view or focal length parameters, and
-//               adjusting these will have no effect.  Instead, its
-//               field of view is controlled by adjusting the
-//               film_size; the orthographic lens represents a planar
-//               projection onto its imaginary film of the specified
-//               size, hanging in space.
-////////////////////////////////////////////////////////////////////
+/**
+ * An orthographic lens.  Although this kind of lens is linear, like a
+ * PerspectiveLens, it doesn't respect field-of-view or focal length parameters,
+ * and adjusting these will have no effect.  Instead, its field of view is
+ * controlled by adjusting the film_size; the orthographic lens represents a
+ * planar projection onto its imaginary film of the specified size, hanging in
+ * space.
+ */
 class EXPCL_PANDA_GOBJ OrthographicLens : public Lens {
 PUBLISHED:
   INLINE OrthographicLens();

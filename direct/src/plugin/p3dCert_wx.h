@@ -39,10 +39,9 @@ class ViewCertDialog;
   #define sk_X509_new(cmp) sk_new(cmp)
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DCertApp
-// Description : This is the wxApp that drives this application.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the wxApp that drives this application.
+ */
 class P3DCertApp : public wxApp {
 public:
   virtual bool OnInit();
@@ -54,16 +53,12 @@ private:
   string _cert_dir;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : AuthDialog
-// Description : This is the primary dialog of this application.
-//
-//               This dialog is presented to the user when he/she
-//               clicks on the red authorization button on the splash
-//               window.  It tells the user the status of the
-//               application's signature, and invites the user to
-//               approve the signature or cancel.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary dialog of this application.  This dialog is presented to
+ * the user when he/she clicks on the red authorization button on the splash
+ * window.  It tells the user the status of the application's signature, and
+ * invites the user to approve the signature or cancel.
+ */
 class AuthDialog : public wxDialog {
 public:
   AuthDialog(const string &cert_filename, const string &cert_dir);
@@ -100,11 +95,9 @@ private:
   int _verify_result;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ViewCertDialog
-// Description : This is the detailed view of the particular
-//               certificate.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the detailed view of the particular certificate.
+ */
 class ViewCertDialog : public wxDialog {
 public:
   ViewCertDialog(AuthDialog *auth_dialog, X509 *cert);

@@ -18,13 +18,11 @@
 #include "fileReference.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SubfileInfo
-// Description : This class records a particular byte sub-range within
-//               an existing file on disk.  Generally, the filename is
-//               understood as a physical file on disk, and not to be
-//               looked up via the vfs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class records a particular byte sub-range within an existing file on
+ * disk.  Generally, the filename is understood as a physical file on disk, and
+ * not to be looked up via the vfs.
+ */
 class EXPCL_PANDAEXPRESS SubfileInfo {
 PUBLISHED:
   INLINE SubfileInfo();

@@ -14,27 +14,22 @@
 template<class SwitchType>
 TypeHandle AnimChannelFixed<SwitchType>::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelFixed::Copy Constructor
-//       Access: Protected
-//  Description: Creates a new AnimChannelFixed, just like this one,
-//               without copying any children.  The new copy is added
-//               to the indicated parent.  Intended to be called by
-//               make_copy() only.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new AnimChannelFixed, just like this one, without copying any
+ * children.  The new copy is added to the indicated parent.  Intended to be
+ * called by make_copy() only.
+ */
 template<class SwitchType>
 INLINE AnimChannelFixed<SwitchType>::
-AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy) : 
+AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy) :
   AnimChannel<SwitchType>(parent, copy),
   _value(copy._value)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelFixed::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class SwitchType>
 INLINE AnimChannelFixed<SwitchType>::
 AnimChannelFixed(const string &name, const ValueType &value)
@@ -43,11 +38,9 @@ AnimChannelFixed(const string &name, const ValueType &value)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelFixed::has_changed
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class SwitchType>
 bool AnimChannelFixed<SwitchType>::
 has_changed(int, double, int, double) {
@@ -55,11 +48,9 @@ has_changed(int, double, int, double) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelFixed::get_value
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class SwitchType>
 void AnimChannelFixed<SwitchType>::
 get_value(int, ValueType &value) {
@@ -67,11 +58,9 @@ get_value(int, ValueType &value) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelFixed::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class SwitchType>
 void AnimChannelFixed<SwitchType>::
 output(ostream &out) const {

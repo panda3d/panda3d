@@ -16,21 +16,17 @@
 
 TypeHandle AuxSceneData::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void AuxSceneData::
 output(ostream &out) const {
   out << get_type() << " expires " << get_expiration_time();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AuxSceneData::write
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void AuxSceneData::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";

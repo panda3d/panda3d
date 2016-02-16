@@ -15,14 +15,12 @@
 #include "config_util.h"
 #include "indent.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderOptions::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LoaderOptions::
-LoaderOptions(int flags) : 
-  _flags(flags), 
+LoaderOptions(int flags) :
+  _flags(flags),
   _texture_flags(0),
   _texture_num_views(0),
   _auto_texture_scale(ATS_unspecified)
@@ -46,11 +44,9 @@ LoaderOptions(int flags) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderOptions::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void LoaderOptions::
 output(ostream &out) const {
   out << "LoaderOptions(";
@@ -93,13 +89,11 @@ output(ostream &out) const {
   out << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderOptions::write_flag
-//       Access: Private
-//  Description: Used to implement output().
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to implement output().
+ */
 void LoaderOptions::
-write_flag(ostream &out, string &sep, 
+write_flag(ostream &out, string &sep,
            const string &flag_name, int flag) const {
   if ((_flags & flag) == flag) {
     out << sep << flag_name;
@@ -107,13 +101,11 @@ write_flag(ostream &out, string &sep,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LoaderOptions::write_texture_flag
-//       Access: Private
-//  Description: Used to implement output().
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to implement output().
+ */
 void LoaderOptions::
-write_texture_flag(ostream &out, string &sep, 
+write_texture_flag(ostream &out, string &sep,
                    const string &flag_name, int flag) const {
   if ((_texture_flags & flag) == flag) {
     out << sep << flag_name;

@@ -36,11 +36,9 @@ TypeHandle MeshDrawer2D::_type_handle;
 #define RANDF ((PN_stdfloat) rand() / (PN_stdfloat) 0x7fffffff)
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::generator
-//       Access: Private
-//  Description: Creates a system with a given budget.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a system with a given budget.
+ */
 void MeshDrawer2D::generator(int budget) {
   // create enough triangles for budget:
   _vdata = new GeomVertexData(_root.get_name(), GeomVertexFormat::get_v3c4t2(), Geom::UH_static);//UH_dynamic);
@@ -84,12 +82,9 @@ void MeshDrawer2D::generator(int budget) {
   delete tcolor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::begin
-//       Access: Published
-//  Description: Opens up the geom for drawing, don't forget to call
-//               MeshDrawer2D::end()
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens up the geom for drawing, don't forget to call MeshDrawer2D::end()
+ */
 void MeshDrawer2D::begin() {
 
   // recreate our rewriters
@@ -109,12 +104,9 @@ void MeshDrawer2D::begin() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::end
-//       Access: Published
-//  Description: Finish the drawing and clearing off the remaining
-//               vertexes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finish the drawing and clearing off the remaining vertexes.
+ */
 void MeshDrawer2D::end() {
 
   // clear the unused triangles at the end of the buffer
@@ -136,12 +128,9 @@ void MeshDrawer2D::end() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::quad
-//       Access: Published
-//  Description: Draws a tiled rectangle, size of tiles is in
-//               us and vs
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a tiled rectangle, size of tiles is in us and vs
+ */
 void MeshDrawer2D::
 rectangle_tiled(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
      PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
@@ -189,12 +178,10 @@ rectangle_tiled(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::quad
-//       Access: Published
-//  Description: Draws a 2d rectangle, with borders and corders,
-//               taken from the surrounding texture
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a 2d rectangle, with borders and corders, taken from the surrounding
+ * texture
+ */
 void MeshDrawer2D::
 rectangle_border(
     PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
@@ -221,12 +208,10 @@ rectangle_border(
 */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::quad
-//       Access: Published
-//  Description: Draws a 2d rectangle, with borders and corders,
-//               taken from the surrounding texture
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a 2d rectangle, with borders and corders, taken from the surrounding
+ * texture
+ */
 void MeshDrawer2D::
 rectangle_border_tiled(
     PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,

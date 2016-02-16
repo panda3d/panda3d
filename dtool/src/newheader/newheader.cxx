@@ -17,7 +17,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-const char *cxx_style = 
+const char *cxx_style =
 "// Filename: %s\n"
 "// Created by:  %s (%s)\n"
 "//\n"
@@ -33,7 +33,7 @@ const char *cxx_style =
 "////////////////////////////////////////////////////////////////////\n"
 "\n";
 
-const char *c_style = 
+const char *c_style =
 "/* Filename: %s\n"
 " * Created by:  %s (%s)\n"
 " *\n"

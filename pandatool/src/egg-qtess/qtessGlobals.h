@@ -16,12 +16,10 @@
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : QtessGlobals
-// Description : Simply used as a namespace to scope some global
-//               variables for this program, set from the command
-//               line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simply used as a namespace to scope some global variables for this program,
+ * set from the command line.
+ */
 class QtessGlobals {
 public:
   static bool _auto_place;
@@ -31,4 +29,3 @@ public:
 };
 
 #endif
-

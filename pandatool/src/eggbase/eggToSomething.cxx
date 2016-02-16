@@ -13,14 +13,11 @@
 
 #include "eggToSomething.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToSomething::Constructor
-//       Access: Public
-//  Description: The first parameter to the constructor should be the
-//               one-word name of the file format that is to be read,
-//               for instance "OpenFlight" or "Alias".  It's just used
-//               in printing error messages and such.
-////////////////////////////////////////////////////////////////////
+/**
+ * The first parameter to the constructor should be the one-word name of the
+ * file format that is to be read, for instance "OpenFlight" or "Alias".  It's
+ * just used in printing error messages and such.
+ */
 EggToSomething::
 EggToSomething(const string &format_name,
                const string &preferred_extension,
@@ -82,15 +79,12 @@ EggToSomething(const string &format_name,
   _output_units = DU_invalid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToSomething::add_units_options
-//       Access: Public
-//  Description: Adds -ui and -uo as valid options for this program.
-//               If the user specifies -uo and -ui, or just -uo and
-//               the program specifies -ui by setting _input_units,
-//               the indicated units conversion will be automatically
-//               applied before writing out the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds -ui and -uo as valid options for this program.  If the user specifies
+ * -uo and -ui, or just -uo and the program specifies -ui by setting
+ * _input_units, the indicated units conversion will be automatically applied
+ * before writing out the egg file.
+ */
 void EggToSomething::
 add_units_options() {
   add_option
@@ -108,13 +102,10 @@ add_units_options() {
      &EggToSomething::dispatch_units, NULL, &_output_units);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToSomething::apply_units_scale
-//       Access: Protected
-//  Description: Applies the scale indicated by the input and output
-//               units to the indicated egg file.  This is normally
-//               done automatically when the file is read in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the scale indicated by the input and output units to the indicated
+ * egg file.  This is normally done automatically when the file is read in.
+ */
 void EggToSomething::
 apply_units_scale(EggData *data) {
 
@@ -137,29 +128,22 @@ apply_units_scale(EggData *data) {
   _output_units = output_units;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToSomething::pre_process_egg_file
-//       Access: Protected, Virtual
-//  Description: Performs any processing of the egg file that is
-//               appropriate after reading it in.
-//
-//               Normally, you should not need to call this function
-//               directly; it is called automatically at startup.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs any processing of the egg file that is appropriate after reading it
+ * in.  Normally, you should not need to call this function directly; it is
+ * called automatically at startup.
+ */
 void EggToSomething::
 pre_process_egg_file() {
   apply_units_scale(_data);
   EggConverter::pre_process_egg_file();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToSomething::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggToSomething::
 handle_args(ProgramBase::Args &args) {
   if (!check_last_arg(args, 1)) {

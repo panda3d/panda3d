@@ -16,11 +16,11 @@
 extern "C" int main(int argc, char *argv[]);
 
 int
-main(int argc, char *argv[]) { 
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; 
+main(int argc, char *argv[]) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-  /* Call with the name of our application delegate class */ 
-  int retVal = UIApplicationMain(argc, argv, nil, @"PviewAppDelegate"); 
-  [pool release]; 
-  return retVal; 
-} 
+  /* Call with the name of our application delegate class */
+  int retVal = UIApplicationMain(argc, argv, nil, @"PviewAppDelegate");
+  [pool release];
+  return retVal;
+}

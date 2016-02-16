@@ -18,19 +18,17 @@
 #include "physicsObject.h"
 #include "pointerToArray.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysicsObjectCollection
-// Description : This is a set of zero or more PhysicsObjects.  It's handy
-//               for returning from functions that need to return
-//               multiple PhysicsObjects.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a set of zero or more PhysicsObjects.  It's handy for returning from
+ * functions that need to return multiple PhysicsObjects.
+ */
 class EXPCL_PANDAPHYSICS PhysicsObjectCollection {
 PUBLISHED:
   PhysicsObjectCollection();
   PhysicsObjectCollection(const PhysicsObjectCollection &copy);
   void operator = (const PhysicsObjectCollection &copy);
   INLINE ~PhysicsObjectCollection();
-  
+
   void add_physics_object(PT(PhysicsObject) physics_object);
   bool remove_physics_object(PT(PhysicsObject) physics_object);
   void add_physics_objects_from(const PhysicsObjectCollection &other);
@@ -65,5 +63,3 @@ INLINE ostream &operator << (ostream &out, const PhysicsObjectCollection &col) {
 #include "physicsObjectCollection.I"
 
 #endif
-
-

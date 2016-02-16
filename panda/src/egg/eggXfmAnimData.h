@@ -20,14 +20,12 @@
 #include "eggXfmSAnim.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggXfmAnimData
-// Description : Corresponding to an <Xfm$Anim> entry, this stores a
-//               two-dimensional table with up to nine columns, one
-//               for each component of a transformation.  This is an
-//               older syntax of egg anim table, not often used
-//               currently--it's replaced by EggXfmSAnim.
-////////////////////////////////////////////////////////////////////
+/**
+ * Corresponding to an <Xfm$Anim> entry, this stores a two-dimensional table
+ * with up to nine columns, one for each component of a transformation.  This is
+ * an older syntax of egg anim table, not often used currently--it's replaced by
+ * EggXfmSAnim.
+ */
 class EXPCL_PANDAEGG EggXfmAnimData : public EggAnimData {
 PUBLISHED:
   INLINE EggXfmAnimData(const string &name = "",
@@ -91,4 +89,3 @@ private:
 #include "eggXfmAnimData.I"
 
 #endif
-

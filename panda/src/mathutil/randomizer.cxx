@@ -15,4 +15,3 @@
 
 Mersenne Randomizer::_next_seed(0);
 bool Randomizer::_got_first_seed = false;
-

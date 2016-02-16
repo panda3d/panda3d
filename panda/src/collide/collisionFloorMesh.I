@@ -12,44 +12,35 @@
  */
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::Default Constructor
-//       Access: Protected
-//  Description: This is only for the convenience of CollisionPolygon.
-//               Normally, you should not attempt to create an
-//               uninitialized CollisionPlane.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is only for the convenience of CollisionPolygon.  Normally, you should
+ * not attempt to create an uninitialized CollisionPlane.
+ */
 INLINE CollisionFloorMesh::
 CollisionFloorMesh() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CollisionFloorMesh::
 CollisionFloorMesh(const CollisionFloorMesh &copy) :
   CollisionSolid(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::flush_level
-//       Access: Public, Static
-//  Description: Flushes the PStatCollectors used during traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Flushes the PStatCollectors used during traversal.
+ */
 INLINE void CollisionFloorMesh::
 flush_level() {
   _volume_pcollector.flush_level();
   _test_pcollector.flush_level();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionFloorMesh::add_vertex
-//       Access: Published
-//  Description: store away a vertex to index against
-////////////////////////////////////////////////////////////////////
+/**
+ * store away a vertex to index against
+ */
 INLINE void CollisionFloorMesh::
 add_vertex(const LPoint3 &vert) {
   _vertices.push_back(vert);

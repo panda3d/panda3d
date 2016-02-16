@@ -18,15 +18,11 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxMotorDesc
-// Description : Describes a joint motor. Some joints can be
-//               motorized, this allows them to apply a force to
-//               cause attached actors to move. Joints which can be
-//               motorized:
-//               - PhysxPulleyJoint
-//               - PhysxRevoluteJoint
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a joint motor.  Some joints can be motorized, this allows them to
+ * apply a force to cause attached actors to move.  Joints which can be
+ * motorized: - PhysxPulleyJoint - PhysxRevoluteJoint
+ */
 class EXPCL_PANDAPHYSX PhysxMotorDesc {
 
 PUBLISHED:

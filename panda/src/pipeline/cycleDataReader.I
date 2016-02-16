@@ -17,11 +17,9 @@
 // This is the implementation for full support of pipelining (as well
 // as the sanity-check only implementation).
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Constructor (full)
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const PipelineCycler<CycleDataType> &cycler,
@@ -32,11 +30,9 @@ CycleDataReader(const PipelineCycler<CycleDataType> &cycler,
   _pointer = _cycler->read_unlocked(_current_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Constructor (full)
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
@@ -46,11 +42,9 @@ CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Assignment (full)
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class CycleDataType>
 INLINE void CycleDataReader<CycleDataType>::
 operator = (const CycleDataReader<CycleDataType> &copy) {
@@ -60,58 +54,47 @@ operator = (const CycleDataReader<CycleDataType> &copy) {
   _pointer = copy._pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Destructor (full)
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 ~CycleDataReader() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::operator -> (full)
-//       Access: Public
-//  Description: This provides an indirect member access to the actual
-//               CycleData data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This provides an indirect member access to the actual CycleData data.
+ */
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataReader<CycleDataType>::
 operator -> () const {
   return _pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Typecast pointer (full)
-//       Access: Public
-//  Description: This allows the CycleDataReader to be passed to any
-//               function that expects a const CycleDataType pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This allows the CycleDataReader to be passed to any function that expects a
+ * const CycleDataType pointer.
+ */
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 operator const CycleDataType * () const {
   return _pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::p (full)
-//       Access: Public
-//  Description: This allows the CycleDataReader to be passed to any
-//               function that expects a const CycleDataType pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This allows the CycleDataReader to be passed to any function that expects a
+ * const CycleDataType pointer.
+ */
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataReader<CycleDataType>::
 p() const {
   return _pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::get_current_thread (full)
-//       Access: Public
-//  Description: Returns the Thread pointer of the currently-executing
-//               thread, as passed to the constructor of this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Thread pointer of the currently-executing thread, as passed to
+ * the constructor of this object.
+ */
 template<class CycleDataType>
 INLINE Thread *CycleDataReader<CycleDataType>::
 get_current_thread() const {
@@ -121,22 +104,18 @@ get_current_thread() const {
 #else  // !DO_PIPELINING
 // This is the trivial, do-nothing implementation.
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Constructor (trivial)
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const PipelineCycler<CycleDataType> &cycler, Thread *) {
   _pointer = cycler.cheat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Constructor (trivial)
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
@@ -144,69 +123,56 @@ CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Copy Assignment (trivial)
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class CycleDataType>
 INLINE void CycleDataReader<CycleDataType>::
 operator = (const CycleDataReader<CycleDataType> &copy) {
   _pointer = copy._pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Destructor (trivial)
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 ~CycleDataReader() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::operator -> (trivial)
-//       Access: Public
-//  Description: This provides an indirect member access to the actual
-//               CycleData data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This provides an indirect member access to the actual CycleData data.
+ */
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataReader<CycleDataType>::
 operator -> () const {
   return _pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::Typecast pointer (trivial)
-//       Access: Public
-//  Description: This allows the CycleDataReader to be passed to any
-//               function that expects a const CycleDataType pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This allows the CycleDataReader to be passed to any function that expects a
+ * const CycleDataType pointer.
+ */
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 operator const CycleDataType * () const {
   return _pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::p (trivial)
-//       Access: Public
-//  Description: This allows the CycleDataReader to be passed to any
-//               function that expects a const CycleDataType pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This allows the CycleDataReader to be passed to any function that expects a
+ * const CycleDataType pointer.
+ */
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataReader<CycleDataType>::
 p() const {
   return _pointer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CycleDataReader::get_current_thread (trivial)
-//       Access: Public
-//  Description: Returns the Thread pointer of the currently-executing
-//               thread, as passed to the constructor of this object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Thread pointer of the currently-executing thread, as passed to
+ * the constructor of this object.
+ */
 template<class CycleDataType>
 INLINE Thread *CycleDataReader<CycleDataType>::
 get_current_thread() const {

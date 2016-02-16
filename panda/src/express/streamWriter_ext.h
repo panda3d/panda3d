@@ -22,12 +22,10 @@
 #include "streamWriter.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<StreamWriter>
-// Description : This class defines the extension methods for
-//               StreamWriter, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for StreamWriter, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<StreamWriter> : public ExtensionBase<StreamWriter> {
 public:

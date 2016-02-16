@@ -16,11 +16,9 @@
 TypeHandle FadeLODNodeData::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNodeData::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FadeLODNodeData::
 output(ostream &out) const {
   AuxSceneData::output(out);

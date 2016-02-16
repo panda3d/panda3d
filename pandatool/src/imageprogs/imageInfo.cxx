@@ -15,11 +15,9 @@
 #include "pnmImageHeader.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageInfo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ImageInfo::
 ImageInfo() {
   set_program_brief("report the size of image files");
@@ -35,11 +33,9 @@ ImageInfo() {
      &ImageInfo::dispatch_none, &_report_power_2, NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageInfo::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ImageInfo::
 run() {
   Args::const_iterator ai;
@@ -55,7 +51,7 @@ run() {
       }
     } else {
       // Successfully read the image header.
-      if (!_report_power_2 || 
+      if (!_report_power_2 ||
           !is_power_2(header.get_x_size()) ||
           !is_power_2(header.get_y_size())) {
         nout << filename << ": " << header.get_x_size() << " x "
@@ -66,14 +62,11 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageInfo::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool ImageInfo::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {
@@ -85,12 +78,9 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageInfo::is_power_2
-//       Access: Private
-//  Description: Returns true if the indicated value is a power of 2,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated value is a power of 2, false otherwise.
+ */
 bool ImageInfo::
 is_power_2(int value) const {
   return (value & (value - 1)) == 0;

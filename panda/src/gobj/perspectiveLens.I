@@ -11,42 +11,33 @@
  * @date 1999-02-18
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PerspectiveLens::
 PerspectiveLens() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PerspectiveLens::
 PerspectiveLens(PN_stdfloat hfov, PN_stdfloat vfov) {
   Lens::CDWriter lens_cdata(Lens::_cycler, true);
   lens_cdata->_fov.set(hfov, vfov);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PerspectiveLens::
 PerspectiveLens(const PerspectiveLens &copy) : Lens(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PerspectiveLens::
 operator = (const PerspectiveLens &copy) {
   Lens::operator = (copy);
 }
-

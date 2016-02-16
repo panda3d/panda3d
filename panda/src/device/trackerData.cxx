@@ -13,11 +13,9 @@
 
 #include "trackerData.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrackerData::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TrackerData::
 operator = (const TrackerData &copy) {
   _flags = copy._flags;

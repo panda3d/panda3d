@@ -19,10 +19,9 @@
 #include "physxObject.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxSoftBodyMesh
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxSoftBodyMesh : public PhysxObject {
 
 PUBLISHED:
@@ -52,7 +51,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxSoftBodyMesh", 
+    register_type(_type_handle, "PhysxSoftBodyMesh",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

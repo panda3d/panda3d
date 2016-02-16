@@ -17,12 +17,10 @@
 #include "pandatoolbase.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : RangeDescription
-// Description : This describes a sparse range of Unicode character
-//               codes for conversion that may be specified on the
-//               command line.
-////////////////////////////////////////////////////////////////////
+/**
+ * This describes a sparse range of Unicode character codes for conversion that
+ * may be specified on the command line.
+ */
 class RangeDescription {
 public:
   RangeDescription();
@@ -60,4 +58,3 @@ INLINE ostream &operator << (ostream &out, const RangeDescription &range);
 #include "rangeDescription.I"
 
 #endif
-

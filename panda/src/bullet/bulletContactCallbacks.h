@@ -31,10 +31,9 @@ struct UserPersitentData {
   PT(PandaNode) node1;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: contact_added_callback
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 static bool
 contact_added_callback(btManifoldPoint &cp,
 #if BT_BULLET_VERSION >= 281
@@ -94,10 +93,9 @@ contact_added_callback(btManifoldPoint &cp,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: contact_processed_callback
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 static bool
 contact_processed_callback(btManifoldPoint &cp,
                            void *body0,
@@ -120,10 +118,9 @@ contact_processed_callback(btManifoldPoint &cp,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: contact_destroyed_callback
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 static bool
 contact_destroyed_callback(void *userPersistentData) {
 

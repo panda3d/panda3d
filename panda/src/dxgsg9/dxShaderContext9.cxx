@@ -30,11 +30,9 @@
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::Constructor
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 CLP(ShaderContext)::
 CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _vertex_element_array = NULL;
@@ -79,11 +77,9 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::Destructor
-//       Access: Public
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
+/**
+ * xyz
+ */
 CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
   release_resources();
@@ -147,12 +143,10 @@ CLP(ShaderContext)::
 //     save_file (size, (void *) pixel_program, file_path);
 //   }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::release_resources
-//       Access: Public
-//  Description: Should deallocate all system resources (such as
-//               vertex program handles or Cg contexts).
-////////////////////////////////////////////////////////////////////
+/**
+ * Should deallocate all system resources (such as vertex program handles or Cg
+ * contexts).
+ */
 void CLP(ShaderContext)::
 release_resources() {
 #ifdef HAVE_CG
@@ -168,13 +162,10 @@ release_resources() {
   // has to manage _last_gsg, so we can get at the device.  Sigh.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::bind
-//       Access: Public
-//  Description: This function is to be called to enable a new
-//               shader.  It also initializes all of the shader's
-//               input parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is to be called to enable a new shader.  It also initializes
+ * all of the shader's input parameters.
+ */
 bool CLP(ShaderContext)::
 bind(GSG *gsg) {
 
@@ -210,11 +201,9 @@ bind(GSG *gsg) {
   return bind_state;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::unbind
-//       Access: Public
-//  Description: This function disables a currently-bound shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function disables a currently-bound shader.
+ */
 void CLP(ShaderContext)::
 unbind(GSG *gsg) {
 
@@ -230,21 +219,14 @@ unbind(GSG *gsg) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::issue_parameters
-//       Access: Public
-//  Description: This function gets called whenever the RenderState
-//               or TransformState has changed, but the Shader
-//               itself has not changed.  It loads new values into the
-//               shader's parameters.
-//
-//               If "altered" is false, that means you promise that
-//               the parameters for this shader context have already
-//               been issued once, and that since the last time the
-//               parameters were issued, no part of the render
-//               state has changed except the external and internal
-//               transforms.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function gets called whenever the RenderState or TransformState has
+ * changed, but the Shader itself has not changed.  It loads new values into the
+ * shader's parameters.  If "altered" is false, that means you promise that the
+ * parameters for this shader context have already been issued once, and that
+ * since the last time the parameters were issued, no part of the render state
+ * has changed except the external and internal transforms.
+ */
 
 #if DEBUG_SHADER
 PN_stdfloat *global_data = 0;
@@ -393,11 +375,9 @@ issue_parameters(GSG *gsg, int altered) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::disable_shader_vertex_arrays
-//       Access: Public
-//  Description: Disable all the vertex arrays used by this shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable all the vertex arrays used by this shader.
+ */
 void CLP(ShaderContext)::
 disable_shader_vertex_arrays(GSG *gsg) {
   LPDIRECT3DDEVICE9 device = gsg->_screen->_d3d_device;
@@ -409,17 +389,13 @@ disable_shader_vertex_arrays(GSG *gsg) {
   _num_bound_streams = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::update_shader_vertex_arrays
-//       Access: Public
-//  Description: Disables all vertex arrays used by the previous
-//               shader, then enables all the vertex arrays needed
-//               by this shader.  Extracts the relevant vertex array
-//               data from the gsg.
-//               The current implementation is inefficient, because
-//               it may unnecessarily disable arrays then immediately
-//               reenable them.  We may optimize this someday.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables all vertex arrays used by the previous shader, then enables all the
+ * vertex arrays needed by this shader.  Extracts the relevant vertex array data
+ * from the gsg.  The current implementation is inefficient, because it may
+ * unnecessarily disable arrays then immediately reenable them.  We may optimize
+ * this someday.
+ */
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
   if (prev) prev->disable_shader_vertex_arrays(gsg);
@@ -668,11 +644,9 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::disable_shader_texture_bindings
-//       Access: Public
-//  Description: Disable all the texture bindings used by this shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable all the texture bindings used by this shader.
+ */
 void CLP(ShaderContext)::
 disable_shader_texture_bindings(GSG *gsg)
 {
@@ -700,17 +674,13 @@ disable_shader_texture_bindings(GSG *gsg)
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXShaderContext9::update_shader_texture_bindings
-//       Access: Public
-//  Description: Disables all texture bindings used by the previous
-//               shader, then enables all the texture bindings needed
-//               by this shader.  Extracts the relevant vertex array
-//               data from the gsg.
-//               The current implementation is inefficient, because
-//               it may unnecessarily disable textures then immediately
-//               reenable them.  We may optimize this someday.
-////////////////////////////////////////////////////////////////////
+/**
+ * Disables all texture bindings used by the previous shader, then enables all
+ * the texture bindings needed by this shader.  Extracts the relevant vertex
+ * array data from the gsg.  The current implementation is inefficient, because
+ * it may unnecessarily disable textures then immediately reenable them.  We may
+ * optimize this someday.
+ */
 void CLP(ShaderContext)::
 update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 {

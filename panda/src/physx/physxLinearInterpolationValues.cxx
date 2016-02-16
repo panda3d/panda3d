@@ -13,22 +13,18 @@
 
 #include "physxLinearInterpolationValues.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::clear
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxLinearInterpolationValues::
 clear() {
 
   _map.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::insert
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxLinearInterpolationValues::
 insert(float index, float value) {
 
@@ -42,33 +38,27 @@ insert(float index, float value) {
   _map[index] = value;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::is_valid
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool PhysxLinearInterpolationValues::
 is_valid(float number) const {
 
   return (number >= _min) && (number <= _max);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::get_size
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 unsigned int PhysxLinearInterpolationValues::
 get_size() const {
 
   return _map.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::get_value
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxLinearInterpolationValues::
 get_value(float number) const {
 
@@ -90,18 +80,16 @@ get_value(float number) const {
 
   lower = upper;
   lower--;
-    
+
   float w1 = number - lower->first;
   float w2 = upper->first - number;
 
   return ((w2 * lower->second) + (w1 * upper->second)) / (w1 + w2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::get_value_at_index
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 float PhysxLinearInterpolationValues::
 get_value_at_index(int index) const {
 
@@ -114,11 +102,9 @@ get_value_at_index(int index) const {
   return it->second;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxLinearInterpolationValues::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxLinearInterpolationValues::
 output(ostream &out) const {
 
@@ -128,4 +114,3 @@ output(ostream &out) const {
     cout << it->first << " -> " << it->second << "\n";
   }
 }
-

@@ -20,13 +20,11 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ShowBoundsEffect
-// Description : Applied to a GeomNode to cause a visible bounding
-//               volume to be drawn for this node.  This is generally
-//               used only during development to help identify
-//               bounding volume issues.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applied to a GeomNode to cause a visible bounding volume to be drawn for this
+ * node.  This is generally used only during development to help identify
+ * bounding volume issues.
+ */
 class EXPCL_PANDA_PGRAPH ShowBoundsEffect : public RenderEffect {
 private:
   INLINE ShowBoundsEffect();
@@ -50,7 +48,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -72,4 +70,3 @@ private:
 #include "showBoundsEffect.I"
 
 #endif
-

@@ -18,17 +18,13 @@
 
 #include <map>
 
-////////////////////////////////////////////////////////////////////
-//       Class : IndexRemapper
-// Description : This class manages a mapping of integers to integers.
-//               It's used in this package to resequence some or all
-//               of the index numbers in the database to a different
-//               sequence.
-//
-//               This class is just a wrapper around STL map.  The
-//               only reason it exists is because Microsoft can't
-//               export STL map outside of the DLL.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class manages a mapping of integers to integers.  It's used in this
+ * package to resequence some or all of the index numbers in the database to a
+ * different sequence.  This class is just a wrapper around STL map.  The only
+ * reason it exists is because Microsoft can't export STL map outside of the
+ * DLL.
+ */
 class EXPCL_INTERROGATEDB IndexRemapper {
 public:
   IndexRemapper();

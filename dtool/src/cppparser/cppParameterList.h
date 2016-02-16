@@ -23,11 +23,9 @@
 class CPPInstance;
 class CPPScope;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPParameterList
-// Description : A list of formal parameters for a function
-//               declaration.
-////////////////////////////////////////////////////////////////////
+/**
+ * A list of formal parameters for a function declaration.
+ */
 class CPPParameterList {
 public:
   CPPParameterList();
@@ -66,5 +64,3 @@ operator << (ostream &out, const CPPParameterList &plist) {
 }
 
 #endif
-
-

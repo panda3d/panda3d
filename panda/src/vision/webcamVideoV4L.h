@@ -22,10 +22,9 @@
 
 class WebcamVideoCursorV4L;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WebcamVideoV4L
-// Description : The Video4Linux implementation of webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * The Video4Linux implementation of webcams.
+ */
 class WebcamVideoV4L : public WebcamVideo {
 private:
   virtual PT(MovieVideoCursor) open();

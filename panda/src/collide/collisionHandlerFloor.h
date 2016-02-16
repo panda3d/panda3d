@@ -18,15 +18,12 @@
 
 #include "collisionHandlerPhysical.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandlerFloor
-// Description : A specialized kind of CollisionHandler that sets the
-//               Z height of the collider to a fixed linear offset
-//               from the highest detected collision point each frame.
-//               It's intended to implement walking around on a floor
-//               of varying height by casting a ray down from the
-//               avatar's head.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialized kind of CollisionHandler that sets the Z height of the collider
+ * to a fixed linear offset from the highest detected collision point each
+ * frame.  It's intended to implement walking around on a floor of varying
+ * height by casting a ray down from the avatar's head.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandlerFloor : public CollisionHandlerPhysical {
 PUBLISHED:
   CollisionHandlerFloor();
@@ -78,6 +75,3 @@ private:
 #include "collisionHandlerFloor.I"
 
 #endif
-
-
-

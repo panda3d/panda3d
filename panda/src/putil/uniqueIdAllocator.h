@@ -17,28 +17,19 @@
 #include "pandabase.h"
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : UniqueIdAllocator
-// Description : Manage a set of ID values from min to max inclusive.
-//               The ID numbers that are freed will be allocated
-//               (reused) in the same order.  I.e. the oldest ID numbers
-//               will be allocated.
-//
-//               This implementation will use 4 bytes per id number,
-//               plus a few bytes of management data.  e.g. 10,000
-//               ID numbers will use 40KB.
-//
-//               Also be advised that ID -1 and -2 are used internally by
-//               the allocator.  If allocate returns IndexEnd (-1) then
-//               the allocator is out of free ID numbers.
-//
-//               There are other implementations that can better leverage
-//               runs of used or unused IDs or use bit arrays for the
-//               IDs.  But, it takes extra work to track the age of
-//               freed IDs, which is required for what we wanted.  If
-//               you would like to kick around other implementation
-//               ideas, please contact Schuyler.
-////////////////////////////////////////////////////////////////////
+/**
+ * Manage a set of ID values from min to max inclusive.  The ID numbers that are
+ * freed will be allocated (reused) in the same order.  I.e.  the oldest ID
+ * numbers will be allocated.  This implementation will use 4 bytes per id
+ * number, plus a few bytes of management data.  e.g.  10,000 ID numbers will
+ * use 40KB.  Also be advised that ID -1 and -2 are used internally by the
+ * allocator.  If allocate returns IndexEnd (-1) then the allocator is out of
+ * free ID numbers.  There are other implementations that can better leverage
+ * runs of used or unused IDs or use bit arrays for the IDs.  But, it takes
+ * extra work to track the age of freed IDs, which is required for what we
+ * wanted.  If you would like to kick around other implementation ideas, please
+ * contact Schuyler.
+ */
 class EXPCL_PANDA_PUTIL UniqueIdAllocator {
 PUBLISHED:
   UniqueIdAllocator(PN_uint32 min=0, PN_uint32 max=20);

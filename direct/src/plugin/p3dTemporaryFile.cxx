@@ -14,22 +14,18 @@
 #include "p3dTemporaryFile.h"
 #include "p3dInstanceManager.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DTemporaryFile::Constructor
-//       Access: Public
-//  Description: Constructs a new, unique temporary filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new, unique temporary filename.
+ */
 P3DTemporaryFile::
 P3DTemporaryFile(const string &extension) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _filename = inst_mgr->make_temp_filename(extension);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DTemporaryFile::Destructor
-//       Access: Public
-//  Description: Deletes the temporary file, if it exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes the temporary file, if it exists.
+ */
 P3DTemporaryFile::
 ~P3DTemporaryFile() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();

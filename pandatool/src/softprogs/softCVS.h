@@ -27,12 +27,10 @@
 
 class Multifile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : SoftCVS
-// Description : This program prepares a SoftImage database for CVS by
-//               renaming everything to version 1-0, and adding new
-//               files to CVS.
-////////////////////////////////////////////////////////////////////
+/**
+ * This program prepares a SoftImage database for CVS by renaming everything to
+ * version 1-0, and adding new files to CVS.
+ */
 class SoftCVS : public ProgramBase {
 public:
   SoftCVS();

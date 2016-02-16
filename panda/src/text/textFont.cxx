@@ -23,11 +23,9 @@
 
 TypeHandle TextFont::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextFont::
 TextFont() {
   _is_valid = false;
@@ -36,11 +34,9 @@ TextFont() {
   _total_poly_margin = 0.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextFont::
 TextFont(const TextFont &copy) :
   Namable(copy),
@@ -51,41 +47,31 @@ TextFont(const TextFont &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TextFont::
 ~TextFont() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void TextFont::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "TextFont " << get_name() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::get_invalid_glyph
-//       Access: Public
-//  Description: Returns a special glyph that can be used as a
-//               placeholder for any character not in the font.  Note
-//               that it is not guaranteed that a font will return
-//               this particular glyph for a missing character (it may
-//               return a glyph of its own devising instead).  
-//
-//               Also note that even if a particular accented letter
-//               is missing from the font, Panda may still be able to
-//               render a suitable replacement by composing different
-//               glyphs together to simulate accent marks; this
-//               happens automatically behind the scenes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a special glyph that can be used as a placeholder for any character
+ * not in the font.  Note that it is not guaranteed that a font will return this
+ * particular glyph for a missing character (it may return a glyph of its own
+ * devising instead).  Also note that even if a particular accented letter is
+ * missing from the font, Panda may still be able to render a suitable
+ * replacement by composing different glyphs together to simulate accent marks;
+ * this happens automatically behind the scenes.
+ */
 TextGlyph *TextFont::
 get_invalid_glyph() {
   if (_invalid_glyph == (TextGlyph *)NULL) {
@@ -94,13 +80,10 @@ get_invalid_glyph() {
   return _invalid_glyph;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::string_render_mode
-//       Access: Public
-//  Description: Returns the RenderMode value associated with the given
-//               string representation, or RM_invalid if the string
-//               does not match any known RenderMode value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the RenderMode value associated with the given string representation,
+ * or RM_invalid if the string does not match any known RenderMode value.
+ */
 TextFont::RenderMode TextFont::
 string_render_mode(const string &string) {
   if (cmp_nocase_uh(string, "texture") == 0) {
@@ -120,16 +103,13 @@ string_render_mode(const string &string) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::make_invalid_glyph
-//       Access: Private
-//  Description: Constructs the special glyph used to represent a
-//               character not in the font.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs the special glyph used to represent a character not in the font.
+ */
 void TextFont::
 make_invalid_glyph() {
   CPT(GeomVertexFormat) vformat = GeomVertexFormat::get_v3();
-  PT(GeomVertexData) vdata = 
+  PT(GeomVertexData) vdata =
     new GeomVertexData("invalid_glyph", vformat, GeomEnums::UH_static);
 
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
@@ -150,10 +130,9 @@ make_invalid_glyph() {
                                  _line_height * 0.7f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::RenderMode output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, TextFont::RenderMode rm) {
   switch (rm) {
@@ -177,10 +156,9 @@ operator << (ostream &out, TextFont::RenderMode rm) {
   return out << "(**invalid TextFont::RenderMode(" << (int)rm << ")**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextFont::RenderMode input operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 istream &
 operator >> (istream &in, TextFont::RenderMode &rm) {
   string word;

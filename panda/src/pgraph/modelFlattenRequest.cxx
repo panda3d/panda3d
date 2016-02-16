@@ -16,12 +16,9 @@
 
 TypeHandle ModelFlattenRequest::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelFlattenRequest::do_task
-//       Access: Protected, Virtual
-//  Description: Performs the task: that is, copies and flattens the
-//               model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the task: that is, copies and flattens the model.
+ */
 AsyncTask::DoneStatus ModelFlattenRequest::
 do_task() {
   // We make another instance of the original node, so we can safely

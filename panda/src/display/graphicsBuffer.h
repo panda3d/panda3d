@@ -20,16 +20,14 @@
 #include "texture.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsBuffer
-// Description : An offscreen buffer for rendering into.  This is
-//               similar in function to a GraphicsWindow, except that
-//               the output is not visible to the user.
-////////////////////////////////////////////////////////////////////
+/**
+ * An offscreen buffer for rendering into.  This is similar in function to a
+ * GraphicsWindow, except that the output is not visible to the user.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsBuffer : public GraphicsOutput {
 protected:
   GraphicsBuffer(GraphicsEngine *engine,
-                 GraphicsPipe *pipe, 
+                 GraphicsPipe *pipe,
                  const string &name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop,
@@ -62,7 +60,7 @@ protected:
     OR_close,
   };
   OpenRequest _open_request;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -15,11 +15,9 @@
 #include "xFile.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileTrans::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 XFileTrans::
 XFileTrans() :
   WithOutputFile(true, false, true)
@@ -47,11 +45,9 @@ XFileTrans() :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileTrans::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void XFileTrans::
 run() {
   nout << "Reading " << _input_filename << "\n";
@@ -69,11 +65,9 @@ run() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileTrans::handle_args
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool XFileTrans::
 handle_args(ProgramBase::Args &args) {
   if (!check_last_arg(args, 1)) {

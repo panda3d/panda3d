@@ -25,11 +25,9 @@
 #include "graphicsStateGuardian.h"
 #include "displayRegion.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FisheyeMaker::reset
-//       Access: Public
-//  Description: Resets all the parameters to their initial defaults.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets all the parameters to their initial defaults.
+ */
 void FisheyeMaker::
 reset() {
   set_fov(360.0);
@@ -39,13 +37,10 @@ reset() {
   set_reflection(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FisheyeMaker::set_fov
-//       Access: Public
-//  Description: Specifies the field of view of the fisheye
-//               projection.  A sphere map will have a 360-degree
-//               field of view (and this is the default).
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the field of view of the fisheye projection.  A sphere map will
+ * have a 360-degree field of view (and this is the default).
+ */
 void FisheyeMaker::
 set_fov(PN_stdfloat fov) {
   _fov = fov;
@@ -53,12 +48,9 @@ set_fov(PN_stdfloat fov) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FisheyeMaker::generate
-//       Access: Public
-//  Description: Generates a GeomNode that renders the specified
-//               geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a GeomNode that renders the specified geometry.
+ */
 PT(PandaNode) FisheyeMaker::
 generate() {
   // Get some system-imposed limits.
@@ -92,12 +84,12 @@ generate() {
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format
     (new GeomVertexArrayFormat
-     (InternalName::get_vertex(), 3, 
+     (InternalName::get_vertex(), 3,
       Geom::NT_stdfloat, Geom::C_point,
       InternalName::get_texcoord(), 3,
       Geom::NT_stdfloat, Geom::C_texcoord));
 
-  PT(GeomVertexData) vdata = 
+  PT(GeomVertexData) vdata =
     new GeomVertexData(get_name(), format, Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
@@ -116,7 +108,7 @@ generate() {
   // but that seems more sensible than making a single isolated
   // triangle.
   for (int vi = 0; vi < last_ring_size; ++vi) {
-    add_vertex(vertex, texcoord, last_r, 
+    add_vertex(vertex, texcoord, last_r,
                two_pi * (PN_stdfloat)vi / (PN_stdfloat)last_ring_size);
     tristrips->add_vertex(vi);
   }
@@ -128,11 +120,11 @@ generate() {
   // Now make all of the rings.
   for (int ri = 1; ri < num_rings; ++ri) {
     PN_stdfloat r = (PN_stdfloat)(ri + 1) / (PN_stdfloat)num_rings;
-    
+
     // The circumference of a ring of radius r is 2*pi*r.
     PN_stdfloat c = two_pi * r;
     int ring_size = (int)floor(c * vertices_per_unit + 0.5f);
-    
+
     // Each ring must either have exactly the same number of vertices
     // as the previous ring, or exactly double.
     if (ring_size < last_ring_size * 2) {
@@ -166,7 +158,7 @@ generate() {
       // Now we need to re-make the previous ring in this VertexData.
       last_ring_vertex = 0;
       for (int vi = 0; vi < last_ring_size; ++vi) {
-        add_vertex(vertex, texcoord, last_r, 
+        add_vertex(vertex, texcoord, last_r,
                    two_pi * (PN_stdfloat)vi / (PN_stdfloat)last_ring_size);
       }
     }
@@ -174,7 +166,7 @@ generate() {
     // Now make this ring.
     int ring_vertex = vdata->get_num_rows();
     for (int vi = 0; vi < ring_size; ++vi) {
-      add_vertex(vertex, texcoord, r, 
+      add_vertex(vertex, texcoord, r,
                  two_pi * (PN_stdfloat)vi / (PN_stdfloat)ring_size);
     }
 
@@ -271,11 +263,11 @@ generate() {
       geom = new Geom(vdata);
       tristrips = new GeomTristrips(Geom::UH_static);
       tristrips->set_shade_model(Geom::SM_uniform);
-      
+
       // Now we need to re-make the previous ring in this VertexData.
       last_ring_vertex = 0;
       for (int vi = 0; vi < last_ring_size; ++vi) {
-        add_vertex(vertex, texcoord, last_r, 
+        add_vertex(vertex, texcoord, last_r,
                    two_pi * (PN_stdfloat)vi / (PN_stdfloat)last_ring_size);
       }
     }
@@ -302,7 +294,7 @@ generate() {
         tristrips->close_primitive();
         vi += piece_size;
       }
-      
+
     } else {
       // We can fit the entire ring.
       if (tristrips->get_num_vertices() > 0 &&
@@ -335,20 +327,17 @@ generate() {
   return geom_node.p();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FisheyeMaker::add_vertex
-//       Access: Private
-//  Description: Given a point defined by a radius and an angle in
-//               radians, compute the 2-d coordinates for the vertex
-//               as well as the 3-d texture coordinates, and add both
-//               to the VertexData.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a point defined by a radius and an angle in radians, compute the 2-d
+ * coordinates for the vertex as well as the 3-d texture coordinates, and add
+ * both to the VertexData.
+ */
 void FisheyeMaker::
 add_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
            PN_stdfloat r, PN_stdfloat a) {
   PN_stdfloat sina, cosa;
   csincos(a, &sina, &cosa);
-  
+
   // The 2-d point is just a point r units from the center of the
   // circle.
   LPoint3 point(r * cosa, 0.0f, r * sina);
@@ -369,24 +358,19 @@ add_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
     texcoord.add_data3(tc);
   }
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: FisheyeMaker::add_square_vertex
-//       Access: Private
-//  Description: Similar to add_vertex(), but it draws the vertex all
-//               the way out to the edge of the square we are
-//               inscribed within, and the texture coordinate is
-//               always the back pole.
-//
-//               This is just for the purpose of drawing the
-//               inscribing square.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Similar to add_vertex(), but it draws the vertex all the way out to the edge
+ * of the square we are inscribed within, and the texture coordinate is always
+ * the back pole.  This is just for the purpose of drawing the inscribing
+ * square.
+ */
 void FisheyeMaker::
 add_square_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
                   PN_stdfloat a) {
   PN_stdfloat sina, cosa;
   csincos(a, &sina, &cosa);
-  
+
   // Extend the 2-d point to the edge of the square of the indicated
   // size.
   if (cabs(sina) > cabs(cosa)) {
@@ -404,4 +388,3 @@ add_square_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
 
   texcoord.add_data3(0, _reflect, 0);
 }
-  

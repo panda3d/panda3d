@@ -17,12 +17,10 @@
 #include "pandabase.h"
 #include "thread.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ExternalThread
-// Description : The special "external thread" class.  There is one
-//               instance of these in the world, and it is returned by
-//               Thread::get_external_thread().
-////////////////////////////////////////////////////////////////////
+/**
+ * The special "external thread" class.  There is one instance of these in the
+ * world, and it is returned by Thread::get_external_thread().
+ */
 class EXPCL_PANDA_PIPELINE ExternalThread : public Thread {
 private:
   ExternalThread();

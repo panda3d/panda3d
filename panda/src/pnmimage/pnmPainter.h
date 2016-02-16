@@ -19,17 +19,13 @@
 
 class PNMImage;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMPainter
-// Description : This class provides a number of convenient methods
-//               for painting drawings directly into a PNMImage.
-//
-//               It stores a pointer to the PNMImage you pass it, but
-//               it does not take ownership of the object; you are
-//               responsible for ensuring that the PNMImage does not
-//               destruct during the lifetime of the PNMPainter
-//               object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class provides a number of convenient methods for painting drawings
+ * directly into a PNMImage.  It stores a pointer to the PNMImage you pass it,
+ * but it does not take ownership of the object; you are responsible for
+ * ensuring that the PNMImage does not destruct during the lifetime of the
+ * PNMPainter object.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMPainter {
 PUBLISHED:
   PNMPainter(PNMImage &image, int xo = 0, int yo = 0);

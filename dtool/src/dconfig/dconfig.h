@@ -24,15 +24,12 @@
 #include "configVariableList.h"
 #include "configFlags.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DConfig
-// Description : This class emulates the old dconfig-style interface
-//               to our Panda config system.  It exists only to
-//               provide backward-compatible support, and it is used
-//               primarily by Python code.  For modern code, use the
-//               new ConfigVariable* interface instead of this
-//               deprecated interface.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class emulates the old dconfig-style interface to our Panda config
+ * system.  It exists only to provide backward-compatible support, and it is
+ * used primarily by Python code.  For modern code, use the new ConfigVariable*
+ * interface instead of this deprecated interface.
+ */
 class EXPCL_DTOOLCONFIG DConfig {
 PUBLISHED:
   static INLINE bool GetBool(const string &sym, bool def = false);

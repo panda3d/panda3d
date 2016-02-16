@@ -20,10 +20,9 @@
 
 #include "datagram.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltUnsupportedRecord
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class FltUnsupportedRecord : public FltRecord {
 public:
   FltUnsupportedRecord(FltHeader *header);
@@ -59,5 +58,3 @@ private:
 };
 
 #endif
-
-

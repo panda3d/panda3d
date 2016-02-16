@@ -21,13 +21,11 @@
 
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BlockerSimple
-// Description : This is a base class for MutexSimpleImpl and
-//               ConditionVarSimpleImpl.  It represents a
-//               synchronization primitive that one or more threads
-//               might be blocked on.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for MutexSimpleImpl and ConditionVarSimpleImpl.  It
+ * represents a synchronization primitive that one or more threads might be
+ * blocked on.
+ */
 class EXPCL_PANDA_PIPELINE BlockerSimple {
 protected:
   INLINE BlockerSimple();

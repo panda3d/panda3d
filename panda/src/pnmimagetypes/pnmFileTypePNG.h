@@ -25,10 +25,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypePNG
-// Description : For reading and writing PNG files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing PNG files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypePNG : public PNMFileType {
 public:
   PNMFileTypePNG();
@@ -56,7 +55,7 @@ public:
 
   private:
     void free_png();
-    static void png_read_data(png_structp png_ptr, png_bytep data, 
+    static void png_read_data(png_structp png_ptr, png_bytep data,
                               png_size_t length);
 
     static void png_error(png_structp png_ptr, png_const_charp error_msg);
@@ -81,7 +80,7 @@ public:
   private:
     void free_png();
     static int make_png_bit_depth(int bit_depth);
-    static void png_write_data(png_structp png_ptr, png_bytep data, 
+    static void png_write_data(png_structp png_ptr, png_bytep data,
                                png_size_t length);
     static void png_flush_data(png_structp png_ptr);
 

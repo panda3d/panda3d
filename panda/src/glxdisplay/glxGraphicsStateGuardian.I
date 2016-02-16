@@ -11,15 +11,10 @@
  * @date 2003-01-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::get_fb_properties
-//       Access: Private
-//  Description: Gets the FrameBufferProperties for all windows and
-//               buffers that use this GSG.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the FrameBufferProperties for all windows and buffers that use this GSG.
+ */
 INLINE const FrameBufferProperties &glxGraphicsStateGuardian::
 get_fb_properties() const {
   return _fbprops;
 }
-
-

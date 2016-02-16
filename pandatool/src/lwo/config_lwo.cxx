@@ -58,14 +58,12 @@ ConfigureFn(config_lwo) {
   init_liblwo();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_liblwo
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_liblwo() {
   static bool initialized = false;
@@ -112,4 +110,3 @@ init_liblwo() {
   LwoSurfaceSmoothingAngle::init_type();
   LwoVertexMap::init_type();
 }
-

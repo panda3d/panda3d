@@ -15,62 +15,49 @@
 
 TypeHandle AngularForce::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularForce
-//       Access: Protected
-//  Description: constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * constructor
+ */
 AngularForce::
 AngularForce() :
   BaseForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AngularForce
-//       Access: Protected
-//  Description: copy constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * copy constructor
+ */
 AngularForce::
 AngularForce(const AngularForce &copy) :
   BaseForce(copy) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~AngularForce
-//       Access: Public, Virtual
-//  Description: destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * destructor
+ */
 AngularForce::
 ~AngularForce() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_quat
-//       Access: Public
-//  Description: access query
-////////////////////////////////////////////////////////////////////
+/**
+ * access query
+ */
 LRotation AngularForce::
 get_quat(const PhysicsObject *po) {
   LRotation v = get_child_quat(po);
   return v;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_linear
-//       Access: Public
-//  Description: access query
-////////////////////////////////////////////////////////////////////
+/**
+ * access query
+ */
 bool AngularForce::
 is_linear() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularForce::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -78,12 +65,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void AngularForce::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[

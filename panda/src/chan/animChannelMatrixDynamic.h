@@ -21,18 +21,13 @@
 #include "pandaNode.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannelMatrixDynamic
-// Description : An animation channel that accepts a matrix each frame
-//               from some dynamic input provided by code.
-//
-//               This object operates in two modes: in explicit mode,
-//               the programmer should call set_value() each frame to
-//               indicate the new value; in implicit mode, the
-//               programmer should call set_value_node() to indicate
-//               the node whose transform will be copied to the joint
-//               each frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * An animation channel that accepts a matrix each frame from some dynamic input
+ * provided by code.  This object operates in two modes: in explicit mode, the
+ * programmer should call set_value() each frame to indicate the new value; in
+ * implicit mode, the programmer should call set_value_node() to indicate the
+ * node whose transform will be copied to the joint each frame.
+ */
 class EXPCL_PANDA_CHAN AnimChannelMatrixDynamic : public AnimChannelMatrix {
 protected:
   AnimChannelMatrixDynamic();
@@ -41,7 +36,7 @@ protected:
 public:
   AnimChannelMatrixDynamic(const string &name);
 
-  virtual bool has_changed(int last_frame, double last_frac, 
+  virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, LMatrix4 &mat);
 

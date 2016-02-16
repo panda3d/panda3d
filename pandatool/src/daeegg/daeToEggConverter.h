@@ -37,11 +37,10 @@
 #include "daeCharacter.h"
 #include "pvector.h" // Include last
 
-////////////////////////////////////////////////////////////////////
-//       Class : DAEToEggConverter
-// Description : This class supervises the construction of an
-//               EggData structure from a DAE file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class supervises the construction of an EggData structure from a DAE
+ * file.
+ */
 class DAEToEggConverter : public SomethingToEggConverter {
 public:
   DAEToEggConverter();

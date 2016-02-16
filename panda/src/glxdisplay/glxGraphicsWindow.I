@@ -11,11 +11,9 @@
  * @date 1999-03-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::get_xwindow
-//       Access: Public
-//  Description: Returns the X11 Window handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the X11 Window handle.
+ */
 INLINE X11_Window glxGraphicsWindow::
 get_xwindow() const {
   return _xwindow;

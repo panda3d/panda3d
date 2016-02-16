@@ -30,13 +30,11 @@
 #include <typeinfo>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : ReferenceCount
-// Description : A base class for all things that want to be
-//               reference-counted.  ReferenceCount works in
-//               conjunction with PointerTo to automatically delete
-//               objects when the last pointer to them goes away.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for all things that want to be reference-counted.
+ * ReferenceCount works in conjunction with PointerTo to automatically delete
+ * objects when the last pointer to them goes away.
+ */
 class EXPCL_PANDAEXPRESS ReferenceCount : public MemoryBase {
 protected:
   INLINE ReferenceCount();
@@ -107,21 +105,15 @@ private:
 template<class RefCountType>
 INLINE void unref_delete(RefCountType *ptr);
 
-////////////////////////////////////////////////////////////////////
-//       Class : RefCountProxy
-// Description : A "proxy" to use to make a reference-countable object
-//               whenever the object cannot inherit from
-//               ReferenceCount for some reason.  RefCountPr<MyClass>
-//               can be treated as an instance of MyClass directly,
-//               for the most part, except that it can be reference
-//               counted.
-//
-//               If you want to declare a RefCountProxy to something
-//               that does not have get_class_type(), you will have to
-//               define a template specialization on
-//               _get_type_handle() and _do_init_type(), as in
-//               typedObject.h.
-////////////////////////////////////////////////////////////////////
+/**
+ * A "proxy" to use to make a reference-countable object whenever the object
+ * cannot inherit from ReferenceCount for some reason.  RefCountPr<MyClass> can
+ * be treated as an instance of MyClass directly, for the most part, except that
+ * it can be reference counted.  If you want to declare a RefCountProxy to
+ * something that does not have get_class_type(), you will have to define a
+ * template specialization on _get_type_handle() and _do_init_type(), as in
+ * typedObject.h.
+ */
 template<class Base>
 class RefCountProxy : public ReferenceCount {
 public:
@@ -142,14 +134,12 @@ private:
 };
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : RefCountObj
-// Description : Another kind of proxy, similar to RefCountProxy.
-//               This one works by inheriting from the indicated base
-//               type, giving it an is-a relation instead of a has-a
-//               relation.  As such, it's a little more robust, but
-//               only works when the base type is, in fact, a class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another kind of proxy, similar to RefCountProxy.  This one works by
+ * inheriting from the indicated base type, giving it an is-a relation instead
+ * of a has-a relation.  As such, it's a little more robust, but only works when
+ * the base type is, in fact, a class.
+ */
 template<class Base>
 class RefCountObj : public ReferenceCount, public Base {
 public:

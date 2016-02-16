@@ -17,11 +17,9 @@
 
 TypeHandle FiniteBoundingVolume::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FiniteBoundingVolume::get_volume
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PN_stdfloat FiniteBoundingVolume::
 get_volume() const {
   nassertr(!is_infinite(), 0.0f);
@@ -39,25 +37,19 @@ get_volume() const {
   return box.get_volume();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FiniteBoundingVolume::as_finite_bounding_volume
-//       Access: Public, Virtual
-//  Description: Virtual downcast method.  Returns this object as a
-//               pointer of the indicated type, if it is in fact that
-//               type.  Returns NULL if it is not that type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Virtual downcast method.  Returns this object as a pointer of the indicated
+ * type, if it is in fact that type.  Returns NULL if it is not that type.
+ */
 const FiniteBoundingVolume *FiniteBoundingVolume::
 as_finite_bounding_volume() const {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FiniteBoundingVolume::around_lines
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by around_other()
-//               when the type of the first element in the list is
-//               known to be a nonempty line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by around_other() when the type of the first
+ * element in the list is known to be a nonempty line.
+ */
 bool FiniteBoundingVolume::
 around_lines(const BoundingVolume **, const BoundingVolume **) {
   _flags = F_infinite;
@@ -67,13 +59,10 @@ around_lines(const BoundingVolume **, const BoundingVolume **) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FiniteBoundingVolume::around_planes
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by around_other()
-//               when the type of the first element in the list is
-//               known to be a nonempty plane.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by around_other() when the type of the first
+ * element in the list is known to be a nonempty plane.
+ */
 bool FiniteBoundingVolume::
 around_planes(const BoundingVolume **, const BoundingVolume **) {
   _flags = F_infinite;

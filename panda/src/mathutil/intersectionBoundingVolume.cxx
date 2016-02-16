@@ -18,11 +18,9 @@
 
 TypeHandle IntersectionBoundingVolume::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 IntersectionBoundingVolume::
 IntersectionBoundingVolume(const IntersectionBoundingVolume &copy) :
   GeometricBoundingVolume(copy),
@@ -30,21 +28,17 @@ IntersectionBoundingVolume(const IntersectionBoundingVolume &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::make_copy
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BoundingVolume *IntersectionBoundingVolume::
 make_copy() const {
   return new IntersectionBoundingVolume(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::get_approx_center
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 LPoint3 IntersectionBoundingVolume::
 get_approx_center() const {
   nassertr(!is_empty(), LPoint3::zero());
@@ -60,11 +54,9 @@ get_approx_center() const {
   return center / (PN_stdfloat)_components.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::xform
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IntersectionBoundingVolume::
 xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
@@ -78,11 +70,9 @@ xform(const LMatrix4 &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::output
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IntersectionBoundingVolume::
 output(ostream &out) const {
   if (is_empty()) {
@@ -100,11 +90,9 @@ output(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::write
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void IntersectionBoundingVolume::
 write(ostream &out, int indent_level) const {
   if (is_empty()) {
@@ -122,28 +110,22 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::clear_components
-//       Access: Published
-//  Description: Removes all components from the volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all components from the volume.
+ */
 void IntersectionBoundingVolume::
 clear_components() {
   _components.clear();
   _flags = F_infinite;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::add_component
-//       Access: Published
-//  Description: Adds a new component to the volume.  This does not
-//               necessarily increase the total number of components
-//               by one, and you may or may not be able to find this
-//               component in the volume by a subsequent call to
-//               get_component(); certain optimizations may prevent
-//               the component from being added, or have other
-//               unexpected effects on the total set of components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new component to the volume.  This does not necessarily increase the
+ * total number of components by one, and you may or may not be able to find
+ * this component in the volume by a subsequent call to get_component(); certain
+ * optimizations may prevent the component from being added, or have other
+ * unexpected effects on the total set of components.
+ */
 void IntersectionBoundingVolume::
 add_component(const GeometricBoundingVolume *component) {
   CPT(GeometricBoundingVolume) gbv;
@@ -182,7 +164,7 @@ add_component(const GeometricBoundingVolume *component) {
          ++ci) {
       add_component(*ci);
     }
-    
+
   } else {
     // The general case.
     size_t i = 0;
@@ -223,21 +205,17 @@ add_component(const GeometricBoundingVolume *component) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::extend_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool IntersectionBoundingVolume::
 extend_other(BoundingVolume *other) const {
   return other->extend_by_intersection(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::around_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool IntersectionBoundingVolume::
 around_other(BoundingVolume *other,
              const BoundingVolume **first,
@@ -245,21 +223,17 @@ around_other(BoundingVolume *other,
   return other->around_intersections(first, last);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_other
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int IntersectionBoundingVolume::
 contains_other(const BoundingVolume *other) const {
   return other->contains_intersection(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_point
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int IntersectionBoundingVolume::
 contains_point(const LPoint3 &point) const {
   nassertr(!point.is_nan(), IF_no_intersection);
@@ -283,11 +257,9 @@ contains_point(const LPoint3 &point) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_lineseg
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int IntersectionBoundingVolume::
 contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   nassertr(!a.is_nan() && !b.is_nan(), IF_no_intersection);
@@ -311,13 +283,10 @@ contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_sphere
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a sphere.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a sphere.
+ */
 int IntersectionBoundingVolume::
 contains_sphere(const BoundingSphere *sphere) const {
   int result = IF_possible | IF_some | IF_all;
@@ -339,13 +308,10 @@ contains_sphere(const BoundingSphere *sphere) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_box
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a box.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a box.
+ */
 int IntersectionBoundingVolume::
 contains_box(const BoundingBox *box) const {
   int result = IF_possible | IF_some | IF_all;
@@ -367,13 +333,10 @@ contains_box(const BoundingBox *box) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_hexahedron
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a hexahedron.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a hexahedron.
+ */
 int IntersectionBoundingVolume::
 contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   int result = IF_possible | IF_some | IF_all;
@@ -395,13 +358,10 @@ contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_line
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a line.
+ */
 int IntersectionBoundingVolume::
 contains_line(const BoundingLine *line) const {
   int result = IF_possible | IF_some | IF_all;
@@ -423,13 +383,10 @@ contains_line(const BoundingLine *line) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_plane
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a plane.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a plane.
+ */
 int IntersectionBoundingVolume::
 contains_plane(const BoundingPlane *plane) const {
   int result = IF_possible | IF_some | IF_all;
@@ -451,13 +408,10 @@ contains_plane(const BoundingPlane *plane) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_union
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a union object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be a union object.
+ */
 int IntersectionBoundingVolume::
 contains_union(const UnionBoundingVolume *unionv) const {
   int result = IF_possible | IF_some | IF_all;
@@ -479,13 +433,10 @@ contains_union(const UnionBoundingVolume *unionv) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_intersection
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be an intersection object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Double-dispatch support: called by contains_other() when the type we're
+ * testing for intersection is known to be an intersection object.
+ */
 int IntersectionBoundingVolume::
 contains_intersection(const IntersectionBoundingVolume *intersection) const {
   int result = IF_possible | IF_some | IF_all;
@@ -507,11 +458,9 @@ contains_intersection(const IntersectionBoundingVolume *intersection) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_finite
-//       Access: Protected, Virtual
-//  Description: Generic handler for a FiniteBoundingVolume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generic handler for a FiniteBoundingVolume.
+ */
 int IntersectionBoundingVolume::
 contains_finite(const FiniteBoundingVolume *volume) const {
   int result = IF_possible | IF_some | IF_all;
@@ -533,11 +482,9 @@ contains_finite(const FiniteBoundingVolume *volume) const {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::contains_geometric
-//       Access: Protected, Virtual
-//  Description: Generic handler for a GeometricBoundingVolume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generic handler for a GeometricBoundingVolume.
+ */
 int IntersectionBoundingVolume::
 contains_geometric(const GeometricBoundingVolume *volume) const {
   int result = IF_possible | IF_some | IF_all;
@@ -560,14 +507,11 @@ contains_geometric(const GeometricBoundingVolume *volume) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::other_contains_intersection
-//       Access: Protected, Virtual
-//  Description: Generic reverse-direction comparison.  Called by
-//               BoundingVolumes that do not implement
-//               contains_intersection() explicitly.  This returns the test
-//               of whether the other volume contains this volume.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generic reverse-direction comparison.  Called by BoundingVolumes that do not
+ * implement contains_intersection() explicitly.  This returns the test of
+ * whether the other volume contains this volume.
+ */
 int IntersectionBoundingVolume::
 other_contains_intersection(const BoundingVolume *volume) const {
   int result = IF_possible | IF_some | IF_all;
@@ -588,4 +532,3 @@ other_contains_intersection(const BoundingVolume *volume) const {
 
   return result;
 }
-

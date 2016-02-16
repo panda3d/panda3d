@@ -31,4 +31,3 @@ extern ConfigVariableBool handle_datagrams_internally;
 extern EXPCL_DIRECT void init_libdistributed();
 
 #endif
-

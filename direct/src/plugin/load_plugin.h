@@ -60,8 +60,8 @@ extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream_ptr;
 extern P3D_instance_handle_event_func *P3D_instance_handle_event_ptr;
 
 string get_plugin_basename();
-bool 
-load_plugin(const string &p3d_plugin_filename, 
+bool
+load_plugin(const string &p3d_plugin_filename,
             const string &contents_filename, const string &host_url,
             P3D_verify_contents verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
@@ -69,7 +69,7 @@ load_plugin(const string &p3d_plugin_filename,
             const string &root_dir, const string &host_dir,
             const string &start_dir, ostream &logfile);
 bool
-init_plugin(const string &contents_filename, const string &host_url, 
+init_plugin(const string &contents_filename, const string &host_url,
             P3D_verify_contents verify_contents, const string &platform,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,

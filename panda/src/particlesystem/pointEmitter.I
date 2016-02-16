@@ -11,11 +11,9 @@
  * @date 2000-06-26
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_point
-//       Access: Public
-//  Description: point setting
-////////////////////////////////////////////////////////////////////
+/**
+ * point setting
+ */
 INLINE void PointEmitter::
 set_location(const LPoint3& p) {
   _location = p;

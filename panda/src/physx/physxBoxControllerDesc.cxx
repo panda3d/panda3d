@@ -14,29 +14,22 @@
 #include "physxBoxControllerDesc.h"
 #include "physxManager.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxControllerDesc::set_extents
-//       Access: Published
-//  Description: Sets the dimensions of the box.
-//
-//               The dimensions are the 'radii' of the box,
-//               meaning 1/2 extents in x dimension, 1/2 extents
-//               in y dimension, 1/2 extents in z dimension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the dimensions of the box.  The dimensions are the 'radii' of the box,
+ * meaning 1/2 extents in x dimension, 1/2 extents in y dimension, 1/2 extents
+ * in z dimension.
+ */
 void PhysxBoxControllerDesc::
 set_extents(const LVector3f &extents) {
 
   _desc.extents = PhysxManager::vec3_to_nxVec3(extents);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxControllerDesc::get_extents
-//       Access: Published
-//  Description: Returns the dimensions of the box.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the dimensions of the box.
+ */
 LVector3f PhysxBoxControllerDesc::
 get_extents() const {
 
   return PhysxManager::nxVec3_to_vec3(_desc.extents);
 }
-

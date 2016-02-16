@@ -21,14 +21,11 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltBead
-// Description : A base class for any of a broad family of flt records
-//               that represent particular beads in the hierarchy.
-//               These are things like group beads and object beads,
-//               as opposed to things like push and pop or comment
-//               records.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for any of a broad family of flt records that represent
+ * particular beads in the hierarchy.  These are things like group beads and
+ * object beads, as opposed to things like push and pop or comment records.
+ */
 class FltBead : public FltRecord {
 public:
   FltBead(FltHeader *header);
@@ -88,5 +85,3 @@ private:
 };
 
 #endif
-
-

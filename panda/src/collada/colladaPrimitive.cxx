@@ -32,11 +32,10 @@
 #define domInput_local_offsetRef domInputLocalOffsetRef
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::Constructor
-//  Description: Why do I even bother documenting the simplest of
-//               constructors?  A private one at that.
-////////////////////////////////////////////////////////////////////
+/**
+ * Why do I even bother documenting the simplest of constructors?  A private one
+ * at that.
+ */
 ColladaPrimitive::
 ColladaPrimitive(GeomPrimitive *prim, daeTArray<domInput_local_offsetRef> &inputs)
   : _stride (1), _gprim (prim) {
@@ -59,11 +58,10 @@ ColladaPrimitive(GeomPrimitive *prim, daeTArray<domInput_local_offsetRef> &input
   _geom->add_primitive(_gprim);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::from_dom
-//  Description: Returns the ColladaPrimitive object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaPrimitive object that represents the provided DOM input
+ * element.
+ */
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domLines &prim) {
   // If we already loaded it before, use that.
@@ -86,11 +84,10 @@ from_dom(domLines &prim) {
   return new_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::from_dom
-//  Description: Returns the ColladaPrimitive object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaPrimitive object that represents the provided DOM input
+ * element.
+ */
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domLinestrips &prim) {
   // If we already loaded it before, use that.
@@ -110,11 +107,10 @@ from_dom(domLinestrips &prim) {
   return new_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::from_dom
-//  Description: Returns the ColladaPrimitive object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaPrimitive object that represents the provided DOM input
+ * element.
+ */
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domPolygons &prim) {
   // If we already loaded it before, use that.
@@ -142,11 +138,10 @@ from_dom(domPolygons &prim) {
   return new_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::from_dom
-//  Description: Returns the ColladaPrimitive object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaPrimitive object that represents the provided DOM input
+ * element.
+ */
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domPolylist &prim) {
   // If we already loaded it before, use that.
@@ -183,11 +178,10 @@ from_dom(domPolylist &prim) {
   return new_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::from_dom
-//  Description: Returns the ColladaPrimitive object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaPrimitive object that represents the provided DOM input
+ * element.
+ */
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domTriangles &prim) {
   // If we already loaded it before, use that.
@@ -210,11 +204,10 @@ from_dom(domTriangles &prim) {
   return new_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::from_dom
-//  Description: Returns the ColladaPrimitive object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaPrimitive object that represents the provided DOM input
+ * element.
+ */
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domTrifans &prim) {
   // If we already loaded it before, use that.
@@ -234,11 +227,10 @@ from_dom(domTrifans &prim) {
   return new_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::from_dom
-//  Description: Returns the ColladaPrimitive object that represents
-//               the provided DOM input element.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ColladaPrimitive object that represents the provided DOM input
+ * element.
+ */
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domTristrips &prim) {
   // If we already loaded it before, use that.
@@ -258,11 +250,10 @@ from_dom(domTristrips &prim) {
   return new_prim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::write_data
-//  Description: Writes the vertex data to the GeomVertexData.
-//               Returns the number of rows written.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the vertex data to the GeomVertexData.  Returns the number of rows
+ * written.
+ */
 unsigned int ColladaPrimitive::
 write_data(GeomVertexData *vdata, int start_row, domP &p) {
   unsigned int num_vertices = p.getValue().getCount() / _stride;
@@ -275,22 +266,20 @@ write_data(GeomVertexData *vdata, int start_row, domP &p) {
   return num_vertices;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::load_primitive
-//  Description: Adds the given indices to the primitive, and
-//               writes the relevant data to the geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the given indices to the primitive, and writes the relevant data to the
+ * geom.
+ */
 void ColladaPrimitive::
 load_primitive(domP &p) {
   _gprim->add_next_vertices(write_data(_vdata, 0, p));
   _gprim->close_primitive();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ColladaPrimitive::load_primitives
-//  Description: Adds the given indices to the primitive, and
-//               writes the relevant data to the geom.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the given indices to the primitive, and writes the relevant data to the
+ * geom.
+ */
 void ColladaPrimitive::
 load_primitives(domP_Array &p_array) {
   int start_row = 0;
@@ -302,4 +291,3 @@ load_primitives(domP_Array &p_array) {
     start_row += num_vertices;
   }
 }
-

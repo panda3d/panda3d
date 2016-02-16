@@ -24,11 +24,9 @@
 #include <windows.h>
 #include <Tlhelp32.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Win32ArgParser::
 Win32ArgParser() :
   _argv(NULL),
@@ -36,22 +34,18 @@ Win32ArgParser() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 Win32ArgParser::
 ~Win32ArgParser() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::clear
-//       Access: Public
-//  Description: Resets the parser to empty command line and
-//               deallocates the internal argv array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the parser to empty command line and deallocates the internal argv
+ * array.
+ */
 void Win32ArgParser::
 clear() {
   assert(_argc == (int)_args.size());
@@ -68,16 +62,14 @@ clear() {
   _args.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::set_command_line
-//       Access: Public
-//  Description: Sets the string that indicates the full Win32 command
-//               line, and starts parsing this into argc, argv.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the string that indicates the full Win32 command line, and starts
+ * parsing this into argc, argv.
+ */
 void Win32ArgParser::
 set_command_line(const string &command_line) {
   clear();
-  
+
   const char *p = command_line.c_str();
   while (*p != '\0') {
     parse_unquoted_arg(p);
@@ -100,13 +92,10 @@ set_command_line(const string &command_line) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::set_command_line
-//       Access: Public
-//  Description: Sets the Unicode string that indicates the full Win32
-//               command line, and starts parsing this into argc,
-//               argv.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the Unicode string that indicates the full Win32 command line, and
+ * starts parsing this into argc, argv.
+ */
 void Win32ArgParser::
 set_command_line(const wstring &command_line) {
   TextEncoder encoder;
@@ -115,52 +104,41 @@ set_command_line(const wstring &command_line) {
   set_command_line(encoder.get_text());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::set_system_command_line
-//       Access: Public
-//  Description: Tells the parser to call GetCommandLine() to query
-//               the system command line string, and parse it into
-//               argc, argv.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the parser to call GetCommandLine() to query the system command line
+ * string, and parse it into argc, argv.
+ */
 void Win32ArgParser::
 set_system_command_line() {
   LPWSTR command_line = GetCommandLineW();
   set_command_line(command_line);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::get_argv
-//       Access: Public
-//  Description: Returns the argv array as computed by
-//               set_command_line() or set_system_command_line().
-//               This array indexes directly into data allocated
-//               within the Win32ArgParser object; it will remain
-//               valid until set_command_line() or clear() is again
-//               called, or until the parser object destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the argv array as computed by set_command_line() or
+ * set_system_command_line(). This array indexes directly into data allocated
+ * within the Win32ArgParser object; it will remain valid until
+ * set_command_line() or clear() is again called, or until the parser object
+ * destructs.
+ */
 char **Win32ArgParser::
 get_argv() {
   return _argv;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::get_argc
-//       Access: Public
-//  Description: Returns the number of elements in the argv array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of elements in the argv array.
+ */
 int Win32ArgParser::
 get_argc() {
   return _argc;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::do_glob
-//       Access: Public, Static
-//  Description: Returns true if we should attempt to process (and
-//               apply glob matching) to the command line, or false if
-//               we should not (for instance, because it has already
-//               been done by the shell).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if we should attempt to process (and apply glob matching) to the
+ * command line, or false if we should not (for instance, because it has already
+ * been done by the shell).
+ */
 bool Win32ArgParser::
 do_glob() {
   // First, we check for the PANDA_GLOB environment variable.  If this
@@ -228,13 +206,10 @@ do_glob() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::parse_quoted_arg
-//       Access: Private
-//  Description: Parses the quoted argument beginning at p and returns
-//               it.  Advances p to the first character following the
-//               close quote.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the quoted argument beginning at p and returns it.  Advances p to the
+ * first character following the close quote.
+ */
 string Win32ArgParser::
 parse_quoted_arg(const char *&p) {
   char quote = *p;
@@ -266,7 +241,7 @@ parse_quoted_arg(const char *&p) {
           ++p;
           return result;
         }
-        
+
         // But if there's an odd backslash, it simply escapes the
         // quote mark.
         result += quote;
@@ -296,13 +271,10 @@ parse_quoted_arg(const char *&p) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::parse_unquoted_arg
-//       Access: Private
-//  Description: Parses the unquoted argument beginning at p and saves
-//               it in _char_args.  Advances p to the first whitespace
-//               following the argument.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the unquoted argument beginning at p and saves it in _char_args.
+ * Advances p to the first whitespace following the argument.
+ */
 void Win32ArgParser::
 parse_unquoted_arg(const char *&p) {
   string result;
@@ -338,7 +310,7 @@ parse_unquoted_arg(const char *&p) {
       // string, like bash does.
       save_arg(result);
     }
-    
+
   } else {
     // No glob characters means we just store it directly.  Also, an
     // embedded quoted string, anywhere within the arg, means we can't
@@ -347,12 +319,9 @@ parse_unquoted_arg(const char *&p) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::save_arg
-//       Access: Private
-//  Description: Stores the indicated string as the next argument in
-//               _args.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the indicated string as the next argument in _args.
+ */
 void Win32ArgParser::
 save_arg(const string &arg) {
   _args.push_back(arg);

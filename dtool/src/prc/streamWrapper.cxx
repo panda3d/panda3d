@@ -13,11 +13,9 @@
 
 #include "streamWrapper.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: IStreamWrapper::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 IStreamWrapper::
 ~IStreamWrapper() {
   if (_owns_pointer) {
@@ -34,14 +32,11 @@ IStreamWrapper::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IStreamWrapper::read
-//       Access: Public
-//  Description: Atomically reads a number of bytes from the stream,
-//               without error detection.  If fewer bytes than
-//               requested are read, quietly fills the remaining bytes
-//               with 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically reads a number of bytes from the stream, without error detection.
+ * If fewer bytes than requested are read, quietly fills the remaining bytes
+ * with 0.
+ */
 void IStreamWrapper::
 read(char *buffer, streamsize num_bytes) {
   acquire();
@@ -70,12 +65,10 @@ read(char *buffer, streamsize num_bytes) {
   release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IStreamWrapper::read
-//       Access: Public
-//  Description: Atomically reads a number of bytes from the stream.
-//               Returns the number of bytes actually read.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically reads a number of bytes from the stream.  Returns the number of
+ * bytes actually read.
+ */
 void IStreamWrapper::
 read(char *buffer, streamsize num_bytes, streamsize &read_bytes) {
   acquire();
@@ -86,14 +79,11 @@ read(char *buffer, streamsize num_bytes, streamsize &read_bytes) {
   release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IStreamWrapper::read
-//       Access: Public
-//  Description: Atomically reads a number of bytes from the stream.
-//               Returns the number of bytes actually read, and
-//               whether an eof condition was detected by the
-//               operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically reads a number of bytes from the stream.  Returns the number of
+ * bytes actually read, and whether an eof condition was detected by the
+ * operation.
+ */
 void IStreamWrapper::
 read(char *buffer, streamsize num_bytes, streamsize &read_bytes, bool &eof) {
   acquire();
@@ -105,17 +95,13 @@ read(char *buffer, streamsize num_bytes, streamsize &read_bytes, bool &eof) {
   release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IStreamWrapper::seek_read
-//       Access: Public
-//  Description: Atomically seeks to a particular offset from the
-//               beginning of the file, and reads a number of bytes
-//               from the stream.  Returns the number of bytes
-//               actually read, and whether an eof condition was
-//               detected by the operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically seeks to a particular offset from the beginning of the file, and
+ * reads a number of bytes from the stream.  Returns the number of bytes
+ * actually read, and whether an eof condition was detected by the operation.
+ */
 void IStreamWrapper::
-seek_read(streamsize pos, char *buffer, streamsize num_bytes, 
+seek_read(streamsize pos, char *buffer, streamsize num_bytes,
           streamsize &read_bytes, bool &eof) {
   acquire();
   _istream->clear();
@@ -127,14 +113,11 @@ seek_read(streamsize pos, char *buffer, streamsize num_bytes,
   release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IStreamWrapper::seek_gpos_eof
-//       Access: Public
-//  Description: Atomically seeks to EOF and returns the gpos there;
-//               that is, returns the file size.  Note that the EOF
-//               might have been moved in another thread by the time
-//               this method returns.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically seeks to EOF and returns the gpos there; that is, returns the file
+ * size.  Note that the EOF might have been moved in another thread by the time
+ * this method returns.
+ */
 streamsize IStreamWrapper::
 seek_gpos_eof() {
   streamsize pos;
@@ -146,11 +129,9 @@ seek_gpos_eof() {
   return pos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OStreamWrapper::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 OStreamWrapper::
 ~OStreamWrapper() {
   if (_owns_pointer) {
@@ -167,12 +148,9 @@ OStreamWrapper::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OStreamWrapper::write
-//       Access: Public
-//  Description: Atomically writes a number of bytes to the stream,
-//               without error detection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically writes a number of bytes to the stream, without error detection.
+ */
 void OStreamWrapper::
 write(const char *buffer, streamsize num_bytes) {
   acquire();
@@ -180,13 +158,10 @@ write(const char *buffer, streamsize num_bytes) {
   release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OStreamWrapper::read
-//       Access: Public
-//  Description: Atomically writes a number of bytes to the stream.
-//               Returns whether a failure condition was detected by
-//               the operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically writes a number of bytes to the stream.  Returns whether a failure
+ * condition was detected by the operation.
+ */
 void OStreamWrapper::
 write(const char *buffer, streamsize num_bytes, bool &fail) {
   acquire();
@@ -196,16 +171,13 @@ write(const char *buffer, streamsize num_bytes, bool &fail) {
   release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OStreamWrapper::seek_write
-//       Access: Public
-//  Description: Atomically seeks to a particular offset from the
-//               beginning of the file, and writes a number of bytes
-//               to the stream.  Returns whether a failure condition
-//               was detected by the operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically seeks to a particular offset from the beginning of the file, and
+ * writes a number of bytes to the stream.  Returns whether a failure condition
+ * was detected by the operation.
+ */
 void OStreamWrapper::
-seek_write(streamsize pos, const char *buffer, streamsize num_bytes, 
+seek_write(streamsize pos, const char *buffer, streamsize num_bytes,
            bool &fail) {
   acquire();
   _ostream->clear();
@@ -224,13 +196,10 @@ seek_write(streamsize pos, const char *buffer, streamsize num_bytes,
   release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OStreamWrapper::seek_eof_write
-//       Access: Public
-//  Description: Atomically seeks to the end of the file, and writes a
-//               number of bytes to the stream.  Returns whether a
-//               failure condition was detected by the operation.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically seeks to the end of the file, and writes a number of bytes to the
+ * stream.  Returns whether a failure condition was detected by the operation.
+ */
 void OStreamWrapper::
 seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail) {
   acquire();
@@ -250,14 +219,11 @@ seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail) {
   release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OStreamWrapper::seek_ppos_eof
-//       Access: Public
-//  Description: Atomically seeks to EOF and returns the ppos there;
-//               that is, returns the file size.  Note that the EOF
-//               might have been moved in another thread by the time
-//               this method returns.
-////////////////////////////////////////////////////////////////////
+/**
+ * Atomically seeks to EOF and returns the ppos there; that is, returns the file
+ * size.  Note that the EOF might have been moved in another thread by the time
+ * this method returns.
+ */
 streamsize OStreamWrapper::
 seek_ppos_eof() {
   streamsize pos;
@@ -280,11 +246,9 @@ seek_ppos_eof() {
   return pos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StreamWrapper::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 StreamWrapper::
 ~StreamWrapper() {
   if (_owns_pointer) {

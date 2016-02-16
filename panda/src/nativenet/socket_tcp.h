@@ -18,13 +18,11 @@
 #include "pandabase.h"
 #include "socket_ip.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_TCP
-// Description : Base functionality for a TCP connected socket
-//               This class is pretty useless by itself but it does hide some of the
-//               platform differences from machine to machine
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * Base functionality for a TCP connected socket This class is pretty useless by
+ * itself but it does hide some of the platform differences from machine to
+ * machine
+ */
 class EXPCL_PANDA_NATIVENET Socket_TCP : public Socket_IP
 {
 public:
@@ -66,18 +64,16 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP::Socket_TCP
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Socket_TCP::Socket_TCP(SOCKET sck) : ::Socket_IP(sck)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SetNoDelay
-//  Description: Disable Nagle algorithm. Don't delay send to coalesce packets
-////////////////////////////////////////////////////////////////////
+/**
+ * Disable Nagle algorithm.  Don't delay send to coalesce packets
+ */
 inline int Socket_TCP::SetNoDelay(bool flag)
 {
     int nodel = flag;
@@ -90,10 +86,9 @@ inline int Socket_TCP::SetNoDelay(bool flag)
     return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SetLinger
-//  Description: will control the behavior of SO_LINGER for a TCP socket
-////////////////////////////////////////////////////////////////////
+/**
+ * will control the behavior of SO_LINGER for a TCP socket
+ */
 int Socket_TCP::SetLinger(int interval_seconds)
 {
     linger ll;
@@ -105,13 +100,11 @@ int Socket_TCP::SetLinger(int interval_seconds)
     return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP::DontLinger
-//  Description: Turn off the linger flag. The socket will quickly release
-//               buffered items and free up OS resources. You may lose
-//               a stream if you use this flag and do not negotiate the close
-//               at the application layer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Turn off the linger flag.  The socket will quickly release buffered items and
+ * free up OS resources.  You may lose a stream if you use this flag and do not
+ * negotiate the close at the application layer.
+ */
 int Socket_TCP::DontLinger()
 {
     linger ll;
@@ -123,12 +116,10 @@ int Socket_TCP::DontLinger()
     return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SetSendBufferSize
-//  Description: Just like it sounds. Sets a buffered socket recv buffer size.
-//      This function does not refuse ranges outside hard-coded OS
-//      limits
-////////////////////////////////////////////////////////////////////
+/**
+ * Just like it sounds.  Sets a buffered socket recv buffer size.  This function
+ * does not refuse ranges outside hard-coded OS limits
+ */
 int Socket_TCP::SetSendBufferSize(int insize)
 {
     if (setsockopt(_socket, (int) SOL_SOCKET, (int) SO_SNDBUF, (char *) &insize, sizeof(int)))
@@ -136,11 +127,10 @@ int Socket_TCP::SetSendBufferSize(int insize)
     return ALL_OK;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ActiveOpen
-//  Description: This function will try and set the socket up for active open to a specified
-//               address and port provided by the input parameter
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will try and set the socket up for active open to a specified
+ * address and port provided by the input parameter
+ */
 bool Socket_TCP::ActiveOpen(const Socket_Address & theaddress, bool setdelay)
 {
     _socket = DO_NEWTCP();
@@ -157,11 +147,10 @@ bool Socket_TCP::ActiveOpen(const Socket_Address & theaddress, bool setdelay)
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ActiveOpenNonBlocking
-//  Description: This function will try and set the socket up for active open to a specified
-//               address and port provided by the input parameter (non-blocking version)
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will try and set the socket up for active open to a specified
+ * address and port provided by the input parameter (non-blocking version)
+ */
 bool Socket_TCP::ActiveOpenNonBlocking(const Socket_Address & theaddress)
 {
     _socket = DO_NEWTCP();
@@ -182,38 +171,29 @@ bool Socket_TCP::ActiveOpenNonBlocking(const Socket_Address & theaddress)
     return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP::SendData
-//  Description: Ok Lets Send the Data
-//      - if error
-//      0 if socket closed for write or lengh is 0
-//      + bytes writen ( May be smaller than requested)
-////////////////////////////////////////////////////////////////////
+/**
+ * Ok Lets Send the Data - if error 0 if socket closed for write or lengh is 0 +
+ * bytes writen ( May be smaller than requested)
+ */
 inline int Socket_TCP::SendData(const char * data, int size)
 {
     return DO_SOCKET_WRITE(_socket, data, size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP::RecvData
-//  Description: Read the data from the connection
-//      - if error
-//      0 if socket closed for read or length is 0
-//      + bytes read ( May be smaller than requested)
-////////////////////////////////////////////////////////////////////
+/**
+ * Read the data from the connection - if error 0 if socket closed for read or
+ * length is 0 + bytes read ( May be smaller than requested)
+ */
 inline int Socket_TCP::RecvData(char * data, int len)
 {
     int ecode = DO_SOCKET_READ(_socket, data, len);
     return ecode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Socket_TCP::RecvData
-//  Description: Read the data from the connection
-//      - if error
-//      0 if socket closed for read or length is 0
-//      + bytes read ( May be smaller than requested)
-////////////////////////////////////////////////////////////////////
+/**
+ * Read the data from the connection - if error 0 if socket closed for read or
+ * length is 0 + bytes read ( May be smaller than requested)
+ */
 inline std::string  Socket_TCP::RecvData(int max_len)
 {
     std::string str;

@@ -18,11 +18,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OrientedParticleFactory
-// Description : Creates particles that are affected by angular
-//               forces.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates particles that are affected by angular forces.
+ */
 class EXPCL_PANDAPHYSICS OrientedParticleFactory : public BaseParticleFactory {
 PUBLISHED:
   OrientedParticleFactory();

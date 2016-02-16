@@ -15,11 +15,9 @@
 #include "string_utils.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFixHiddenColor::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ImageFixHiddenColor::
 ImageFixHiddenColor() : ImageFilter(true) {
   set_program_brief("change the color of transparent pixels in an image");
@@ -62,11 +60,9 @@ ImageFixHiddenColor() : ImageFilter(true) {
   _max_transparent_alpha = 0.0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageFixHiddenColor::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ImageFixHiddenColor::
 run() {
   PNMImage alpha_image;

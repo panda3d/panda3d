@@ -11,22 +11,17 @@
  * @date 2001-02-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCurve::get_num_control_points
-//       Access: Public
-//  Description: Returns the number of control points assigned to the
-//               curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of control points assigned to the curve.
+ */
 INLINE int FltCurve::
 get_num_control_points() const {
   return _control_points.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltCurve::get_control_point
-//       Access: Public
-//  Description: Returns the nth control point assigned to the curve.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth control point assigned to the curve.
+ */
 INLINE const LPoint3d &FltCurve::
 get_control_point(int n) const {
 #ifndef NDEBUG

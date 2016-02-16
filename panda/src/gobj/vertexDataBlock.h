@@ -22,11 +22,10 @@
 class VertexDataPage;
 class VertexDataBlock;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexDataBlock
-// Description : A block of bytes that stores the actual raw vertex
-//               data referenced by a GeomVertexArrayData object.
-////////////////////////////////////////////////////////////////////
+/**
+ * A block of bytes that stores the actual raw vertex data referenced by a
+ * GeomVertexArrayData object.
+ */
 class EXPCL_PANDA_GOBJ VertexDataBlock : public SimpleAllocatorBlock, public ReferenceCount {
 protected:
   INLINE VertexDataBlock(VertexDataPage *page,

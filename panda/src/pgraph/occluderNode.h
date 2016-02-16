@@ -22,15 +22,12 @@
 #include "geom.h"
 #include "texture.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OccluderNode 
-// Description : A node in the scene graph that can hold an 
-//               occluder polygon, which must be a rectangle.  When
-//               the occluder is activated with something like
-//               render.set_occluder(), then objects whose bouding
-//               volume lies entirely behind the occluder will not be
-//               rendered.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node in the scene graph that can hold an occluder polygon, which must be a
+ * rectangle.  When the occluder is activated with something like
+ * render.set_occluder(), then objects whose bouding volume lies entirely behind
+ * the occluder will not be rendered.
+ */
 class EXPCL_PANDA_PGRAPH OccluderNode : public PandaNode {
 PUBLISHED:
   OccluderNode(const string &name);

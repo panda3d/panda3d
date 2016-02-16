@@ -26,20 +26,15 @@
 #include "referenceCount.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NurbsCurveEvaluator
-// Description : This class is an abstraction for evaluating NURBS
-//               curves.  It accepts an array of vertices, each of
-//               which may be in a different coordinate space (as
-//               defined by a NodePath), as well as an optional knot
-//               vector.
-//
-//               This is not related to NurbsCurve, CubicCurveseg or
-//               any of the ParametricCurve-derived objects in this
-//               module.  It is a completely parallel implementation
-//               of NURBS curves, and will probably eventually replace
-//               the whole ParametricCurve class hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is an abstraction for evaluating NURBS curves.  It accepts an
+ * array of vertices, each of which may be in a different coordinate space (as
+ * defined by a NodePath), as well as an optional knot vector.  This is not
+ * related to NurbsCurve, CubicCurveseg or any of the ParametricCurve-derived
+ * objects in this module.  It is a completely parallel implementation of NURBS
+ * curves, and will probably eventually replace the whole ParametricCurve class
+ * hierarchy.
+ */
 class EXPCL_PANDA_PARAMETRICS NurbsCurveEvaluator : public ReferenceCount {
 PUBLISHED:
   NurbsCurveEvaluator();
@@ -108,4 +103,3 @@ INLINE ostream &operator << (ostream &out, const NurbsCurveEvaluator &n);
 #include "nurbsCurveEvaluator.I"
 
 #endif
-

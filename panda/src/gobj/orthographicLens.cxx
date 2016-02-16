@@ -18,70 +18,56 @@
 TypeHandle OrthographicLens::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates a new Lens just like this one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates a new Lens just like this one.
+ */
 PT(Lens) OrthographicLens::
 make_copy() const {
   return new OrthographicLens(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::is_linear
-//       Access: Published, Virtual
-//  Description: Returns true if the lens represents a linear
-//               projection (e.g. PerspectiveLens, OrthographicLens),
-//               and therefore there is a valid matrix returned by
-//               get_projection_mat(), or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the lens represents a linear projection (e.g.
+ * PerspectiveLens, OrthographicLens), and therefore there is a valid matrix
+ * returned by get_projection_mat(), or false otherwise.
+ */
 bool OrthographicLens::
 is_linear() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::is_orthographic
-//       Access: Published, Virtual
-//  Description: Returns true if the lens represents a orthographic
-//               projection (i.e. it is a OrthographicLens), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the lens represents a orthographic projection (i.e.  it is a
+ * OrthographicLens), false otherwise.
+ */
 bool OrthographicLens::
 is_orthographic() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::write
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void OrthographicLens::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " film size = " << get_film_size() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::do_extrude_depth
-//       Access: Protected, Virtual
-//  Description: This is the generic implementation, which is based on
-//               do_extrude() and assumes a linear distribution of
-//               depth values between the near and far points.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the generic implementation, which is based on do_extrude() and
+ * assumes a linear distribution of depth values between the near and far
+ * points.
+ */
 bool OrthographicLens::
 do_extrude_depth(const CData *cdata,
                  const LPoint3 &point2d, LPoint3 &point3d) const {
   return do_extrude_depth_with_mat(cdata, point2d, point3d);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::do_compute_projection_mat
-//       Access: Protected, Virtual
-//  Description: Computes the complete transformation matrix from 3-d
-//               point to 2-d point, if the lens is linear.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the complete transformation matrix from 3-d point to 2-d point, if
+ * the lens is linear.
+ */
 void OrthographicLens::
 do_compute_projection_mat(Lens::CData *lens_cdata) {
   CoordinateSystem cs = lens_cdata->_cs;
@@ -131,30 +117,24 @@ do_compute_projection_mat(Lens::CData *lens_cdata) {
   lens_cdata->_projection_mat = do_get_lens_mat_inv(lens_cdata) * canonical * do_get_film_mat(lens_cdata);
   lens_cdata->_projection_mat_left = lens_cdata->_projection_mat_right = lens_cdata->_projection_mat;
 
-  do_adjust_comp_flags(lens_cdata, 
+  do_adjust_comp_flags(lens_cdata,
                        CF_projection_mat_inv | CF_projection_mat_left_inv | CF_projection_mat_right_inv,
                        CF_projection_mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Lens.
-////////////////////////////////////////////////////////////////////
+/**
+ * Tells the BamReader how to create objects of type Lens.
+ */
 void OrthographicLens::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type Lens is encountered
-//               in the Bam file.  It should create the Lens
-//               and extract its information from the file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by the BamReader's factory when a new object of type
+ * Lens is encountered in the Bam file.  It should create the Lens and extract
+ * its information from the file.
+ */
 TypedWritable *OrthographicLens::
 make_from_bam(const FactoryParams &params) {
   OrthographicLens *lens = new OrthographicLens;

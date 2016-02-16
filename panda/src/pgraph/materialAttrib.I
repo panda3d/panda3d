@@ -11,35 +11,26 @@
  * @date 2002-03-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialAttrib::Constructor
-//       Access: Private
-//  Description: Use MaterialAttrib::make() to construct a new
-//               MaterialAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use MaterialAttrib::make() to construct a new MaterialAttrib object.
+ */
 INLINE MaterialAttrib::
 MaterialAttrib() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialAttrib::is_off
-//       Access: Published
-//  Description: Returns true if the MaterialAttrib is an 'off'
-//               MaterialAttrib, indicating that it should disable
-//               the use of materials.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the MaterialAttrib is an 'off' MaterialAttrib, indicating
+ * that it should disable the use of materials.
+ */
 INLINE bool MaterialAttrib::
 is_off() const {
   return _material == (const Material *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialAttrib::get_material
-//       Access: Published
-//  Description: If the MaterialAttrib is not an 'off' MaterialAttrib,
-//               returns the material that is associated.  Otherwise,
-//               return NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the MaterialAttrib is not an 'off' MaterialAttrib, returns the material
+ * that is associated.  Otherwise, return NULL.
+ */
 INLINE Material *MaterialAttrib::
 get_material() const {
   return _material;

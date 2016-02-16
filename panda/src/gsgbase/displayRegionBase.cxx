@@ -16,11 +16,9 @@
 TypeHandle DisplayRegionBase::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionBase::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DisplayRegionBase::
 ~DisplayRegionBase() {
 }

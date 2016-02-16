@@ -19,14 +19,11 @@
 
 TypeHandle StandardMunger::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::Constructor
-//       Access: Public
-//  Description: The StandardMunger constructor accepts additional
-//               parameters that specify the GSG's preferred color
-//               format (since we might be munging the color anyway,
-//               we might as well convert it as we munge).
-////////////////////////////////////////////////////////////////////
+/**
+ * The StandardMunger constructor accepts additional parameters that specify the
+ * GSG's preferred color format (since we might be munging the color anyway, we
+ * might as well convert it as we munge).
+ */
 StandardMunger::
 StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
                int num_components,
@@ -100,21 +97,16 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 StandardMunger::
 ~StandardMunger() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::munge_data_impl
-//       Access: Protected, Virtual
-//  Description: Given a source GeomVertexData, converts it as
-//               necessary for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source GeomVertexData, converts it as necessary for rendering.
+ */
 CPT(GeomVertexData) StandardMunger::
 munge_data_impl(const GeomVertexData *data) {
   CPT(GeomVertexData) new_data = data;
@@ -177,11 +169,9 @@ munge_data_impl(const GeomVertexData *data) {
   return new_data->convert_to(new_format);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::munge_geom_impl
-//       Access: Protected, Virtual
-//  Description: Converts a Geom and/or its data as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a Geom and/or its data as necessary.
+ */
 void StandardMunger::
 munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
                 Thread *) {
@@ -227,11 +217,9 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::premunge_geom_impl
-//       Access: Protected, Virtual
-//  Description: Converts a Geom and/or its data as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a Geom and/or its data as necessary.
+ */
 void StandardMunger::
 premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
   int supported_geom_rendering = get_gsg()->get_supported_geom_rendering();
@@ -276,14 +264,11 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to compare two GeomMungers who are known to be of the same type, for
+ * an apples-to-apples comparison.  This will never be called on two pointers of
+ * a different type.
+ */
 int StandardMunger::
 compare_to_impl(const GeomMunger *other) const {
   const StandardMunger *om = (const StandardMunger *)other;
@@ -320,16 +305,12 @@ compare_to_impl(const GeomMunger *other) const {
   return StateMunger::compare_to_impl(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::geom_compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Compares two GeomMungers, considering only whether
-//               they would produce a different answer to
-//               munge_format(), munge_data(), or munge_geom().  (They
-//               still might be different in other ways, but if they
-//               would produce the same answer, this function consider
-//               them to be the same.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares two GeomMungers, considering only whether they would produce a
+ * different answer to munge_format(), munge_data(), or munge_geom().  (They
+ * still might be different in other ways, but if they would produce the same
+ * answer, this function consider them to be the same.)
+ */
 int StandardMunger::
 geom_compare_to_impl(const GeomMunger *other) const {
   const StandardMunger *om = (const StandardMunger *)other;
@@ -359,11 +340,9 @@ geom_compare_to_impl(const GeomMunger *other) const {
   return StateMunger::geom_compare_to_impl(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StandardMunger::munge_state_impl
-//       Access: Protectes, Virtual
-//  Description: Given an input state, returns the munged state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an input state, returns the munged state.
+ */
 CPT(RenderState) StandardMunger::
 munge_state_impl(const RenderState *state) {
   CPT(RenderState) munged_state = state;

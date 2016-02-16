@@ -11,23 +11,17 @@
  * @date 2012-05-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::get_display_id
-//       Access: Public
-//  Description: Returns the Quartz display ID associated with
-//               this graphics pipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Quartz display ID associated with this graphics pipe.
+ */
 INLINE CGDirectDisplayID CocoaGraphicsPipe::
 get_display_id() const {
   return _display;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::get_nsscreen
-//       Access: Public
-//  Description: Returns the Cocoa NSScreen pointer associated with
-//               this graphics pipe.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Cocoa NSScreen pointer associated with this graphics pipe.
+ */
 INLINE NSScreen *CocoaGraphicsPipe::
 get_nsscreen() const {
   return _screen;

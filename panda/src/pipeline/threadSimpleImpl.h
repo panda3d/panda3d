@@ -28,28 +28,19 @@ class Thread;
 class ThreadSimpleManager;
 class MutexSimpleImpl;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadSimpleImpl
-// Description : This is a trivial threading implementation for
-//               applications that don't desire full OS-managed
-//               threading.  It is a user-space implementation of
-//               threads implemented via setjmp/longjmp, and therefore
-//               it cannot take advantage of multiple CPU's (the
-//               application will always run on a single CPU,
-//               regardless of the number of threads you spawn).
-//
-//               However, since context switching is entirely
-//               cooperative, synchronization primitives like mutexes
-//               and condition variables aren't necessary, and the
-//               Mutex and ConditionVar classes are compiled into
-//               trivial no-op classes, which can reduce overhead
-//               substantially compared to a truly threaded
-//               application.
-//
-//               Be sure that every thread calls
-//               Thread::consider_yield() occasionally, or it will
-//               starve the rest of the running threads.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a trivial threading implementation for applications that don't desire
+ * full OS-managed threading.  It is a user-space implementation of threads
+ * implemented via setjmp/longjmp, and therefore it cannot take advantage of
+ * multiple CPU's (the application will always run on a single CPU, regardless
+ * of the number of threads you spawn).  However, since context switching is
+ * entirely cooperative, synchronization primitives like mutexes and condition
+ * variables aren't necessary, and the Mutex and ConditionVar classes are
+ * compiled into trivial no-op classes, which can reduce overhead substantially
+ * compared to a truly threaded application.  Be sure that every thread calls
+ * Thread::consider_yield() occasionally, or it will starve the rest of the
+ * running threads.
+ */
 class EXPCL_PANDA_PIPELINE ThreadSimpleImpl {
 public:
   ThreadSimpleImpl(Thread *parent_obj);

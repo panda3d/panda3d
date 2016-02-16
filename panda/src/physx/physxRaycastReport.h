@@ -21,12 +21,10 @@
 
 class PhysxRaycastHit;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxRaycastReport
-// Description : Objects of this class are returned by the 'raycast
-//               all' methods. They contain an iterable list of all
-//               hits that the raycast query produced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Objects of this class are returned by the 'raycast all' methods.  They
+ * contain an iterable list of all hits that the raycast query produced.
+ */
 class EXPCL_PANDAPHYSX PhysxRaycastReport : public NxUserRaycastReport {
 
 PUBLISHED:

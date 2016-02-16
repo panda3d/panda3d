@@ -21,11 +21,9 @@
 
 PStatCollector SparkleParticleRenderer::_render_collector("App:Particles:Sparkle:Render");
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparkleParticleRenderer
-//       Access: Public
-//  Description: Default Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Default Constructor
+ */
 SparkleParticleRenderer::
 SparkleParticleRenderer() :
   BaseParticleRenderer(PR_ALPHA_NONE),
@@ -36,11 +34,9 @@ SparkleParticleRenderer() :
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparkleParticleRenderer
-//       Access: Public
-//  Description: Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor
+ */
 SparkleParticleRenderer::
 SparkleParticleRenderer(const LColor& center, const LColor& edge,
                         PN_stdfloat birth_radius, PN_stdfloat death_radius,
@@ -53,11 +49,9 @@ SparkleParticleRenderer(const LColor& center, const LColor& edge,
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SparkleParticleRenderer
-//       Access: Public
-//  Description: Copy Constructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Copy Constructor
+ */
 SparkleParticleRenderer::
 SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
   BaseParticleRenderer(copy) {
@@ -70,49 +64,38 @@ SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
   resize_pool(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ~SparkleParticleRenderer
-//       Access: Public
-//  Description: Destructor
-////////////////////////////////////////////////////////////////////
+/**
+ * Destructor
+ */
 SparkleParticleRenderer::
 ~SparkleParticleRenderer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: make copy
-//       Access: Public
-//  Description: child virtual for spawning systems
-////////////////////////////////////////////////////////////////////
+/**
+ * child virtual for spawning systems
+ */
 BaseParticleRenderer *SparkleParticleRenderer::
 make_copy() {
   return new SparkleParticleRenderer(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: birth_particle
-//       Access: Private, Virtual
-//  Description: child birth
-////////////////////////////////////////////////////////////////////
+/**
+ * child birth
+ */
 void SparkleParticleRenderer::
 birth_particle(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: kill_particle
-//       Access: Private, Virtual
-//  Description: child kill
-////////////////////////////////////////////////////////////////////
+/**
+ * child kill
+ */
 void SparkleParticleRenderer::
 kill_particle(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: resize_pool
-//       Access: Private
-//  Description: resizes the render pool.  Reference counting
-//               makes this easy.
-////////////////////////////////////////////////////////////////////
+/**
+ * resizes the render pool.  Reference counting makes this easy.
+ */
 void SparkleParticleRenderer::
 resize_pool(int new_size) {
   _max_pool_size = new_size;
@@ -120,11 +103,9 @@ resize_pool(int new_size) {
   init_geoms();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_geoms
-//       Access: Private
-//  Description: initializes the geomnodes
-////////////////////////////////////////////////////////////////////
+/**
+ * initializes the geomnodes
+ */
 void SparkleParticleRenderer::
 init_geoms() {
   _vdata = new GeomVertexData
@@ -140,11 +121,9 @@ init_geoms() {
   render_node->add_geom(_line_primitive, _render_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: render
-//       Access: Private
-//  Description: populates the GeomLine
-////////////////////////////////////////////////////////////////////
+/**
+ * populates the GeomLine
+ */
 void SparkleParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   PStatTimer t1(_render_collector);
@@ -279,12 +258,9 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   get_render_node()->mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: output
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void SparkleParticleRenderer::
 output(ostream &out) const {
   #ifndef NDEBUG //[
@@ -292,12 +268,9 @@ output(ostream &out) const {
   #endif //] NDEBUG
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: write
-//       Access: Public
-//  Description: Write a string representation of this instance to
-//               <out>.
-////////////////////////////////////////////////////////////////////
+/**
+ * Write a string representation of this instance to <out>.
+ */
 void SparkleParticleRenderer::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "SparkleParticleRenderer:\n";

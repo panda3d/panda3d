@@ -33,17 +33,15 @@
    const GUID name = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
 DEFINE_KNOWN_FOLDER(FOLDERID_LocalAppData, 0xF1B32785, 0x6FBA, 0x4FCF, 0x9D, 0x55, 0x7B, 0x8E, 0x7F, 0x15, 0x70, 0x91);
 DEFINE_KNOWN_FOLDER(FOLDERID_LocalAppDataLow, 0xA520A1A4, 0x1780, 0x4FF6, 0xBD, 0x18, 0x16, 0x73, 0x43, 0xC5, 0xAF, 0x16);
-DEFINE_KNOWN_FOLDER(FOLDERID_InternetCache, 0x352481E8, 0x33BE, 0x4251, 0xBA, 0x85, 0x60, 0x07, 0xCA, 0xED, 0xCF, 0x9D); 
+DEFINE_KNOWN_FOLDER(FOLDERID_InternetCache, 0x352481E8, 0x33BE, 0x4251, 0xBA, 0x85, 0x60, 0x07, 0xCA, 0xED, 0xCF, 0x9D);
 #endif  // _WIN32
 
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: get_csidl_dir_w
-//  Description: A wrapper around SHGetSpecialFolderPath(), to return
-//               the Panda3D directory under the indicated CSIDL
-//               folder.
-////////////////////////////////////////////////////////////////////
+/**
+ * A wrapper around SHGetSpecialFolderPath(), to return the Panda3D directory
+ * under the indicated CSIDL folder.
+ */
 static wstring
 get_csidl_dir_w(int csidl) {
   static const int buffer_size = MAX_PATH;
@@ -51,7 +49,7 @@ get_csidl_dir_w(int csidl) {
   if (SHGetSpecialFolderPathW(NULL, buffer, csidl, true)) {
     wstring root = buffer;
     root += wstring(L"/Panda3D");
-    
+
     if (mkdir_complete_w(root, cerr)) {
       return root;
     }
@@ -63,11 +61,10 @@ get_csidl_dir_w(int csidl) {
 #endif  // _WIN32
 
 #ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: find_root_dir_default_w
-//  Description: Wide-character implementation of
-//               find_root_dir_default(), only needed for Windows.
-////////////////////////////////////////////////////////////////////
+/**
+ * Wide-character implementation of find_root_dir_default(), only needed for
+ * Windows.
+ */
 static wstring
 find_root_dir_default_w() {
   // First, use IEIsProtectedModeProcess() to determine if we are
@@ -93,16 +90,16 @@ find_root_dir_default_w() {
     if (is_protected) {
       // If we *are* running in protected mode, we need to use
       // FOLDERID_LocalAppDataLow.
-      
+
       // We should be able to use IEGetWriteableFolderPath() to query
       // this folder, but for some reason, that function returns
       // E_ACCESSDENIED on FOLDERID_LocalAppDataLow, even though this is
       // certainly a folder we have write access to.
-      
+
       // Well, SHGetKnownFolderPath() does work.  This function only
       // exists on Vista and above, though, so we still have to pull it
       // out of the DLL instead of hard-linking it.
-      
+
       HMODULE shell32 = LoadLibrary("shell32.dll");
       if (shell32 != NULL) {
         typedef HRESULT STDAPICALLTYPE SHGetKnownFolderPath(REFGUID rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath);
@@ -110,11 +107,11 @@ find_root_dir_default_w() {
         if (func != NULL) {
           LPWSTR cache_path = NULL;
           HRESULT hr = (*func)(FOLDERID_LocalAppDataLow, 0, NULL, &cache_path);
-          
+
           if (SUCCEEDED(hr)) {
             root = cache_path;
             CoTaskMemFree(cache_path);
-              
+
             root += wstring(L"/Panda3D");
             if (mkdir_complete_w(root, cerr)) {
               FreeLibrary(shell32);
@@ -125,7 +122,7 @@ find_root_dir_default_w() {
         }
         FreeLibrary(shell32);
       }
-      
+
       // Couldn't get FOLDERID_LocalAppDataLow for some reason.  We're
       // in fallback mode now.  Use IEGetWriteableFolderPath to get
       // the standard cache folder.
@@ -149,7 +146,7 @@ find_root_dir_default_w() {
           if (mkdir_complete_w(root, cerr)) {
             FreeLibrary(ieframe);
             return root;
-          }            
+          }
         }
       }
     }
@@ -174,7 +171,7 @@ find_root_dir_default_w() {
   if (!root.empty()) {
     return root;
   }
-  
+
   // If we couldn't get any of those folders, huh.  Punt and try for
   // the old standby GetTempPath, for lack of anything better.
   static const int buffer_size = MAX_PATH;
@@ -192,11 +189,10 @@ find_root_dir_default_w() {
 #endif  // _WIN32
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_root_dir_default
-//  Description: Returns the path to the system-default for the root
-//               directory.  This is where we look first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the path to the system-default for the root directory.  This is where
+ * we look first.
+ */
 static string
 find_root_dir_default() {
 #ifdef _WIN32
@@ -231,7 +227,7 @@ find_root_dir_default() {
   } else {
     root = pwdata->pw_dir;
   }
-  
+
   root += "/.panda3d";
   if (mkdir(root.c_str(), 0700) == 0 || errno == EEXIST) {
     return root;
@@ -244,11 +240,9 @@ find_root_dir_default() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_root_dir_actual
-//  Description: Returns the path to the installable Panda3D directory
-//               on the user's machine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the path to the installable Panda3D directory on the user's machine.
+ */
 static string
 find_root_dir_actual() {
   string root = find_root_dir_default();
@@ -283,10 +277,9 @@ find_root_dir_actual() {
   return new_root;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_root_dir
-//  Description: This is the public interface to the above functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the public interface to the above functions.
+ */
 string
 find_root_dir() {
   string root = find_root_dir_actual();
@@ -298,7 +291,7 @@ find_root_dir() {
   // an entirely new and incompatible kind of filename.
   wstring root_w;
   string_to_wstring(root_w, root);
-  
+
   DWORD length = GetShortPathNameW(root_w.c_str(), NULL, 0);
   wchar_t *short_name = new wchar_t[length];
   GetShortPathNameW(root_w.c_str(), short_name, length);

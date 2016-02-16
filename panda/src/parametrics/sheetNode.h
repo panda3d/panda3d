@@ -19,19 +19,14 @@
 #include "pandaNode.h"
 #include "pStatCollector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SheetNode
-// Description : This class draws a visible representation of the
-//               NURBS surface stored in its NurbsSurfaceEvaluator.  It
-//               automatically recomputes the surface every frame.
-//
-//               This is not related to NurbsSurface, CubicSurfaceseg
-//               or any of the ParametricSurface-derived objects in
-//               this module.  It is a completely parallel
-//               implementation of NURBS surfaces, and will probably
-//               eventually replace the whole ParametricSurface class
-//               hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class draws a visible representation of the NURBS surface stored in its
+ * NurbsSurfaceEvaluator.  It automatically recomputes the surface every frame.
+ * This is not related to NurbsSurface, CubicSurfaceseg or any of the
+ * ParametricSurface-derived objects in this module.  It is a completely
+ * parallel implementation of NURBS surfaces, and will probably eventually
+ * replace the whole ParametricSurface class hierarchy.
+ */
 class EXPCL_PANDA_PARAMETRICS SheetNode : public PandaNode {
 PUBLISHED:
   SheetNode(const string &name);
@@ -72,7 +67,7 @@ private:
   PT(BoundingVolume) do_recompute_bounds(const NodePath &rel_to,
                                          int pipeline_stage,
                                          Thread *current_thread) const;
-  void render_sheet(CullTraverser *trav, CullTraverserData &data, 
+  void render_sheet(CullTraverser *trav, CullTraverserData &data,
                     NurbsSurfaceResult *result);
 
 private:

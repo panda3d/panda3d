@@ -30,12 +30,10 @@
 class PhysicalNode;
 class PhysicsManager;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Physical
-// Description : Defines a set of physically modeled attributes.
-//               If you want physics applied to your class, derive
-//               it from this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a set of physically modeled attributes.  If you want physics applied
+ * to your class, derive it from this.
+ */
 class EXPCL_PANDAPHYSICS Physical : public TypedReferenceCount {
 public:
   //typedef pvector<PT(PhysicsObject)> PhysicsObjectVector;
@@ -72,7 +70,7 @@ PUBLISHED:
 
   INLINE void set_viscosity(PN_stdfloat viscosity);
   INLINE PN_stdfloat get_viscosity() const;
-  
+
   const PhysicsObjectCollection get_objects() const;
 
   virtual void output(ostream &out = cout) const;

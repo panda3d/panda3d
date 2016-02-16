@@ -18,18 +18,13 @@
 
 #include "clientDevice.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ClientAnalogDevice
-// Description : A device, attached to the ClientBase by a
-//               AnalogNode, that records the data from a single
-//               named analog device.  The named device can contain
-//               any number of analog controls, numbered in
-//               sequence beginning at zero.
-//
-//               Each analog control returns a value ranging from -1
-//               to 1, reflecting the current position of the control
-//               within its total range of motion.
-////////////////////////////////////////////////////////////////////
+/**
+ * A device, attached to the ClientBase by a AnalogNode, that records the data
+ * from a single named analog device.  The named device can contain any number
+ * of analog controls, numbered in sequence beginning at zero.  Each analog
+ * control returns a value ranging from -1 to 1, reflecting the current position
+ * of the control within its total range of motion.
+ */
 class EXPCL_PANDA_DEVICE ClientAnalogDevice : public ClientDevice {
 protected:
   INLINE ClientAnalogDevice(ClientBase *client, const string &device_name);

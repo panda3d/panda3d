@@ -26,13 +26,10 @@ class Datagram;
 class DatagramIterator;
 class ReferenceCount;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypedWritable
-// Description : Base class for objects that can be written to and
-//               read from Bam files.
-//
-//               See also TypedObject for detailed instructions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Base class for objects that can be written to and read from Bam files.  See
+ * also TypedObject for detailed instructions.
+ */
 class EXPCL_PANDA_PUTIL TypedWritable : public TypedObject {
 public:
   static TypedWritable* const Null;

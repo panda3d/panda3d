@@ -18,13 +18,11 @@
 
 #include "loaderFileType.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LoaderFileTypeSrt
-// Description : This defines the Loader interface to read SpeedTree
-//               SRT files, which describe a single tree.  It actually
-//               returns a SpeedTreeNode with just a single tree
-//               within it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the Loader interface to read SpeedTree SRT files, which describe
+ * a single tree.  It actually returns a SpeedTreeNode with just a single tree
+ * within it.
+ */
 class EXPCL_PANDASPEEDTREE LoaderFileTypeSrt : public LoaderFileType {
 public:
   LoaderFileTypeSrt();
@@ -55,4 +53,3 @@ private:
 };
 
 #endif
-

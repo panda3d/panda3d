@@ -11,173 +11,136 @@
  * @date 2003-01-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE HTTPDate::
 HTTPDate() : _time(-1) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE HTTPDate::
 HTTPDate(time_t time) : _time(time) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE HTTPDate::
 HTTPDate(const HTTPDate &copy) : _time(copy._time) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void HTTPDate::
 operator = (const HTTPDate &copy) {
   _time = copy._time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::now (named constructor)
-//       Access: Published, Static
-//  Description: Returns an HTTPDate that represents the current time
-//               and date.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an HTTPDate that represents the current time and date.
+ */
 INLINE HTTPDate HTTPDate::
 now() {
   return HTTPDate(time(NULL));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::is_valid
-//       Access: Published
-//  Description: Returns true if the date is meaningful, or false if
-//               it is -1 (which generally indicates the source string
-//               could not be parsed.)
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the date is meaningful, or false if it is -1 (which generally
+ * indicates the source string could not be parsed.)
+ */
 INLINE bool HTTPDate::
 is_valid() const {
   return (_time != (time_t)(-1));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::get_time
-//       Access: Published
-//  Description: Returns the date as a C time_t value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the date as a C time_t value.
+ */
 INLINE time_t HTTPDate::
 get_time() const {
   return _time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Operator ==
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool HTTPDate::
 operator == (const HTTPDate &other) const {
   return _time == other._time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Operator !=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool HTTPDate::
 operator != (const HTTPDate &other) const {
   return !operator == (other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Operator <
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool HTTPDate::
 operator < (const HTTPDate &other) const {
   return _time < other._time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::Operator >
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool HTTPDate::
 operator > (const HTTPDate &other) const {
   return _time > other._time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::compare_to
-//       Access: Published
-//  Description: Returns a number less than zero if this HTTPDate
-//               sorts before the other one, greater than zero if it
-//               sorts after, or zero if they are equivalent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than zero if this HTTPDate sorts before the other one,
+ * greater than zero if it sorts after, or zero if they are equivalent.
+ */
 INLINE int HTTPDate::
 compare_to(const HTTPDate &other) const {
   return (int)(_time - other._time);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::operator +=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void HTTPDate::
 operator += (int seconds) {
   _time += seconds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::operator -=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void HTTPDate::
 operator -= (int seconds) {
   _time -= seconds;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::operator +
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE HTTPDate HTTPDate::
 operator + (int seconds) const {
   return HTTPDate(_time + seconds);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::operator -
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE HTTPDate HTTPDate::
 operator - (int seconds) const {
   return HTTPDate(_time - seconds);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDate::operator -
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int HTTPDate::
 operator - (const HTTPDate &other) const {
   return (int)(_time - other._time);
@@ -197,5 +160,3 @@ operator << (ostream &out, const HTTPDate &date) {
   date.output(out);
   return out;
 }
-
-

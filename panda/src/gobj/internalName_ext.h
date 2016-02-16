@@ -22,12 +22,10 @@
 #include "internalName.h"
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<InternalName>
-// Description : This class defines the extension methods for
-//               InternalName, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for InternalName, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<InternalName> : public ExtensionBase<InternalName> {
 public:

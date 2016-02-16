@@ -20,11 +20,10 @@
 
 #include "dxfFile.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DXFPoints
-// Description : A simple program to read a dxf file and list the
-//               points contained within it to a text file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple program to read a dxf file and list the points contained within it
+ * to a text file.
+ */
 class DXFPoints : public ProgramBase, public WithOutputFile, public DXFFile {
 public:
   DXFPoints();
@@ -40,4 +39,3 @@ protected:
 };
 
 #endif
-

@@ -18,11 +18,10 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformRotateScale
-// Description : A combination rotation and scale.  This is sometimes
-//               called "Rotate To Point" within MultiGen.
-////////////////////////////////////////////////////////////////////
+/**
+ * A combination rotation and scale.  This is sometimes called "Rotate To Point"
+ * within MultiGen.
+ */
 class FltTransformRotateScale : public FltTransformRecord {
 public:
   FltTransformRotateScale(FltHeader *header);
@@ -70,5 +69,3 @@ private:
 };
 
 #endif
-
-

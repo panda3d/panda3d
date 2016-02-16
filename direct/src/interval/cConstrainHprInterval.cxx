@@ -17,18 +17,13 @@
 
 TypeHandle CConstrainHprInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainHprInterval::Constructor
-//       Access: Published
-//  Description: Constructs a constraint interval that will constrain
-//               the orientation of one node to the orientation of
-//               another, possibly with an added rotation.
-//
-//               If wrt is true, the node's orientation will be
-//               transformed into the target node's parent's  space
-//               before being copied.  If wrt is false, the target
-//               node's local orientation will be copied unaltered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a constraint interval that will constrain the orientation of one
+ * node to the orientation of another, possibly with an added rotation.  If wrt
+ * is true, the node's orientation will be transformed into the target node's
+ * parent's  space before being copied.  If wrt is false, the target node's
+ * local orientation will be copied unaltered.
+ */
 CConstrainHprInterval::
 CConstrainHprInterval(const string &name, double duration,
                       const NodePath &node, const NodePath &target,
@@ -41,13 +36,10 @@ CConstrainHprInterval(const string &name, double duration,
   _quatOffset.set_hpr(hprOffset);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainHprInterval::step
-//       Access: Published, Virtual
-//  Description: Advances the time on the interval.  The time may
-//               either increase (the normal case) or decrease
-//               (e.g. if the interval is being played by a slider).
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the time on the interval.  The time may either increase (the normal
+ * case) or decrease (e.g.  if the interval is being played by a slider).
+ */
 void CConstrainHprInterval::
 priv_step(double t) {
   check_started(get_class_type(), "priv_step");
@@ -71,11 +63,9 @@ priv_step(double t) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainHprInterval::output
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CConstrainHprInterval::
 output(ostream &out) const {
   out << get_name() << ":";

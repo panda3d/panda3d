@@ -27,20 +27,14 @@
 class PandaNode;
 class CullTraverser;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CullTraverserData
-// Description : This collects together the pieces of data that are
-//               accumulated for each node while walking the scene
-//               graph during the cull traversal.
-//
-//               Having this as a separate object simplifies the
-//               parameter list to CullTraverser::r_traverse(), as
-//               well as to other functions like
-//               PandaNode::cull_callback().  It also makes it easier
-//               to add cull parameters, and provides a place to
-//               abstract out some of the cull behavior (like
-//               view-frustum culling).
-////////////////////////////////////////////////////////////////////
+/**
+ * This collects together the pieces of data that are accumulated for each node
+ * while walking the scene graph during the cull traversal.  Having this as a
+ * separate object simplifies the parameter list to CullTraverser::r_traverse(),
+ * as well as to other functions like PandaNode::cull_callback().  It also makes
+ * it easier to add cull parameters, and provides a place to abstract out some
+ * of the cull behavior (like view-frustum culling).
+ */
 class EXPCL_PANDA_PGRAPH CullTraverserData {
 public:
   INLINE CullTraverserData(const NodePath &start,

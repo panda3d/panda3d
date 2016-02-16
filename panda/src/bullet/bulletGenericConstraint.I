@@ -11,36 +11,29 @@
  * @date 2010-03-02
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletGenericConstraint::
 ~BulletGenericConstraint() {
 
   delete _constraint;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::get_frame_a
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CPT(TransformState) BulletGenericConstraint::
 get_frame_a() const {
 
   return btTrans_to_TransformState(_constraint->getFrameOffsetA());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGenericConstraint::get_frame_b
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CPT(TransformState) BulletGenericConstraint::
 get_frame_b() const {
 
   return btTrans_to_TransformState(_constraint->getFrameOffsetB());
 }
-

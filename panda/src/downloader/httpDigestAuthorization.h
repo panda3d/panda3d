@@ -24,13 +24,11 @@
 
 #include "httpAuthorization.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPDigestAuthorization
-// Description : Implements the "Digest" type of HTTP authorization.
-//               This is designed to be an improvement over "Basic"
-//               authorization, in that it does not send passwords
-//               over the net in cleartext, and it is harder to spoof.
-////////////////////////////////////////////////////////////////////
+/**
+ * Implements the "Digest" type of HTTP authorization.  This is designed to be
+ * an improvement over "Basic" authorization, in that it does not send passwords
+ * over the net in cleartext, and it is harder to spoof.
+ */
 class HTTPDigestAuthorization : public HTTPAuthorization {
 public:
   HTTPDigestAuthorization(const Tokens &tokens, const URLSpec &url,
@@ -60,12 +58,12 @@ private:
   static int match_qop_token(const string &token);
 
   string calc_request_digest(const string &username, const string &password,
-                             HTTPEnum::Method method, 
+                             HTTPEnum::Method method,
                              const string &request_path, const string &body);
   string calc_h(const string &data) const;
   string calc_kd(const string &secret, const string &data) const;
   string get_a1(const string &username, const string &password);
-  string get_a2(HTTPEnum::Method method, const string &request_path, 
+  string get_a2(HTTPEnum::Method method, const string &request_path,
                 const string &body);
   string get_hex_nonce_count() const;
 
@@ -94,4 +92,3 @@ ostream &operator << (ostream &out, HTTPDigestAuthorization::Qop qop);
 #endif  // HAVE_OPENSSL
 
 #endif
-

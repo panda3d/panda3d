@@ -13,15 +13,11 @@
 #ifndef __TIME_OUT_H__
 #define __TIME_OUT_H__
 
-////////////////////////////////////////////////////////////////////
-//
-// think of this class as a time based alarm..
-//
-// would be nice to have a template implementation of this class .. could avoud some storage and some math ..
-//
-// I would do this but not sure how to represent the duration in the template ??
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * think of this class as a time based alarm.. would be nice to have a template
+ * implementation of this class .. could avoud some storage and some math .. I
+ * would do this but not sure how to represent the duration in the template ??
+ */
 class Time_Out
 {
 public:
@@ -79,45 +75,40 @@ private:
     Time_Clock _alarm_time;
     Time_Span _duration;
 };
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Out::ReStart
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline void Time_Out::ResetAll(const Time_Clock &tm, const Time_Span &sp)
 {
     _duration = sp;
     _alarm_time = tm + _duration;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::ReStart
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline void Time_Out::SetTimeOutSec(int sec)
 {
     _duration.Set(0, 0, 0, sec, 0);
     ReStart();
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::ReStart
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline void Time_Out::ReStart()
 {
     _alarm_time = Time_Clock::GetCurrentTime() + _duration;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: ResetTime
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline void Time_Out::ResetTime(const Time_Clock & tm)
 {
     _alarm_time = tm + _duration;
 
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Expired
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline bool Time_Out::Expired(const Time_Clock &tm, bool reset)
 {
     bool answer = (_alarm_time <= tm) ;
@@ -125,26 +116,23 @@ inline bool Time_Out::Expired(const Time_Clock &tm, bool reset)
         ResetTime(tm);
     return answer;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Expired
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline bool Time_Out::Expired(bool reset)
 {
     return Expired(Time_Clock::GetCurrentTime(), reset);
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Remaining
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Time_Span Time_Out::Remaining(const Time_Clock & tm) const
 {
     return _alarm_time - tm;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Time_Span::Remaining
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline Time_Span Time_Out::Remaining() const
 {
     return Remaining(Time_Clock::GetCurrentTime());

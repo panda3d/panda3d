@@ -18,13 +18,11 @@
 
 #include "pgItem.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGWaitBar
-// Description : This is a particular kind of PGItem that draws a
-//               little bar that fills from left to right to indicate
-//               a slow process gradually completing, like a
-//               traditional "wait, loading" bar.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a particular kind of PGItem that draws a little bar that fills from
+ * left to right to indicate a slow process gradually completing, like a
+ * traditional "wait, loading" bar.
+ */
 class EXPCL_PANDA_PGUI PGWaitBar : public PGItem {
 PUBLISHED:
   PGWaitBar(const string &name = "");

@@ -24,19 +24,14 @@
 
 class PreparedGraphicsObjects;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BufferContext
-// Description : This is a base class for those kinds of SavedContexts
-//               that occupy an easily-measured (and substantial)
-//               number of bytes in the video card's frame buffer
-//               memory or AGP memory.  At the present, this includes
-//               most of the SavedContext types: VertexBufferContext
-//               and IndexBufferContext, as well as TextureContext.
-//
-//               This class provides methods for tracking the video
-//               memory utilization, as well as residency of each
-//               object, via PStats.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for those kinds of SavedContexts that occupy an easily-
+ * measured (and substantial) number of bytes in the video card's frame buffer
+ * memory or AGP memory.  At the present, this includes most of the SavedContext
+ * types: VertexBufferContext and IndexBufferContext, as well as TextureContext.
+ * This class provides methods for tracking the video memory utilization, as
+ * well as residency of each object, via PStats.
+ */
 class EXPCL_PANDA_GOBJ BufferContext : public SavedContext, private LinkedListNode {
 public:
   BufferContext(BufferResidencyTracker *residency);
@@ -98,4 +93,3 @@ private:
 #include "bufferContext.I"
 
 #endif
-

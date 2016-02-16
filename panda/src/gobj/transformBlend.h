@@ -25,13 +25,10 @@
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TransformBlend
-// Description : This defines a single entry in a
-//               TransformBlendTable.  It represents a unique
-//               combination of VertexTransform pointers and blend
-//               amounts.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a single entry in a TransformBlendTable.  It represents a unique
+ * combination of VertexTransform pointers and blend amounts.
+ */
 class EXPCL_PANDA_GOBJ TransformBlend {
 PUBLISHED:
   INLINE TransformBlend();

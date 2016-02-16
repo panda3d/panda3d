@@ -27,21 +27,16 @@
 #include "lmatrix.h"
 #include "iterator_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggVertexPool
-// Description : A collection of vertices.  There may be any number of
-//               vertex pools in a single egg structure.  The vertices
-//               in a single pool need not necessarily have any
-//               connection to each other, but it is necessary that
-//               any one primitive (e.g. a polygon) must pull all its
-//               vertices from the same pool.
-//
-//               An EggVertexPool is an STL-style container of
-//               pointers to EggVertex's.  Functions add_vertex() and
-//               remove_vertex() are provided to manipulate the list.
-//               The list may also be operated on (read-only) via
-//               iterators and begin()/end().
-////////////////////////////////////////////////////////////////////
+/**
+ * A collection of vertices.  There may be any number of vertex pools in a
+ * single egg structure.  The vertices in a single pool need not necessarily
+ * have any connection to each other, but it is necessary that any one primitive
+ * (e.g.  a polygon) must pull all its vertices from the same pool.  An
+ * EggVertexPool is an STL-style container of pointers to EggVertex's.
+ * Functions add_vertex() and remove_vertex() are provided to manipulate the
+ * list.  The list may also be operated on (read-only) via iterators and
+ * begin()/end().
+ */
 class EXPCL_PANDAEGG EggVertexPool : public EggNode {
 
   // This is a bit of private interface stuff that must be here as a
@@ -96,7 +91,7 @@ PUBLISHED:
   void check_overall_color(bool &has_overall_color, LColor &overall_color) const;
   bool has_uvs() const;
   bool has_aux() const;
-  void get_uv_names(vector_string &uv_names, vector_string &uvw_names, 
+  void get_uv_names(vector_string &uv_names, vector_string &uvw_names,
                     vector_string &tbn_names) const;
   void get_aux_names(vector_string &aux_names) const;
 

@@ -31,12 +31,10 @@ class Thread;
 #include <windows.h>  // For Sleep().
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : ThreadDummyImpl
-// Description : A fake thread implementation for single-threaded
-//               applications.  This simply fails whenever you try to
-//               start a thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * A fake thread implementation for single-threaded applications.  This simply
+ * fails whenever you try to start a thread.
+ */
 class EXPCL_PANDA_PIPELINE ThreadDummyImpl {
 public:
   INLINE ThreadDummyImpl(Thread *parent_obj);

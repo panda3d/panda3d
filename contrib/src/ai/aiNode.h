@@ -16,17 +16,13 @@
 
 #include "aiGlobals.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AINode
-// Description : This class is used to assign the nodes on the mesh.
-//               It holds all the data necessary to compute A*
-//               algorithm. It also maintains a lot of vital
-//               information such as the neighbor nodes of each
-//               node and also its position on the mesh.
-//               Note: The Mesh Generator which is a standalone
-//               tool makes use of this class to generate the nodes
-//               on the mesh.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to assign the nodes on the mesh.  It holds all the data
+ * necessary to compute A* algorithm.  It also maintains a lot of vital
+ * information such as the neighbor nodes of each node and also its position on
+ * the mesh.  Note: The Mesh Generator which is a standalone tool makes use of
+ * this class to generate the nodes on the mesh.
+ */
 class EXPCL_PANDAAI AINode {
 public:
   // This variable specifies the node status whether open, close

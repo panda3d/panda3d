@@ -15,53 +15,35 @@
 #define POINTERTOARRAY_H
 
 
-////////////////////////////////////////////////////////////////////
-//
-// This file defines the classes PointerToArray and
-// ConstPointerToArray (and their abbreviations, PTA and CPTA), which
-// are extensions to the PointerTo class that support
-// reference-counted arrays.
-//
-// You may think of a PointerToArray as the same thing as a
-// traditional C-style array.  However, it actually stores a pointer
-// to an STL vector, which is then reference-counted.  Thus, most
-// vector operations may be applied directly to a PointerToArray
-// object, including dynamic resizing via push_back() and pop_back().
-//
-// Unlike the PointerTo class, the PointerToArray may store pointers
-// to any kind of object, not just those derived from ReferenceCount.
-//
-// Like PointerTo and ConstPointerTo, the macro abbreviations PTA and
-// CPTA are defined for convenience.
-//
-// Some examples of syntax:              instead of:
-//
-// PTA(int) array(10);                     int *array = new int[10];
-// memset(array, 0, sizeof(int) * 10);     memset(array, 0, sizeof(int) * 10);
-// array[i] = array[i+1];                  array[i] = array[i+1];
-// num_elements = array.size();             (no equivalent)
-//
-// PTA(int) copy = array;                  int *copy = array;
-//
-// Note that in the above example, unlike an STL vector (but like a
-// C-style array), assigning a PointerToArray object from another
-// simply copies the pointer, and does not copy individual elements.
-// (Of course, reference counts are adjusted appropriately7.)  If you
-// actually wanted an element-by-element copy of the array, you would
-// do this:
-//
-// PTA(int) copy(0);              // Create a pointer to an empty vector.
-// copy.v() = array.v();          // v() is the STL vector itself.
-//
-// The (0) parameter to the constructor in the above example is
-// crucial.  When a numeric length parameter, such as zero, is given
-// to the constructor, it means to define a new STL vector with that
-// number of elements initially in it.  If no parameter is given, on
-// the other hand, it means the PointerToArray should point to
-// nothing--no STL vector is created.  This is equivalent to a C array
-// that points to NULL.
-//
-////////////////////////////////////////////////////////////////////
+/*
+ * This file defines the classes PointerToArray and ConstPointerToArray (and
+ * their abbreviations, PTA and CPTA), which are extensions to the PointerTo
+ * class that support reference-counted arrays.  You may think of a
+ * PointerToArray as the same thing as a traditional C-style array.  However, it
+ * actually stores a pointer to an STL vector, which is then reference-counted.
+ * Thus, most vector operations may be applied directly to a PointerToArray
+ * object, including dynamic resizing via push_back() and pop_back(). Unlike the
+ * PointerTo class, the PointerToArray may store pointers to any kind of object,
+ * not just those derived from ReferenceCount.  Like PointerTo and
+ * ConstPointerTo, the macro abbreviations PTA and CPTA are defined for
+ * convenience.  Some examples of syntax:              instead of: PTA(int)
+ * array(10);                     int *array = new int[10]; memset(array, 0,
+ * sizeof(int) * 10);     memset(array, 0, sizeof(int) * 10); array[i] =
+ * array[i+1];                  array[i] = array[i+1]; num_elements =
+ * array.size();             (no equivalent) PTA(int) copy = array;
+ * int *copy = array; Note that in the above example, unlike an STL vector (but
+ * like a C-style array), assigning a PointerToArray object from another simply
+ * copies the pointer, and does not copy individual elements.  (Of course,
+ * reference counts are adjusted appropriately7.)  If you actually wanted an
+ * element-by-element copy of the array, you would do this: PTA(int) copy(0);
+ * Create a pointer to an empty vector.  copy.v() = array.v();           v() is
+ * the STL vector itself.  The (0) parameter to the constructor in the above
+ * example is crucial.  When a numeric length parameter, such as zero, is given
+ * to the constructor, it means to define a new STL vector with that number of
+ * elements initially in it.  If no parameter is given, on the other hand, it
+ * means the PointerToArray should point to nothing--no STL vector is created.
+ * This is equivalent to a C array that points to NULL.
+ */
 
 #include "pandabase.h"
 
@@ -76,24 +58,17 @@
 template <class Element>
 class ConstPointerToArray;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointerToArray
-// Description : A special kind of PointerTo that stores an array of
-//               the indicated element type, instead of a single
-//               element.  This is actually implemented as an STL
-//               vector, using the RefCountObj class to wrap it up
-//               with a reference count.
-//
-//               We actually inherit from NodeRefCountObj these days,
-//               which adds node_ref() and node_unref() to the
-//               standard ref() and unref().  This is particularly
-//               useful for GeomVertexArrayData; other classes may or
-//               may not find this additional counter useful, but
-//               since it adds relatively little overhead (compared
-//               with what is presumably a largish array), we go ahead
-//               and add it here, even though it is inherited by many
-//               different parts of the system that may not use it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special kind of PointerTo that stores an array of the indicated element
+ * type, instead of a single element.  This is actually implemented as an STL
+ * vector, using the RefCountObj class to wrap it up with a reference count.  We
+ * actually inherit from NodeRefCountObj these days, which adds node_ref() and
+ * node_unref() to the standard ref() and unref().  This is particularly useful
+ * for GeomVertexArrayData; other classes may or may not find this additional
+ * counter useful, but since it adds relatively little overhead (compared with
+ * what is presumably a largish array), we go ahead and add it here, even though
+ * it is inherited by many different parts of the system that may not use it.
+ */
 template <class Element>
 class PointerToArray : public PointerToArrayBase<Element> {
 public:
@@ -257,11 +232,9 @@ private:
   friend class ConstPointerToArray<Element>;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConstPointerToArray
-// Description : Similar to PointerToArray, except that its contents
-//               may not be modified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to PointerToArray, except that its contents may not be modified.
+ */
 template <class Element>
 class ConstPointerToArray : public PointerToArrayBase<Element> {
 public:

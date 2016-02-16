@@ -39,11 +39,9 @@ TypeHandle FfmpegAudioCursor::_type_handle;
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::Constructor
-//       Access: Protected
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 FfmpegAudioCursor::
 FfmpegAudioCursor(FfmpegAudio *src) :
   MovieAudioCursor(src),
@@ -179,21 +177,17 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _buffer_tail = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::Destructor
-//       Access: Protected, Virtual
-//  Description: xxx
-////////////////////////////////////////////////////////////////////
+/**
+ * xxx
+ */
 FfmpegAudioCursor::
 ~FfmpegAudioCursor() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::cleanup
-//       Access: Public
-//  Description: Reset to a standard inactive state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reset to a standard inactive state.
+ */
 void FfmpegAudioCursor::
 cleanup() {
   if (_frame) {
@@ -241,12 +235,10 @@ cleanup() {
   _audio_index = -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::fetch_packet
-//       Access: Protected
-//  Description: Fetches an audio packet and stores it in the
-//               packet buffer.  Also sets packet_size and packet_data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fetches an audio packet and stores it in the packet buffer.  Also sets
+ * packet_size and packet_data.
+ */
 void FfmpegAudioCursor::
 fetch_packet() {
   if (_packet->data) {
@@ -265,14 +257,11 @@ fetch_packet() {
   _packet_data = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::reload_buffer
-//       Access: Protected
-//  Description: Reloads the audio buffer by decoding audio packets
-//               until one of those audio packets finally yields
-//               some samples.  If we encounter the end of the
-//               stream, we synthesize silence.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reloads the audio buffer by decoding audio packets until one of those audio
+ * packets finally yields some samples.  If we encounter the end of the stream,
+ * we synthesize silence.
+ */
 bool FfmpegAudioCursor::
 reload_buffer() {
 
@@ -351,13 +340,10 @@ reload_buffer() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::seek
-//       Access: Protected
-//  Description: Seeks to a target location.  Afterward, the
-//               packet_time is guaranteed to be less than or
-//               equal to the specified time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Seeks to a target location.  Afterward, the packet_time is guaranteed to be
+ * less than or equal to the specified time.
+ */
 void FfmpegAudioCursor::
 seek(double t) {
   PN_int64 target_ts = (PN_int64)(t / _audio_timebase);
@@ -396,14 +382,11 @@ seek(double t) {
   _samples_read = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudioCursor::read_samples
-//       Access: Public, Virtual
-//  Description: Read audio samples from the stream.  N is the
-//               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.
-//               Multiple-channel audio will be interleaved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Read audio samples from the stream.  N is the number of samples you wish to
+ * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
+ * audio will be interleaved.
+ */
 void FfmpegAudioCursor::
 read_samples(int n, PN_int16 *data) {
   int desired = n * _audio_channels;

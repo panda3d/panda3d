@@ -19,11 +19,9 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SoftCVS::
 SoftCVS() {
   _cvs_binary = "cvs";
@@ -64,11 +62,9 @@ SoftCVS() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SoftCVS::
 run() {
   // First, check for the scenes directory.  If it doesn't exist, we
@@ -112,12 +108,10 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::traverse_root
-//       Access: Private
-//  Description: Reads all of the toplevel directory names,
-//               e.g. SCENES, MATERIALS, etc., and traverses them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads all of the toplevel directory names, e.g.  SCENES, MATERIALS, etc., and
+ * traverses them.
+ */
 void SoftCVS::
 traverse_root() {
   Filename root(".");
@@ -138,12 +132,10 @@ traverse_root() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::traverse_subdir
-//       Access: Private
-//  Description: Reads the directory indicated by prefix and
-//               identifies all of the SoftImage files stored there.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the directory indicated by prefix and identifies all of the SoftImage
+ * files stored there.
+ */
 void SoftCVS::
 traverse_subdir(const Filename &directory) {
   // Get the list of files in the directory.
@@ -233,13 +225,10 @@ traverse_subdir(const Filename &directory) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::collapse_scene_files
-//       Access: Private
-//  Description: Walks through the list of scene files found, and
-//               renames the higher-versioned ones to version 1-0,
-//               removing the intervening versions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the list of scene files found, and renames the higher-versioned
+ * ones to version 1-0, removing the intervening versions.
+ */
 void SoftCVS::
 collapse_scene_files() {
   // Get a copy of the scene files vector so we can modify it.  Also
@@ -277,13 +266,10 @@ collapse_scene_files() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::get_scenes
-//       Access: Private
-//  Description: Walks through the list of scene files and looks for
-//               the set of element files referenced by each one,
-//               updating multifile accordingly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks through the list of scene files and looks for the set of element files
+ * referenced by each one, updating multifile accordingly.
+ */
 bool SoftCVS::
 get_scenes() {
   bool okflag = true;
@@ -361,13 +347,10 @@ get_scenes() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::remove_unused_elements
-//       Access: Private
-//  Description: Remove all the element files that weren't referenced
-//               by any scene file.  Also plan to cvs add all those
-//               that were referenced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Remove all the element files that weren't referenced by any scene file.  Also
+ * plan to cvs add all those that were referenced.
+ */
 void SoftCVS::
 remove_unused_elements() {
   ElementFiles::const_iterator fi;
@@ -392,14 +375,11 @@ remove_unused_elements() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::rename_file
-//       Access: Private
-//  Description: Renames the first file in the indicated list to a
-//               version 1-0 filename, superceding all the other files
-//               in the list.  Returns true if the file is renamed,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renames the first file in the indicated list to a version 1-0 filename,
+ * superceding all the other files in the list.  Returns true if the file is
+ * renamed, false otherwise.
+ */
 bool SoftCVS::
 rename_file(SoftCVS::SceneFiles::iterator begin,
             SoftCVS::SceneFiles::iterator end) {
@@ -449,14 +429,11 @@ rename_file(SoftCVS::SceneFiles::iterator begin,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::scan_cvs
-//       Access: Private
-//  Description: Scans the CVS repository in the indicated directory
-//               to determine which files are already versioned
-//               elements.  Returns true if the directory is
-//               CVS-controlled, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the CVS repository in the indicated directory to determine which files
+ * are already versioned elements.  Returns true if the directory is CVS-
+ * controlled, false otherwise.
+ */
 bool SoftCVS::
 scan_cvs(const string &dirname, pset<string> &cvs_elements) {
   Filename cvs_entries = dirname + "/CVS/Entries";
@@ -495,17 +472,14 @@ scan_cvs(const string &dirname, pset<string> &cvs_elements) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::scan_scene_file
-//       Access: Private
-//  Description: Reads a scene file, looking for references to element
-//               files.  For each reference found, increments the
-//               appropriate element file's reference count.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a scene file, looking for references to element files.  For each
+ * reference found, increments the appropriate element file's reference count.
+ */
 bool SoftCVS::
 scan_scene_file(istream &in, Multifile &multifile) {
   bool okflag = true;
-  
+
   int c = in.get();
   while (!in.eof() && !in.fail()) {
     // Skip whitespace.
@@ -547,13 +521,10 @@ scan_scene_file(istream &in, Multifile &multifile) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::cvs_add
-//       Access: Private
-//  Description: Invokes CVS to add just the named file to the
-//               repository.  Returns true on success, false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes CVS to add just the named file to the repository.  Returns true on
+ * success, false on failure.
+ */
 bool SoftCVS::
 cvs_add(const string &path) {
   string command = _cvs_binary + " add -kb " + path;
@@ -567,13 +538,10 @@ cvs_add(const string &path) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftCVS::cvs_add_or_remove
-//       Access: Private
-//  Description: Invokes CVS to add (or remove) all of the files in
-//               the indicated vector.  Returns true on success, false
-//               on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes CVS to add (or remove) all of the files in the indicated vector.
+ * Returns true on success, false on failure.
+ */
 bool SoftCVS::
 cvs_add_or_remove(const string &cvs_command, const vector_string &paths) {
   static const int max_command = 4096;

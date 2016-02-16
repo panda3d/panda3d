@@ -16,16 +16,15 @@
 
 #include "linearIntegrator.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearEulerIntegrator
-// Description : Performs Euler integration on a vector of
-//               physically modelable objects given a quantum dt.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs Euler integration on a vector of physically modelable objects given
+ * a quantum dt.
+ */
 class EXPCL_PANDAPHYSICS LinearEulerIntegrator : public LinearIntegrator {
 PUBLISHED:
   LinearEulerIntegrator();
   virtual ~LinearEulerIntegrator();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

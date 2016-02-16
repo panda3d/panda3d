@@ -11,11 +11,9 @@
  * @date 2001-04-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoPoints::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CLwoPoints::
 CLwoPoints(LwoToEggConverter *converter, const LwoPoints *points,
            CLwoLayer *layer) :

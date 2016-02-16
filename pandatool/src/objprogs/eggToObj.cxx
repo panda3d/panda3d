@@ -18,11 +18,9 @@
 #include "dcast.h"
 #include "string_utils.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObj::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToObj::
 EggToObj() :
   EggToSomething("Obj", ".obj", true, false)
@@ -47,11 +45,9 @@ EggToObj() :
   _got_coordinate_system = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObj::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToObj::
 run() {
   if (_triangulate_polygons) {
@@ -69,14 +65,11 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToObj::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggToObj::
 handle_args(ProgramBase::Args &args) {
   return EggToSomething::handle_args(args);

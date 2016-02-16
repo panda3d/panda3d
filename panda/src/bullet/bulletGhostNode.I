@@ -11,33 +11,27 @@
  * @date 2010-11-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletGhostNode::
 ~BulletGhostNode() {
 
   delete _ghost;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::get_num_overlapping_nodes
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int BulletGhostNode::
 get_num_overlapping_nodes() const {
 
   return _ghost->getNumOverlappingObjects();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletGhostNode::get_overlapping_node
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PandaNode *BulletGhostNode::
 get_overlapping_node(int idx) const {
 
@@ -46,4 +40,3 @@ get_overlapping_node(int idx) const {
   btCollisionObject *object = _ghost->getOverlappingObject(idx);
   return (object) ? (PandaNode *)object->getUserPointer() : NULL;
 }
-

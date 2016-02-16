@@ -11,23 +11,18 @@
  * @date 2005-03-06
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Default Constructor
-//       Access: Private
-//  Description: Creates an invalid column.  Used only when constructing
-//               from a bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates an invalid column.  Used only when constructing from a bam file.
+ */
 INLINE GeomVertexColumn::
 GeomVertexColumn() :
   _packer(NULL)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexColumn::
 GeomVertexColumn(CPT_InternalName name, int num_components,
                  NumericType numeric_type, Contents contents,
@@ -46,11 +41,9 @@ GeomVertexColumn(CPT_InternalName name, int num_components,
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexColumn::
 GeomVertexColumn(const GeomVertexColumn &copy) :
   _name(copy._name),
@@ -66,165 +59,126 @@ GeomVertexColumn(const GeomVertexColumn &copy) :
   setup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE GeomVertexColumn::
 ~GeomVertexColumn() {
   delete _packer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_name
-//       Access: Published
-//  Description: Returns the name of this particular data field,
-//               e.g. "vertex" or "normal".  The name may be a
-//               user-defined string, or it may be one of the standard
-//               system-defined field types.  Only the system-defined
-//               field types are used for the actual rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of this particular data field, e.g.  "vertex" or "normal".
+ * The name may be a user-defined string, or it may be one of the standard
+ * system-defined field types.  Only the system-defined field types are used for
+ * the actual rendering.
+ */
 INLINE const InternalName *GeomVertexColumn::
 get_name() const {
   return _name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_num_components
-//       Access: Published
-//  Description: Returns the number of components of the column:
-//               the number of instances of the NumericType in each
-//               element.  This is usually, but not always, the same
-//               thing as get_num_values().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of components of the column: the number of instances of
+ * the NumericType in each element.  This is usually, but not always, the same
+ * thing as get_num_values().
+ */
 INLINE int GeomVertexColumn::
 get_num_components() const {
   return _num_components;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_num_values
-//       Access: Published
-//  Description: Returns the number of numeric values of the column:
-//               the number of distinct numeric values that go into
-//               each element.  This is usually, but not always, the
-//               same thing as get_num_components(); the difference is
-//               in the case of a composite numeric type like
-//               NT_packed_dcba, which has four numeric values per
-//               component.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of numeric values of the column: the number of distinct
+ * numeric values that go into each element.  This is usually, but not always,
+ * the same thing as get_num_components(); the difference is in the case of a
+ * composite numeric type like NT_packed_dcba, which has four numeric values per
+ * component.
+ */
 INLINE int GeomVertexColumn::
 get_num_values() const {
   return _num_values;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_num_elements
-//       Access: Published
-//  Description: Returns the number of times this column is repeated.
-//               This is usually 1, except for matrices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of times this column is repeated.  This is usually 1,
+ * except for matrices.
+ */
 INLINE int GeomVertexColumn::
 get_num_elements() const {
   return _num_elements;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_numeric_type
-//       Access: Published
-//  Description: Returns the token representing the numeric type of
-//               the data storage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the token representing the numeric type of the data storage.
+ */
 INLINE GeomVertexColumn::NumericType GeomVertexColumn::
 get_numeric_type() const {
   return _numeric_type;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_contents
-//       Access: Published
-//  Description: Returns the token representing the semantic meaning of
-//               the stored value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the token representing the semantic meaning of the stored value.
+ */
 INLINE GeomVertexColumn::Contents GeomVertexColumn::
 get_contents() const {
   return _contents;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_start
-//       Access: Published
-//  Description: Returns the byte within the array record at which
-//               this column starts.  This can be set to non-zero
-//               to implement interleaved arrays.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the byte within the array record at which this column starts.  This
+ * can be set to non-zero to implement interleaved arrays.
+ */
 INLINE int GeomVertexColumn::
 get_start() const {
   return _start;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_column_alignment
-//       Access: Published
-//  Description: Returns the alignment requirements for this column.
-//               If this is greater than 1, it restricts the column to
-//               appear only on memory addresses that are integer
-//               multiples of this value; this has implications for
-//               this column's start value, as well as the stride of
-//               the resulting array.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the alignment requirements for this column.  If this is greater than
+ * 1, it restricts the column to appear only on memory addresses that are
+ * integer multiples of this value; this has implications for this column's
+ * start value, as well as the stride of the resulting array.
+ */
 INLINE int GeomVertexColumn::
 get_column_alignment() const {
   return _column_alignment;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_element_stride
-//       Access: Published
-//  Description: This value is only relevant for matrix types.
-//               Returns the number of bytes to add to access the
-//               next row of the matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * This value is only relevant for matrix types.  Returns the number of bytes to
+ * add to access the next row of the matrix.
+ */
 INLINE int GeomVertexColumn::
 get_element_stride() const {
   return _element_stride;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_component_bytes
-//       Access: Published
-//  Description: Returns the number of bytes used by each component
-//               (that is, by one element of the numeric type).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bytes used by each component (that is, by one element
+ * of the numeric type).
+ */
 INLINE int GeomVertexColumn::
 get_component_bytes() const {
   return _component_bytes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::get_total_bytes
-//       Access: Published
-//  Description: Returns the number of bytes used by each element of
-//               the column: component_bytes * num_components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of bytes used by each element of the column:
+ * component_bytes * num_components.
+ */
 INLINE int GeomVertexColumn::
 get_total_bytes() const {
   return _total_bytes;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::has_homogeneous_coord
-//       Access: Published
-//  Description: Returns true if this Contents type is one that
-//               includes a homogeneous coordinate in the fourth
-//               component, or false otherwise.  If this is true,
-//               correct operation on the vertex data may require
-//               scaling by the homogeneous coordinate from time to
-//               time (but in general this is handled automatically if
-//               you use the 3-component or smaller forms of
-//               get_data() and set_data()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this Contents type is one that includes a homogeneous
+ * coordinate in the fourth component, or false otherwise.  If this is true,
+ * correct operation on the vertex data may require scaling by the homogeneous
+ * coordinate from time to time (but in general this is handled automatically if
+ * you use the 3-component or smaller forms of get_data() and set_data()).
+ */
 INLINE bool GeomVertexColumn::
 has_homogeneous_coord() const {
   switch (_contents) {
@@ -237,26 +191,20 @@ has_homogeneous_coord() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::overlaps_with
-//       Access: Published
-//  Description: Returns true if this column overlaps with any of
-//               the bytes in the indicated range, false if it does
-//               not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this column overlaps with any of the bytes in the indicated
+ * range, false if it does not.
+ */
 INLINE bool GeomVertexColumn::
 overlaps_with(int start_byte, int num_bytes) const {
   return (_start < start_byte + num_bytes &&
           _start + _total_bytes > start_byte);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::is_bytewise_equivalent
-//       Access: Published
-//  Description: Returns true if the data store of this column is
-//               exactly the same as that of the other, irrespective
-//               of name or start position within the record.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the data store of this column is exactly the same as that of
+ * the other, irrespective of name or start position within the record.
+ */
 INLINE bool GeomVertexColumn::
 is_bytewise_equivalent(const GeomVertexColumn &other) const {
   // Not sure if the contents are relevant, but let's say that they
@@ -266,13 +214,10 @@ is_bytewise_equivalent(const GeomVertexColumn &other) const {
           _contents == other._contents);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::is_packed_argb
-//       Access: Public
-//  Description: Returns true if this column is the standard
-//               DirectX representation of 4-component color: C_color,
-//               in NT_packed_dabc, with 1 component (4 values).
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this column is the standard DirectX representation of
+ * 4-component color: C_color, in NT_packed_dabc, with 1 component (4 values).
+ */
 INLINE bool GeomVertexColumn::
 is_packed_argb() const {
   return (_num_components == 1 &&
@@ -280,13 +225,10 @@ is_packed_argb() const {
           _contents == C_color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::is_uint8_rgba
-//       Access: Public
-//  Description: Returns true if this column is the standard
-//               OpenGL representation of 4-component color: C_color,
-//               in NT_uint8, with 4 components.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this column is the standard OpenGL representation of
+ * 4-component color: C_color, in NT_uint8, with 4 components.
+ */
 INLINE bool GeomVertexColumn::
 is_uint8_rgba() const {
   return (_num_components == 4 &&
@@ -294,12 +236,10 @@ is_uint8_rgba() const {
           _contents == C_color);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::compare_to
-//       Access: Public
-//  Description: This is used to unquify columns, and hence
-//               formats, for the GeomVertexFormat registry.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to unquify columns, and hence formats, for the GeomVertexFormat
+ * registry.
+ */
 INLINE int GeomVertexColumn::
 compare_to(const GeomVertexColumn &other) const {
   if (_name != other._name) {
@@ -329,35 +269,27 @@ compare_to(const GeomVertexColumn &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::operator ==
-//       Access: Public
-//  Description: Returns true if the two columns are exactly
-//               equivalent, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the two columns are exactly equivalent, false otherwise.
+ */
 INLINE bool GeomVertexColumn::
 operator == (const GeomVertexColumn &other) const {
   return compare_to(other) == 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::operator !=
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool GeomVertexColumn::
 operator != (const GeomVertexColumn &other) const {
   return compare_to(other) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexColumn::operator <
-//       Access: Public
-//  Description: This is used to put columns in order within a
-//               particular GeomVertexArrayFormat.  Note that it is
-//               *not* in the same space as operator == and operator
-//               !=.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to put columns in order within a particular
+ * GeomVertexArrayFormat.  Note that it is *not* in the same space as operator
+ * == and operator !=.
+ */
 INLINE bool GeomVertexColumn::
 operator < (const GeomVertexColumn &other) const {
   if (_start != other._start) {

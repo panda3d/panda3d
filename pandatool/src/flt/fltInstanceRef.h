@@ -20,14 +20,11 @@
 
 class FltInstanceDefinition;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltInstanceRef
-// Description : This bead appears in the hierarchy to refer to a
-//               FltInstanceDefinition node defined elsewhere.  It
-//               indicates that the subtree beginning at the
-//               FltInstanceDefinition should be considered to be
-//               instanced here.
-////////////////////////////////////////////////////////////////////
+/**
+ * This bead appears in the hierarchy to refer to a FltInstanceDefinition node
+ * defined elsewhere.  It indicates that the subtree beginning at the
+ * FltInstanceDefinition should be considered to be instanced here.
+ */
 class FltInstanceRef : public FltBead {
 public:
   FltInstanceRef(FltHeader *header);
@@ -62,5 +59,3 @@ private:
 };
 
 #endif
-
-

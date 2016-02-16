@@ -16,13 +16,11 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPEntityTag
-// Description : A container for an "entity tag" from an HTTP server.
-//               This is used to identify a particular version of a
-//               document or resource, particularly useful for
-//               verifying caches.
-////////////////////////////////////////////////////////////////////
+/**
+ * A container for an "entity tag" from an HTTP server.  This is used to
+ * identify a particular version of a document or resource, particularly useful
+ * for verifying caches.
+ */
 class EXPCL_PANDAEXPRESS HTTPEntityTag {
 PUBLISHED:
   INLINE HTTPEntityTag();

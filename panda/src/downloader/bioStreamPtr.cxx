@@ -15,11 +15,9 @@
 
 #ifdef HAVE_OPENSSL
 
-////////////////////////////////////////////////////////////////////
-//     Function: BioStreamPtr::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BioStreamPtr::
 ~BioStreamPtr() {
   if (_stream != (BioStream *)NULL) {

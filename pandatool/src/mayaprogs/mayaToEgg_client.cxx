@@ -16,11 +16,9 @@
   #include "pystub.h"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaToEggClient::
 MayaToEggClient() :
   SomethingToEgg("Maya", ".mb")
@@ -82,4 +80,3 @@ int main(int argc, char *argv[]) {
     Thread::sleep(0.1);
   }
 }
-

@@ -25,13 +25,10 @@ PStatCollector MovieVideoCursor::_copy_pcollector_copy("*:Copy Video into Textur
 TypeHandle MovieVideoCursor::_type_handle;
 TypeHandle MovieVideoCursor::Buffer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Default Constructor
-//       Access: Protected
-//  Description: This is a virtual base class and should not be
-//               created directly.  Instead, create a more specialized
-//               class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a virtual base class and should not be created directly.  Instead,
+ * create a more specialized class.
+ */
 MovieVideoCursor::
 MovieVideoCursor(MovieVideo *src) :
   _source(src),
@@ -47,22 +44,17 @@ MovieVideoCursor(MovieVideo *src) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MovieVideoCursor::
 ~MovieVideoCursor() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::setup_texture
-//       Access: Published
-//  Description: Set up the specified Texture object to contain
-//               content from this movie.  This should be called
-//               once, not every frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Set up the specified Texture object to contain content from this movie.  This
+ * should be called once, not every frame.
+ */
 void MovieVideoCursor::
 setup_texture(Texture *tex) const {
   int fullx = size_x();
@@ -73,58 +65,39 @@ setup_texture(Texture *tex) const {
   tex->set_pad_size(fullx - size_x(), fully - size_y());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::set_time
-//       Access: Published, Virtual
-//  Description: Updates the cursor to the indicated time.  If
-//               loop_count >= 1, the time is clamped to the movie's
-//               length * loop_count.  If loop_count <= 0, the time is
-//               understood to be modulo the movie's length.
-//
-//               Returns true if a new frame is now available, false
-//               otherwise.  If this returns true, you should
-//               immediately follow this with exactly *one* call to
-//               fetch_buffer().
-//
-//               If the movie reports that it can_seek, you may also
-//               specify a time value less than the previous value you
-//               passed to set_time().  Otherwise, you may only
-//               specify a time value greater than or equal to
-//               the previous value.
-//
-//               If the movie reports that it can_seek, it doesn't
-//               mean that it can do so quickly.  It may have to
-//               rewind the movie and then fast forward to the
-//               desired location.  Only if can_seek_fast returns
-//               true can it seek rapidly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the cursor to the indicated time.  If loop_count >= 1, the time is
+ * clamped to the movie's length * loop_count.  If loop_count <= 0, the time is
+ * understood to be modulo the movie's length.  Returns true if a new frame is
+ * now available, false otherwise.  If this returns true, you should immediately
+ * follow this with exactly *one* call to fetch_buffer().  If the movie reports
+ * that it can_seek, you may also specify a time value less than the previous
+ * value you passed to set_time().  Otherwise, you may only specify a time value
+ * greater than or equal to the previous value.  If the movie reports that it
+ * can_seek, it doesn't mean that it can do so quickly.  It may have to rewind
+ * the movie and then fast forward to the desired location.  Only if
+ * can_seek_fast returns true can it seek rapidly.
+ */
 bool MovieVideoCursor::
 set_time(double timestamp, int loop_count) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::fetch_buffer
-//       Access: Published, Virtual
-//  Description: Gets the current video frame (as specified by
-//               set_time()) from the movie and returns it in a
-//               pre-allocated buffer.  You may simply let the buffer
-//               dereference and delete itself when you are done with
-//               it.
-//
-//               This may return NULL (even if set_time() returned
-//               true) if the frame is not available for some reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the current video frame (as specified by set_time()) from the movie and
+ * returns it in a pre-allocated buffer.  You may simply let the buffer
+ * dereference and delete itself when you are done with it.  This may return
+ * NULL (even if set_time() returned true) if the frame is not available for
+ * some reason.
+ */
 PT(MovieVideoCursor::Buffer) MovieVideoCursor::
 fetch_buffer() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::apply_to_texture
-//       Access: Published, Virtual
-//  Description: Stores this buffer's contents in the indicated texture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores this buffer's contents in the indicated texture.
+ */
 void MovieVideoCursor::
 apply_to_texture(const Buffer *buffer, Texture *t, int page) {
   if (buffer == NULL) {
@@ -178,13 +151,10 @@ apply_to_texture(const Buffer *buffer, Texture *t, int page) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::apply_to_texture_alpha
-//       Access: Published, Virtual
-//  Description: Copies this buffer's contents into the alpha channel
-//               of the supplied texture.  The RGB channels of the
-//               texture are not touched.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies this buffer's contents into the alpha channel of the supplied texture.
+ * The RGB channels of the texture are not touched.
+ */
 void MovieVideoCursor::
 apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src) {
   if (buffer == NULL) {
@@ -235,13 +205,10 @@ apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::apply_to_texture_rgb
-//       Access: Published, Virtual
-//  Description: Copies this buffer's contents into the RGB channels
-//               of the supplied texture.  The alpha channel of the
-//               texture is not touched.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies this buffer's contents into the RGB channels of the supplied texture.
+ * The alpha channel of the texture is not touched.
+ */
 void MovieVideoCursor::
 apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
   if (buffer == NULL) {
@@ -281,13 +248,10 @@ apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::get_standard_buffer
-//       Access: Protected
-//  Description: May be called by a derived class to return a single
-//               standard Buffer object to easily implement
-//               fetch_buffer().
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called by a derived class to return a single standard Buffer object to
+ * easily implement fetch_buffer().
+ */
 MovieVideoCursor::Buffer *MovieVideoCursor::
 get_standard_buffer() {
   if (_standard_buffer == NULL) {
@@ -296,23 +260,18 @@ get_standard_buffer() {
   return _standard_buffer;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::make_new_buffer
-//       Access: Protected, Virtual
-//  Description: May be called by a derived class to allocate a new
-//               Buffer object.
-////////////////////////////////////////////////////////////////////
+/**
+ * May be called by a derived class to allocate a new Buffer object.
+ */
 PT(MovieVideoCursor::Buffer) MovieVideoCursor::
 make_new_buffer() {
   return new Buffer(size_x() * size_y() * get_num_components());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of this object to the datagram for shipping out to a Bam
+ * file.
+ */
 void MovieVideoCursor::
 write_datagram(BamWriter *manager, Datagram &dg) {
   TypedWritableReferenceCount::write_datagram(manager, dg);
@@ -320,13 +279,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_pointer(dg, _source);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer() was
+ * called in fillin(). Returns the number of pointers processed.
+ */
 int MovieVideoCursor::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
@@ -336,13 +292,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::fillin
-//       Access: Protected
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new MovieVideoCursor.
-////////////////////////////////////////////////////////////////////
+/**
+ * This internal function is called by make_from_bam to read in all of the
+ * relevant data from the BamFile for the new MovieVideoCursor.
+ */
 void MovieVideoCursor::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
@@ -350,11 +303,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);  // _source
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Buffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MovieVideoCursor::Buffer::
 Buffer(size_t block_size) :
   _block_size(block_size)
@@ -363,42 +314,31 @@ Buffer(size_t block_size) :
   _block = (unsigned char *)_deleted_chain->allocate(_block_size, get_class_type());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Buffer::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MovieVideoCursor::Buffer::
 ~Buffer() {
   _deleted_chain->deallocate(_block, get_class_type());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Buffer::compare_timestamp
-//       Access: Published, Virtual
-//  Description: Used to sort different buffers to ensure they
-//               correspond to the same source frame, particularly
-//               important when synchronizing the different pages of a
-//               multi-page texture.
-//
-//               Returns 0 if the two buffers are of the same frame,
-//               <0 if this one comes earlier than the other one, and
-//               >0 if the other one comes earlier.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to sort different buffers to ensure they correspond to the same source
+ * frame, particularly important when synchronizing the different pages of a
+ * multi-page texture.  Returns 0 if the two buffers are of the same frame, <0
+ * if this one comes earlier than the other one, and >0 if the other one comes
+ * earlier.
+ */
 int MovieVideoCursor::Buffer::
 compare_timestamp(const Buffer *other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Buffer::get_timestamp
-//       Access: Published, Virtual
-//  Description: Returns the nearest timestamp value of this
-//               particular buffer.  Ideally,
-//               MovieVideoCursor::set_time() for this timestamp would
-//               return this buffer again.  This need be defined only
-//               if compare_timestamp() is also defined.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nearest timestamp value of this particular buffer.  Ideally,
+ * MovieVideoCursor::set_time() for this timestamp would return this buffer
+ * again.  This need be defined only if compare_timestamp() is also defined.
+ */
 double MovieVideoCursor::Buffer::
 get_timestamp() const {
   return 0.0;

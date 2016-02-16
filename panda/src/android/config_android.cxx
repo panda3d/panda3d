@@ -29,13 +29,11 @@ jclass   jni_BitmapFactory_Options;
 jfieldID jni_BitmapFactory_Options_outWidth;
 jfieldID jni_BitmapFactory_Options_outHeight;
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libandroid
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes
-//               in this library can be used.  Normally, this is
-//               called by JNI_OnLoad.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally, this is called
+ * by JNI_OnLoad.
+ */
 void
 init_libandroid() {
   PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_global_ptr();
@@ -44,12 +42,10 @@ init_libandroid() {
   tr->register_type(new PNMFileTypeAndroid);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: JNI_OnLoad
-//  Description: Called by Java when loading this library.
-//               Initializes the global class references and the
-//               method IDs.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Java when loading this library.  Initializes the global class
+ * references and the method IDs.
+ */
 jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
   init_libandroid();
 
@@ -74,11 +70,10 @@ jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
   return JNI_VERSION_1_4;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: JNI_OnUnload
-//  Description: Called by Java when unloading this library.
-//               Destroys the global class references.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Java when unloading this library.  Destroys the global class
+ * references.
+ */
 void JNI_OnUnload(JavaVM *jvm, void *reserved) {
   JNIEnv *env = get_jni_env();
 

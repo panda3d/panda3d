@@ -23,10 +23,9 @@
 #include "collisionPlane.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletPlaneShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletPlaneShape : public BulletShape {
 private:
   // Only used by make_from_bam
@@ -63,7 +62,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletPlaneShape", 
+    register_type(_type_handle, "BulletPlaneShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

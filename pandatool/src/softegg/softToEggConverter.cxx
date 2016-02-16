@@ -36,11 +36,9 @@ SoftToEggConverter stec;
 
 const int    TEX_PER_MAT = 1;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SoftToEggConverter::
 SoftToEggConverter(const string &program_name) :
   _program_name(program_name)
@@ -92,11 +90,9 @@ SoftToEggConverter(const string &program_name) :
   use_prefix = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SoftToEggConverter::
 SoftToEggConverter(const SoftToEggConverter &copy) :
   _from_selection(copy._from_selection),
@@ -113,24 +109,19 @@ SoftToEggConverter(const SoftToEggConverter &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SoftToEggConverter::
 ~SoftToEggConverter() {
   /*
   close_api();
   */
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Help
-//       Access: Public
-//  Description: Displays the "what is this program" message, along
-//               with the usage message.  Should be overridden in base
-//               classes to describe the current program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the "what is this program" message, along with the usage message.
+ * Should be overridden in base classes to describe the current program.
+ */
 void SoftToEggConverter::
 Help()
 {
@@ -141,11 +132,9 @@ Help()
     Usage();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Usage
-//       Access: Public
-//  Description: Displays the usage message.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the usage message.
+ */
 void SoftToEggConverter::
 Usage() {
   softegg_cat.info()
@@ -158,13 +147,10 @@ Usage() {
   softegg_cat.info() << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ShowOpts
-//       Access: Public
-//  Description: Displays the valid options.  Should be extended in
-//               base classes to show additional options relevant to
-//               the current program.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays the valid options.  Should be extended in base classes to show
+ * additional options relevant to the current program.
+ */
 void SoftToEggConverter::
 ShowOpts()
 {
@@ -201,15 +187,12 @@ ShowOpts()
   //  EggBase::ShowOpts();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DoGetopts
-//       Access: Public
-//  Description: Calls getopt() to parse the command-line switches.
-//               Calls HandleGetopts() to interpret each switch.
-//               Returns true if the parsing was successful; false if
-//               there was an error.  Adjusts argc and argv to remove
-//               the switches from the parameter list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls getopt() to parse the command-line switches.  Calls HandleGetopts() to
+ * interpret each switch.  Returns true if the parsing was successful; false if
+ * there was an error.  Adjusts argc and argv to remove the switches from the
+ * parameter list.
+ */
 bool SoftToEggConverter::
 DoGetopts(int &argc, char **&argv) {
   bool okflag = true;
@@ -234,13 +217,10 @@ DoGetopts(int &argc, char **&argv) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HandleGetopts
-//       Access: Public
-//  Description: increment idx based on what kind of option parsed
-//               Supported options are as follows:
-//               r:d:s:m:t:P:b:e:f:T:S:M:A:N:v:o:FhknpaxiucCD
-////////////////////////////////////////////////////////////////////
+/**
+ * increment idx based on what kind of option parsed Supported options are as
+ * follows: r:d:s:m:t:P:b:e:f:T:S:M:A:N:v:o:FhknpaxiucCD
+ */
 bool SoftToEggConverter::
 HandleGetopts(int &idx, int argc, char **argv)
 {
@@ -449,55 +429,41 @@ HandleGetopts(int &idx, int argc, char **argv)
   return (okflag);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *SoftToEggConverter::
 make_copy() {
   return new SoftToEggConverter(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string SoftToEggConverter::
 get_name() const {
   return "Soft";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string SoftToEggConverter::
 get_extension() const {
   return "mb";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 SoftNodeDesc *SoftToEggConverter::
 find_node(string name) {
   return _tree.get_node(name);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GetTextureName
-//       Access: Public
-//  Description: Given a texture element, return texture name
-//               with given tex_path
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a texture element, return texture name with given tex_path
+ */
 char *SoftToEggConverter::
 GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
   char *fileName = new char[_MAX_PATH];
@@ -530,17 +496,11 @@ GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
   return fileName;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-//
-//               This is designed to be as generic as possible,
-//               generally in support of run-time loading.
-//               Also see convert_soft().
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns true
+ * if successful, false otherwise.  This is designed to be as generic as
+ * possible, generally in support of run-time loading.  Also see convert_soft().
+ */
 bool SoftToEggConverter::
 convert_file(const Filename &filename) {
   if (!open_api()) {
@@ -554,15 +514,12 @@ convert_file(const Filename &filename) {
   return convert_soft(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_soft
-//       Access: Public
-//  Description: Fills up the egg_data structure according to the
-//               global soft model data.  Returns true if successful,
-//               false if there is an error.  If from_selection is
-//               true, the converted geometry is based on that which
-//               is selected; otherwise, it is the entire Soft scene.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the egg_data structure according to the global soft model data.
+ * Returns true if successful, false if there is an error.  If from_selection is
+ * true, the converted geometry is based on that which is selected; otherwise,
+ * it is the entire Soft scene.
+ */
 bool SoftToEggConverter::
 convert_soft(bool from_selection) {
   bool all_ok = true;
@@ -640,13 +597,10 @@ convert_soft(bool from_selection) {
   return all_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::open_api
-//       Access: Public
-//  Description: Attempts to open the Soft API if it was not already
-//               open, and returns true if successful, or false if
-//               there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the Soft API if it was not already open, and returns true if
+ * successful, or false if there is an error.
+ */
 bool SoftToEggConverter::
 open_api() {
   if ((scene_name == NULL && model_name == NULL) || database_name == NULL) {
@@ -710,24 +664,19 @@ open_api() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::close_api
-//       Access: Public
-//  Description: Closes the Soft API, if it was previously opened.
-//               Caution!  Soft appears to call exit() when its API is
-//               closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the Soft API, if it was previously opened.  Caution!  Soft appears to
+ * call exit() when its API is closed.
+ */
 void SoftToEggConverter::
 close_api() {
   // don't know yet
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_char_model
-//       Access: Private
-//  Description: Converts the file as an animatable character
-//               model, with joints and vertex membership.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the file as an animatable character model, with joints and vertex
+ * membership.
+ */
 bool SoftToEggConverter::
 convert_char_model() {
   softegg_cat.spam() << "character name " << _character_name << "\n";
@@ -738,13 +687,10 @@ convert_char_model() {
   return convert_hierarchy(char_node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::find_morph_table
-//       Access: Public
-//  Description: Given a tablename, it either creates a new
-//               eggSAnimData structure (if doesn't exist) or
-//               locates it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a tablename, it either creates a new eggSAnimData structure (if doesn't
+ * exist) or locates it.
+ */
 EggSAnimData *SoftToEggConverter::
 find_morph_table(char *name) {
   EggSAnimData *anim = NULL;
@@ -763,13 +709,10 @@ find_morph_table(char *name) {
   return anim;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_char_chan
-//       Access: Private
-//  Description: Converts the animation as a series of tables to apply
-//               to the character model, as retrieved earlier via
-//               AC_model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the animation as a series of tables to apply to the character model,
+ * as retrieved earlier via AC_model.
+ */
 bool SoftToEggConverter::
 convert_char_chan() {
   int start_frame = -1;
@@ -887,12 +830,9 @@ convert_char_chan() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::convert_hierarchy
-//       Access: Private
-//  Description: Generates egg structures for each node in the Soft
-//               hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates egg structures for each node in the Soft hierarchy.
+ */
 bool SoftToEggConverter::
 convert_hierarchy(EggGroupNode *egg_root) {
   int num_nodes = _tree.get_num_nodes();
@@ -908,14 +848,11 @@ convert_hierarchy(EggGroupNode *egg_root) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::process_model_node
-//       Access: Private
-//  Description: Converts the indicated Soft node (given a MDagPath,
-//               similar in concept to Panda's NodePath) to the
-//               corresponding Egg structure.  Returns true if
-//               successful, false if an error was encountered.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Soft node (given a MDagPath, similar in concept to
+ * Panda's NodePath) to the corresponding Egg structure.  Returns true if
+ * successful, false if an error was encountered.
+ */
 bool SoftToEggConverter::
 process_model_node(SoftNodeDesc *node_desc) {
   EggGroup *egg_group = NULL;
@@ -991,13 +928,10 @@ process_model_node(SoftNodeDesc *node_desc) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_polyset
-//       Access: Private
-//  Description: Converts the indicated Soft polyset to a bunch of
-//               EggPolygons and parents them to the indicated egg
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Soft polyset to a bunch of EggPolygons and parents
+ * them to the indicated egg group.
+ */
 void SoftToEggConverter::
 make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
   int id = 0;
@@ -1228,13 +1162,10 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_nurb_surface
-//       Access: Private
-//  Description: Converts the indicated Soft nurbs set to a bunch of
-//               EggPolygons and parents them to the indicated egg
-//               group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the indicated Soft nurbs set to a bunch of EggPolygons and parents
+ * them to the indicated egg group.
+ */
 void SoftToEggConverter::
 make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
   int id = 0;
@@ -1502,13 +1433,11 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
     }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_knots
-//       Access: Public
-//  Description: Given a parametric surface, and its knots, create
-//               the appropriate egg structure by filling in Soft's
-//               implicit knots and assigning the rest to eggKnots.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a parametric surface, and its knots, create the appropriate egg
+ * structure by filling in Soft's implicit knots and assigning the rest to
+ * eggKnots.
+ */
 void SoftToEggConverter::
 add_knots( vector <double> &eggKnots, double *knots, int numKnots, SAA_Boolean closed, int degree ) {
 
@@ -1562,13 +1491,10 @@ add_knots( vector <double> &eggKnots, double *knots, int numKnots, SAA_Boolean c
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FindClosestTriVert
-//       Access: Public
-//  Description: Given an egg vertex pool, map each vertex therein to
-//               a vertex within an array of SAA model vertices of
-//               size numVert. Mapping is done by closest proximity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given an egg vertex pool, map each vertex therein to a vertex within an array
+ * of SAA model vertices of size numVert.  Mapping is done by closest proximity.
+ */
 int *SoftToEggConverter::
 FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
   int i,j;
@@ -1617,12 +1543,10 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
   return vertMap;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::make_soft_skin
-//       Access: Private
-//  Description: make soft skin assignments to the mesh
-//               finally call cleanup_soft_skin to clean it up
-////////////////////////////////////////////////////////////////////
+/**
+ * make soft skin assignments to the mesh finally call cleanup_soft_skin to
+ * clean it up
+ */
 bool SoftToEggConverter::
 make_soft_skin() {
   int num_nodes = _tree.get_num_nodes();
@@ -1909,13 +1833,10 @@ make_soft_skin() {
   }
   return true;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: cleanup_soft_skin
-//       Access: Public
-//  Description: Given a model, make sure all its vertices have been
-//               soft assigned. If not hard assign to the last
-//               joint we saw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a model, make sure all its vertices have been soft assigned.  If not
+ * hard assign to the last joint we saw.
+ */
 bool SoftToEggConverter::
 cleanup_soft_skin()
 {
@@ -2012,12 +1933,9 @@ cleanup_soft_skin()
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::set_shader_attributes
-//       Access: Private
-//  Description: Applies the known shader attributes to the indicated
-//               egg primitive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the known shader attributes to the indicated egg primitive.
+ */
 void SoftToEggConverter::
 set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, int idx) {
   char *texName = node_desc->texNameArray[idx];
@@ -2034,13 +1952,10 @@ set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, int idx)
   primitive.set_texture(new_tex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::apply_texture_properties
-//       Access: Private
-//  Description: Applies all the appropriate texture properties to the
-//               EggTexture object, including wrap modes and texture
-//               matrix.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies all the appropriate texture properties to the EggTexture object,
+ * including wrap modes and texture matrix.
+ */
 void SoftToEggConverter::
 apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat) {
   // Let's mipmap all textures by default.
@@ -2060,15 +1975,11 @@ apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat) {
   */
 }
 #if 0
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::compare_texture_properties
-//       Access: Private
-//  Description: Compares the texture properties already on the
-//               texture (presumably set by a previous call to
-//               apply_texture_properties()) and returns false if they
-//               differ from that specified by the indicated color_def
-//               object, or true if they match.
-////////////////////////////////////////////////////////////////////
+/**
+ * Compares the texture properties already on the texture (presumably set by a
+ * previous call to apply_texture_properties()) and returns false if they differ
+ * from that specified by the indicated color_def object, or true if they match.
+ */
 bool SoftToEggConverter::
 compare_texture_properties(EggTexture &tex,
                            const SoftShaderColorDef &color_def) {
@@ -2099,16 +2010,11 @@ compare_texture_properties(EggTexture &tex,
   return okflag;
 }
 #endif
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::reparent_decals
-//       Access: Private
-//  Description: Recursively walks the egg hierarchy, reparenting
-//               "decal" type nodes below their corresponding
-//               "decalbase" type nodes, and setting the flags.
-//
-//               Returns true on success, false if some nodes were
-//               incorrect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively walks the egg hierarchy, reparenting "decal" type nodes below
+ * their corresponding "decalbase" type nodes, and setting the flags.  Returns
+ * true on success, false if some nodes were incorrect.
+ */
 bool SoftToEggConverter::
 reparent_decals(EggGroupNode *egg_parent) {
   bool okflag = true;
@@ -2184,12 +2090,10 @@ reparent_decals(EggGroupNode *egg_parent) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SoftShader::string_transform_type
-//       Access: Public, Static
-//  Description: Returns the TransformType value corresponding to the
-//               indicated string, or TT_invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the TransformType value corresponding to the indicated string, or
+ * TT_invalid.
+ */
 SoftToEggConverter::TransformType SoftToEggConverter::
 string_transform_type(const string &arg) {
   if (cmp_nocase(arg, "all") == 0) {
@@ -2205,11 +2109,9 @@ string_transform_type(const string &arg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_soft2egg
-//       Access:
-//  Description: Invokes the softToEggConverter class
-////////////////////////////////////////////////////////////////////
+/**
+ * Invokes the softToEggConverter class
+ */
 extern "C" int init_soft2egg(int argc, char **argv) {
   stec._commandName = argv[0];
   stec.rsrc_path = "c:\\Softimage\\SOFT3D_3.9.2\\3D\\rsrc";

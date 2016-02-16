@@ -58,14 +58,12 @@ ConfigVariableDouble pfm_resize_radius
           "always call box_filter() or gaussian_filter() explicitly with "
           "a specific radius."));
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libpnmimage
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libpnmimage() {
   static bool initialized = false;

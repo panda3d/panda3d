@@ -22,10 +22,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMFileTypeBMP
-// Description : For reading and writing Windows BMP files.
-////////////////////////////////////////////////////////////////////
+/**
+ * For reading and writing Windows BMP files.
+ */
 class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeBMP : public PNMFileType {
 public:
   PNMFileTypeBMP();

@@ -22,10 +22,9 @@
 
 #include "epvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMorphList
-// Description : A collection of <Dxyz>'s or <Duv>'s or some such.
-////////////////////////////////////////////////////////////////////
+/**
+ * A collection of <Dxyz>'s or <Duv>'s or some such.
+ */
 template<class MorphType>
 class EggMorphList {
 private:

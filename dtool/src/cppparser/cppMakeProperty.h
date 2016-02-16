@@ -19,14 +19,11 @@
 #include "cppDeclaration.h"
 #include "cppIdentifier.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPMakeProperty
-// Description : This is a MAKE_PROPERTY() declaration appearing
-//               within a class body.  It means to generate a property
-//               within Python, replacing (for instance)
-//               get_something()/set_something() with a synthetic
-//               'something' attribute.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a MAKE_PROPERTY() declaration appearing within a class body.  It
+ * means to generate a property within Python, replacing (for instance)
+ * get_something()/set_something() with a synthetic 'something' attribute.
+ */
 class CPPMakeProperty : public CPPDeclaration {
 public:
   CPPMakeProperty(CPPIdentifier *ident,

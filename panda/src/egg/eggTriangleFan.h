@@ -18,12 +18,10 @@
 
 #include "eggCompositePrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTriangleFan
-// Description : A connected fan of triangles.  This does not
-//               normally appear in an egg file; it is typically
-//               generated as a result of meshing.
-////////////////////////////////////////////////////////////////////
+/**
+ * A connected fan of triangles.  This does not normally appear in an egg file;
+ * it is typically generated as a result of meshing.
+ */
 class EXPCL_PANDAEGG EggTriangleFan : public EggCompositePrimitive {
 PUBLISHED:
   INLINE EggTriangleFan(const string &name = "");

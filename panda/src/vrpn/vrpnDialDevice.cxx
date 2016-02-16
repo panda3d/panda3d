@@ -16,11 +16,9 @@
 
 TypeHandle VrpnDialDevice::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnDialDevice::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnDialDevice::
 VrpnDialDevice(VrpnClient *client, const string &device_name,
                  VrpnDial *vrpn_dial) :
@@ -29,11 +27,9 @@ VrpnDialDevice(VrpnClient *client, const string &device_name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnDialDevice::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnDialDevice::
 ~VrpnDialDevice() {
   disconnect();

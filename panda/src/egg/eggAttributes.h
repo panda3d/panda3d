@@ -22,17 +22,13 @@
 #include "luse.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggAttributes
-// Description : The set of attributes that may be applied to vertices
-//               as well as polygons, such as surface normal and
-//               color.
-//
-//               This class cannot inherit from EggObject, because it
-//               causes problems at the EggPolygon level with multiple
-//               appearances of the EggObject base class.  And making
-//               EggObject a virtual base class is just no fun.
-////////////////////////////////////////////////////////////////////
+/**
+ * The set of attributes that may be applied to vertices as well as polygons,
+ * such as surface normal and color.  This class cannot inherit from EggObject,
+ * because it causes problems at the EggPolygon level with multiple appearances
+ * of the EggObject base class.  And making EggObject a virtual base class is
+ * just no fun.
+ */
 class EXPCL_PANDAEGG EggAttributes : public MemoryBase {
 PUBLISHED:
   EggAttributes();
@@ -89,4 +85,3 @@ private:
 #include "eggAttributes.I"
 
 #endif
-

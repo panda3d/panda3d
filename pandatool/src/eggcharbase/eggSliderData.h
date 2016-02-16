@@ -19,14 +19,11 @@
 #include "eggComponentData.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSliderData
-// Description : This corresponds to a single morph slider control.
-//               It contains back pointers to all the vertices and
-//               primitives that reference this slider across all
-//               models, as well as all the tables in which it appears
-//               in all animation files.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to a single morph slider control.  It contains back pointers
+ * to all the vertices and primitives that reference this slider across all
+ * models, as well as all the tables in which it appears in all animation files.
+ */
 class EggSliderData : public EggComponentData {
 public:
   EggSliderData(EggCharacterCollection *collection,
@@ -59,5 +56,3 @@ private:
 #include "eggSliderData.I"
 
 #endif
-
-

@@ -16,11 +16,9 @@
 
 TypeHandle PGMouseWatcherBackground::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherBackground::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGMouseWatcherBackground::
 PGMouseWatcherBackground() :
   MouseWatcherRegion("PGMouseWatcherBackground", 0, 0, 0, 0)
@@ -29,56 +27,42 @@ PGMouseWatcherBackground() :
   set_keyboard(true);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherBackground::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGMouseWatcherBackground::
 ~PGMouseWatcherBackground() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherBackground::press
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse or keyboard button is depressed while the mouse
-//               is within the background.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard button
+ * is depressed while the mouse is within the background.
+ */
 void PGMouseWatcherBackground::
 press(const MouseWatcherParameter &param) {
   PGItem::background_press(param);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherBackground::release
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse or keyboard button previously depressed with
-//               press() is released.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard button
+ * previously depressed with press() is released.
+ */
 void PGMouseWatcherBackground::
 release(const MouseWatcherParameter &param) {
   PGItem::background_release(param);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherBackground::keystroke
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever
-//               the user presses a key.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user presses a key.
+ */
 void PGMouseWatcherBackground::
 keystroke(const MouseWatcherParameter &param) {
   PGItem::background_keystroke(param);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGMouseWatcherBackground::candidate
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever
-//               the user uses the IME.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user uses the IME.
+ */
 void PGMouseWatcherBackground::
 candidate(const MouseWatcherParameter &param) {
   PGItem::background_candidate(param);

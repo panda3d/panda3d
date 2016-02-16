@@ -24,13 +24,11 @@ class TypedWritable;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CycleData
-// Description : A single page of data maintained by a PipelineCycler.
-//               Normally you should inherit from this class to define
-//               the data structures that are important to protect
-//               between stages of a pipeline.  See PipelineCycler.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single page of data maintained by a PipelineCycler.  Normally you should
+ * inherit from this class to define the data structures that are important to
+ * protect between stages of a pipeline.  See PipelineCycler.
+ */
 #ifdef DO_PIPELINING
 
 // If we are compiling in pipelining support, we maintain a pointer to
@@ -39,7 +37,7 @@ class DatagramIterator;
 // since we want to make a distinction between references within the
 // cycler, and references outside the cycler
 // (e.g. GeomPipelineReader), we make it a NodeReferenceCount.
-class EXPCL_PANDA_PIPELINE CycleData : public NodeReferenceCount 
+class EXPCL_PANDA_PIPELINE CycleData : public NodeReferenceCount
 
 #else  // !DO_PIPELINING
 
@@ -76,4 +74,3 @@ operator << (ostream &out, const CycleData &cd) {
 #include "cycleData.I"
 
 #endif
-

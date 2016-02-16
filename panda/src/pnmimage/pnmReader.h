@@ -19,14 +19,11 @@
 #include "pnmImageHeader.h"
 class PfmFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PNMReader
-// Description : This is an abstract base class that defines the
-//               interface for reading image files of various types.
-//               Any particular image file type that can be read must
-//               define a class that inherits from PNMReader to read
-//               it.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class that defines the interface for reading image
+ * files of various types.  Any particular image file type that can be read must
+ * define a class that inherits from PNMReader to read it.
+ */
 class EXPCL_PANDA_PNMIMAGE PNMReader : public PNMImageHeader {
 protected:
   INLINE PNMReader(PNMFileType *type, istream *file, bool owns_file);

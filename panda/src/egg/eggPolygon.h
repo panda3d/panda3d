@@ -18,10 +18,9 @@
 
 #include "eggPrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPolygon
-// Description : A single polygon.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single polygon.
+ */
 class EXPCL_PANDAEGG EggPolygon : public EggPrimitive {
 PUBLISHED:
   INLINE EggPolygon(const string &name = "");

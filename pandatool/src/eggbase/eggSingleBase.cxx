@@ -20,56 +20,42 @@
 #include "dcast.h"
 #include "string_utils.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSingleBase::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggSingleBase::
 EggSingleBase() :
   _data(new EggData)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSingleBase::as_reader
-//       Access: Public, Virtual
-//  Description: Returns this object as an EggReader pointer, if it is
-//               in fact an EggReader, or NULL if it is not.
-//
-//               This is intended to work around the C++ limitation
-//               that prevents downcasts past virtual inheritance.
-//               Since both EggReader and EggWriter inherit virtually
-//               from EggSingleBase, we need functions like this to downcast
-//               to the appropriate pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns this object as an EggReader pointer, if it is in fact an EggReader,
+ * or NULL if it is not.  This is intended to work around the C++ limitation
+ * that prevents downcasts past virtual inheritance.  Since both EggReader and
+ * EggWriter inherit virtually from EggSingleBase, we need functions like this
+ * to downcast to the appropriate pointer.
+ */
 EggReader *EggSingleBase::
 as_reader() {
   return (EggReader *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSingleBase::as_writer
-//       Access: Public, Virtual
-//  Description: Returns this object as an EggWriter pointer, if it is
-//               in fact an EggWriter, or NULL if it is not.
-//
-//               This is intended to work around the C++ limitation
-//               that prevents downcasts past virtual inheritance.
-//               Since both EggReader and EggWriter inherit virtually
-//               from EggSingleBase, we need functions like this to downcast
-//               to the appropriate pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns this object as an EggWriter pointer, if it is in fact an EggWriter,
+ * or NULL if it is not.  This is intended to work around the C++ limitation
+ * that prevents downcasts past virtual inheritance.  Since both EggReader and
+ * EggWriter inherit virtually from EggSingleBase, we need functions like this
+ * to downcast to the appropriate pointer.
+ */
 EggWriter *EggSingleBase::
 as_writer() {
   return (EggWriter *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSingleBase::post_command_line
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggSingleBase::
 post_command_line() {
   if (_got_coordinate_system) {
@@ -78,4 +64,3 @@ post_command_line() {
 
   return EggBase::post_command_line();
 }
-

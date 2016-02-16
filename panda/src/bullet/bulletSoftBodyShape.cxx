@@ -16,11 +16,9 @@
 
 TypeHandle BulletSoftBodyShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyShape::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletSoftBodyShape::
 BulletSoftBodyShape(btSoftBodyCollisionShape *shapePtr) {
 
@@ -28,22 +26,18 @@ BulletSoftBodyShape(btSoftBodyCollisionShape *shapePtr) {
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletSoftBodyShape::
 ptr() const {
 
   return _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyShape::get_body
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletSoftBodyNode *BulletSoftBodyShape::
 get_body() const {
 
@@ -55,4 +49,3 @@ get_body() const {
     return NULL;
   }
 }
-

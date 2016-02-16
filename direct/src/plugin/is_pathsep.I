@@ -11,12 +11,10 @@
  * @date 2009-07-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: is_pathsep
-//  Description: Returns true if the indicated character is a path
-//               separator character (e.g. slash or backslash), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated character is a path separator character (e.g.
+ * slash or backslash), false otherwise.
+ */
 inline bool
 is_pathsep(int ch) {
   if (ch == '/') {

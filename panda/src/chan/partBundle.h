@@ -39,12 +39,10 @@ class PartBundleNode;
 class TransformState;
 class AnimPreloadTable;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PartBundle
-// Description : This is the root of a MovingPart hierarchy.  It
-//               defines the hierarchy of moving parts that make up an
-//               animatable object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the root of a MovingPart hierarchy.  It defines the hierarchy of
+ * moving parts that make up an animatable object.
+ */
 class EXPCL_PANDA_CHAN PartBundle : public PartGroup {
 public:
 
@@ -125,7 +123,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
   PT(AnimControl) bind_anim(AnimBundle *anim,
-                            int hierarchy_match_flags = 0, 
+                            int hierarchy_match_flags = 0,
                             const PartSubset &subset = PartSubset());
   PT(AnimControl) load_bind_anim(Loader *loader,
                                  const Filename &filename,
@@ -142,7 +140,7 @@ PUBLISHED:
 
   bool update();
   bool force_update();
-  
+
 public:
   // The following functions aren't really part of the public
   // interface; they're just public so we don't have to declare a

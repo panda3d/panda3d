@@ -17,23 +17,18 @@
 
 TypeHandle FltTransformTranslate::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformTranslate::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltTransformTranslate::
 FltTransformTranslate(FltHeader *header) : FltTransformRecord(header) {
   _from.set(0.0, 0.0, 0.0);
   _delta.set(0.0, 0.0, 0.0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformTranslate::set
-//       Access: Public
-//  Description: Defines the translation.  The "from" point seems to
-//               be pretty much ignored.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines the translation.  The "from" point seems to be pretty much ignored.
+ */
 void FltTransformTranslate::
 set(const LPoint3d &from, const LVector3d &delta) {
   _from = from;
@@ -42,45 +37,35 @@ set(const LPoint3d &from, const LVector3d &delta) {
   recompute_matrix();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformTranslate::get_from
-//       Access: Public
-//  Description: Returns the reference point of the translation.  This
-//               is largely meaningless.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reference point of the translation.  This is largely meaningless.
+ */
 const LPoint3d &FltTransformTranslate::
 get_from() const {
   return _from;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformTranslate::get_delta
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 const LVector3d &FltTransformTranslate::
 get_delta() const {
   return _delta;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformTranslate::recompute_matrix
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FltTransformTranslate::
 recompute_matrix() {
   _matrix = LMatrix4d::translate_mat(_delta);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformTranslate::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this record based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this record based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltTransformTranslate::
 extract_record(FltRecordReader &reader) {
   if (!FltTransformRecord::extract_record(reader)) {
@@ -107,14 +92,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltTransformTranslate::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltTransformTranslate::
 build_record(FltRecordWriter &writer) const {
   if (!FltTransformRecord::build_record(writer)) {
@@ -137,4 +119,3 @@ build_record(FltRecordWriter &writer) const {
 
   return true;
 }
-

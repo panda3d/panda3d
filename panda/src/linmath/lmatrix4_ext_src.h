@@ -11,12 +11,10 @@
  * @date 2013-09-12
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : Extension<LMatrix4>
-// Description : This class defines the extension methods for
-//               LMatrix4, which are called instead of
-//               any C++ methods with the same prototype.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class defines the extension methods for LMatrix4, which are called
+ * instead of any C++ methods with the same prototype.
+ */
 template<>
 class Extension<FLOATNAME(LMatrix4)> : public ExtensionBase<FLOATNAME(LMatrix4)> {
 public:

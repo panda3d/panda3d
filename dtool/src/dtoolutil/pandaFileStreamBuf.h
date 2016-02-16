@@ -25,11 +25,9 @@
 #include <windows.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : PandaFileStreamBuf
-// Description : The streambuf object that implements
-//               pifstream and pofstream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements pifstream and pofstream.
+ */
 class EXPCL_DTOOL PandaFileStreamBuf : public streambuf {
 public:
   PandaFileStreamBuf();

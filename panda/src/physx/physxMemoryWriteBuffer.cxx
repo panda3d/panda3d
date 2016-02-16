@@ -13,86 +13,70 @@
 
 #include "physxMemoryWriteBuffer.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMemoryWriteBuffer::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxMemoryWriteBuffer::PhysxMemoryWriteBuffer() : currentSize(0), maxSize(0), data(NULL)
 {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMemoryWriteBuffer::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxMemoryWriteBuffer::~PhysxMemoryWriteBuffer()
 {
   NxGetPhysicsSDKAllocator()->free(data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMemoryWriteBuffer::storeByte
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxStream &PhysxMemoryWriteBuffer::storeByte(NxU8 b)
 {
   storeBuffer(&b, sizeof(NxU8));
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMemoryWriteBuffer::storeWord
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxStream &PhysxMemoryWriteBuffer::storeWord(NxU16 w)
 {
   storeBuffer(&w, sizeof(NxU16));
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMemoryWriteBuffer::storeDword
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxStream &PhysxMemoryWriteBuffer::storeDword(NxU32 d)
 {
   storeBuffer(&d, sizeof(NxU32));
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMemoryWriteBuffer::storeFloat
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxStream &PhysxMemoryWriteBuffer::storeFloat(NxReal f)
 {
   storeBuffer(&f, sizeof(NxReal));
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMemoryWriteBuffer::storeDouble
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxStream &PhysxMemoryWriteBuffer::storeDouble(NxF64 f)
 {
   storeBuffer(&f, sizeof(NxF64));
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMemoryWriteBuffer::storeBuffer
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NxStream &PhysxMemoryWriteBuffer::storeBuffer(const void *buffer, NxU32 size)
 {
   NxU32 expectedSize = currentSize + size;
@@ -112,4 +96,3 @@ NxStream &PhysxMemoryWriteBuffer::storeBuffer(const void *buffer, NxU32 size)
   currentSize += size;
   return *this;
 }
-

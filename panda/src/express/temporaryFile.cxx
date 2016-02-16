@@ -15,12 +15,9 @@
 
 TypeHandle TemporaryFile::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TemporaryFile::Destructor
-//       Access: Published, Virtual
-//  Description: The destructor is responsible for removing the file
-//               if it exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * The destructor is responsible for removing the file if it exists.
+ */
 TemporaryFile::
 ~TemporaryFile() {
   _filename.unlink();

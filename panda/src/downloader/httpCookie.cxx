@@ -18,13 +18,11 @@
 #include "ctype.h"
 #include "httpChannel.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPCookie::operator <
-//       Access: Published
-//  Description: The sorting operator allows the cookies to be stored
-//               in a single dictionary; it returns nonequal only if
-//               the cookies are different in name, path, or domain.
-////////////////////////////////////////////////////////////////////
+/**
+ * The sorting operator allows the cookies to be stored in a single dictionary;
+ * it returns nonequal only if the cookies are different in name, path, or
+ * domain.
+ */
 bool HTTPCookie::
 operator < (const HTTPCookie &other) const {
   if (_domain != other._domain) {
@@ -45,17 +43,13 @@ operator < (const HTTPCookie &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPCookie::update_from
-//       Access: Published
-//  Description: Assuming the operator < method, above, has already
-//               evaluated these two cookies as equal, then assign the
-//               remaining values (value, expiration date, secure
-//               flag) from the indicated cookie.  This is guaranteed
-//               not to change the ordering of the cookie in a set,
-//               and so can be used to update an existing cookie
-//               within a set with new values.
-////////////////////////////////////////////////////////////////////
+/**
+ * Assuming the operator < method, above, has already evaluated these two
+ * cookies as equal, then assign the remaining values (value, expiration date,
+ * secure flag) from the indicated cookie.  This is guaranteed not to change the
+ * ordering of the cookie in a set, and so can be used to update an existing
+ * cookie within a set with new values.
+ */
 void HTTPCookie::
 update_from(const HTTPCookie &other) {
   nassertv(!(other < *this) && !(*this < other));
@@ -65,15 +59,11 @@ update_from(const HTTPCookie &other) {
   _secure = other._secure;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPCookie::parse_set_cookie
-//       Access: Published
-//  Description: Separates out the parameter/value pairs of the
-//               Set-Cookie header and assigns the values of the
-//               cookie appropriate.  Returns true if the header is
-//               parsed correctly, false if something is not
-//               understood.
-////////////////////////////////////////////////////////////////////
+/**
+ * Separates out the parameter/value pairs of the Set-Cookie header and assigns
+ * the values of the cookie appropriate.  Returns true if the header is parsed
+ * correctly, false if something is not understood.
+ */
 bool HTTPCookie::
 parse_set_cookie(const string &format, const URLSpec &url) {
   _name = string();
@@ -85,7 +75,7 @@ parse_set_cookie(const string &format, const URLSpec &url) {
 
   bool okflag = true;
   bool first_param = true;
-  
+
   size_t start = 0;
   while (start < format.length() && isspace(format[start])) {
     start++;
@@ -93,7 +83,7 @@ parse_set_cookie(const string &format, const URLSpec &url) {
   size_t semicolon = format.find(';', start);
 
   while (semicolon != string::npos) {
-    if (!parse_cookie_param(format.substr(start, semicolon - start), 
+    if (!parse_cookie_param(format.substr(start, semicolon - start),
                             first_param)) {
       okflag = false;
     }
@@ -112,19 +102,17 @@ parse_set_cookie(const string &format, const URLSpec &url) {
   return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPCookie::matches_url
-//       Access: Published
-//  Description: Returns true if the cookie is appropriate to send
-//               with the indicated URL request, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the cookie is appropriate to send with the indicated URL
+ * request, false otherwise.
+ */
 bool HTTPCookie::
 matches_url(const URLSpec &url) const {
   if (_domain.empty()) {
     return false;
   }
   string server = url.get_server();
-  if (server == _domain || 
+  if (server == _domain ||
       (string(".") + server) == _domain ||
       (server.length() > _domain.length() &&
        server.substr(server.length() - _domain.length()) == _domain &&
@@ -148,11 +136,9 @@ matches_url(const URLSpec &url) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPCookie::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void HTTPCookie::
 output(ostream &out) const {
   out << _name << "=" << _value
@@ -161,21 +147,18 @@ output(ostream &out) const {
   if (has_expires()) {
     out << "; expires=" << _expires;
   }
-  
+
   if (_secure) {
     out << "; secure";
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPCookie::parse_cookie_param
-//       Access: Private
-//  Description: Called internally by parse_set_cookie() with each
-//               parameter=value pair split out from the header
-//               string.  first_param will be true for the first
-//               parameter (which has special meaning).  This should
-//               return true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called internally by parse_set_cookie() with each parameter=value pair split
+ * out from the header string.  first_param will be true for the first parameter
+ * (which has special meaning).  This should return true on success, false on
+ * failure.
+ */
 bool HTTPCookie::
 parse_cookie_param(const string &param, bool first_param) {
   size_t equals = param.find('=');

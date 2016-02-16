@@ -11,12 +11,9 @@
  * @date 2002-03-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaTestAttrib::Constructor
-//       Access: Private
-//  Description: Use AlphaTestAttrib::make() to construct a new
-//               AlphaTestAttrib object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use AlphaTestAttrib::make() to construct a new AlphaTestAttrib object.
+ */
 INLINE AlphaTestAttrib::
 AlphaTestAttrib(AlphaTestAttrib::PandaCompareFunc mode,
                 PN_stdfloat reference_alpha) :
@@ -24,21 +21,17 @@ AlphaTestAttrib(AlphaTestAttrib::PandaCompareFunc mode,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaTestAttrib::get_mode
-//       Access: Published
-//  Description: Returns the alpha write mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the alpha write mode.
+ */
 INLINE AlphaTestAttrib::PandaCompareFunc AlphaTestAttrib::
 get_mode() const {
   return _mode;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaTestAttrib::get_reference_alpha
-//       Access: Published
-//  Description: Returns the alpha reference value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the alpha reference value.
+ */
 INLINE PN_stdfloat AlphaTestAttrib::
 get_reference_alpha() const {
   return _reference_alpha;

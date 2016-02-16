@@ -21,12 +21,10 @@
 
 class Thread;
 
-////////////////////////////////////////////////////////////////////
-//       Class : AsyncTaskBase
-// Description : The abstract base class for AsyncTask.  This is
-//               defined here only so we can store a pointer to the
-//               current task on the Thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract base class for AsyncTask.  This is defined here only so we can
+ * store a pointer to the current task on the Thread.
+ */
 class EXPCL_PANDA_PIPELINE AsyncTaskBase : public TypedReferenceCount, public Namable {
 protected:
   AsyncTaskBase();
@@ -39,7 +37,7 @@ PUBLISHED:
 protected:
   void record_task(Thread *current_thread);
   void clear_task(Thread *current_thread);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

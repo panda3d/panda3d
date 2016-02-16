@@ -16,11 +16,9 @@
 
 #include "baseParticleEmitter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DiscEmitter
-// Description : Describes a planar disc region from which particles
-//               are generated
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a planar disc region from which particles are generated
+ */
 class EXPCL_PANDAPHYSICS DiscEmitter : public BaseParticleEmitter {
 PUBLISHED:
   DiscEmitter();

@@ -18,17 +18,13 @@
 
 #include "collisionPolygon.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionGeom
-// Description : A special CollisionPolygon created just for the
-//               purpose of detecting collision against geometry.
-//               This kind of object does not have any persistance in
-//               the scene graph; it is created on-the-fly.
-//
-//               You should not attempt to create one of these
-//               directly; it is created only by the
-//               CollisionTraverser, as needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special CollisionPolygon created just for the purpose of detecting
+ * collision against geometry.  This kind of object does not have any
+ * persistance in the scene graph; it is created on-the-fly.  You should not
+ * attempt to create one of these directly; it is created only by the
+ * CollisionTraverser, as needed.
+ */
 class EXPCL_PANDA_COLLIDE CollisionGeom : public CollisionPolygon {
 private:
   INLINE CollisionGeom(const LVecBase3 &a, const LVecBase3 &b,
@@ -70,5 +66,3 @@ private:
 #include "collisionGeom.I"
 
 #endif
-
-

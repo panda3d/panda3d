@@ -52,4 +52,3 @@ static const CollideMask default_geom_node_collide_mask = CollideMask::bit(20);
 // these bits on by default.
 
 #endif
-

@@ -20,10 +20,9 @@
 
 #include "ode_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeJointGroup
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeJointGroup : public TypedObject {
 PUBLISHED:
   OdeJointGroup();
@@ -60,4 +59,3 @@ private:
 #include "odeJointGroup.I"
 
 #endif
-

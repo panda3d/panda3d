@@ -21,11 +21,9 @@
 
 #include "dSearchPath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltToEgg
-// Description : A program to read a flt file and generate an egg
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read a flt file and generate an egg file.
+ */
 class FltToEgg : public SomethingToEgg {
 public:
   FltToEgg();
@@ -36,4 +34,3 @@ public:
 };
 
 #endif
-

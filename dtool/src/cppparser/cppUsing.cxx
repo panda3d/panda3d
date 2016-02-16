@@ -14,11 +14,9 @@
 #include "cppUsing.h"
 #include "cppIdentifier.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPUsing::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPUsing::
 CPPUsing(CPPIdentifier *ident, bool full_namespace, const CPPFile &file) :
   CPPDeclaration(file),
@@ -26,11 +24,9 @@ CPPUsing(CPPIdentifier *ident, bool full_namespace, const CPPFile &file) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPUsing::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPUsing::
 output(ostream &out, int, CPPScope *, bool) const {
   out << "using ";
@@ -40,21 +36,17 @@ output(ostream &out, int, CPPScope *, bool) const {
   out << *_ident;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPUsing::get_subtype
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration::SubType CPPUsing::
 get_subtype() const {
   return ST_using;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPUsing::as_using
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPUsing *CPPUsing::
 as_using() {
   return this;

@@ -17,13 +17,11 @@
 #include "pandabase.h"
 #include "typedObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EventReceiver
-// Description : An abstract base class for anything that might care
-//               about receiving events.  An object that might receive
-//               an event should inherit from this class; each event
-//               may be sent with an optional EventReceiver pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for anything that might care about receiving events.
+ * An object that might receive an event should inherit from this class; each
+ * event may be sent with an optional EventReceiver pointer.
+ */
 class EXPCL_PANDA_EVENT EventReceiver {
 
 public:
@@ -39,5 +37,3 @@ private:
 };
 
 #endif
-
-

@@ -21,13 +21,11 @@
 #include "pvector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonRegistry
-// Description : The ButtonRegistry class maintains all the assigned
-//               ButtonHandles in a given system.  There should be only
-//               one ButtonRegistry class during the lifetime of the
-//               application.
-////////////////////////////////////////////////////////////////////
+/**
+ * The ButtonRegistry class maintains all the assigned ButtonHandles in a given
+ * system.  There should be only one ButtonRegistry class during the lifetime of
+ * the application.
+ */
 class EXPCL_PANDA_PUTIL ButtonRegistry {
 protected:
   class EXPCL_PANDA_PUTIL RegistryNode {

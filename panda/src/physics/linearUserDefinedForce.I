@@ -11,10 +11,9 @@
  * @date 2000-07-31
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_proc
-//       Access: Public
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void LinearUserDefinedForce::
 set_proc(LVector3 (*proc)(const PhysicsObject *)) {
   _proc = proc;

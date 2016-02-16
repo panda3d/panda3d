@@ -26,15 +26,12 @@
 
 class TransformTable;
 
-////////////////////////////////////////////////////////////////////
-//       Class : VertexTransform
-// Description : This is an abstract base class that holds a pointer
-//               to some transform, computed in some arbitrary way,
-//               that is to be applied to vertices during rendering.
-//               This is used to implement soft-skinned and animated
-//               vertices.  Derived classes will define how the
-//               transform is actually computed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an abstract base class that holds a pointer to some transform,
+ * computed in some arbitrary way, that is to be applied to vertices during
+ * rendering.  This is used to implement soft-skinned and animated vertices.
+ * Derived classes will define how the transform is actually computed.
+ */
 class EXPCL_PANDA_GOBJ VertexTransform : public TypedWritableReferenceCount {
 PUBLISHED:
   VertexTransform();

@@ -11,11 +11,9 @@
  * @date 2006-10-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterDb::Key::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggCharacterDb::Key::
 Key(const EggJointPointer *joint, TableType table_type, int frame) :
   _joint(joint),
@@ -24,11 +22,9 @@ Key(const EggJointPointer *joint, TableType table_type, int frame) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCharacterDb::Key::operator <
-//       Access: Public
-//  Description: Provides an arbitrary unique ordering for all keys.
-////////////////////////////////////////////////////////////////////
+/**
+ * Provides an arbitrary unique ordering for all keys.
+ */
 INLINE bool EggCharacterDb::Key::
 operator < (const EggCharacterDb::Key &other) const {
   if (_joint != other._joint) {

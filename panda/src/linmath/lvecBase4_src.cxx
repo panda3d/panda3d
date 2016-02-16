@@ -25,11 +25,9 @@ const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_unit_z =
 const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_unit_w =
   FLOATNAME(LVecBase4)(0, 0, 0, 1);
 
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LVecBase4)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -39,11 +37,9 @@ init_type() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase4::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(UnalignedLVecBase4)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -51,4 +47,3 @@ init_type() {
     register_type(_type_handle, FLOATNAME_STR(UnalignedLVecBase4));
   }
 }
-

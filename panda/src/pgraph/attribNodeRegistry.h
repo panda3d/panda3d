@@ -19,21 +19,16 @@
 #include "ordered_vector.h"
 #include "lightMutex.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AttribNodeRegistry
-// Description : This global object records NodePaths that are
-//               referenced by scene graph attribs, such as
-//               ClipPlaneAttribs and LightAttribs.
-//
-//               Its primary purpose is to unify attribs that are
-//               loaded in from bam files.  Attrib nodes are
-//               identified by name and type; when a bam file that
-//               contains references to some attrib nodes is loaded,
-//               those nodes are first looked up here in the
-//               AttribNodeRegistry.  If there is a match (by name and
-//               node type), the identified node is used instead of
-//               the node referenced within the bam file itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * This global object records NodePaths that are referenced by scene graph
+ * attribs, such as ClipPlaneAttribs and LightAttribs.  Its primary purpose is
+ * to unify attribs that are loaded in from bam files.  Attrib nodes are
+ * identified by name and type; when a bam file that contains references to some
+ * attrib nodes is loaded, those nodes are first looked up here in the
+ * AttribNodeRegistry.  If there is a match (by name and node type), the
+ * identified node is used instead of the node referenced within the bam file
+ * itself.
+ */
 class EXPCL_PANDA_PGRAPH AttribNodeRegistry {
 protected:
   AttribNodeRegistry();
@@ -84,4 +79,3 @@ private:
 #include "attribNodeRegistry.I"
 
 #endif
-

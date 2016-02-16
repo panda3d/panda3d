@@ -18,11 +18,10 @@
 
 #include "fltTransformRecord.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTransformRotateAboutEdge
-// Description : A transformation that rotates about a particular axis
-//               in space, defined by two endpoints.
-////////////////////////////////////////////////////////////////////
+/**
+ * A transformation that rotates about a particular axis in space, defined by
+ * two endpoints.
+ */
 class FltTransformRotateAboutEdge : public FltTransformRecord {
 public:
   FltTransformRotateAboutEdge(FltHeader *header);

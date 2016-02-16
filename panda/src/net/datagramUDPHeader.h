@@ -25,14 +25,12 @@ static const int datagram_udp_header_size = sizeof(PN_uint16);
 
 class NetDatagram;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramUDPHeader
-// Description : A class that encapsulates the extra bytes that are
-//               sent in front of each datagram to identify it when it
-//               is sent on UDP.  Like NetDatagram, this class
-//               automatically handles converting its data to and from
-//               the network byte ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class that encapsulates the extra bytes that are sent in front of each
+ * datagram to identify it when it is sent on UDP.  Like NetDatagram, this class
+ * automatically handles converting its data to and from the network byte
+ * ordering.
+ */
 class EXPCL_PANDA_NET DatagramUDPHeader {
 public:
   DatagramUDPHeader(const NetDatagram &datagram);
@@ -53,5 +51,3 @@ private:
 #include "datagramUDPHeader.I"
 
 #endif
-
-

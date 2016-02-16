@@ -27,17 +27,13 @@
 
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TransformTable
-// Description : Stores the total set of VertexTransforms that the
-//               vertices in a particular GeomVertexData object might
-//               depend on.
-//
-//               This structure is used for a GeomVertexData set up to
-//               compute its dynamic vertices on the graphics card.
-//               See TransformBlendTable for one set up to compute
-//               its dynamic vertices on the CPU.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores the total set of VertexTransforms that the vertices in a particular
+ * GeomVertexData object might depend on.  This structure is used for a
+ * GeomVertexData set up to compute its dynamic vertices on the graphics card.
+ * See TransformBlendTable for one set up to compute its dynamic vertices on the
+ * CPU.
+ */
 class EXPCL_PANDA_GOBJ TransformTable : public TypedWritableReferenceCount {
 PUBLISHED:
   TransformTable();

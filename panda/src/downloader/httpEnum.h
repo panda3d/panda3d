@@ -23,12 +23,10 @@
 
 #ifdef HAVE_OPENSSL
 
-////////////////////////////////////////////////////////////////////
-//       Class : HTTPEnum
-// Description : This class is just used as a namespace wrapper for
-//               some of the enumerated types used by various classes
-//               within the HTTPClient family.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is just used as a namespace wrapper for some of the enumerated
+ * types used by various classes within the HTTPClient family.
+ */
 class EXPCL_PANDAEXPRESS HTTPEnum {
 PUBLISHED:
   enum HTTPVersion {
@@ -55,4 +53,3 @@ ostream &operator << (ostream &out, HTTPEnum::Method method);
 #endif // HAVE_OPENSSL
 
 #endif
-

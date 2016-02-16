@@ -23,32 +23,21 @@
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ButtonEvent
-// Description : Records a button event of some kind.  This is either
-//               a keyboard or mouse button (or some other kind of
-//               button) changing state from up to down, or
-//               vice-versa, or it is a single "keystroke".
-//
-//               A keystroke is different than a button event in that
-//               (a) it does not necessarily correspond to a physical
-//               button on a keyboard, but might be the result of a
-//               combination of buttons (e.g. "A" is the result of
-//               shift + "a"); and (b) it does not manage separate
-//               "up" and "down" events, but is itself an
-//               instantaneous event.  
-//
-//               Normal up/down button events can be used to track the
-//               state of a particular button on the keyboard, while
-//               keystroke events are best used to monitor what a user
-//               is attempting to type.
-//
-//               Button up/down events are defined across all the
-//               physical keys on the keyboard (and other buttons for
-//               which there is a corresponding ButtonHandle object),
-//               while keystroke events are defined across the entire
-//               Unicode character set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a button event of some kind.  This is either a keyboard or mouse
+ * button (or some other kind of button) changing state from up to down, or
+ * vice-versa, or it is a single "keystroke".  A keystroke is different than a
+ * button event in that (a) it does not necessarily correspond to a physical
+ * button on a keyboard, but might be the result of a combination of buttons
+ * (e.g.  "A" is the result of shift + "a"); and (b) it does not manage separate
+ * "up" and "down" events, but is itself an instantaneous event.  Normal up/down
+ * button events can be used to track the state of a particular button on the
+ * keyboard, while keystroke events are best used to monitor what a user is
+ * attempting to type.  Button up/down events are defined across all the
+ * physical keys on the keyboard (and other buttons for which there is a
+ * corresponding ButtonHandle object), while keystroke events are defined across
+ * the entire Unicode character set.
+ */
 class EXPCL_PANDA_EVENT ButtonEvent {
 public:
   enum Type {
@@ -96,7 +85,7 @@ public:
   INLINE ButtonEvent();
   INLINE ButtonEvent(ButtonHandle button, Type type, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(short keycode, double time = ClockObject::get_global_clock()->get_frame_time());
-  INLINE ButtonEvent(const wstring &candidate_string, size_t highlight_start, 
+  INLINE ButtonEvent(const wstring &candidate_string, size_t highlight_start,
                      size_t highlight_end, size_t cursor_pos);
   INLINE ButtonEvent(const ButtonEvent &copy);
   INLINE void operator = (const ButtonEvent &copy);
@@ -145,4 +134,3 @@ INLINE ostream &operator << (ostream &out, const ButtonEvent &be) {
 #include "buttonEvent.I"
 
 #endif
-

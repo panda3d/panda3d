@@ -11,23 +11,17 @@
  * @date 2009-02-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: StereoDisplayRegion::get_left_eye
-//       Access: Published
-//  Description: Returns a pointer to the left DisplayRegion managed
-//               by this stereo object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the left DisplayRegion managed by this stereo object.
+ */
 INLINE DisplayRegion *StereoDisplayRegion::
 get_left_eye() {
   return _left_eye;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StereoDisplayRegion::get_right_eye
-//       Access: Published
-//  Description: Returns a pointer to the right DisplayRegion managed
-//               by this stereo object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the right DisplayRegion managed by this stereo object.
+ */
 INLINE DisplayRegion *StereoDisplayRegion::
 get_right_eye() {
   return _right_eye;

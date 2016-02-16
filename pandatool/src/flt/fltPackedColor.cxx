@@ -15,21 +15,17 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltPackedColor::output
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FltPackedColor::
 output(ostream &out) const {
   out << "(" << _r << " " << _g << " " << _b << " " << _a << ")";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltPackedColor::extract_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltPackedColor::
 extract_record(FltRecordReader &reader) {
   DatagramIterator &iterator = reader.get_iterator();
@@ -42,11 +38,9 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltPackedColor::build_record
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool FltPackedColor::
 build_record(FltRecordWriter &writer) const {
   Datagram &datagram = writer.update_datagram();

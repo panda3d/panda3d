@@ -37,11 +37,9 @@
 
 TypeHandle CollisionVisualizer::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionVisualizer::
 CollisionVisualizer(const string &name) : PandaNode(name) {
   set_cull_callback();
@@ -53,64 +51,46 @@ CollisionVisualizer(const string &name) : PandaNode(name) {
   _normal_scale = 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CollisionVisualizer::
 ~CollisionVisualizer() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::clear
-//       Access: Published
-//  Description: Removes all the visualization data from a previous
-//               traversal and resets the visualizer to empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all the visualization data from a previous traversal and resets the
+ * visualizer to empty.
+ */
 void CollisionVisualizer::
 clear() {
   _data.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *CollisionVisualizer::
 make_copy() const {
   return new CollisionVisualizer(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::cull_callback
-//       Access: Public, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool CollisionVisualizer::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Now we go through and actually draw our visualized collision solids.
@@ -246,30 +226,23 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::is_renderable
-//       Access: Public, Virtual
-//  Description: Returns true if there is some value to visiting this
-//               particular node during the cull traversal for any
-//               camera, false otherwise.  This will be used to
-//               optimize the result of get_net_draw_show_mask(), so
-//               that any subtrees that contain only nodes for which
-//               is_renderable() is false need not be visited.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there is some value to visiting this particular node during
+ * the cull traversal for any camera, false otherwise.  This will be used to
+ * optimize the result of get_net_draw_show_mask(), so that any subtrees that
+ * contain only nodes for which is_renderable() is false need not be visited.
+ */
 bool CollisionVisualizer::
 is_renderable() const {
   return true;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::output
-//       Access: Public, Virtual
-//  Description: Writes a brief description of the node to the
-//               indicated output stream.  This is invoked by the <<
-//               operator.  It may be overridden in derived classes to
-//               include some information relevant to the class.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a brief description of the node to the indicated output stream.  This
+ * is invoked by the << operator.  It may be overridden in derived classes to
+ * include some information relevant to the class.
+ */
 void CollisionVisualizer::
 output(ostream &out) const {
   PandaNode::output(out);
@@ -277,28 +250,22 @@ output(ostream &out) const {
   CollisionRecorder::output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::begin_traversal
-//       Access: Public, Virtual
-//  Description: This method is called at the beginning of a
-//               CollisionTraverser::traverse() call.  It is provided
-//               as a hook for the derived class to reset its state as
-//               appropriate.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called at the beginning of a CollisionTraverser::traverse()
+ * call.  It is provided as a hook for the derived class to reset its state as
+ * appropriate.
+ */
 void CollisionVisualizer::
 begin_traversal() {
   CollisionRecorder::begin_traversal();
   _data.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::collision_tested
-//       Access: Public, Virtual
-//  Description: This method is called when a pair of collision solids
-//               have passed all bounding-volume tests and have been
-//               tested for a collision.  The detected value is set
-//               true if a collision was detected, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called when a pair of collision solids have passed all
+ * bounding-volume tests and have been tested for a collision.  The detected
+ * value is set true if a collision was detected, false otherwise.
+ */
 void CollisionVisualizer::
 collision_tested(const CollisionEntry &entry, bool detected) {
   CollisionRecorder::collision_tested(entry, detected);
@@ -325,12 +292,10 @@ collision_tested(const CollisionEntry &entry, bool detected) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionVisualizer::get_viz_state
-//       Access: Private
-//  Description: Returns a RenderState suitable for rendering the
-//               collision solids with which a collision was detected.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a RenderState suitable for rendering the collision solids with which
+ * a collision was detected.
+ */
 CPT(RenderState) CollisionVisualizer::
 get_viz_state() {
   // Once someone asks for this pointer, we hold its reference count

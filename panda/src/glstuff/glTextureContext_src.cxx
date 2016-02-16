@@ -15,31 +15,22 @@
 
 TypeHandle CLP(TextureContext)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(TextureContext)::Denstructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(TextureContext)::
 ~CLP(TextureContext)() {
   // Don't call glDeleteTextures; we may not have an active context.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLTextureContext::evict_lru
-//       Access: Public, Virtual
-//  Description: Evicts the page from the LRU.  Called internally when
-//               the LRU determines that it is full.  May also be
-//               called externally when necessary to explicitly evict
-//               the page.
-//
-//               It is legal for this method to either evict the page
-//               as requested, do nothing (in which case the eviction
-//               will be requested again at the next epoch), or
-//               requeue itself on the tail of the queue (in which
-//               case the eviction will be requested again much
-//               later).
-////////////////////////////////////////////////////////////////////
+/**
+ * Evicts the page from the LRU.  Called internally when the LRU determines that
+ * it is full.  May also be called externally when necessary to explicitly evict
+ * the page.  It is legal for this method to either evict the page as requested,
+ * do nothing (in which case the eviction will be requested again at the next
+ * epoch), or requeue itself on the tail of the queue (in which case the
+ * eviction will be requested again much later).
+ */
 void CLP(TextureContext)::
 evict_lru() {
   dequeue_lru();
@@ -60,12 +51,10 @@ evict_lru() {
   mark_unloaded();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLTextureContext::reset_data
-//       Access: Public
-//  Description: Resets the texture object to a new one so a new GL
-//               texture object can be uploaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the texture object to a new one so a new GL texture object can be
+ * uploaded.
+ */
 void CLP(TextureContext)::
 reset_data() {
 #ifndef OPENGLES
@@ -102,11 +91,9 @@ reset_data() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLTextureContext::make_handle_resident
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CLP(TextureContext)::
 make_handle_resident() {
 #ifndef OPENGLES
@@ -120,13 +107,10 @@ make_handle_resident() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(TextureContext)::get_handle
-//       Access: Public
-//  Description: Returns a handle for this texture.  Once this has
-//               been created, the texture data may still be updated,
-//               but its properties may not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a handle for this texture.  Once this has been created, the texture
+ * data may still be updated, but its properties may not.
+ */
 INLINE GLuint64 CLP(TextureContext)::
 get_handle() {
 #ifdef OPENGLES
@@ -146,11 +130,9 @@ get_handle() {
 }
 
 #ifndef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: GLTextureContext::needs_barrier
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CLP(TextureContext)::
 needs_barrier(GLbitfield barrier) {
   if (!gl_enable_memory_barriers) {
@@ -167,13 +149,10 @@ needs_barrier(GLbitfield barrier) {
            _glgsg->_textures_needing_framebuffer_barrier.count(this)));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLTextureContext::mark_incoherent
-//       Access: Public
-//  Description: Mark a texture as needing a memory barrier, since
-//               a non-coherent read or write just happened to it.
-//               If 'wrote' is true, it was written to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Mark a texture as needing a memory barrier, since a non-coherent read or
+ * write just happened to it.  If 'wrote' is true, it was written to.
+ */
 void CLP(TextureContext)::
 mark_incoherent(bool wrote) {
   if (!gl_enable_memory_barriers) {

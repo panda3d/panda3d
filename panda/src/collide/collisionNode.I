@@ -11,99 +11,77 @@
  * @date 2002-03-16
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::set_collide_mask
-//       Access: Published
-//  Description: Simultaneously sets both the "from" and "into"
-//               CollideMask values to the same thing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Simultaneously sets both the "from" and "into" CollideMask values to the same
+ * thing.
+ */
 INLINE void CollisionNode::
 set_collide_mask(CollideMask mask) {
   set_from_collide_mask(mask);
   set_into_collide_mask(mask);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::set_into_collide_mask
-//       Access: Published
-//  Description: Sets the "into" CollideMask.  In order for a
-//               collision to be detected from another object into
-//               this object, the intersection of the other object's
-//               "from" mask and this object's "into" mask must be
-//               nonzero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the "into" CollideMask.  In order for a collision to be detected from
+ * another object into this object, the intersection of the other object's
+ * "from" mask and this object's "into" mask must be nonzero.
+ */
 INLINE void CollisionNode::
 set_into_collide_mask(CollideMask mask) {
   // This is now inherited from the PandaNode base class.
   PandaNode::set_into_collide_mask(mask);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_from_collide_mask
-//       Access: Published
-//  Description: Returns the current "from" CollideMask.  In order for
-//               a collision to be detected from this object into
-//               another object, the intersection of this object's
-//               "from" mask and the other object's "into" mask must
-//               be nonzero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current "from" CollideMask.  In order for a collision to be
+ * detected from this object into another object, the intersection of this
+ * object's "from" mask and the other object's "into" mask must be nonzero.
+ */
 INLINE CollideMask CollisionNode::
 get_from_collide_mask() const {
   return _from_collide_mask;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_into_collide_mask
-//       Access: Published
-//  Description: Returns the current "into" CollideMask.  In order for
-//               a collision to be detected from another object into
-//               this object, the intersection of the other object's
-//               "from" mask and this object's "into" mask must be
-//               nonzero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current "into" CollideMask.  In order for a collision to be
+ * detected from another object into this object, the intersection of the other
+ * object's "from" mask and this object's "into" mask must be nonzero.
+ */
 INLINE CollideMask CollisionNode::
 get_into_collide_mask() const {
   // This is now inherited from the PandaNode base class.
   return PandaNode::get_into_collide_mask();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::clear_solids
-//       Access: Published
-//  Description: Removes all solids from the node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all solids from the node.
+ */
 INLINE void CollisionNode::
 clear_solids() {
   _solids.clear();
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_num_solids
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int CollisionNode::
 get_num_solids() const {
   return _solids.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_solid
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE CPT(CollisionSolid) CollisionNode::
 get_solid(int n) const {
   nassertr(n >= 0 && n < get_num_solids(), NULL);
   return _solids[n].get_read_pointer();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::modify_solid
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PT(CollisionSolid) CollisionNode::
 modify_solid(int n) {
   nassertr(n >= 0 && n < get_num_solids(), NULL);
@@ -111,11 +89,9 @@ modify_solid(int n) {
   return _solids[n].get_write_pointer();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::set_solid
-//       Access: Published
-//  Description: Replaces the solid with the indicated index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the solid with the indicated index.
+ */
 INLINE void CollisionNode::
 set_solid(int n, CollisionSolid *solid) {
   nassertv(n >= 0 && n < get_num_solids());
@@ -123,12 +99,10 @@ set_solid(int n, CollisionSolid *solid) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::remove_solid
-//       Access: Published
-//  Description: Removes the solid with the indicated index.  This
-//               will shift all subsequent indices down by one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the solid with the indicated index.  This will shift all subsequent
+ * indices down by one.
+ */
 INLINE void CollisionNode::
 remove_solid(int n) {
   nassertv(n >= 0 && n < get_num_solids());
@@ -136,13 +110,10 @@ remove_solid(int n) {
   mark_internal_bounds_stale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::add_solid
-//       Access: Published
-//  Description: Adds the indicated solid to the node.  Returns the
-//               index of the new solid within the node's list of
-//               solids.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated solid to the node.  Returns the index of the new solid
+ * within the node's list of solids.
+ */
 INLINE int CollisionNode::
 add_solid(const CollisionSolid *solid) {
   _solids.push_back((CollisionSolid *)solid);
@@ -150,45 +121,33 @@ add_solid(const CollisionSolid *solid) {
   return _solids.size() - 1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_collider_sort
-//       Access: Published
-//  Description: Returns the collider_sort value that has been set for
-//               this particular node.  See set_collider_sort().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the collider_sort value that has been set for this particular node.
+ * See set_collider_sort().
+ */
 INLINE int CollisionNode::
 get_collider_sort() const {
   return _collider_sort;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::set_collider_sort
-//       Access: Published
-//  Description: Sets a particular collider_sort value on this node.
-//               This controls the order in which colliders (that is,
-//               "from nodes") are grouped together for the collision
-//               traversal.
-//
-//               If there are 32 or fewer colliders added to any
-//               particular CollisionTraverser, then this value has no
-//               meaning.  It is only useful if there are many
-//               colliders, which may force the CollisionTraverser to
-//               make multiple passes through the data; in that case,
-//               it may be a useful optimization to group colliders
-//               that have similar bounding volumes together (by
-//               giving them similar sort values).
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets a particular collider_sort value on this node.  This controls the order
+ * in which colliders (that is, "from nodes") are grouped together for the
+ * collision traversal.  If there are 32 or fewer colliders added to any
+ * particular CollisionTraverser, then this value has no meaning.  It is only
+ * useful if there are many colliders, which may force the CollisionTraverser to
+ * make multiple passes through the data; in that case, it may be a useful
+ * optimization to group colliders that have similar bounding volumes together
+ * (by giving them similar sort values).
+ */
 INLINE void CollisionNode::
 set_collider_sort(int sort) {
   _collider_sort = sort;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_default_collide_mask
-//       Access: Published, Static
-//  Description: Returns the default into_collide_mask assigned to new
-//               CollisionNodes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the default into_collide_mask assigned to new CollisionNodes.
+ */
 INLINE CollideMask CollisionNode::
 get_default_collide_mask() {
   return default_collision_node_collide_mask;

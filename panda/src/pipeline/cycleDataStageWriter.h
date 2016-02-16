@@ -20,15 +20,12 @@
 #include "pipelineCycler.h"
 #include "cycleDataLockedStageReader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CycleDataStageWriter
-// Description : This class is similar to CycleDataWriter, except it
-//               allows writing to a particular stage of the pipeline.
-//               Usually this is used to implement writing directly to
-//               an upstream pipeline value, to recompute a cached
-//               value there (otherwise, the cached value would go
-//               away with the next pipeline cycle).
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is similar to CycleDataWriter, except it allows writing to a
+ * particular stage of the pipeline.  Usually this is used to implement writing
+ * directly to an upstream pipeline value, to recompute a cached value there
+ * (otherwise, the cached value would go away with the next pipeline cycle).
+ */
 template<class CycleDataType>
 class CycleDataStageWriter {
 public:

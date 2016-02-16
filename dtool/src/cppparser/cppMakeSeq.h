@@ -20,14 +20,11 @@
 #include "cppIdentifier.h"
 #include "cppFunctionGroup.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPMakeSeq
-// Description : This is a MAKE_SEQ() declaration appearing within a
-//               class body.  It means to generate a sequence method
-//               within Python, replacing (for instance)
-//               get_num_nodes()/get_node(n) with a synthetic
-//               get_nodes() method.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a MAKE_SEQ() declaration appearing within a class body.  It means to
+ * generate a sequence method within Python, replacing (for instance)
+ * get_num_nodes()/get_node(n) with a synthetic get_nodes() method.
+ */
 class CPPMakeSeq : public CPPDeclaration {
 public:
   CPPMakeSeq(CPPIdentifier *ident,

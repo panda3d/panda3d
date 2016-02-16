@@ -11,13 +11,10 @@
  * @date 2000-05-05
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EventQueue::get_global_event_queue
-//       Access: Public
-//  Description: Returns a pointer to the one global EventQueue
-//               object.  If the global object has not yet been
-//               created, this will create it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the one global EventQueue object.  If the global object
+ * has not yet been created, this will create it.
+ */
 INLINE EventQueue *EventQueue::
 get_global_event_queue() {
   if (_global_event_queue == NULL) {

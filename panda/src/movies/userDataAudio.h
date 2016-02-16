@@ -21,16 +21,13 @@
 class MovieAudioCursor;
 class UserDataAudioCursor;
 
-////////////////////////////////////////////////////////////////////
-//       Class : UserDataAudio
-// Description : A UserDataAudio is a way for the user to manually
-//               supply raw audio samples. remove_after_read means the
-//               data will be removed if read once. Else data will
-//               be stored (enable looping and seeking).
-//               Expects data as 16 bit signed (word); Example for stereo:
-//               1.word = 1.channel,2.word = 2.channel,
-//               3.word = 1.channel,4.word = 2.channel, etc.
-////////////////////////////////////////////////////////////////////
+/**
+ * A UserDataAudio is a way for the user to manually supply raw audio samples.
+ * remove_after_read means the data will be removed if read once.  Else data
+ * will be stored (enable looping and seeking). Expects data as 16 bit signed
+ * (word); Example for stereo: 1.word = 1.channel,2.word = 2.channel, 3.word =
+ * 1.channel,4.word = 2.channel, etc.
+ */
 class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
 
  PUBLISHED:
@@ -41,7 +38,7 @@ class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
   void append(PN_int16 *data, int n);
   void append(DatagramIterator *src, int len=0x40000000);
   void append(const string &str);
-  void done(); // A promise not to write any more samples.  
+  void done(); // A promise not to write any more samples.
 
  private:
   void read_samples(int n, PN_int16 *data);
@@ -53,7 +50,7 @@ class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
   bool _aborted;
   bool _remove_after_read;
   friend class UserDataAudioCursor;
-  
+
  public:
   static TypeHandle get_class_type() {
     return _type_handle;

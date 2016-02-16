@@ -20,10 +20,9 @@
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PointerEvent
-// Description : Records a pointer movement event.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records a pointer movement event.
+ */
 class EXPCL_PANDA_EVENT PointerEvent {
 public:
 
@@ -61,4 +60,3 @@ INLINE ostream &operator << (ostream &out, const PointerEvent &pe) {
 #include "pointerEvent.I"
 
 #endif
-

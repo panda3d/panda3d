@@ -23,11 +23,9 @@
 #include "datagramIterator.h"
 #include "connectionManager.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatReader::
 PStatReader(PStatServer *manager, PStatMonitor *monitor) :
 #ifdef HAVE_THREADS
@@ -46,38 +44,30 @@ PStatReader(PStatServer *manager, PStatMonitor *monitor) :
   _monitor->set_client_data(_client_data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatReader::
 ~PStatReader() {
   _manager->release_udp_port(_udp_port);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::close
-//       Access: Public
-//  Description: This will be called by the PStatClientData in
-//               response to its close() call.  It will tell the
-//               server to let go of the reader so it can shut down
-//               its connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * This will be called by the PStatClientData in response to its close() call.
+ * It will tell the server to let go of the reader so it can shut down its
+ * connection.
+ */
 void PStatReader::
 close() {
   _manager->remove_reader(_tcp_connection, this);
   lost_connection();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::set_tcp_connection
-//       Access: Public
-//  Description: This is intended to be called only once, immediately
-//               after construction, by the PStatListener that created
-//               it.  It tells the reader about the newly-established
-//               TCP connection to a client.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is intended to be called only once, immediately after construction, by
+ * the PStatListener that created it.  It tells the reader about the newly-
+ * established TCP connection to a client.
+ */
 void PStatReader::
 set_tcp_connection(Connection *tcp_connection) {
   _tcp_connection = tcp_connection;
@@ -96,13 +86,10 @@ set_tcp_connection(Connection *tcp_connection) {
   send_hello();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::lost_connection
-//       Access: Public
-//  Description: This is called by the PStatServer when it detects
-//               that the connection has been lost.  It should clean
-//               itself up and shut down nicely.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called by the PStatServer when it detects that the connection has
+ * been lost.  It should clean itself up and shut down nicely.
+ */
 void PStatReader::
 lost_connection() {
   _client_data->_is_alive = false;
@@ -115,33 +102,27 @@ lost_connection() {
   _udp_connection.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::idle
-//       Access: Public
-//  Description: Called each frame to do what needs to be done for the
-//               monitor's user-defined idle routines.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called each frame to do what needs to be done for the monitor's user-defined
+ * idle routines.
+ */
 void PStatReader::
 idle() {
   dequeue_frame_data();
   _monitor->idle();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::get_monitor
-//       Access: Public
-//  Description: Returns the monitor that this reader serves.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the monitor that this reader serves.
+ */
 PStatMonitor *PStatReader::
 get_monitor() {
   return _monitor;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::get_hostname
-//       Access: Private
-//  Description: Returns the current machine's hostname.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current machine's hostname.
+ */
 string PStatReader::
 get_hostname() {
   if (_hostname.empty()) {
@@ -153,11 +134,9 @@ get_hostname() {
   return _hostname;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::send_hello
-//       Access: Private
-//  Description: Sends the initial greeting message to the client.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the initial greeting message to the client.
+ */
 void PStatReader::
 send_hello() {
   PStatServerControlMessage message;
@@ -171,12 +150,10 @@ send_hello() {
   _writer.send(datagram, _tcp_connection);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::receive_datagram
-//       Access: Private, Virtual
-//  Description: Called by the net code whenever a new datagram is
-//               detected on a either the TCP or UDP connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the net code whenever a new datagram is detected on a either the
+ * TCP or UDP connection.
+ */
 void PStatReader::
 receive_datagram(const NetDatagram &datagram) {
   Connection *connection = datagram.get_connection();
@@ -201,12 +178,10 @@ receive_datagram(const NetDatagram &datagram) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::handle_client_control_message
-//       Access: Private
-//  Description: Called when a control message has been received by
-//               the client over the TCP connection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a control message has been received by the client over the TCP
+ * connection.
+ */
 void PStatReader::
 handle_client_control_message(const PStatClientControlMessage &message) {
   switch (message._type) {
@@ -254,13 +229,10 @@ handle_client_control_message(const PStatClientControlMessage &message) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::handle_client_udp_data
-//       Access: Private
-//  Description: Called when a UDP datagram has been received by the
-//               client.  This should be a single frame's worth of
-//               data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when a UDP datagram has been received by the client.  This should be a
+ * single frame's worth of data.
+ */
 void PStatReader::
 handle_client_udp_data(const Datagram &datagram) {
   if (!_monitor->is_client_known()) {
@@ -285,25 +257,22 @@ handle_client_udp_data(const Datagram &datagram) {
     data._frame_number = source.get_uint32();
     data._frame_data = new PStatFrameData;
     data._frame_data->read_datagram(source, _client_data);
-    
+
     // Queue up the data till we're ready to handle it in a
     // single-threaded way.
     _queued_frame_data.push_back(data);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatReader::dequeue_frame_data
-//       Access: Private
-//  Description: Called during the idle loop to pull out all the frame
-//               data that we might have read while the threaded
-//               reader was running.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called during the idle loop to pull out all the frame data that we might have
+ * read while the threaded reader was running.
+ */
 void PStatReader::
 dequeue_frame_data() {
   while (!_queued_frame_data.empty()) {
     const FrameData &data = _queued_frame_data.front();
-    nassertv(_client_data != (PStatClientData *)NULL); 
+    nassertv(_client_data != (PStatClientData *)NULL);
 
     // Check to see if any new collectors have level data.
     int num_levels = data._frame_data->get_num_levels();
@@ -317,12 +286,11 @@ dequeue_frame_data() {
       }
     }
 
-    _client_data->record_new_frame(data._thread_index, 
-                                   data._frame_number, 
+    _client_data->record_new_frame(data._thread_index,
+                                   data._frame_number,
                                    data._frame_data);
     _monitor->new_data(data._thread_index, data._frame_number);
 
     _queued_frame_data.pop_front();
   }
 }
-

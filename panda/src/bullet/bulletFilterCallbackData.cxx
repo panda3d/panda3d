@@ -14,4 +14,3 @@
 #include "bulletFilterCallbackData.h"
 
 TypeHandle BulletFilterCallbackData::_type_handle;
-

@@ -16,17 +16,15 @@
 
 #include "dtoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-// This file decides which of the core implementations of the various
-// threading and locking implementations we should use, based on
-// platform and/or available libraries.
-//
-// This file, along with mutexImpl.h and the various Mutex
-// implementation classes, are defined in dtool so that some form of
-// critical-section protection will be available to view low-level
-// classes like TypeRegistry.  Most of the rest of the threading and
-// synchronization classes are defined in panda/src/express.
-////////////////////////////////////////////////////////////////////
+/*
+ * This file decides which of the core implementations of the various threading
+ * and locking implementations we should use, based on platform andor available
+ * libraries.  This file, along with mutexImpl.h and the various Mutex
+ * implementation classes, are defined in dtool so that some form of critical-
+ * section protection will be available to view low-level classes like
+ * TypeRegistry.  Most of the rest of the threading and synchronization classes
+ * are defined in pandasrcexpress.
+ */
 
 // This keyword should be used to mark any variable which is possibly
 // volatile because multiple threads might contend on it, unprotected

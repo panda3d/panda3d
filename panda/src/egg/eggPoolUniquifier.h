@@ -18,14 +18,11 @@
 
 #include "eggNameUniquifier.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggPoolUniquifier
-// Description : This is a specialization of EggNameUniquifier to
-//               generate unique names for textures, materials, and
-//               vertex pools prior to writing out an egg file.  It's
-//               automatically called by EggData prior to writing out
-//               an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization of EggNameUniquifier to generate unique names for
+ * textures, materials, and vertex pools prior to writing out an egg file.  It's
+ * automatically called by EggData prior to writing out an egg file.
+ */
 class EXPCL_PANDAEGG EggPoolUniquifier : public EggNameUniquifier {
 PUBLISHED:
   EggPoolUniquifier();
@@ -52,5 +49,3 @@ private:
 };
 
 #endif
-
-

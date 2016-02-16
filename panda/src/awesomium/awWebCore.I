@@ -46,5 +46,3 @@ INLINE void AwWebCore::
 resume() {
   WebCore::resume();
 }
-
-

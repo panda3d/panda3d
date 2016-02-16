@@ -18,12 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockOpacity
-// Description : Indicates how transparent or opaque this particular
-//               layer is in relation to the layers beneath it.  This
-//               is a subchunk of LwoSurfaceBlockHeader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates how transparent or opaque this particular layer is in relation to
+ * the layers beneath it.  This is a subchunk of LwoSurfaceBlockHeader.
+ */
 class LwoSurfaceBlockOpacity : public LwoChunk {
 public:
   enum Type {
@@ -63,5 +61,3 @@ private:
 };
 
 #endif
-
-

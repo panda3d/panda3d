@@ -16,11 +16,9 @@
 
 TypeHandle PhysxConvexMesh::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMesh::link
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxConvexMesh::
 link(NxConvexMesh *meshPtr) {
 
@@ -30,11 +28,9 @@ link(NxConvexMesh *meshPtr) {
   _error_type = ET_ok;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMesh::unlink
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxConvexMesh::
 unlink() {
 
@@ -43,11 +39,9 @@ unlink() {
   PhysxManager::get_global_ptr()->_convex_meshes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMesh::release
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxConvexMesh::
 release() {
 
@@ -60,11 +54,9 @@ release() {
   PhysxMeshPool::release_convex_mesh(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexMesh::get_reference_count
-//       Access: Published
-//  Description: Returns the reference count for shared meshes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the reference count for shared meshes.
+ */
 unsigned int PhysxConvexMesh::
 get_reference_count() const {
 
@@ -72,4 +64,3 @@ get_reference_count() const {
 
   return _ptr->getReferenceCount();
 }
-

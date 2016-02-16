@@ -19,11 +19,9 @@
 #include "physxJointDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxCylindricalJointDesc
-// Description : Descriptor class for sliding joint. See
-//               PhysxCylindricalJoint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for sliding joint.  See PhysxCylindricalJoint.
+ */
 class EXPCL_PANDAPHYSX PhysxCylindricalJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

@@ -20,13 +20,11 @@
 class EggVertex;
 class EggPrimitive;
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileNormal
-// Description : This represents a single normal associated with an
-//               XFileFace.  It is separate from XFileVertex, because
-//               the X syntax supports a different table of normals
-//               than that of vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a single normal associated with an XFileFace.  It is separate
+ * from XFileVertex, because the X syntax supports a different table of normals
+ * than that of vertices.
+ */
 class XFileNormal {
 public:
   XFileNormal();
@@ -38,4 +36,3 @@ public:
 };
 
 #endif
-

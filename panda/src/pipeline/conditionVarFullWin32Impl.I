@@ -11,11 +11,9 @@
  * @date 2006-08-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullWin32Impl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConditionVarFullWin32Impl::
 ConditionVarFullWin32Impl(MutexWin32Impl &mutex) {
   _external_mutex = &mutex._lock;
@@ -27,22 +25,18 @@ ConditionVarFullWin32Impl(MutexWin32Impl &mutex) {
   _waiters_count = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullWin32Impl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE ConditionVarFullWin32Impl::
 ~ConditionVarFullWin32Impl() {
   CloseHandle(_event_signal);
   CloseHandle(_event_broadcast);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullWin32Impl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarFullWin32Impl::
 wait() {
   AtomicAdjust::inc(_waiters_count);
@@ -62,19 +56,17 @@ wait() {
   // Some thread called notify_all().
   if (last_waiter) {
     // We're the last waiter to be notified or to stop waiting, so
-    // reset the manual event. 
-    ResetEvent(_event_broadcast); 
+    // reset the manual event.
+    ResetEvent(_event_broadcast);
   }
 
   // Reacquire the <external_mutex>.
   EnterCriticalSection(_external_mutex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullWin32Impl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarFullWin32Impl::
 wait(double timeout) {
   AtomicAdjust::inc(_waiters_count);
@@ -94,19 +86,17 @@ wait(double timeout) {
   // Some thread called notify_all().
   if (last_waiter) {
     // We're the last waiter to be notified or to stop waiting, so
-    // reset the manual event. 
-    ResetEvent(_event_broadcast); 
+    // reset the manual event.
+    ResetEvent(_event_broadcast);
   }
 
   // Reacquire the <external_mutex>.
   EnterCriticalSection(_external_mutex);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullWin32Impl::notify
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarFullWin32Impl::
 notify() {
   bool have_waiters = AtomicAdjust::get(_waiters_count) > 0;
@@ -116,11 +106,9 @@ notify() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullWin32Impl::notify_all
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void ConditionVarFullWin32Impl::
 notify_all() {
   bool have_waiters = AtomicAdjust::get(_waiters_count) > 0;

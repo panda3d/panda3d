@@ -27,30 +27,24 @@
 #include <maya/MFn.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaShaders::
 MayaShaders() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaShaders::
 ~MayaShaders() {
   clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::find_shader_for_node
-//       Access: Public
-//  Description: Extracts the shader assigned to the indicated node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the shader assigned to the indicated node.
+ */
 MayaShader *MayaShaders::
 find_shader_for_node(MObject node, bool legacy_shader) {
   MStatus status;
@@ -96,17 +90,14 @@ find_shader_for_node(MObject node, bool legacy_shader) {
   return (MayaShader *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::bind_uvsets
-//       Access: Public
-//  Description: Causes all shaders in the set to use the given
-//               mesh as a file-to-uvset map.
-////////////////////////////////////////////////////////////////////
+/**
+ * Causes all shaders in the set to use the given mesh as a file-to-uvset map.
+ */
 void MayaShaders::
 bind_uvsets(MObject mesh) {
   _uvset_names.clear();
   _file_to_uvset.clear();
-  
+
   if (mesh.hasFn(MFn::kMesh)) {
     MFnMesh mesh_fn(mesh);
     MStatus status;
@@ -124,21 +115,18 @@ bind_uvsets(MObject mesh) {
       }
     }
   }
-  
+
   Shaders::iterator sha;
   for (sha=_shaders.begin(); sha!=_shaders.end(); sha++) {
     (*sha).second->bind_uvsets(_file_to_uvset);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::find_shader_for_shading_engine
-//       Access: Public
-//  Description: Returns the MayaShader object associated with the
-//               indicated "shading engine".  This will create a new
-//               MayaShader object if this is the first time we have
-//               encountered the indicated engine.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the MayaShader object associated with the indicated "shading engine".
+ * This will create a new MayaShader object if this is the first time we have
+ * encountered the indicated engine.
+ */
 MayaShader *MayaShaders::
 find_shader_for_shading_engine(MObject engine, bool legacy_shader) {
   MFnDependencyNode engine_fn(engine);
@@ -153,19 +141,17 @@ find_shader_for_shading_engine(MObject engine, bool legacy_shader) {
   // new MayaShader object to represent it.
   MayaShader *shader = new MayaShader(engine, legacy_shader);
   shader->bind_uvsets(_file_to_uvset);
-  
+
   // Record this for the future.
   _shaders.insert(Shaders::value_type(engine_name, shader));
   _shaders_in_order.push_back(shader);
   return shader;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::find_uv_link
-//       Access: Public
-//  Description: Returns the current mapping from file to uvset
-//               for the given file texture name.  
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current mapping from file to uvset for the given file texture
+ * name.
+ */
 string MayaShaders::
 find_uv_link(const string &match) {
   MayaFileToUVSetMap::iterator it = _file_to_uvset.find(match);
@@ -176,35 +162,27 @@ find_uv_link(const string &match) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::get_num_shaders
-//       Access: Public
-//  Description: Returns the number of unique MayaShaders that have
-//               been discovered so far.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of unique MayaShaders that have been discovered so far.
+ */
 int MayaShaders::
 get_num_shaders() const {
   return _shaders_in_order.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::get_shader
-//       Access: Public
-//  Description: Returns the nth MayaShader that has been discovered
-//               so far.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth MayaShader that has been discovered so far.
+ */
 MayaShader *MayaShaders::
 get_shader(int n) const {
   nassertr(n >= 0 && n < (int)_shaders_in_order.size(), NULL);
   return _shaders_in_order[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaders::clear
-//       Access: Public
-//  Description: Frees all of the previously-defined MayaShader
-//               objects associated with this set.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees all of the previously-defined MayaShader objects associated with this
+ * set.
+ */
 void MayaShaders::
 clear() {
   ShadersInOrder::iterator si;

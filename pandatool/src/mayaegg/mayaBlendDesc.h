@@ -28,18 +28,14 @@
 class EggTable;
 class EggSAnimData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaBlendDesc
-// Description : A handle to a Maya blend shape description.  This is
-//               just one target of a Maya BlendShape object, and
-//               thus corresponds more or less one-to-one with a
-//               single Egg morph target.  (We don't attempt to
-//               support Maya's chained target shapes here; should we
-//               need to later, it would mean breaking each of those
-//               target shapes on the one continuous Maya slider into
-//               a separate MayaBlendDesc object, and synthesizing the
-//               egg slider values appropriately.)
-////////////////////////////////////////////////////////////////////
+/**
+ * A handle to a Maya blend shape description.  This is just one target of a
+ * Maya BlendShape object, and thus corresponds more or less one-to-one with a
+ * single Egg morph target.  (We don't attempt to support Maya's chained target
+ * shapes here; should we need to later, it would mean breaking each of those
+ * target shapes on the one continuous Maya slider into a separate MayaBlendDesc
+ * object, and synthesizing the egg slider values appropriately.)
+ */
 class MayaBlendDesc : public ReferenceCount, public Namable {
 public:
   MayaBlendDesc(MFnBlendShapeDeformer &deformer, int weight_index);

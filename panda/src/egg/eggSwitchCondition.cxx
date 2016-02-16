@@ -19,11 +19,9 @@ TypeHandle EggSwitchCondition::_type_handle;
 TypeHandle EggSwitchConditionDistance::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSwitchConditionDistance::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggSwitchConditionDistance::
 EggSwitchConditionDistance(double switch_in, double switch_out,
                            const LPoint3d &center, double fade) {
@@ -34,22 +32,18 @@ EggSwitchConditionDistance(double switch_in, double switch_out,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSwitchConditionDistance::make_copy
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggSwitchCondition *EggSwitchConditionDistance::
 make_copy() const {
   return new EggSwitchConditionDistance(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSwitchConditionDistance::write
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggSwitchConditionDistance::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "<SwitchCondition> {\n";
@@ -65,12 +59,10 @@ write(ostream &out, int indent_level) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggSwitchConditionDistance::transform
-//       Access: Public, Virtual
-//  Description: Applies the indicated transformation matrix to the
-//               switch condition parameters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated transformation matrix to the switch condition
+ * parameters.
+ */
 void EggSwitchConditionDistance::
 transform(const LMatrix4d &mat) {
   _center = _center * mat;

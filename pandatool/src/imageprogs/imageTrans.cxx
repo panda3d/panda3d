@@ -15,11 +15,9 @@
 #include "string_utils.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTrans::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ImageTrans::
 ImageTrans() : ImageFilter(true) {
   set_program_brief("apply transformations to an image file");
@@ -67,11 +65,9 @@ ImageTrans() : ImageFilter(true) {
   _color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTrans::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ImageTrans::
 run() {
   switch (_channels) {
@@ -145,11 +141,9 @@ run() {
   write_image();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTrans::dispatch_channels
-//       Access: Private, Static
-//  Description: Interprets the -chan parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Interprets the -chan parameter.
+ */
 bool ImageTrans::
 dispatch_channels(const string &opt, const string &arg, void *var) {
   Channels *ip = (Channels *)var;
@@ -186,12 +180,9 @@ dispatch_channels(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ImageTrans::extract_alpha
-//       Access: Private
-//  Description: Extracts out just the alpha channel and stores it as
-//               a grayscale image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts out just the alpha channel and stores it as a grayscale image.
+ */
 void ImageTrans::
 extract_alpha() {
   if (!_image.has_alpha()) {

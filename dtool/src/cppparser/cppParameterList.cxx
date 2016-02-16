@@ -14,24 +14,19 @@
 #include "cppParameterList.h"
 #include "cppInstance.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPParameterList::
 CPPParameterList() {
   _includes_ellipsis = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::is_equivalent
-//       Access: Public
-//  Description: This is similar to operator == except it is more
-//               forgiving: it is true if only the length and order of
-//               types is the same, never minding the instance names
-//               or initial values.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to operator == except it is more forgiving: it is true if
+ * only the length and order of types is the same, never minding the instance
+ * names or initial values.
+ */
 bool CPPParameterList::
 is_equivalent(const CPPParameterList &other) const {
   if (_includes_ellipsis != other._includes_ellipsis) {
@@ -48,11 +43,9 @@ is_equivalent(const CPPParameterList &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::Equality Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CPPParameterList::
 operator == (const CPPParameterList &other) const {
   if (_includes_ellipsis != other._includes_ellipsis) {
@@ -69,21 +62,17 @@ operator == (const CPPParameterList &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::Inequality Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CPPParameterList::
 operator != (const CPPParameterList &other) const {
   return !(*this == other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::Ordering Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool CPPParameterList::
 operator < (const CPPParameterList &other) const {
   if (_includes_ellipsis != other._includes_ellipsis) {
@@ -100,12 +89,10 @@ operator < (const CPPParameterList &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::is_tbd
-//       Access: Public
-//  Description: Returns true if any of the types in the parameter
-//               list are base on CPPTBDType.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the types in the parameter list are base on
+ * CPPTBDType.
+ */
 bool CPPParameterList::
 is_tbd() const {
   for (int i = 0; i < (int)_parameters.size(); ++i) {
@@ -116,14 +103,11 @@ is_tbd() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::is_parameter_expr
-//       Access: Public
-//  Description: Returns true if any of the types in the parameter
-//               list turns out to be a constant expression, which is
-//               a clue that this parameter list is actually intended
-//               to be an instance declaration.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the types in the parameter list turns out to be a
+ * constant expression, which is a clue that this parameter list is actually
+ * intended to be an instance declaration.
+ */
 bool CPPParameterList::
 is_parameter_expr() const {
   for (int i = 0; i < (int)_parameters.size(); ++i) {
@@ -134,14 +118,11 @@ is_parameter_expr() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::is_fully_specified
-//       Access: Public
-//  Description: Returns true if this declaration is an actual,
-//               factual declaration, or false if some part of the
-//               declaration depends on a template parameter which has
-//               not yet been instantiated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this declaration is an actual, factual declaration, or false
+ * if some part of the declaration depends on a template parameter which has not
+ * yet been instantiated.
+ */
 bool CPPParameterList::
 is_fully_specified() const {
   for (int i = 0; i < (int)_parameters.size(); ++i) {
@@ -153,11 +134,9 @@ is_fully_specified() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::substitute_decl
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPParameterList *CPPParameterList::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
@@ -181,12 +160,10 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::resolve_type
-//       Access: Public
-//  Description: Returns an equivalent CPPParameterList, in which all
-//               of the individual types have been resolved.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an equivalent CPPParameterList, in which all of the individual types
+ * have been resolved.
+ */
 CPPParameterList *CPPParameterList::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPParameterList *rep = new CPPParameterList;
@@ -215,13 +192,11 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   return rep;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPParameterList::output
-//       Access: Public
-//  Description: If num_default_parameters is >= 0, it indicates the
-//               number of default parameter values to show on output.
-//               Otherwise, all parameter values are shown.
-////////////////////////////////////////////////////////////////////
+/**
+ * If num_default_parameters is >= 0, it indicates the number of default
+ * parameter values to show on output.  Otherwise, all parameter values are
+ * shown.
+ */
 void CPPParameterList::
 output(ostream &out, CPPScope *scope, bool parameter_names,
        int num_default_parameters) const {

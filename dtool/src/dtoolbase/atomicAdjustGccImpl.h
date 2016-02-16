@@ -19,10 +19,9 @@
 
 #if (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))) || (defined(__clang__) && (__clang_major__ >= 3))
 
-////////////////////////////////////////////////////////////////////
-//       Class : AtomicAdjustGccImpl
-// Description : Uses GCC built-ins to implement atomic adjustments.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses GCC built-ins to implement atomic adjustments.
+ */
 class EXPCL_DTOOL AtomicAdjustGccImpl {
 public:
 #if __GCC_ATOMIC_LONG_LOCK_FREE >= __GCC_ATOMIC_INT_LOCK_FREE

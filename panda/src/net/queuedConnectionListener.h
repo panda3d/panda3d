@@ -38,12 +38,10 @@ public:
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<ConnectionListenerData>);
 
-////////////////////////////////////////////////////////////////////
-//       Class : QueuedConnectionListener
-// Description : This flavor of ConnectionListener will queue up all
-//               of the TCP connections it established for later
-//               detection by the client code.
-////////////////////////////////////////////////////////////////////
+/**
+ * This flavor of ConnectionListener will queue up all of the TCP connections it
+ * established for later detection by the client code.
+ */
 class EXPCL_PANDA_NET QueuedConnectionListener : public ConnectionListener,
                                  public QueuedReturn<ConnectionListenerData> {
 PUBLISHED:
@@ -65,4 +63,3 @@ protected:
 #include "queuedConnectionListener.I"
 
 #endif
-

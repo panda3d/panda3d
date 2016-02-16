@@ -20,12 +20,10 @@
 #include "callbackNode.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ComputeNode
-// Description : A special node, the sole purpose of which is to
-//               invoke a dispatch operation on the assigned
-//               compute shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special node, the sole purpose of which is to invoke a dispatch operation
+ * on the assigned compute shader.
+ */
 class EXPCL_PANDA_PGRAPHNODES ComputeNode : public PandaNode {
 PUBLISHED:
   ComputeNode(const string &name);

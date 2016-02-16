@@ -29,11 +29,10 @@ class EggVertexPool;
 class VRMLAppearance;
 class LMatrix4d;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IndexedFaceSet
-// Description : Decodes the vertices and faces in a VRML indexed face
-//               set, and creates the corresponding egg geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decodes the vertices and faces in a VRML indexed face set, and creates the
+ * corresponding egg geometry.
+ */
 class IndexedFaceSet {
 public:
   IndexedFaceSet(const VrmlNode *geometry, const VRMLAppearance &appearance);

@@ -25,22 +25,15 @@
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FFTCompressor
-// Description : This class manages a lossy compression and
-//               decompression of a stream of floating-point numbers
-//               to a datagram, based a fourier transform algorithm
-//               (similar in principle to JPEG compression).
-//
-//               Actually, it doesn't do any real compression on its
-//               own; it just outputs a stream of integers that should
-//               compress much tighter via gzip than the original
-//               stream of floats would have.
-//
-//               This class depends on the external FFTW library;
-//               without it, it will fall back on lossless output of
-//               the original data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class manages a lossy compression and decompression of a stream of
+ * floating-point numbers to a datagram, based a fourier transform algorithm
+ * (similar in principle to JPEG compression).  Actually, it doesn't do any real
+ * compression on its own; it just outputs a stream of integers that should
+ * compress much tighter via gzip than the original stream of floats would have.
+ * This class depends on the external FFTW library; without it, it will fall
+ * back on lossless output of the original data.
+ */
 class EXPCL_PANDA_MATHUTIL FFTCompressor {
 public:
   FFTCompressor();
@@ -102,4 +95,3 @@ private:
 };
 
 #endif
-

@@ -23,10 +23,9 @@
 
 #include "odeJoint.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OdeHinge2Joint
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAODE OdeHinge2Joint : public OdeJoint {
   friend class OdeJoint;
 
@@ -65,7 +64,7 @@ PUBLISHED:
   INLINE void set_param_stop_CFM(int axis, dReal val);
   INLINE void set_param_suspension_ERP(int axis, dReal val);
   INLINE void set_param_suspension_CFM(int axis, dReal val);
-  
+
   INLINE dReal get_param_lo_stop(int axis) const;
   INLINE dReal get_param_hi_stop(int axis) const;
   INLINE dReal get_param_vel(int axis) const;

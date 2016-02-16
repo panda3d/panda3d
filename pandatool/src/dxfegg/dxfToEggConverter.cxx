@@ -15,87 +15,67 @@
 #include "dxfToEggLayer.h"
 #include "eggData.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXFToEggConverter::
 DXFToEggConverter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXFToEggConverter::
 DXFToEggConverter(const DXFToEggConverter &copy) :
   SomethingToEggConverter(copy)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXFToEggConverter::
 ~DXFToEggConverter() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *DXFToEggConverter::
 make_copy() {
   return new DXFToEggConverter(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string DXFToEggConverter::
 get_name() const {
   return "DXF";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string DXFToEggConverter::
 get_extension() const {
   return "dxf";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files (with
+ * a .pz extension), false otherwise.
+ */
 bool DXFToEggConverter::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns true
+ * if successful, false otherwise.
+ */
 bool DXFToEggConverter::
 convert_file(const Filename &filename) {
   clear_error();
@@ -108,22 +88,17 @@ convert_file(const Filename &filename) {
   return !had_error();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::new_layer
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 DXFLayer *DXFToEggConverter::
 new_layer(const string &name) {
   return new DXFToEggLayer(name, get_egg_data());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::done_entity
-//       Access: Protected, Virtual
-//  Description: If the entity is a polygon, creates the corresponding
-//               egg polygon.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the entity is a polygon, creates the corresponding egg polygon.
+ */
 void DXFToEggConverter::
 done_entity() {
   if (_entity == EN_polyline) {
@@ -155,19 +130,16 @@ done_entity() {
     _verts.push_back(DXFVertex(_r));
     _verts.push_back(DXFVertex(_q));
     _verts.push_back(DXFVertex(_p));
-    
+
     nassertv(_layer!=NULL);
     ((DXFToEggLayer *)_layer)->add_polygon(this);
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXFToEggConverter::done_entity
-//       Access: Protected, Virtual
-//  Description: A hook for user code, if desired.  This function is
-//               called when some unexpected error occurs while
-//               reading the DXF file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A hook for user code, if desired.  This function is called when some
+ * unexpected error occurs while reading the DXF file.
+ */
 void DXFToEggConverter::
 error() {
   _error = true;

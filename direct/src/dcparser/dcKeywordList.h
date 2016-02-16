@@ -19,11 +19,10 @@
 class DCKeyword;
 class HashGenerator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCKeywordList
-// Description : This is a list of keywords (see DCKeyword) that may
-//               be set on a particular field.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a list of keywords (see DCKeyword) that may be set on a particular
+ * field.
+ */
 class EXPCL_DIRECT DCKeywordList {
 public:
   DCKeywordList();

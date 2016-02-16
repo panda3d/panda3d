@@ -18,38 +18,30 @@
 #include "configVariableBase.h"
 #include "dSearchPath.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConfigVariableSearchPath
-// Description : This is similar to a ConfigVariableList, but it
-//               returns its list as a DSearchPath, as a list of
-//               directories.
-//
-//               You may locally append directories to the end of the
-//               search path with the methods here, or prepend them to
-//               the beginning.  Use these methods to make adjustments
-//               to the path; do not attempt to directly modify the
-//               const DSearchPath object returned by get_value().
-//
-//               Unlike other ConfigVariable types, local changes
-//               (made by calling append_directory() and
-//               prepend_directory()) are specific to this particular
-//               instance of the ConfigVariableSearchPath.  A separate
-//               instance of the same variable, created by using the
-//               same name to the constructor, will not reflect the
-//               local changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to a ConfigVariableList, but it returns its list as a
+ * DSearchPath, as a list of directories.  You may locally append directories to
+ * the end of the search path with the methods here, or prepend them to the
+ * beginning.  Use these methods to make adjustments to the path; do not attempt
+ * to directly modify the const DSearchPath object returned by get_value().
+ * Unlike other ConfigVariable types, local changes (made by calling
+ * append_directory() and prepend_directory()) are specific to this particular
+ * instance of the ConfigVariableSearchPath.  A separate instance of the same
+ * variable, created by using the same name to the constructor, will not reflect
+ * the local changes.
+ */
 class EXPCL_DTOOLCONFIG ConfigVariableSearchPath : public ConfigVariableBase {
 PUBLISHED:
-  INLINE ConfigVariableSearchPath(const string &name, 
-                                  const string &description = string(), 
+  INLINE ConfigVariableSearchPath(const string &name,
+                                  const string &description = string(),
                                   int flags = 0);
-  INLINE ConfigVariableSearchPath(const string &name, 
+  INLINE ConfigVariableSearchPath(const string &name,
                                   const DSearchPath &default_value,
-                                  const string &description, 
+                                  const string &description,
                                   int flags = 0);
-  INLINE ConfigVariableSearchPath(const string &name, 
+  INLINE ConfigVariableSearchPath(const string &name,
                                   const string &default_value,
-                                  const string &description, 
+                                  const string &description,
                                   int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 

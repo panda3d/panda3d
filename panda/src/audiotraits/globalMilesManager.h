@@ -33,12 +33,11 @@
 class MilesAudioSample;
 class MilesAudioSequence;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GlobalMilesManager
-// Description : This is a wrapper around the parts of the Miles API
-//               that should only be created once.  This represents
-//               the global data common to all MilesAudioManagers.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a wrapper around the parts of the Miles API that should only be
+ * created once.  This represents the global data common to all
+ * MilesAudioManagers.
+ */
 class EXPCL_MILES_AUDIO GlobalMilesManager {
 private:
   GlobalMilesManager();
@@ -106,7 +105,7 @@ private:
   typedef pvector<SequenceData> Sequences;
   Sequences _sequences;
   LightMutex _sequences_lock;
-  
+
   static GlobalMilesManager *_global_ptr;
 };
 
@@ -115,6 +114,3 @@ private:
 #endif //]
 
 #endif
-
-
-  

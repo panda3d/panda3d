@@ -11,11 +11,9 @@
  * @date 2005-03-13
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::PrimitiveUnifier::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE EggLoader::PrimitiveUnifier::
 PrimitiveUnifier(const GeomPrimitive *prim) :
   _type(prim->get_type()),
@@ -24,11 +22,9 @@ PrimitiveUnifier(const GeomPrimitive *prim) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggLoader::PrimitiveUnifier::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool EggLoader::PrimitiveUnifier::
 operator < (const PrimitiveUnifier &other) const {
   if (_type != other._type) {

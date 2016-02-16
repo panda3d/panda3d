@@ -19,12 +19,10 @@
 #include "eggVertex.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PT_EggVertex
-// Description : A PT(EggVertex).  This is defined here solely we can
-//               explicitly export the template class.  It's not
-//               strictly necessary, but it doesn't hurt.
-////////////////////////////////////////////////////////////////////
+/**
+ * A PT(EggVertex).  This is defined here solely we can explicitly export the
+ * template class.  It's not strictly necessary, but it doesn't hurt.
+ */
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerToBase<EggVertex>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerTo<EggVertex>)

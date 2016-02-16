@@ -41,7 +41,7 @@ operator >> (istream &in, PhysxEnums::PhysxUpAxis &axis) {
 
   if (cmp_nocase(word, "x") == 0) {
     axis = PhysxEnums::X_up;
-  } 
+  }
   else if (cmp_nocase(word, "y") == 0) {
     axis = PhysxEnums::Y_up;
   }
@@ -56,4 +56,3 @@ operator >> (istream &in, PhysxEnums::PhysxUpAxis &axis) {
 
   return in;
 }
-

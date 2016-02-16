@@ -22,19 +22,14 @@
 
 class GeomVertexWriter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FisheyeMaker
-// Description : This class is similar to CardMaker, but instead of
-//               generating ordinary cards, it generates a circular
-//               rose that represents the projection of a 3-D scene
-//               through a fisheye lens.  The texture coordinates of
-//               the rose are defined so that each 2-D vertex has a
-//               3-D UVW that reflects the corresponding position in
-//               3-D space of that particular vertex.
-//
-//               This class is particularly suited for converting cube
-//               maps to sphere maps.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is similar to CardMaker, but instead of generating ordinary cards,
+ * it generates a circular rose that represents the projection of a 3-D scene
+ * through a fisheye lens.  The texture coordinates of the rose are defined so
+ * that each 2-D vertex has a 3-D UVW that reflects the corresponding position
+ * in 3-D space of that particular vertex.  This class is particularly suited
+ * for converting cube maps to sphere maps.
+ */
 class EXPCL_PANDA_GRUTIL FisheyeMaker : public Namable {
 PUBLISHED:
   INLINE FisheyeMaker(const string &name);
@@ -66,4 +61,3 @@ private:
 #include "fisheyeMaker.I"
 
 #endif
-

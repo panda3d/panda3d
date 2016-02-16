@@ -11,31 +11,25 @@
  * @date 2012-02-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::Constructor
-//       Access: Published
-//  Description: Constructs an empty intersection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an empty intersection.
+ */
 INLINE_MATHUTIL IntersectionBoundingVolume::
 IntersectionBoundingVolume() {
   _flags = F_infinite;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::get_num_components
-//       Access: Published
-//  Description: Returns the number of components in the intersection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of components in the intersection.
+ */
 INLINE_MATHUTIL int IntersectionBoundingVolume::
 get_num_components() const {
   return (int)_components.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: IntersectionBoundingVolume::get_component
-//       Access: Published
-//  Description: Returns the nth component in the intersection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth component in the intersection.
+ */
 INLINE_MATHUTIL const GeometricBoundingVolume *IntersectionBoundingVolume::
 get_component(int n) const {
   nassertr(n >= 0 && n < (int)_components.size(), NULL);

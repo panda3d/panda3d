@@ -86,7 +86,7 @@ extern HINSTANCE hInstance;
 extern TCHAR *GetString(int id);
 
 /* This class defines the 3D Studio Max exporter itself.  It is basically a
-   shell that is invoked by 3D Studio Max's export API.  It then sets up 
+   shell that is invoked by 3D Studio Max's export API.  It then sets up
    MaxToEgg instance and attempts to "fool it" into thinking that it is
    actually being invoked as a standalone program.  The thought behind this
    is that some day MaxToEgg may well be a standalone program, provided that
@@ -98,7 +98,7 @@ extern TCHAR *GetString(int id);
   #define DefaultRemapDir NoRemap
 #endif
 
-class MaxEggPlugin : public HelperObject 
+class MaxEggPlugin : public HelperObject
 {
   MaxOptionsDialog **eggList;
   int numEggs;
@@ -108,7 +108,7 @@ class MaxEggPlugin : public HelperObject
   bool autoOverwrite;
   bool pview;
   bool logOutput;
-  
+
   // Class vars
   static Mesh mesh;           // This plugin generates no geometry, this mesh is not passed on to 3D Studio.
   static short meshBuilt;

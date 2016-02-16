@@ -14,4 +14,3 @@
 #include "eggSliderPointer.h"
 
 TypeHandle EggSliderPointer::_type_handle;
-

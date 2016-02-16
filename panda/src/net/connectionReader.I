@@ -11,12 +11,9 @@
  * @date 2009-02-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConnectionReader::is_polling
-//       Access: Published
-//  Description: Returns true if the reader is a polling reader,
-//               i.e. it has no threads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the reader is a polling reader, i.e.  it has no threads.
+ */
 INLINE bool ConnectionReader::
 is_polling() const {
   return _polling;

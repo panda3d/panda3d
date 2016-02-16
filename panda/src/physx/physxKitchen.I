@@ -11,11 +11,9 @@
  * @date 2009-10-12
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxKitchen::
 PhysxKitchen() {
 
@@ -25,14 +23,11 @@ PhysxKitchen() {
   nassertv_always( status );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxKitchen::Destructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PhysxKitchen::
 ~PhysxKitchen() {
 
   _cooking->NxCloseCooking();
 }
-

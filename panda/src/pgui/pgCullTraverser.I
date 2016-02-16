@@ -11,11 +11,9 @@
  * @date 2002-03-14
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGCullTraverser::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGCullTraverser::
 PGCullTraverser(PGTop *top, CullTraverser *trav) :
   CullTraverser(*trav),

@@ -22,12 +22,9 @@
 TypeHandle EggPatch::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPatch::write
-//       Access: Published, Virtual
-//  Description: Writes the patch to the indicated output stream in
-//               Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the patch to the indicated output stream in Egg format.
+ */
 void EggPatch::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Patch>");

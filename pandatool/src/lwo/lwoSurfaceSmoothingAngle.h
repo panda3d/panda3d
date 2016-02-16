@@ -18,11 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceSmoothingAngle
-// Description : Indicates the maximum angle (in radians) between
-//               adjacent polygons that should be smooth-shaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the maximum angle (in radians) between adjacent polygons that
+ * should be smooth-shaded.
+ */
 class LwoSurfaceSmoothingAngle : public LwoChunk {
 public:
   PN_stdfloat _angle;
@@ -50,5 +49,3 @@ private:
 };
 
 #endif
-
-

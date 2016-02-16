@@ -28,25 +28,25 @@ class EXPCL_PANDA_AUDIO NullAudioSound : public AudioSound {
 
 public:
   ~NullAudioSound();
-  
+
   void play();
   void stop();
-  
+
   void set_loop(bool);
   bool get_loop() const;
-  
+
   void set_loop_count(unsigned long);
   unsigned long get_loop_count() const;
-  
+
   void set_time(PN_stdfloat);
   PN_stdfloat get_time() const;
-  
+
   void set_volume(PN_stdfloat);
   PN_stdfloat get_volume() const;
-  
+
   void set_balance(PN_stdfloat);
   PN_stdfloat get_balance() const;
-  
+
   void set_play_rate(PN_stdfloat);
   PN_stdfloat get_play_rate() const;
 
@@ -55,9 +55,9 @@ public:
 
   void set_finished_event(const string& event);
   const string& get_finished_event() const;
-  
+
   const string& get_name() const;
-  
+
   PN_stdfloat length() const;
 
   void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
@@ -66,7 +66,7 @@ public:
   PN_stdfloat get_3d_min_distance() const;
   void set_3d_max_distance(PN_stdfloat dist);
   PN_stdfloat get_3d_max_distance() const;
-  
+
   AudioSound::SoundStatus status() const;
 
 // why protect the constructor?!?

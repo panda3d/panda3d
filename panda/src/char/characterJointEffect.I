@@ -11,23 +11,18 @@
  * @date 2006-07-26
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJointEffect::Constructor
-//       Access: Private
-//  Description: Use CharacterJointEffect::make() to construct a new
-//               CharacterJointEffect object.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use CharacterJointEffect::make() to construct a new CharacterJointEffect
+ * object.
+ */
 INLINE CharacterJointEffect::
 CharacterJointEffect() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CharacterJointEffect::get_character
-//       Access: Published
-//  Description: Returns the Character that will get update() called
-//               on it when this node's relative transform is queried,
-//               or NULL if there is no such character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Character that will get update() called on it when this node's
+ * relative transform is queried, or NULL if there is no such character.
+ */
 INLINE Character *CharacterJointEffect::
 get_character() const {
   if (_character.is_valid_pointer()) {

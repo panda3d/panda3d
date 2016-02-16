@@ -22,11 +22,9 @@
 #include "physical.h"
 #include "config_physics.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysicalNode
-// Description : Graph node that encapsulated a series of physical
-//                objects
-////////////////////////////////////////////////////////////////////
+/**
+ * Graph node that encapsulated a series of physical objects
+ */
 class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
 PUBLISHED:
   PhysicalNode(const string &name);

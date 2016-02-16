@@ -21,14 +21,12 @@
 
 class CollisionEntry;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionHandler
-// Description : The abstract interface to a number of classes that
-//               decide what to do when a collision is detected.  One
-//               of these must be assigned to the CollisionTraverser
-//               that is processing collisions in order to specify how
-//               to dispatch detected collisions.
-////////////////////////////////////////////////////////////////////
+/**
+ * The abstract interface to a number of classes that decide what to do when a
+ * collision is detected.  One of these must be assigned to the
+ * CollisionTraverser that is processing collisions in order to specify how to
+ * dispatch detected collisions.
+ */
 class EXPCL_PANDA_COLLIDE CollisionHandler : public TypedReferenceCount {
 public:
   CollisionHandler();
@@ -69,6 +67,3 @@ private:
 #include "collisionHandler.I"
 
 #endif
-
-
-

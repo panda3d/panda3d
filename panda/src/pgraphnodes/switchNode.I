@@ -11,32 +11,26 @@
  * @date 2002-07-31
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: SwitchNode::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SwitchNode::CData::
 CData() {
   _visible_child = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SwitchNode::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SwitchNode::CData::
 CData(const SwitchNode::CData &copy) :
   _visible_child(copy._visible_child)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SwitchNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SwitchNode::
 SwitchNode(const string &name) :
   SelectiveChildNode(name)
@@ -44,12 +38,9 @@ SwitchNode(const string &name) :
   set_cull_callback();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SwitchNode::set_visible_child
-//       Access: Published
-//  Description: Specifies the particular child of this node, by
-//               index, that will be visible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the particular child of this node, by index, that will be visible.
+ */
 INLINE void SwitchNode::
 set_visible_child(int index) {
   nassertv(index >= 0);

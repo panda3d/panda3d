@@ -13,15 +13,11 @@
 
 #include "cfChannel.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CFChannel::Constructor
-//       Access: Public
-//  Description: The DatagramGenerator and DatagramSink should be
-//               newly created on the free store (via the new
-//               operator).  The CFChannel will take ownership of
-//               these pointers, and will delete them when it
-//               destructs.
-////////////////////////////////////////////////////////////////////
+/**
+ * The DatagramGenerator and DatagramSink should be newly created on the free
+ * store (via the new operator).  The CFChannel will take ownership of these
+ * pointers, and will delete them when it destructs.
+ */
 CFChannel::
 CFChannel(DatagramGenerator *dggen, DatagramSink *dgsink) :
   _dggen(dggen),
@@ -34,37 +30,29 @@ CFChannel(DatagramGenerator *dggen, DatagramSink *dgsink) :
   nassertv(ok1 && ok2);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CFChannel::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CFChannel::
 ~CFChannel() {
   delete _dggen;
   delete _dgsink;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CFChannel::send_command
-//       Access: Public
-//  Description: Delivers a single command to the process at the other
-//               end of the channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Delivers a single command to the process at the other end of the channel.
+ */
 void CFChannel::
 send_command(CFCommand *command) {
   bool ok = _writer.write_object(command);
   nassertv(ok);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CFChannel::receive_command
-//       Access: Public
-//  Description: Receives a single command from the process at the other
-//               end of the channel.  If no command is ready, the
-//               thread will block until one is.  Returns NULL when
-//               the connection has been closed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives a single command from the process at the other end of the channel.
+ * If no command is ready, the thread will block until one is.  Returns NULL
+ * when the connection has been closed.
+ */
 PT(CFCommand) CFChannel::
 receive_command() {
   TypedWritable *obj = _reader.read_object();

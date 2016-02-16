@@ -19,12 +19,10 @@
 #include "movingPartBase.h"
 #include "animChannel.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MovingPart
-// Description : This is the template instantiation of MovingPartBase,
-//               on the particular type of value provided by the
-//               channel.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the template instantiation of MovingPartBase, on the particular type
+ * of value provided by the channel.
+ */
 template<class SwitchType>
 class MovingPart : public MovingPartBase {
 public:
@@ -81,6 +79,3 @@ private:
 #include "movingPart.I"
 
 #endif
-
-
-

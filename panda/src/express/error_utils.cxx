@@ -21,10 +21,9 @@
   #include <winsock2.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: error_to_text
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string error_to_text(ErrorUtilCode err) {
   const char *errmsg = "Unknown error";
 
@@ -147,10 +146,9 @@ string error_to_text(ErrorUtilCode err) {
   return string(msgbuf);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_write_error
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int
 get_write_error() {
 #if !defined(WIN32) && !defined(WIN64)
@@ -185,10 +183,9 @@ get_write_error() {
 }
 
 #ifdef HAVE_NET
-////////////////////////////////////////////////////////////////////
-//     Function: handle_socket_error
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string handle_socket_error() {
 #if !defined(WIN32) && !defined(WIN64)
   return string(strerror(errno));
@@ -244,10 +241,9 @@ string handle_socket_error() {
 #endif
 
 #ifdef HAVE_NET
-////////////////////////////////////////////////////////////////////
-//     Function: get_network_error
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int
 get_network_error() {
 #if !defined(WIN32) && !defined(WIN64)

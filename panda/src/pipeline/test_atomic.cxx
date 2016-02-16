@@ -38,7 +38,7 @@ public:
   MyThread(const string &name) : Thread(name, name)
   {
   }
-    
+
   virtual void
   thread_main() {
     OUTPUT(nout << *this << " beginning.\n");

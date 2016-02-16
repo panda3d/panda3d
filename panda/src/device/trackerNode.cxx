@@ -17,11 +17,9 @@
 
 TypeHandle TrackerNode::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrackerNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TrackerNode::
 TrackerNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
@@ -53,11 +51,9 @@ TrackerNode(ClientBase *client, const string &device_name) :
   _tracker = DCAST(ClientTrackerDevice, device);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrackerNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TrackerNode::
 TrackerNode(ClientTrackerDevice *device) :
   DataNode(device->get_device_name()),
@@ -74,11 +70,9 @@ TrackerNode(ClientTrackerDevice *device) :
   set_graph_coordinate_system(CS_default);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrackerNode::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TrackerNode::
 ~TrackerNode() {
   // When the _tracker pointer destructs, the ClientTrackerDevice
@@ -86,19 +80,14 @@ TrackerNode::
   // to get turned off does.  Magic.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TrackerNode::do_transmit_data
-//       Access: Protected, Virtual
-//  Description: The virtual implementation of transmit_data().  This
-//               function receives an array of input parameters and
-//               should generate an array of output parameters.  The
-//               input parameters may be accessed with the index
-//               numbers returned by the define_input() calls that
-//               were made earlier (presumably in the constructor);
-//               likewise, the output parameters should be set with
-//               the index numbers returned by the define_output()
-//               calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * The virtual implementation of transmit_data().  This function receives an
+ * array of input parameters and should generate an array of output parameters.
+ * The input parameters may be accessed with the index numbers returned by the
+ * define_input() calls that were made earlier (presumably in the constructor);
+ * likewise, the output parameters should be set with the index numbers returned
+ * by the define_output() calls.
+ */
 void TrackerNode::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {

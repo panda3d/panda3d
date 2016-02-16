@@ -19,23 +19,18 @@
 
 TypeHandle FltLocalVertexPool::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltLocalVertexPool::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltLocalVertexPool::
 FltLocalVertexPool(FltHeader *header) : FltRecord(header) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltLocalVertexPool::extract_record
-//       Access: Protected, Virtual
-//  Description: Fills in the information in this bead based on the
-//               information given in the indicated datagram, whose
-//               opcode has already been read.  Returns true on
-//               success, false if the datagram is invalid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills in the information in this bead based on the information given in the
+ * indicated datagram, whose opcode has already been read.  Returns true on
+ * success, false if the datagram is invalid.
+ */
 bool FltLocalVertexPool::
 extract_record(FltRecordReader &reader) {
   if (!FltRecord::extract_record(reader)) {
@@ -124,14 +119,11 @@ extract_record(FltRecordReader &reader) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltLocalVertexPool::build_record
-//       Access: Protected, Virtual
-//  Description: Fills up the current record on the FltRecordWriter with
-//               data for this record, but does not advance the
-//               writer.  Returns true on success, false if there is
-//               some error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the current record on the FltRecordWriter with data for this record,
+ * but does not advance the writer.  Returns true on success, false if there is
+ * some error.
+ */
 bool FltLocalVertexPool::
 build_record(FltRecordWriter &writer) const {
   if (!FltRecord::build_record(writer)) {

@@ -17,13 +17,11 @@
 #include "pandabase.h"
 #include "pipelineCyclerBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CyclerHolder
-// Description : A lightweight C++ object whose constructor calls
-//               acquire() and whose destructor calls release() on a
-//               PipelineCyclerBase object.  This is similar to a
-//               MutexHolder.
-////////////////////////////////////////////////////////////////////
+/**
+ * A lightweight C++ object whose constructor calls acquire() and whose
+ * destructor calls release() on a PipelineCyclerBase object.  This is similar
+ * to a MutexHolder.
+ */
 class EXPCL_PANDA_PIPELINE CyclerHolder {
 public:
   INLINE CyclerHolder(PipelineCyclerBase &cycler);

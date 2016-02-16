@@ -22,29 +22,28 @@
 #include "milesAudioManager.h"
 #include "mss.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MilesAudioSample
-// Description : A sound file, such as a WAV or MP3 file, that is
-//               preloaded into memory and played from memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * A sound file, such as a WAV or MP3 file, that is preloaded into memory and
+ * played from memory.
+ */
 class EXPCL_MILES_AUDIO MilesAudioSample : public MilesAudioSound {
 private:
-  MilesAudioSample(MilesAudioManager *manager, 
+  MilesAudioSample(MilesAudioManager *manager,
                    MilesAudioManager::SoundData *sd,
                    const string &file_name);
 
 public:
   virtual ~MilesAudioSample();
-  
+
   virtual void play();
   virtual void stop();
-  
+
   virtual PN_stdfloat get_time() const;
-  
+
   virtual void set_volume(PN_stdfloat volume=1.0f);
   virtual void set_balance(PN_stdfloat balance_right=0.0f);
   virtual void set_play_rate(PN_stdfloat play_rate=1.0f);
-  
+
   virtual PN_stdfloat length() const;
 
   virtual AudioSound::SoundStatus status() const;

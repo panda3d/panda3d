@@ -34,41 +34,26 @@
   }                                                  \
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamWriter
-// Description : This is the fundamental interface for writing binary
-//               objects to a Bam file, to be extracted later by a
-//               BamReader.
-//
-//               A Bam file can be thought of as a linear collection
-//               of objects.  Each object is an instance of a class
-//               that inherits, directly or indirectly, from
-//               TypedWritable.  The objects may include pointers to
-//               other objects; the BamWriter automatically manages
-//               these (with help from code within each class) and
-//               writes all referenced objects to the file in such a
-//               way that the pointers may be correctly restored
-//               later.
-//
-//               This is the abstract interface and does not
-//               specifically deal with disk files, but rather with a
-//               DatagramSink of some kind, which simply accepts a
-//               linear stream of Datagrams.  It is probably written
-//               to a disk file, but it might conceivably be streamed
-//               directly to a network or some such nonsense.
-//
-//               Bam files are most often used to store scene graphs
-//               or subgraphs, and by convention they are given
-//               filenames ending in the extension ".bam" when they
-//               are used for this purpose.  However, a Bam file may
-//               store any arbitrary list of TypedWritable objects;
-//               in this more general usage, they are given filenames
-//               ending in ".boo" to differentiate them from the more
-//               common scene graph files.
-//
-//               See also BamFile, which defines a higher-level
-//               interface to read and write Bam files on disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the fundamental interface for writing binary objects to a Bam file,
+ * to be extracted later by a BamReader.  A Bam file can be thought of as a
+ * linear collection of objects.  Each object is an instance of a class that
+ * inherits, directly or indirectly, from TypedWritable.  The objects may
+ * include pointers to other objects; the BamWriter automatically manages these
+ * (with help from code within each class) and writes all referenced objects to
+ * the file in such a way that the pointers may be correctly restored later.
+ * This is the abstract interface and does not specifically deal with disk
+ * files, but rather with a DatagramSink of some kind, which simply accepts a
+ * linear stream of Datagrams.  It is probably written to a disk file, but it
+ * might conceivably be streamed directly to a network or some such nonsense.
+ * Bam files are most often used to store scene graphs or subgraphs, and by
+ * convention they are given filenames ending in the extension ".bam" when they
+ * are used for this purpose.  However, a Bam file may store any arbitrary list
+ * of TypedWritable objects; in this more general usage, they are given
+ * filenames ending in ".boo" to differentiate them from the more common scene
+ * graph files.  See also BamFile, which defines a higher-level interface to
+ * read and write Bam files on disk.
+ */
 class EXPCL_PANDA_PUTIL BamWriter : public BamEnums {
 PUBLISHED:
   BamWriter(DatagramSink *target = NULL);
@@ -194,4 +179,3 @@ private:
 #include "bamWriter.I"
 
 #endif
-

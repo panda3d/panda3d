@@ -27,12 +27,10 @@ class FltRecord;
 class FltTexture;
 class FltExternalReference;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltCopy
-// Description : A program to copy Multigen .flt files into the cvs
-//               tree.  It copies the base file plus all externally
-//               referenced files as well as all textures.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to copy Multigen .flt files into the cvs tree.  It copies the base
+ * file plus all externally referenced files as well as all textures.
+ */
 class FltCopy : public CVSCopy {
 public:
   FltCopy();

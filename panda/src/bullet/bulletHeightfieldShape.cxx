@@ -15,11 +15,9 @@
 
 TypeHandle BulletHeightfieldShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletHeightfieldShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletHeightfieldShape::
 BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up) {
 
@@ -30,7 +28,7 @@ BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAx
 
   for (int row=0; row < _num_rows; row++) {
     for (int column=0; column < _num_cols; column++) {
-      _data[_num_cols * row + column] = 
+      _data[_num_cols * row + column] =
         max_height * image.get_bright(column, _num_cols - row - 1);
     }
   }
@@ -44,25 +42,20 @@ BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAx
   _shape->setUserPointer(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletHeightfieldShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletHeightfieldShape::
 ptr() const {
 
   return _shape;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletHeightfieldShape::set_use_diamond_subdivision
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletHeightfieldShape::
 set_use_diamond_subdivision(bool flag) {
 
   return _shape->setUseDiamondSubdivision(flag);
 }
-

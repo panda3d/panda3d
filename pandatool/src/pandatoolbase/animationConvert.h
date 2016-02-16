@@ -16,12 +16,10 @@
 
 #include "pandatoolbase.h"
 
-////////////////////////////////////////////////////////////////////
-//        Enum : AnimationConvert
-// Description : This enumerated type lists the methods by which
-//               animation from an animation package might be
-//               represented in egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * This enumerated type lists the methods by which animation from an animation
+ * package might be represented in egg format.
+ */
 enum AnimationConvert {
   AC_invalid,  // Never use this.
   AC_none,     // No animation: static geometry only.

@@ -23,14 +23,11 @@
 class DataNode;
 class PandaNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DataGraphTraverser
-// Description : This object supervises the traversal of the data
-//               graph and the moving of data from one DataNode to its
-//               children.  The data graph is used to manage data from
-//               input devices, etc.  See the overview of the data
-//               graph in dataNode.h.
-////////////////////////////////////////////////////////////////////
+/**
+ * This object supervises the traversal of the data graph and the moving of data
+ * from one DataNode to its children.  The data graph is used to manage data
+ * from input devices, etc.  See the overview of the data graph in dataNode.h.
+ */
 class EXPCL_PANDA_DGRAPH DataGraphTraverser {
 PUBLISHED:
   DataGraphTraverser(Thread *current_thread = Thread::get_current_thread());

@@ -14,11 +14,9 @@
 #include "configVariableColor.h"
 #include "pdtoa.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableColor::set_default_value
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigVariableColor::
 set_default_value(const LColor &default_value) {
   char buffer[128];

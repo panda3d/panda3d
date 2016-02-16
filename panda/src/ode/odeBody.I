@@ -11,24 +11,19 @@
  * @date 2006-12-27
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeBody::is_empty
-//       Access: Published
-//  Description: Returns true if the ID is 0, meaning the OdeBody
-//               does not point to a valid body. It is an error to
-//               call a method on an empty body.
-//               Note that an empty OdeBody also evaluates to False.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the ID is 0, meaning the OdeBody does not point to a valid
+ * body.  It is an error to call a method on an empty body.  Note that an empty
+ * OdeBody also evaluates to False.
+ */
 INLINE bool OdeBody::
 is_empty() const {
   return (_id == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeBody::get_id
-//       Access: Published
-//  Description: Returns the underlying dBodyID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the underlying dBodyID.
+ */
 INLINE dBodyID OdeBody::
 get_id() const {
   return _id;

@@ -19,11 +19,9 @@
 #endif
 #include <errno.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DConditionVar::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DConditionVar::
 P3DConditionVar() {
 #ifdef _WIN32
@@ -46,11 +44,9 @@ P3DConditionVar() {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DConditionVar::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DConditionVar::
 ~P3DConditionVar() {
 #ifdef _WIN32
@@ -67,12 +63,10 @@ P3DConditionVar::
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DConditionVar::acquire
-//       Access: Public
-//  Description: Acquires the internal lock.  The lock should be held
-//               during any calls to wait() or notify().
-////////////////////////////////////////////////////////////////////
+/**
+ * Acquires the internal lock.  The lock should be held during any calls to
+ * wait() or notify().
+ */
 void P3DConditionVar::
 acquire() {
 #ifdef _WIN32
@@ -85,13 +79,10 @@ acquire() {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DConditionVar::wait
-//       Access: Public
-//  Description: Requires the lock to be held on entry.  Releases the
-//               lock, waits for another thread to call notify(), then
-//               reacquires the lock on exit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Requires the lock to be held on entry.  Releases the lock, waits for another
+ * thread to call notify(), then reacquires the lock on exit.
+ */
 void P3DConditionVar::
 wait() {
 #ifdef _WIN32
@@ -109,12 +100,9 @@ wait() {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DConditionVar::wait
-//       Access: Public
-//  Description: As above, but waits no longer than timeout seconds
-//               before returning.
-////////////////////////////////////////////////////////////////////
+/**
+ * As above, but waits no longer than timeout seconds before returning.
+ */
 void P3DConditionVar::
 wait(double timeout) {
 #ifdef _WIN32
@@ -151,13 +139,10 @@ wait(double timeout) {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DConditionVar::notify
-//       Access: Public
-//  Description: Waits a single thread blocked on wait(), if any.  If
-//               no threads are waiting, the event is lost.  The lock
-//               should be held during this call.
-////////////////////////////////////////////////////////////////////
+/**
+ * Waits a single thread blocked on wait(), if any.  If no threads are waiting,
+ * the event is lost.  The lock should be held during this call.
+ */
 void P3DConditionVar::
 notify() {
 #ifdef _WIN32
@@ -170,11 +155,9 @@ notify() {
 #endif  // _WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DConditionVar::release
-//       Access: Public
-//  Description: Releases the internal lock.
-////////////////////////////////////////////////////////////////////
+/**
+ * Releases the internal lock.
+ */
 void P3DConditionVar::
 release() {
 #ifdef _WIN32

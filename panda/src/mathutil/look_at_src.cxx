@@ -42,17 +42,14 @@ make_z_mat(const FLOATNAME(LVector2) &z) {
                                 0,     0,     1.0f);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: heads_up
-//  Description: Given two vectors defining a forward direction and an
-//               up vector, constructs the matrix that rotates things
-//               from the defined coordinate system to y-forward and
-//               z-up.  The up vector will be rotated to z-up first,
-//               then the forward vector will be rotated as nearly to
-//               y-forward as possible.  This will only have a
-//               different effect from look_at() if the forward and up
-//               vectors are not perpendicular.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given two vectors defining a forward direction and an up vector, constructs
+ * the matrix that rotates things from the defined coordinate system to
+ * y-forward and z-up.  The up vector will be rotated to z-up first, then the
+ * forward vector will be rotated as nearly to y-forward as possible.  This will
+ * only have a different effect from look_at() if the forward and up vectors are
+ * not perpendicular.
+ */
 void
 heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
          const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
@@ -178,17 +175,14 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: look_at
-//  Description: Given two vectors defining a forward direction and an
-//               up vector, constructs the matrix that rotates things
-//               from the defined coordinate system to y-forward and
-//               z-up.  The forward vector will be rotated to
-//               y-forward first, then the up vector will be rotated
-//               as nearly to z-up as possible.  This will only have a
-//               different effect from heads_up() if the forward and
-//               up vectors are not perpendicular.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given two vectors defining a forward direction and an up vector, constructs
+ * the matrix that rotates things from the defined coordinate system to
+ * y-forward and z-up.  The forward vector will be rotated to y-forward first,
+ * then the up vector will be rotated as nearly to z-up as possible.  This will
+ * only have a different effect from heads_up() if the forward and up vectors
+ * are not perpendicular.
+ */
 void
 look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
         const FLOATNAME(LVector3) &up, CoordinateSystem cs) {

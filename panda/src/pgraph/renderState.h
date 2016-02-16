@@ -38,18 +38,13 @@
 class FactoryParams;
 class ShaderAttrib;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderState
-// Description : This represents a unique collection of RenderAttrib
-//               objects that correspond to a particular renderable
-//               state.
-//
-//               You should not attempt to create or modify a
-//               RenderState object directly.  Instead, call one of
-//               the make() functions to create one for you.  And
-//               instead of modifying a RenderState object, create a
-//               new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents a unique collection of RenderAttrib objects that correspond
+ * to a particular renderable state.  You should not attempt to create or modify
+ * a RenderState object directly.  Instead, call one of the make() functions to
+ * create one for you.  And instead of modifying a RenderState object, create a
+ * new one.
+ */
 class EXPCL_PANDA_PGRAPH RenderState : public NodeCachedReferenceCount {
 protected:
   RenderState();
@@ -381,4 +376,3 @@ INLINE ostream &operator << (ostream &out, const RenderState &state) {
 #include "renderState.I"
 
 #endif
-

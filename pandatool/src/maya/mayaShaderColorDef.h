@@ -28,12 +28,10 @@ class MayaShaderColorDef;
 typedef pvector<MayaShaderColorDef *> MayaShaderColorList;
 typedef pmap<string, string> MayaFileToUVSetMap;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaShaderColorDef
-// Description : This defines the various attributes that Maya may
-//               associate with the "color" channel for a particular
-//               shader (as well as on the "transparency" channel).
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the various attributes that Maya may associate with the "color"
+ * channel for a particular shader (as well as on the "transparency" channel).
+ */
 class MayaShaderColorDef {
 public:
   MayaShaderColorDef();
@@ -41,17 +39,17 @@ public:
   ~MayaShaderColorDef();
 
   string strip_prefix(string full_name);
-  
+
   LMatrix3d compute_texture_matrix() const;
   bool has_projection() const;
   LTexCoordd project_uv(const LPoint3d &pos, const LPoint3d &ref_point) const;
   bool reset_maya_texture(const Filename &texture);
-  
+
   void write(ostream &out) const;
 
   enum BlendType {
-    BT_unspecified, 
-    BT_modulate, 
+    BT_unspecified,
+    BT_modulate,
     BT_decal,
     BT_blend,
     BT_replace,
@@ -78,21 +76,21 @@ public:
     PT_concentric,
     PT_perspective,
   };
-  
+
   BlendType _blend_type;
   ProjectionType _projection_type;
   LMatrix4d _projection_matrix;
   double _u_angle;
   double _v_angle;
-    
+
   Filename _texture_filename;
   string _texture_name;
   LColor _color_gain;
-  
+
   LVector2 _coverage;
   LVector2 _translate_frame;
   double _rotate_frame;
-  
+
   bool _mirror;
   bool _stagger;
   bool _wrap_u;
@@ -103,15 +101,15 @@ public:
   double _rotate_uv;
 
   bool _is_alpha;
-  
+
   string _uvset_name;
   MayaShaderColorDef *_opposite;
-  
+
   string get_panda_uvset_name();
 
 private:
   MObject *_color_object;
-  
+
 private:
   static void find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug, bool is_alpha);
   void find_textures_legacy(MayaShader *shader, MObject color, bool trans=false);
@@ -124,7 +122,7 @@ private:
 
   // Define a pointer to one of the above member functions.
   LPoint2d (MayaShaderColorDef::*_map_uvs)(const LPoint3d &pos, const LPoint3d &centroid) const;
-  
+
   friend class MayaShader;
 
 
@@ -136,7 +134,7 @@ private:
   // texture, just don't allocate a MayaShaderColorDef.
   //
   // * has_flat_color and flat_color don't belong here,
-  // they belong in the shader. 
+  // they belong in the shader.
   //
   // * has_alpha_channel is not needed - there are better
   // ways to determine if a texture stage involves an alpha
@@ -144,7 +142,7 @@ private:
   //
   // * keep_color, keep_alpha, and interpolate are all
   // adjuncts to blend_mode - it would make more sense just to
-  // add some more blend_modes.  
+  // add some more blend_modes.
 
 public:
   bool     _has_texture;       // deprecated, see above.
@@ -158,4 +156,3 @@ public:
 };
 
 #endif
-

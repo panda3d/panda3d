@@ -22,27 +22,19 @@
 #include "pointerTo.h"
 #include "renderState.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextProperties
-// Description : This defines the set of visual properties that may be
-//               assigned to the individual characters of the text.
-//               (Properties which affect the overall block of text
-//               can only be specified on the TextNode directly).
-//
-//               Typically, there is just one set of properties on a
-//               given block of text, which is set directly on the
-//               TextNode (TextNode inherits from TextProperties).
-//               That makes all of the text within a particular block
-//               have the same appearance.
-//
-//               This separate class exists in order to implement
-//               multiple different kinds of text appearing within one
-//               block.  The text string itself may reference a
-//               TextProperties structure by name using the \1 and \2
-//               tokens embedded within the string; each nested
-//               TextProperties structure modifies the appearance of
-//               subsequent text within the block.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines the set of visual properties that may be assigned to the
+ * individual characters of the text.  (Properties which affect the overall
+ * block of text can only be specified on the TextNode directly).  Typically,
+ * there is just one set of properties on a given block of text, which is set
+ * directly on the TextNode (TextNode inherits from TextProperties). That makes
+ * all of the text within a particular block have the same appearance.  This
+ * separate class exists in order to implement multiple different kinds of text
+ * appearing within one block.  The text string itself may reference a
+ * TextProperties structure by name using the \1 and \2 tokens embedded within
+ * the string; each nested TextProperties structure modifies the appearance of
+ * subsequent text within the block.
+ */
 class EXPCL_PANDA_TEXT TextProperties {
 PUBLISHED:
   enum Alignment {

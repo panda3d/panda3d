@@ -20,11 +20,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoInputFile
-// Description : A specialization of IffInputFile to handle reading a
-//               Lightwave Object file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A specialization of IffInputFile to handle reading a Lightwave Object file.
+ */
 class LwoInputFile : public IffInputFile {
 public:
   LwoInputFile();
@@ -64,5 +62,3 @@ private:
 #include "lwoInputFile.I"
 
 #endif
-
-

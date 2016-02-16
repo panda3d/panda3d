@@ -47,5 +47,3 @@ extern ConfigVariableDouble ae_undershift_factor_32;
 extern EXPCL_PANDA_GRUTIL void init_libgrutil();
 
 #endif
-
-

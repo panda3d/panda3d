@@ -17,12 +17,10 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : MutexDummyImpl
-// Description : A fake mutex implementation for single-threaded
-//               applications that don't need any synchronization
-//               control.  This does nothing at all.
-////////////////////////////////////////////////////////////////////
+/**
+ * A fake mutex implementation for single-threaded applications that don't need
+ * any synchronization control.  This does nothing at all.
+ */
 class EXPCL_DTOOL MutexDummyImpl {
 public:
   INLINE MutexDummyImpl();

@@ -25,13 +25,11 @@
 class HardwareChannel;
 class GraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsPipeSelection
-// Description : This maintains a list of GraphicsPipes by type that
-//               are available for creation.  Normally there is one
-//               default interactive GraphicsPipe, and possibly other
-//               types available as well.
-////////////////////////////////////////////////////////////////////
+/**
+ * This maintains a list of GraphicsPipes by type that are available for
+ * creation.  Normally there is one default interactive GraphicsPipe, and
+ * possibly other types available as well.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsPipeSelection {
 protected:
   GraphicsPipeSelection();
@@ -90,9 +88,8 @@ private:
   bool _default_module_loaded;
 
   static GraphicsPipeSelection *_global_ptr;
-};  
+};
 
 #include "graphicsPipeSelection.I"
 
 #endif
-

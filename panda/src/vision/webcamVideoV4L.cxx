@@ -24,11 +24,9 @@
 
 TypeHandle WebcamVideoV4L::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: add_options_for_size
-//       Access: Private, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void WebcamVideoV4L::
 add_options_for_size(int fd, const string &dev, const char *name, unsigned width, unsigned height, unsigned pixelformat) {
   struct v4l2_frmivalenum frmivalenum;
@@ -74,12 +72,9 @@ add_options_for_size(int fd, const string &dev, const char *name, unsigned width
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_all_webcams_v4l
-//       Access: Public, Static
-//  Description: Finds all Video4Linux webcams and adds them to
-//               the global list _all_webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds all Video4Linux webcams and adds them to the global list _all_webcams.
+ */
 void find_all_webcams_v4l() {
   struct v4l2_capability cap2;
 
@@ -179,11 +174,9 @@ void find_all_webcams_v4l() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoV4L::open
-//       Access: Published, Virtual
-//  Description: Open this video, returning a MovieVideoCursor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this video, returning a MovieVideoCursor.
+ */
 PT(MovieVideoCursor) WebcamVideoV4L::
 open() {
   return new WebcamVideoCursorV4L(this);

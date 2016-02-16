@@ -45,12 +45,10 @@ extern Dtool_PyTypedObject Dtool_OdeSphereGeom;
 extern Dtool_PyTypedObject Dtool_OdeTriMeshGeom;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: OdeGeom::convert
-//       Access: Published
-//  Description: Do a sort of pseudo-downcast on this space in
-//               order to expose its specialized functions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do a sort of pseudo-downcast on this space in order to expose its specialized
+ * functions.
+ */
 PyObject *Extension<OdeGeom>::
 convert() const {
   Dtool_PyTypedObject *class_type;

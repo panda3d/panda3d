@@ -13,11 +13,9 @@
 
 #include "physxMeshHash.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::quick_sort
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 quick_sort(pvector<int> &itemIndices, int l, int r) {
 
@@ -41,11 +39,9 @@ quick_sort(pvector<int> &itemIndices, int l, int r) {
   if (i < r) quick_sort(itemIndices, i, r);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::compress_indices
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 compress_indices(pvector<int> &itemIndices) {
 
@@ -75,11 +71,9 @@ compress_indices(pvector<int> &itemIndices) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::set_grid_spacing
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 set_grid_spacing(float spacing) {
 
@@ -89,11 +83,9 @@ set_grid_spacing(float spacing) {
   reset();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::reset
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 reset() {
 
@@ -101,11 +93,9 @@ reset() {
   _entries.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::add
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 add(const NxBounds3 &bounds, int itemIndex) {
 
@@ -129,7 +119,7 @@ add(const NxBounds3 &bounds, int itemIndex) {
 
         if (r.timeStamp != _time || r.first < 0)
           entry.next = -1;
-        else 
+        else
           entry.next = r.first;
 
         r.first = n;
@@ -141,11 +131,9 @@ add(const NxBounds3 &bounds, int itemIndex) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::add
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 add(const NxVec3 &pos, int itemIndex) {
 
@@ -160,9 +148,9 @@ add(const NxVec3 &pos, int itemIndex) {
   MeshHashRoot &r = _hashIndex[h];
   int n = _entries.size();
 
-  if (r.timeStamp != _time || r.first < 0) 
+  if (r.timeStamp != _time || r.first < 0)
     entry.next = -1;
-  else 
+  else
     entry.next = r.first;
 
   r.first = n;
@@ -171,11 +159,9 @@ add(const NxVec3 &pos, int itemIndex) {
   _entries.push_back(entry);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::query
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 query(const NxBounds3 &bounds, pvector<int> &itemIndices, int maxIndices) {
 
@@ -209,11 +195,9 @@ query(const NxBounds3 &bounds, pvector<int> &itemIndices, int maxIndices) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::query_unique
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 query_unique(const NxBounds3 &bounds, pvector<int> &itemIndices, int maxIndices) {
 
@@ -221,11 +205,9 @@ query_unique(const NxBounds3 &bounds, pvector<int> &itemIndices, int maxIndices)
   compress_indices(itemIndices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::query
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 query(const NxVec3 &pos, pvector<int> &itemIndices, int maxIndices) {
 
@@ -248,15 +230,12 @@ query(const NxVec3 &pos, pvector<int> &itemIndices, int maxIndices) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxMeshHash::query_unique
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxMeshHash::
 query_unique(const NxVec3 &pos, pvector<int> &itemIndices, int maxIndices) {
 
   query(pos, itemIndices, maxIndices);
   compress_indices(itemIndices);
 }
-

@@ -19,14 +19,11 @@
 extern struct Dtool_PyTypedObject Dtool_Texture;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::__init__
-//       Access: Published
-//  Description: This special constructor accepts a Python list of
-//               Textures.  Since this constructor accepts a generic
-//               PyObject *, it should be the last constructor listed
-//               in the class record.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special constructor accepts a Python list of Textures.  Since this
+ * constructor accepts a generic PyObject *, it should be the last constructor
+ * listed in the class record.
+ */
 void Extension<TextureCollection>::
 __init__(PyObject *self, PyObject *sequence) {
   PyObject *fast = PySequence_Fast(sequence, "TextureCollection constructor requires a sequence");
@@ -61,12 +58,10 @@ __init__(PyObject *self, PyObject *sequence) {
   Py_DECREF(fast);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TextureCollection::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
+/**
+ * This special Python method is implement to provide support for the pickle
+ * module.
+ */
 PyObject *Extension<TextureCollection>::
 __reduce__(PyObject *self) const {
   // Here we will return a 4-tuple: (Class, (args), None, iterator),

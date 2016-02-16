@@ -11,26 +11,20 @@
  * @date 2001-01-25
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::is_forked
-//       Access: Public
-//  Description: Returns true if the ClientBase has been forked (and,
-//               therefore, poll() does not need to be called), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the ClientBase has been forked (and, therefore, poll() does
+ * not need to be called), false otherwise.
+ */
 INLINE bool ClientBase::
 is_forked() const {
   return _forked;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::poll
-//       Access: Public
-//  Description: Initiates a poll of the client devices, if we are not
-//               forked and if we have not already polled this frame.
-//               Returns true if the poll occurred, or false if it did
-//               not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initiates a poll of the client devices, if we are not forked and if we have
+ * not already polled this frame.  Returns true if the poll occurred, or false
+ * if it did not.
+ */
 INLINE bool ClientBase::
 poll() {
   if (_forked ||
@@ -42,37 +36,28 @@ poll() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::get_last_poll_time
-//       Access: Public
-//  Description: Returns the time (according to the global
-//               ClockObject's get_real_time() method) of the last
-//               device poll.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the time (according to the global ClockObject's get_real_time()
+ * method) of the last device poll.
+ */
 INLINE double ClientBase::
 get_last_poll_time() const {
   return _last_poll_time;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::set_coordinate_system
-//       Access: Published
-//  Description: Specifies the coordinate system that all devices
-//               associated with this client will operate in.
-//               Normally, this is CS_default.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies the coordinate system that all devices associated with this client
+ * will operate in.  Normally, this is CS_default.
+ */
 void ClientBase::
 set_coordinate_system(CoordinateSystem cs) {
   _cs = cs;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ClientBase::get_coordinate_system
-//       Access: Published
-//  Description: Returns the coordinate system that all devices
-//               associated with this client will operate in.
-//               Normally, this is CS_default.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the coordinate system that all devices associated with this client
+ * will operate in.  Normally, this is CS_default.
+ */
 INLINE CoordinateSystem ClientBase::
 get_coordinate_system() const {
   return _cs;

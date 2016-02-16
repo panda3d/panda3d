@@ -20,13 +20,10 @@
 #include "config_pgraph.h"
 #include "cullTraverser.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: DrawCullHandler::record_object
-//       Access: Public, Virtual
-//  Description: This callback function is intended to be overridden
-//               by a derived class.  This is called as each Geom is
-//               discovered by the CullTraverser.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is intended to be overridden by a derived class.  This
+ * is called as each Geom is discovered by the CullTraverser.
+ */
 void DrawCullHandler::
 record_object(CullableObject *object, const CullTraverser *traverser) {
   // Munge vertices as needed for the GSG's requirements, and the

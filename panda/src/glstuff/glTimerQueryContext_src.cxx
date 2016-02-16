@@ -20,11 +20,9 @@
 
 TypeHandle CLP(TimerQueryContext)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLTimerQueryContext::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(TimerQueryContext)::
 ~CLP(TimerQueryContext)() {
   if (_index != 0) {
@@ -40,15 +38,11 @@ CLP(TimerQueryContext)::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLTimerQueryContext::is_answer_ready
-//       Access: Public, Virtual
-//  Description: Returns true if the query's answer is ready, false
-//               otherwise.  If this returns false, the application
-//               must continue to poll until it returns true.
-//
-//               It is only valid to call this from the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the query's answer is ready, false otherwise.  If this
+ * returns false, the application must continue to poll until it returns true.
+ * It is only valid to call this from the draw thread.
+ */
 bool CLP(TimerQueryContext)::
 is_answer_ready() const {
   GLuint result;
@@ -57,34 +51,24 @@ is_answer_ready() const {
   return (result != 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GLTimerQueryContext::waiting_for_answer
-//       Access: Public, Virtual
-//  Description: Requests the graphics engine to expedite the pending
-//               answer--the application is now waiting until the
-//               answer is ready.
-//
-//               It is only valid to call this from the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Requests the graphics engine to expedite the pending answer--the application
+ * is now waiting until the answer is ready.  It is only valid to call this from
+ * the draw thread.
+ */
 void CLP(TimerQueryContext)::
 waiting_for_answer() {
   PStatTimer timer(GraphicsStateGuardian::_wait_timer_pcollector);
   glFlush();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TimerQueryContext::get_timestamp
-//       Access: Public, Virtual
-//  Description: Returns the timestamp that is the result of this
-//               timer query.  There's no guarantee about which
-//               clock this uses, the only guarantee is that
-//               subtracting a start time from an end time should
-//               yield a time in seconds.
-//               If is_answer_ready() did not return true, this
-//               function may block before it returns.
-//
-//               It is only valid to call this from the draw thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the timestamp that is the result of this timer query.  There's no
+ * guarantee about which clock this uses, the only guarantee is that subtracting
+ * a start time from an end time should yield a time in seconds.  If
+ * is_answer_ready() did not return true, this function may block before it
+ * returns.  It is only valid to call this from the draw thread.
+ */
 double CLP(TimerQueryContext)::
 get_timestamp() const {
   GLuint64 time_ns;

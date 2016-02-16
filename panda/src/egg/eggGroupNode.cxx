@@ -42,11 +42,9 @@
 TypeHandle EggGroupNode::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::Copy constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::
 EggGroupNode(const EggGroupNode &copy) : EggNode(copy) {
   if (!copy.empty()) {
@@ -55,11 +53,9 @@ EggGroupNode(const EggGroupNode &copy) : EggNode(copy) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::Copy assignment operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode &EggGroupNode::
 operator =(const EggGroupNode &copy) {
   if (!copy.empty()) {
@@ -70,22 +66,18 @@ operator =(const EggGroupNode &copy) {
   return *this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::
 ~EggGroupNode() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::write
-//       Access: Published, Virtual
-//  Description: Writes the group and all of its children to the
-//               indicated output stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the group and all of its children to the indicated output stream in
+ * Egg format.
+ */
 void EggGroupNode::
 write(ostream &out, int indent_level) const {
   iterator i;
@@ -111,73 +103,59 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::begin
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::iterator EggGroupNode::
 begin() const {
   return _children.begin();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::end
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::iterator EggGroupNode::
 end() const {
   return _children.end();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::rbegin
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::reverse_iterator EggGroupNode::
 rbegin() const {
   return _children.rbegin();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::rend
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::reverse_iterator EggGroupNode::
 rend() const {
   return _children.rend();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::insert
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::iterator EggGroupNode::
 insert(iterator position, PT(EggNode) x) {
   prepare_add_child(x);
   return _children.insert((Children::iterator &)position, x);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::erase
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::iterator EggGroupNode::
 erase(iterator position) {
   prepare_remove_child(*position);
   return _children.erase((Children::iterator &)position);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::erase
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::iterator EggGroupNode::
 erase(iterator first, iterator last) {
   iterator i;
@@ -188,13 +166,10 @@ erase(iterator first, iterator last) {
                          (Children::iterator &)last);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::replace
-//       Access: Published
-//  Description: Replaces the node at the indicated position with
-//               the indicated node.  It is an error to call this
-//               with an invalid position iterator (e.g. end()).
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the node at the indicated position with the indicated node.  It is
+ * an error to call this with an invalid position iterator (e.g.  end()).
+ */
 void EggGroupNode::
 replace(iterator position, PT(EggNode) x) {
   nassertv(position != end());
@@ -204,68 +179,52 @@ replace(iterator position, PT(EggNode) x) {
   *(Children::iterator &)position = x;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::empty
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggGroupNode::
 empty() const {
   return _children.empty();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::size
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroupNode::size_type EggGroupNode::
 size() const {
   return _children.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::clear
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggGroupNode::
 clear() {
   erase(begin(), end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::get_first_child
-//       Access: Published
-//  Description: Returns the first child in the group's list of
-//               children, or NULL if the list of children is empty.
-//               Can be used with get_next_child() to return the
-//               complete list of children without using the iterator
-//               class; however, this is non-thread-safe, and so is
-//               not recommended except for languages other than C++
-//               which cannot use the iterators.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the first child in the group's list of children, or NULL if the list
+ * of children is empty.  Can be used with get_next_child() to return the
+ * complete list of children without using the iterator class; however, this is
+ * non-thread-safe, and so is not recommended except for languages other than
+ * C++ which cannot use the iterators.
+ */
 EggNode *EggGroupNode::
 get_first_child() {
   _gnc_iterator = begin();
   return get_next_child();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::get_next_child
-//       Access: Published
-//  Description: Returns the next child in the group's list of
-//               children since the last call to get_first_child() or
-//               get_next_child(), or NULL if the last child has been
-//               returned.  Can be used with get_first_child() to
-//               return the complete list of children without using
-//               the iterator class; however, this is non-thread-safe,
-//               and so is not recommended except for languages other
-//               than C++ which cannot use the iterators.
-//
-//               It is an error to call this without previously
-//               calling get_first_child().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the next child in the group's list of children since the last call to
+ * get_first_child() or get_next_child(), or NULL if the last child has been
+ * returned.  Can be used with get_first_child() to return the complete list of
+ * children without using the iterator class; however, this is non-thread-safe,
+ * and so is not recommended except for languages other than C++ which cannot
+ * use the iterators.  It is an error to call this without previously calling
+ * get_first_child().
+ */
 EggNode *EggGroupNode::
 get_next_child() {
   if (_gnc_iterator != end()) {
@@ -274,13 +233,10 @@ get_next_child() {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::add_child
-//       Access: Published
-//  Description: Adds the indicated child to the group and returns it.
-//               If the child node is already a child of some other
-//               node, removes it first.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated child to the group and returns it.  If the child node is
+ * already a child of some other node, removes it first.
+ */
 EggNode *EggGroupNode::
 add_child(EggNode *node) {
   test_ref_count_integrity();
@@ -293,13 +249,10 @@ add_child(EggNode *node) {
   return node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::remove_child
-//       Access: Published
-//  Description: Removes the indicated child node from the group and
-//               returns it.  If the child was not already in the
-//               group, does nothing and returns NULL.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the indicated child node from the group and returns it.  If the child
+ * was not already in the group, does nothing and returns NULL.
+ */
 PT(EggNode) EggGroupNode::
 remove_child(EggNode *node) {
   PT(EggNode) ptnode = node;
@@ -314,13 +267,11 @@ remove_child(EggNode *node) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::steal_children
-//       Access: Published
-//  Description: Moves all the children from the other node to this
-//               one.  This is especially useful because the group
-//               node copy assignment operator does not copy children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves all the children from the other node to this one.  This is especially
+ * useful because the group node copy assignment operator does not copy
+ * children.
+ */
 void EggGroupNode::
 steal_children(EggGroupNode &other) {
   Children::iterator ci;
@@ -334,13 +285,10 @@ steal_children(EggGroupNode &other) {
   _children.splice(_children.end(), other._children);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::find_child
-//       Access: Published
-//  Description: Returns the child of this node whose name is the
-//               indicated string, or NULL if there is no child of
-//               this node by that name.  Does not search recursively.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the child of this node whose name is the indicated string, or NULL if
+ * there is no child of this node by that name.  Does not search recursively.
+ */
 EggNode *EggGroupNode::
 find_child(const string &name) const {
   Children::const_iterator ci;
@@ -354,13 +302,10 @@ find_child(const string &name) const {
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::has_absolute_pathnames
-//       Access: Published
-//  Description: Returns true if any nodes at this level and below
-//               include a reference to a file via an absolute
-//               pathname, or false if all references are relative.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any nodes at this level and below include a reference to a
+ * file via an absolute pathname, or false if all references are relative.
+ */
 bool EggGroupNode::
 has_absolute_pathnames() const {
   Children::const_iterator ci;
@@ -411,18 +356,15 @@ has_absolute_pathnames() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::resolve_filenames
-//       Access: Published
-//  Description: Walks the tree and attempts to resolve any filenames
-//               encountered.  This looks up filenames along the
-//               specified search path; it does not automatically
-//               search the model_path for missing files.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the tree and attempts to resolve any filenames encountered.  This looks
+ * up filenames along the specified search path; it does not automatically
+ * search the model_path for missing files.
+ */
 void EggGroupNode::
 resolve_filenames(const DSearchPath &searchpath) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  
+
   Children::iterator ci;
   for (ci = _children.begin();
        ci != _children.end();
@@ -433,7 +375,7 @@ resolve_filenames(const DSearchPath &searchpath) {
       Filename tex_filename = tex->get_filename();
       vfs->resolve_filename(tex_filename, searchpath);
       tex->set_filename(tex_filename);
-      
+
       if (tex->has_alpha_filename()) {
         Filename alpha_filename = tex->get_alpha_filename();
         vfs->resolve_filename(alpha_filename, searchpath);
@@ -452,14 +394,11 @@ resolve_filenames(const DSearchPath &searchpath) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::force_filenames
-//       Access: Published
-//  Description: Similar to resolve_filenames, but each non-absolute
-//               filename encountered is arbitrarily taken to be in
-//               the indicated directory, whether or not the so-named
-//               filename exists.
-////////////////////////////////////////////////////////////////////
+/**
+ * Similar to resolve_filenames, but each non-absolute filename encountered is
+ * arbitrarily taken to be in the indicated directory, whether or not the so-
+ * named filename exists.
+ */
 void EggGroupNode::
 force_filenames(const Filename &directory) {
   Children::iterator ci;
@@ -494,13 +433,10 @@ force_filenames(const Filename &directory) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::reverse_vertex_ordering
-//       Access: Published
-//  Description: Reverses the vertex ordering of all polygons defined
-//               at this node and below.  Does not change the surface
-//               normals, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reverses the vertex ordering of all polygons defined at this node and below.
+ * Does not change the surface normals, if any.
+ */
 void EggGroupNode::
 reverse_vertex_ordering() {
   Children::iterator ci;
@@ -518,26 +454,17 @@ reverse_vertex_ordering() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::recompute_vertex_normals
-//       Access: Published
-//  Description: Recomputes all the vertex normals for polygon
-//               geometry at this group node and below so that they
-//               accurately reflect the vertex positions.  A shared
-//               edge between two polygons (even in different groups)
-//               is considered smooth if the angle between the two
-//               edges is less than threshold degrees.
-//
-//               This function also removes degenerate polygons that
-//               do not have enough vertices to define a normal.  It
-//               does not affect normals for other kinds of primitives
-//               like Nurbs or Points.
-//
-//               This function does not remove or adjust vertices in
-//               the vertex pool; it only adds new vertices with the
-//               correct normals.  Thus, it is a good idea to call
-//               remove_unused_vertices() after calling this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes all the vertex normals for polygon geometry at this group node and
+ * below so that they accurately reflect the vertex positions.  A shared edge
+ * between two polygons (even in different groups) is considered smooth if the
+ * angle between the two edges is less than threshold degrees.  This function
+ * also removes degenerate polygons that do not have enough vertices to define a
+ * normal.  It does not affect normals for other kinds of primitives like Nurbs
+ * or Points.  This function does not remove or adjust vertices in the vertex
+ * pool; it only adds new vertices with the correct normals.  Thus, it is a good
+ * idea to call remove_unused_vertices() after calling this.
+ */
 void EggGroupNode::
 recompute_vertex_normals(double threshold, CoordinateSystem cs) {
   // First, collect all the vertices together with their shared
@@ -592,25 +519,17 @@ recompute_vertex_normals(double threshold, CoordinateSystem cs) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::recompute_polygon_normals
-//       Access: Published
-//  Description: Recomputes all the polygon normals for polygon
-//               geometry at this group node and below so that they
-//               accurately reflect the vertex positions.  Normals are
-//               removed from the vertices and defined only on
-//               polygons, giving the geometry a faceted appearance.
-//
-//               This function also removes degenerate polygons that
-//               do not have enough vertices to define a normal.  It
-//               does not affect normals for other kinds of primitives
-//               like Nurbs or Points.
-//
-//               This function does not remove or adjust vertices in
-//               the vertex pool; it only adds new vertices with the
-//               normals removed.  Thus, it is a good idea to call
-//               remove_unused_vertices() after calling this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recomputes all the polygon normals for polygon geometry at this group node
+ * and below so that they accurately reflect the vertex positions.  Normals are
+ * removed from the vertices and defined only on polygons, giving the geometry a
+ * faceted appearance.  This function also removes degenerate polygons that do
+ * not have enough vertices to define a normal.  It does not affect normals for
+ * other kinds of primitives like Nurbs or Points.  This function does not
+ * remove or adjust vertices in the vertex pool; it only adds new vertices with
+ * the normals removed.  Thus, it is a good idea to call
+ * remove_unused_vertices() after calling this.
+ */
 void EggGroupNode::
 recompute_polygon_normals(CoordinateSystem cs) {
   Children::iterator ci, cnext;
@@ -654,17 +573,12 @@ recompute_polygon_normals(CoordinateSystem cs) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::strip_normals
-//       Access: Published
-//  Description: Removes all normals from primitives, and the vertices
-//               they reference, at this node and below.
-//
-//               This function does not remove or adjust vertices in
-//               the vertex pool; it only adds new vertices with the
-//               normal removed.  Thus, it is a good idea to call
-//               remove_unused_vertices() after calling this.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all normals from primitives, and the vertices they reference, at this
+ * node and below.  This function does not remove or adjust vertices in the
+ * vertex pool; it only adds new vertices with the normal removed.  Thus, it is
+ * a good idea to call remove_unused_vertices() after calling this.
+ */
 void EggGroupNode::
 strip_normals() {
   Children::iterator ci;
@@ -697,27 +611,18 @@ strip_normals() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::recompute_tangent_binormal
-//       Access: Published
-//  Description: This function recomputes the tangent and binormal for
-//               the named texture coordinate set for all vertices at
-//               this level and below.  Use the empty string for the
-//               default texture coordinate set.
-//
-//               It is necessary for each vertex to already have a
-//               normal (or at least a polygon normal), as well as a
-//               texture coordinate in the named texture coordinate
-//               set, before calling this function.  You might precede
-//               this with recompute_vertex_normals() to ensure that
-//               the normals exist.
-//
-//               Like recompute_vertex_normals(), this function does
-//               not remove or adjust vertices in the vertex pool; it
-//               only adds new vertices with the new tangents and
-//               binormals computed.  Thus, it is a good idea to call
-//               remove_unused_vertices() after calling this.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function recomputes the tangent and binormal for the named texture
+ * coordinate set for all vertices at this level and below.  Use the empty
+ * string for the default texture coordinate set.  It is necessary for each
+ * vertex to already have a normal (or at least a polygon normal), as well as a
+ * texture coordinate in the named texture coordinate set, before calling this
+ * function.  You might precede this with recompute_vertex_normals() to ensure
+ * that the normals exist.  Like recompute_vertex_normals(), this function does
+ * not remove or adjust vertices in the vertex pool; it only adds new vertices
+ * with the new tangents and binormals computed.  Thus, it is a good idea to
+ * call remove_unused_vertices() after calling this.
+ */
 bool EggGroupNode::
 recompute_tangent_binormal(const GlobPattern &uv_name) {
   // First, collect all the vertices together with their shared
@@ -734,17 +639,14 @@ recompute_tangent_binormal(const GlobPattern &uv_name) {
 
     do_compute_tangent_binormal(value, group);
   }
-  
+
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::recompute_tangent_binormal
-//       Access: Published
-//  Description: This function recomputes the tangent and binormal for
-//               the named texture coordinate sets.
-//               Returns true if anything was done.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function recomputes the tangent and binormal for the named texture
+ * coordinate sets.  Returns true if anything was done.
+ */
 bool EggGroupNode::
 recompute_tangent_binormal(const vector_string &names) {
   bool changed = false;
@@ -757,17 +659,14 @@ recompute_tangent_binormal(const vector_string &names) {
     recompute_tangent_binormal(uv_name);
     changed = true;
   }
-  
+
   return changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::recompute_tangent_binormal_auto
-//       Access: Published
-//  Description: This function recomputes the tangent and binormal for
-//               any texture coordinate set that affects a normal map.
-//               Returns true if anything was done.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function recomputes the tangent and binormal for any texture coordinate
+ * set that affects a normal map.  Returns true if anything was done.
+ */
 bool EggGroupNode::
 recompute_tangent_binormal_auto() {
   vector_string names;
@@ -789,20 +688,14 @@ recompute_tangent_binormal_auto() {
   return recompute_tangent_binormal(names);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::triangulate_polygons
-//       Access: Published
-//  Description: Replace all higher-order polygons at this point in
-//               the scene graph and below with triangles.  Returns
-//               the total number of new triangles produced, less
-//               degenerate polygons removed.
-//
-//               If flags contains T_polygon and T_convex, both
-//               concave and convex polygons will be subdivided into
-//               triangles; with only T_polygon, only concave polygons
-//               will be subdivided, and convex polygons will be
-//               largely unchanged.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replace all higher-order polygons at this point in the scene graph and below
+ * with triangles.  Returns the total number of new triangles produced, less
+ * degenerate polygons removed.  If flags contains T_polygon and T_convex, both
+ * concave and convex polygons will be subdivided into triangles; with only
+ * T_polygon, only concave polygons will be subdivided, and convex polygons will
+ * be largely unchanged.
+ */
 int EggGroupNode::
 triangulate_polygons(int flags) {
   int num_produced = 0;
@@ -838,12 +731,9 @@ triangulate_polygons(int flags) {
   return num_produced;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::mesh_triangles
-//       Access: Published
-//  Description: Combine triangles together into triangle strips, at
-//               this group and below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Combine triangles together into triangle strips, at this group and below.
+ */
 void EggGroupNode::
 mesh_triangles(int flags) {
   EggMesher mesher;
@@ -860,13 +750,10 @@ mesh_triangles(int flags) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::make_point_primitives
-//       Access: Published
-//  Description: Creates PointLight primitives to reference any
-//               otherwise unreferences vertices discovered in this
-//               group or below.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates PointLight primitives to reference any otherwise unreferences
+ * vertices discovered in this group or below.
+ */
 void EggGroupNode::
 make_point_primitives() {
   // Create a temporary node to hold the EggPoint objects we might
@@ -893,11 +780,9 @@ make_point_primitives() {
   steal_children(*temp);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::rename_nodes
-//       Access: Published
-//  Description: Rename by stripping out the prefix
-////////////////////////////////////////////////////////////////////
+/**
+ * Rename by stripping out the prefix
+ */
 int EggGroupNode::
 rename_nodes(vector_string strip_prefix, bool recurse) {
   int num_renamed = 0;
@@ -926,25 +811,17 @@ rename_nodes(vector_string strip_prefix, bool recurse) {
   return num_renamed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::remove_unused_vertices
-//       Access: Published
-//  Description: Removes all vertices from VertexPools within this
-//               group or below that are not referenced by at least
-//               one primitive.  Also collapses together equivalent
-//               vertices, and renumbers all vertices after the
-//               operation so their indices are consecutive, beginning
-//               at zero.  Returns the total number of vertices
-//               removed.
-//
-//               Note that this operates on the VertexPools within
-//               this group level, without respect to primitives that
-//               reference these vertices (unlike other functions like
-//               strip_normals()).  It is therefore most useful to
-//               call this on the EggData root, rather than on a
-//               subgroup within the hierarchy, since a VertexPool may
-//               appear anywhere in the hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all vertices from VertexPools within this group or below that are not
+ * referenced by at least one primitive.  Also collapses together equivalent
+ * vertices, and renumbers all vertices after the operation so their indices are
+ * consecutive, beginning at zero.  Returns the total number of vertices
+ * removed.  Note that this operates on the VertexPools within this group level,
+ * without respect to primitives that reference these vertices (unlike other
+ * functions like strip_normals()).  It is therefore most useful to call this on
+ * the EggData root, rather than on a subgroup within the hierarchy, since a
+ * VertexPool may appear anywhere in the hierarchy.
+ */
 int EggGroupNode::
 remove_unused_vertices(bool recurse) {
   int num_removed = 0;
@@ -978,14 +855,11 @@ remove_unused_vertices(bool recurse) {
   return num_removed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::remove_invalid_primitives
-//       Access: Published
-//  Description: Removes primitives at this level and below which
-//               appear to be degenerate; e.g. polygons with fewer
-//               than 3 vertices, etc.  Returns the number of
-//               primitives removed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes primitives at this level and below which appear to be degenerate;
+ * e.g.  polygons with fewer than 3 vertices, etc.  Returns the number of
+ * primitives removed.
+ */
 int EggGroupNode::
 remove_invalid_primitives(bool recurse) {
   int num_removed = 0;
@@ -1016,18 +890,13 @@ remove_invalid_primitives(bool recurse) {
   return num_removed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::clear_connected_shading
-//       Access: Published
-//  Description: Resets the connected_shading information on all
-//               primitives at this node and below, so that it may be
-//               accurately rederived by the next call to
-//               get_connected_shading().
-//
-//               It may be a good idea to call
-//               remove_unused_vertices() as well, to establish the
-//               correct connectivity between common vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the connected_shading information on all primitives at this node and
+ * below, so that it may be accurately rederived by the next call to
+ * get_connected_shading().  It may be a good idea to call
+ * remove_unused_vertices() as well, to establish the correct connectivity
+ * between common vertices.
+ */
 void EggGroupNode::
 clear_connected_shading() {
   Children::iterator ci;
@@ -1043,14 +912,11 @@ clear_connected_shading() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::get_connected_shading
-//       Access: Published
-//  Description: Queries the connected_shading information on all
-//               primitives at this node and below, to ensure that it
-//               has been completely filled in before we start mucking
-//               around with vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * Queries the connected_shading information on all primitives at this node and
+ * below, to ensure that it has been completely filled in before we start
+ * mucking around with vertices.
+ */
 void EggGroupNode::
 get_connected_shading() {
   Children::iterator ci;
@@ -1066,37 +932,22 @@ get_connected_shading() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::unify_attributes
-//       Access: Published
-//  Description: Applies per-vertex normal and color to all vertices,
-//               if they are in fact per-vertex (and different for
-//               each vertex), or moves them to the primitive if they
-//               are all the same.
-//
-//               After this call, either the primitive will have
-//               normals or its vertices will, but not both.  Ditto
-//               for colors.
-//
-//               If use_connected_shading is true, each polygon is
-//               considered in conjunction with all connected
-//               polygons; otherwise, each polygon is considered
-//               individually.
-//
-//               If allow_per_primitive is false, S_per_face or
-//               S_overall will treated like S_per_vertex: normals and
-//               colors will always be assigned to the vertices.  In
-//               this case, there will never be per-primitive colors
-//               or normals after this call returns.  On the other
-//               hand, if allow_per_primitive is true, then S_per_face
-//               means that normals and colors should be assigned to
-//               the primitives, and removed from the vertices, as
-//               described above.
-//
-//               This may create redundant vertices in the vertex
-//               pool, so it may be a good idea to follow this up with
-//               remove_unused_vertices().
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies per-vertex normal and color to all vertices, if they are in fact per-
+ * vertex (and different for each vertex), or moves them to the primitive if
+ * they are all the same.  After this call, either the primitive will have
+ * normals or its vertices will, but not both.  Ditto for colors.  If
+ * use_connected_shading is true, each polygon is considered in conjunction with
+ * all connected polygons; otherwise, each polygon is considered individually.
+ * If allow_per_primitive is false, S_per_face or S_overall will treated like
+ * S_per_vertex: normals and colors will always be assigned to the vertices.  In
+ * this case, there will never be per-primitive colors or normals after this
+ * call returns.  On the other hand, if allow_per_primitive is true, then
+ * S_per_face means that normals and colors should be assigned to the
+ * primitives, and removed from the vertices, as described above.  This may
+ * create redundant vertices in the vertex pool, so it may be a good idea to
+ * follow this up with remove_unused_vertices().
+ */
 void EggGroupNode::
 unify_attributes(bool use_connected_shading, bool allow_per_primitive,
                  bool recurse) {
@@ -1127,20 +978,14 @@ unify_attributes(bool use_connected_shading, bool allow_per_primitive,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::apply_last_attribute
-//       Access: Published
-//  Description: Sets the last vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               OpenGL convention of storing flat-shaded properties on
-//               the last vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may create redundant vertices in the vertex
-//               pool, so it may be a good idea to follow this up with
-//               remove_unused_vertices().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the last vertex of the triangle (or each component) to the primitive
+ * normal and/or color, if the primitive is flat-shaded.  This reflects the
+ * OpenGL convention of storing flat-shaded properties on the last vertex,
+ * although it is not usually a convention in Egg.  This may create redundant
+ * vertices in the vertex pool, so it may be a good idea to follow this up with
+ * remove_unused_vertices().
+ */
 void EggGroupNode::
 apply_last_attribute(bool recurse) {
   Children::iterator ci;
@@ -1158,20 +1003,14 @@ apply_last_attribute(bool recurse) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::apply_first_attribute
-//       Access: Published
-//  Description: Sets the first vertex of the triangle (or each
-//               component) to the primitive normal and/or color, if
-//               the primitive is flat-shaded.  This reflects the
-//               DirectX convention of storing flat-shaded properties on
-//               the first vertex, although it is not usually a
-//               convention in Egg.
-//
-//               This may create redundant vertices in the vertex
-//               pool, so it may be a good idea to follow this up with
-//               remove_unused_vertices().
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the first vertex of the triangle (or each component) to the primitive
+ * normal and/or color, if the primitive is flat-shaded.  This reflects the
+ * DirectX convention of storing flat-shaded properties on the first vertex,
+ * although it is not usually a convention in Egg.  This may create redundant
+ * vertices in the vertex pool, so it may be a good idea to follow this up with
+ * remove_unused_vertices().
+ */
 void EggGroupNode::
 apply_first_attribute(bool recurse) {
   Children::iterator ci;
@@ -1189,14 +1028,11 @@ apply_first_attribute(bool recurse) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::post_apply_flat_attribute
-//       Access: Published
-//  Description: Intended as a followup to apply_last_attribute(),
-//               this also sets an attribute on the first vertices of
-//               the primitive, if they don't already have an
-//               attribute set, just so they end up with *something*.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended as a followup to apply_last_attribute(), this also sets an attribute
+ * on the first vertices of the primitive, if they don't already have an
+ * attribute set, just so they end up with *something*.
+ */
 void EggGroupNode::
 post_apply_flat_attribute(bool recurse) {
   Children::iterator ci;
@@ -1214,13 +1050,10 @@ post_apply_flat_attribute(bool recurse) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::has_primitives
-//       Access: Published, Virtual
-//  Description: Returns true if there are any primitives
-//               (e.g. polygons) defined within this group or below,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are any primitives (e.g.  polygons) defined within this
+ * group or below, false otherwise.
+ */
 bool EggGroupNode::
 has_primitives() const {
   Children::const_iterator ci;
@@ -1235,13 +1068,10 @@ has_primitives() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::joint_has_primitives
-//       Access: Published, Virtual
-//  Description: Returns true if there are any primitives
-//               (e.g. polygons) defined within this group or below,
-//               but the search does not include nested joints.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are any primitives (e.g.  polygons) defined within this
+ * group or below, but the search does not include nested joints.
+ */
 bool EggGroupNode::
 joint_has_primitives() const {
   Children::const_iterator ci;
@@ -1260,13 +1090,10 @@ joint_has_primitives() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::has_normals
-//       Access: Published, Virtual
-//  Description: Returns true if any of the primitives (e.g. polygons)
-//               defined within this group or below have either face
-//               or vertex normals defined, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if any of the primitives (e.g.  polygons) defined within this
+ * group or below have either face or vertex normals defined, false otherwise.
+ */
 bool EggGroupNode::
 has_normals() const {
   Children::const_iterator ci;
@@ -1281,20 +1108,14 @@ has_normals() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::rebuild_vertex_pools
-//       Access: Published
-//  Description: Copies vertices used by the primitives at this group
-//               node (and below, if recurse is true) into one or more
-//               new vertex pools, and updates the primitives to
-//               reference these pools.  It is up to the caller to
-//               parent the newly-created vertex pools somewhere
-//               appropriate in the egg hierarchy.
-//
-//               No more than max_vertices will be placed into any one
-//               vertex pool.  This is the sole criteria for splitting
-//               vertex pools.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies vertices used by the primitives at this group node (and below, if
+ * recurse is true) into one or more new vertex pools, and updates the
+ * primitives to reference these pools.  It is up to the caller to parent the
+ * newly-created vertex pools somewhere appropriate in the egg hierarchy.  No
+ * more than max_vertices will be placed into any one vertex pool.  This is the
+ * sole criteria for splitting vertex pools.
+ */
 void EggGroupNode::
 rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
                      bool recurse) {
@@ -1338,7 +1159,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
 
       Vertices new_vertices;
       EggVertexPools::iterator vpi;
-      for (vpi = vertex_pools.begin(); 
+      for (vpi = vertex_pools.begin();
            vpi != vertex_pools.end() && !found_pool;
            ++vpi) {
         EggVertexPool *vertex_pool = (*vpi);
@@ -1348,8 +1169,8 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
         new_vertices.reserve(vertices.size());
 
         Vertices::const_iterator vi;
-        for (vi = vertices.begin(); 
-             vi != vertices.end() && !found_pool; 
+        for (vi = vertices.begin();
+             vi != vertices.end() && !found_pool;
              ++vi) {
           EggVertex *vertex = (*vi);
           EggVertex *new_vertex = vertex_pool->find_matching_vertex(*vertex);
@@ -1415,7 +1236,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
           cprim->set_component(i, &attributes[i]);
         }
       }
-        
+
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       if (recurse) {
         DCAST(EggGroupNode, child)->rebuild_vertex_pools(vertex_pools, max_vertices, recurse);
@@ -1424,19 +1245,13 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::update_under
-//       Access: Protected, Virtual
-//  Description: This function is called from within EggGroupNode
-//               whenever the parentage of the node has changed.  It
-//               should update the depth and under_instance flags
-//               accordingly.
-//
-//               Offset is the difference between the old depth value
-//               and the new value.  It should be consistent with the
-//               supplied depth value.  If it is not, we have some
-//               error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called from within EggGroupNode whenever the parentage of
+ * the node has changed.  It should update the depth and under_instance flags
+ * accordingly.  Offset is the difference between the old depth value and the
+ * new value.  It should be consistent with the supplied depth value.  If it is
+ * not, we have some error.
+ */
 void EggGroupNode::
 update_under(int depth_offset) {
   EggNode::update_under(depth_offset);
@@ -1450,19 +1265,13 @@ update_under(int depth_offset) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_transform
-//       Access: Protected, Virtual
-//  Description: This is called from within the egg code by
-//               transform().  It applies a transformation matrix
-//               to the current node in some sensible way, then
-//               continues down the tree.
-//
-//               The first matrix is the transformation to apply; the
-//               second is its inverse.  The third parameter is the
-//               coordinate system we are changing to, or CS_default
-//               if we are not changing coordinate systems.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called from within the egg code by transform().  It applies a
+ * transformation matrix to the current node in some sensible way, then
+ * continues down the tree.  The first matrix is the transformation to apply;
+ * the second is its inverse.  The third parameter is the coordinate system we
+ * are changing to, or CS_default if we are not changing coordinate systems.
+ */
 void EggGroupNode::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
             CoordinateSystem to_cs) {
@@ -1474,15 +1283,12 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_transform_vertices
-//       Access: Protected, Virtual
-//  Description: This is called from within the egg code by
-//               transform_vertices_only()().  It applies a
-//               transformation matrix to the current node in some
-//               sensible way (if the current node is a vertex pool
-//               with vertices), then continues down the tree.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called from within the egg code by transform_vertices_only()().  It
+ * applies a transformation matrix to the current node in some sensible way (if
+ * the current node is a vertex pool with vertices), then continues down the
+ * tree.
+ */
 void EggGroupNode::
 r_transform_vertices(const LMatrix4d &mat) {
   Children::iterator ci;
@@ -1493,15 +1299,12 @@ r_transform_vertices(const LMatrix4d &mat) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_mark_coordsys
-//       Access: Protected, Virtual
-//  Description: This is only called immediately after loading an egg
-//               file from disk, to propagate the value found in the
-//               CoordinateSystem entry (or the default Y-up
-//               coordinate system) to all nodes that care about what
-//               the coordinate system is.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is only called immediately after loading an egg file from disk, to
+ * propagate the value found in the CoordinateSystem entry (or the default Y-up
+ * coordinate system) to all nodes that care about what the coordinate system
+ * is.
+ */
 void EggGroupNode::
 r_mark_coordsys(CoordinateSystem cs) {
   Children::iterator ci;
@@ -1512,11 +1315,9 @@ r_mark_coordsys(CoordinateSystem cs) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_flatten_transforms
-//       Access: Protected, Virtual
-//  Description: The recursive implementation of flatten_transforms().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of flatten_transforms().
+ */
 void EggGroupNode::
 r_flatten_transforms() {
   Children::iterator ci;
@@ -1527,11 +1328,9 @@ r_flatten_transforms() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_apply_texmats
-//       Access: Protected, Virtual
-//  Description: The recursive implementation of apply_texmats().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of apply_texmats().
+ */
 void EggGroupNode::
 r_apply_texmats(EggTextureCollection &textures) {
   Children::iterator ci;
@@ -1542,14 +1341,11 @@ r_apply_texmats(EggTextureCollection &textures) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::find_coordsys_entry()
-//       Access: Protected
-//  Description: Walks the tree, looking for an EggCoordinateSystem
-//               entry.  If one is found, extracts it and returns its
-//               value.  If multiple entries are found, extracts all
-//               of them and returns CS_invalid if they disagree.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the tree, looking for an EggCoordinateSystem entry.  If one is found,
+ * extracts it and returns its value.  If multiple entries are found, extracts
+ * all of them and returns CS_invalid if they disagree.
+ */
 CoordinateSystem EggGroupNode::
 find_coordsys_entry() {
   CoordinateSystem coordsys = CS_default;
@@ -1600,14 +1396,11 @@ find_coordsys_entry() {
   return coordsys;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::find_textures()
-//       Access: Protected
-//  Description: Walks the tree, looking for EggTextures.  Each
-//               EggTexture that is found is removed from the
-//               hierarchy and added to the EggTextureCollection.
-//               Returns the number of EggTextures found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the tree, looking for EggTextures.  Each EggTexture that is found is
+ * removed from the hierarchy and added to the EggTextureCollection.  Returns
+ * the number of EggTextures found.
+ */
 int EggGroupNode::
 find_textures(EggTextureCollection *collection) {
   int num_found = 0;
@@ -1646,14 +1439,11 @@ find_textures(EggTextureCollection *collection) {
   return num_found;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::find_materials()
-//       Access: Protected
-//  Description: Walks the tree, looking for EggMaterials.  Each
-//               EggMaterial that is found is removed from the
-//               hierarchy and added to the EggMaterialCollection.
-//               Returns the number of EggMaterials found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the tree, looking for EggMaterials.  Each EggMaterial that is found is
+ * removed from the hierarchy and added to the EggMaterialCollection.  Returns
+ * the number of EggMaterials found.
+ */
 int EggGroupNode::
 find_materials(EggMaterialCollection *collection) {
   int num_found = 0;
@@ -1692,15 +1482,12 @@ find_materials(EggMaterialCollection *collection) {
   return num_found;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_load_externals
-//       Access: Protected
-//  Description: Walks the tree and locates unloaded external
-//               reference nodes, which it attempts to locate and load
-//               in.  The reference node is replaced with the entire
-//               subtree loaded.  This is intended to be called from
-//               EggData::load_externals().
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks the tree and locates unloaded external reference nodes, which it
+ * attempts to locate and load in.  The reference node is replaced with the
+ * entire subtree loaded.  This is intended to be called from
+ * EggData::load_externals().
+ */
 bool EggGroupNode::
 r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys,
                  BamCacheRecord *record) {
@@ -1756,17 +1543,12 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys,
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::prepare_add_child
-//       Access: Private
-//  Description: Marks the node as a child of the group.  This is an
-//               internal function called by the STL-like functions
-//               push_back() and insert(), in preparation for actually
-//               adding the child.
-//
-//               It is an error to add a node that is already a child
-//               of this group or some other group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the node as a child of the group.  This is an internal function called
+ * by the STL-like functions push_back() and insert(), in preparation for
+ * actually adding the child.  It is an error to add a node that is already a
+ * child of this group or some other group.
+ */
 void EggGroupNode::
 prepare_add_child(EggNode *node) {
   nassertv(node != (EggNode *)NULL);
@@ -1781,17 +1563,12 @@ prepare_add_child(EggNode *node) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::prepare_remove_child
-//       Access: Private
-//  Description: Marks the node as removed from the group.  This is an
-//               internal function called by the STL-like functions
-//               pop_back() and erase(), in preparation for actually
-//               doing the removal.
-//
-//               It is an error to attempt to remove a node that is
-//               not already a child of this group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Marks the node as removed from the group.  This is an internal function
+ * called by the STL-like functions pop_back() and erase(), in preparation for
+ * actually doing the removal.  It is an error to attempt to remove a node that
+ * is not already a child of this group.
+ */
 void EggGroupNode::
 prepare_remove_child(EggNode *node) {
   nassertv(node != (EggNode *)NULL);
@@ -1805,14 +1582,11 @@ prepare_remove_child(EggNode *node) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_collect_vertex_normals
-//       Access: Private
-//  Description: This is part of the implementation of
-//               recompute_vertex_normals().  It walks the scene graph
-//               at this group node and below, identifying all the
-//               polygons and the vertices they have in common.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the implementation of recompute_vertex_normals().  It walks
+ * the scene graph at this group node and below, identifying all the polygons
+ * and the vertices they have in common.
+ */
 void EggGroupNode::
 r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
                          double threshold, CoordinateSystem cs) {
@@ -1867,14 +1641,11 @@ r_collect_vertex_normals(EggGroupNode::NVertexCollection &collection,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::do_compute_vertex_normals
-//       Access: Private
-//  Description: This is part of the implementation of
-//               recompute_vertex_normals().  It accepts a group of
-//               polygons and their common normals, and computes the
-//               same normal for all their shared vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the implementation of recompute_vertex_normals().  It accepts
+ * a group of polygons and their common normals, and computes the same normal
+ * for all their shared vertices.
+ */
 void EggGroupNode::
 do_compute_vertex_normals(const NVertexGroup &group) {
   nassertv(!group.empty());
@@ -1907,14 +1678,11 @@ do_compute_vertex_normals(const NVertexGroup &group) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::r_collect_tangent_binormal
-//       Access: Private
-//  Description: This is part of the implementation of
-//               recompute_tangent_binormal().  It walks the scene
-//               graph at this group node and below, identifying all
-//               the polygons and the vertices they have in common.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the implementation of recompute_tangent_binormal().  It walks
+ * the scene graph at this group node and below, identifying all the polygons
+ * and the vertices they have in common.
+ */
 void EggGroupNode::
 r_collect_tangent_binormal(const GlobPattern &uv_name,
                            EggGroupNode::TBNVertexCollection &collection) {
@@ -1957,12 +1725,12 @@ r_collect_tangent_binormal(const GlobPattern &uv_name,
                 value._normal = polygon->get_normal();
               }
               value._uv = v1->get_uv(name);
-              
+
               // Compute the s direction and t direction for this vertex.
               LPoint3d p1 = v1->get_pos3();
               LPoint3d p2 = v2->get_pos3();
               LPoint3d p3 = v3->get_pos3();
-              
+
               LTexCoordd w1 = v1->get_uv(name);
               LTexCoordd w2 = v2->get_uv(name);
               LTexCoordd w3 = v3->get_uv(name);
@@ -1981,12 +1749,12 @@ r_collect_tangent_binormal(const GlobPattern &uv_name,
               double y2 = p3[1] - p1[1];
               double z1 = p2[2] - p1[2];
               double z2 = p3[2] - p1[2];
-              
+
               double s1 = w2[0] - w1[0];
               double s2 = w3[0] - w1[0];
               double t1 = w2[1] - w1[1];
               double t2 = w3[1] - w1[1];
-              
+
               double denom = (s1 * t2 - s2 * t1);
               if (denom == 0.0) {
                 ref._sdir.set(0.0, 0.0, 0.0);
@@ -2021,15 +1789,11 @@ r_collect_tangent_binormal(const GlobPattern &uv_name,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroupNode::do_compute_tangent_binormal
-//       Access: Private
-//  Description: This is part of the implementation of
-//               recompute_tangent_binormal().  It accepts a group of
-//               polygons and their common normals and UV's, and
-//               computes the tangent and binormal for all their
-//               shared vertices.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the implementation of recompute_tangent_binormal().  It
+ * accepts a group of polygons and their common normals and UV's, and computes
+ * the tangent and binormal for all their shared vertices.
+ */
 void EggGroupNode::
 do_compute_tangent_binormal(const TBNVertexValue &value,
                             const TBNVertexGroup &group) {

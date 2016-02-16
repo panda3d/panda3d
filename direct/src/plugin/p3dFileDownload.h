@@ -19,11 +19,9 @@
 
 #include <fstream>
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DFileDownload
-// Description : This is a specialization on P3DDownload that
-//               specifically writes a disk file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on P3DDownload that specifically writes a disk file.
+ */
 class P3DFileDownload : public P3DDownload {
 public:
   P3DFileDownload();

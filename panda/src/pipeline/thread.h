@@ -30,18 +30,13 @@ class ConditionVarDebug;
 class ConditionVarFullDebug;
 class AsyncTaskBase;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Thread
-// Description : A thread; that is, a lightweight process.  This is an
-//               abstract base class; to use it, you must subclass
-//               from it and redefine thread_main().
-//
-//               The thread itself will keep a reference count on the
-//               Thread object while it is running; when the thread
-//               returns from its root function, the Thread object
-//               will automatically be destructed if no other pointers
-//               are referencing it.
-////////////////////////////////////////////////////////////////////
+/**
+ * A thread; that is, a lightweight process.  This is an abstract base class; to
+ * use it, you must subclass from it and redefine thread_main().  The thread
+ * itself will keep a reference count on the Thread object while it is running;
+ * when the thread returns from its root function, the Thread object will
+ * automatically be destructed if no other pointers are referencing it.
+ */
 class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
 protected:
   Thread(const string &name, const string &sync_name);

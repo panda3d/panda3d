@@ -21,11 +21,10 @@
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PythonTask
-// Description : This class exists to allow association of a Python
-//               function with the AsyncTaskManager.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class exists to allow association of a Python function with the
+ * AsyncTaskManager.
+ */
 class PythonTask : public AsyncTask {
 PUBLISHED:
   PythonTask(PyObject *function = Py_None, const string &name = string());
@@ -138,4 +137,3 @@ private:
 #endif  // HAVE_PYTHON
 
 #endif
-

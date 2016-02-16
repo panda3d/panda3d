@@ -19,12 +19,10 @@
 
 class PGButton;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PGButtonNotify
-// Description : Objects that inherit from this class can receive
-//               notify messages when a slider bar moves or otherwise
-//               is reconfigured.
-////////////////////////////////////////////////////////////////////
+/**
+ * Objects that inherit from this class can receive notify messages when a
+ * slider bar moves or otherwise is reconfigured.
+ */
 class EXPCL_PANDA_PGUI PGButtonNotify : public PGItemNotify {
 public:
   INLINE PGButtonNotify();

@@ -23,14 +23,11 @@
 
 class MObject;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MayaShader
-// Description : Corresponds to a single "shader" in Maya.  This
-//               extracts out all the parameters of a Maya shader that
-//               we might care about.  There are many more parameters
-//               that we don't care about or don't know enough to
-//               extract.
-////////////////////////////////////////////////////////////////////
+/**
+ * Corresponds to a single "shader" in Maya.  This extracts out all the
+ * parameters of a Maya shader that we might care about.  There are many more
+ * parameters that we don't care about or don't know enough to extract.
+ */
 class MayaShader : public Namable {
 public:
   MayaShader(MObject engine, bool legacy_shader);
@@ -38,7 +35,7 @@ public:
 
   void output(ostream &out) const;
   void write(ostream &out) const;
-  
+
 private:
   bool find_textures_modern(MObject shader);
   bool find_textures_legacy(MObject shader);
@@ -46,22 +43,22 @@ private:
 public:
   void collect_maps();
   bool _legacy_mode;
-  
+
   MayaShaderColorList _all_maps;
 
 public: // relevant only to modern mode.
 
   LColord _flat_color;
-  
+
   MayaShaderColorList _color_maps;
   MayaShaderColorList _trans_maps;
   MayaShaderColorList _normal_maps;
   MayaShaderColorList _glow_maps;
   MayaShaderColorList _gloss_maps;
   MayaShaderColorList _height_maps;
-  
+
   void bind_uvsets(MayaFileToUVSetMap &map);
-  
+
 private:
   void calculate_pairings();
   bool try_pair(MayaShaderColorDef *map1,
@@ -82,4 +79,3 @@ INLINE ostream &operator << (ostream &out, const MayaShader &shader) {
 }
 
 #endif
-

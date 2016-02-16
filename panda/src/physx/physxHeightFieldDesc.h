@@ -19,14 +19,11 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxHeightFieldDesc
-// Description : Descriptor class for height fields. The height
-//               field data is copied when a PhysxHeightField object
-//               is created from this descriptor. After the call 
-//               the user may discard the original height data (e.g.
-//               release the PNGImage).
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for height fields.  The height field data is copied when a
+ * PhysxHeightField object is created from this descriptor.  After the call the
+ * user may discard the original height data (e.g.  release the PNGImage).
+ */
 class EXPCL_PANDAPHYSX PhysxHeightFieldDesc {
 
 PUBLISHED:

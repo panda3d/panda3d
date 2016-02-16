@@ -18,11 +18,9 @@
 
 #include "virtualFileMount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMountSystem
-// Description : Maps an actual OS directory into the
-//               VirtualFileSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps an actual OS directory into the VirtualFileSystem.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMountSystem : public VirtualFileMount {
 PUBLISHED:
   INLINE VirtualFileMountSystem(const Filename &physical_filename);
@@ -51,7 +49,7 @@ public:
   virtual time_t get_timestamp(const Filename &file) const;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
   virtual bool atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents, const string &old_contents, const string &new_contents);

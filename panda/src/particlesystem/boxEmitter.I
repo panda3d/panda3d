@@ -11,41 +11,33 @@
  * @date 2000-06-26
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_min_bound
-//       Access: Public
-//  Description: boundary assignment
-////////////////////////////////////////////////////////////////////
+/**
+ * boundary assignment
+ */
 INLINE void BoxEmitter::
 set_min_bound(const LPoint3& vmin) {
   _vmin = vmin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_max_bound
-//       Access: Public
-//  Description: boundary assignment
-////////////////////////////////////////////////////////////////////
+/**
+ * boundary assignment
+ */
 INLINE void BoxEmitter::
 set_max_bound(const LPoint3& vmax) {
   _vmax = vmax;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_min_bound
-//       Access: Public
-//  Description: boundary accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * boundary accessor
+ */
 INLINE LPoint3 BoxEmitter::
 get_min_bound() const {
   return _vmin;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_max_bound
-//       Access: Public
-//  Description: boundary accessor
-////////////////////////////////////////////////////////////////////
+/**
+ * boundary accessor
+ */
 INLINE LPoint3 BoxEmitter::
 get_max_bound() const {
   return _vmax;

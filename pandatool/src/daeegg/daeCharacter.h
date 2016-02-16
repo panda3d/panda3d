@@ -29,10 +29,9 @@
 
 class DAEToEggConverter;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DaeCharacter
-// Description : Class representing an animated character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class representing an animated character.
+ */
 class DaeCharacter : public TypedReferenceCount {
 public:
   DaeCharacter(EggGroup *node_group, const FCDControllerInstance* controller_instance);

@@ -19,14 +19,12 @@
 
 class EggXfmAnimData;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggXfmSAnim
-// Description : This corresponds to an <Xfm$Anim_S$> entry, which is
-//               a collection of up to nine <S$Anim> entries that
-//               specify the nine components of a transformation.
-//               It's implemented as a group that can contain
-//               any number of EggSAnimData children.
-////////////////////////////////////////////////////////////////////
+/**
+ * This corresponds to an <Xfm$Anim_S$> entry, which is a collection of up to
+ * nine <S$Anim> entries that specify the nine components of a transformation.
+ * It's implemented as a group that can contain any number of EggSAnimData
+ * children.
+ */
 class EXPCL_PANDAEGG EggXfmSAnim : public EggGroupNode {
 PUBLISHED:
   INLINE EggXfmSAnim(const string &name = "",
@@ -90,7 +88,7 @@ private:
   CoordinateSystem _coordsys;
 
   static const string _standard_order;
-  
+
 public:
 
   static TypeHandle get_class_type() {
@@ -113,5 +111,3 @@ private:
 #include "eggXfmSAnim.I"
 
 #endif
-
-

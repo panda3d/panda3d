@@ -20,10 +20,9 @@
 #include "physxControllerDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBoxControllerDesc
-// Description : Descriptor class for PhysxBoxController.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxBoxController.
+ */
 class EXPCL_PANDAPHYSX PhysxBoxControllerDesc : public PhysxControllerDesc {
 
 PUBLISHED:

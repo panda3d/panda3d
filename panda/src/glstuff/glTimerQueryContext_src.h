@@ -20,14 +20,11 @@ class GraphicsStateGuardian;
 
 #ifndef OPENGLES  // Timer queries not supported by OpenGL ES.
 
-////////////////////////////////////////////////////////////////////
-//       Class : GLTimerQueryContext
-// Description : This class manages a timer query that can be used
-//               by a PStatGPUTimer to measure the time a task takes
-//               to execute on the GPU.
-//               This records the current timestamp; a pair of these
-//               is usually used to get the elapsed time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class manages a timer query that can be used by a PStatGPUTimer to
+ * measure the time a task takes to execute on the GPU. This records the current
+ * timestamp; a pair of these is usually used to get the elapsed time.
+ */
 class EXPCL_GL CLP(TimerQueryContext) : public TimerQueryContext {
 public:
   INLINE CLP(TimerQueryContext)(CLP(GraphicsStateGuardian) *glgsg,
@@ -64,4 +61,3 @@ private:
 #include "glTimerQueryContext_src.I"
 
 #endif  // OPENGLES
-

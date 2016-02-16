@@ -19,16 +19,13 @@
 #include "renderBuffer.h"
 #include "typedWritableReferenceCount.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DrawableRegion
-// Description : This is a base class for GraphicsWindow (actually,
-//               GraphicsOutput) and DisplayRegion, both of which are
-//               conceptually rectangular regions into which drawing
-//               commands may be issued.  Sometimes you want to deal
-//               with a single display region, and sometimes you want
-//               to deal with the whole window at once, particularly
-//               for issuing clear commands and capturing screenshots.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a base class for GraphicsWindow (actually, GraphicsOutput) and
+ * DisplayRegion, both of which are conceptually rectangular regions into which
+ * drawing commands may be issued.  Sometimes you want to deal with a single
+ * display region, and sometimes you want to deal with the whole window at once,
+ * particularly for issuing clear commands and capturing screenshots.
+ */
 class EXPCL_PANDA_DISPLAY DrawableRegion {
 public:
   INLINE DrawableRegion();
@@ -64,10 +61,10 @@ PUBLISHED:
 
   INLINE void set_clear_color_active(bool clear_color_active);
   INLINE bool get_clear_color_active() const;
-  
+
   INLINE void set_clear_depth_active(bool clear_depth_active);
   INLINE bool get_clear_depth_active() const;
- 
+
   INLINE void set_clear_stencil_active(bool clear_stencil_active);
   INLINE bool get_clear_stencil_active() const;
 
@@ -88,7 +85,7 @@ PUBLISHED:
 
   virtual void set_clear_value(int n, const LColor &clear_value);
   virtual const LColor &get_clear_value(int n) const;
-  
+
   virtual void disable_clears();
   virtual bool is_any_clear_active() const;
 
@@ -100,7 +97,7 @@ PUBLISHED:
   MAKE_PROPERTY(pixel_factor, get_pixel_factor);
 
   static int get_renderbuffer_type(int plane);
-  
+
 public:
   INLINE int get_screenshot_buffer_type() const;
   INLINE int get_draw_buffer_type() const;

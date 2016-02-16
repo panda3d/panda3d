@@ -15,11 +15,9 @@
 
 #include "reversedNumericData.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ReversedNumericData::reverse_assign
-//       Access: Private
-//  Description: Actually does the data reversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * Actually does the data reversal.
+ */
 void ReversedNumericData::
 reverse_assign(const char *source, size_t length) {
   nassertv((int)length <= max_numeric_size);

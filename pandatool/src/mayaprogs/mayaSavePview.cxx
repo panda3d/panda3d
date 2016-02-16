@@ -26,20 +26,16 @@
 #include <process.h>
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaSavePview::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaSavePview::
 MayaSavePview() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaSavePview::doIt
-//       Access: Public, Virtual
-//  Description: Called when the plugin command is invoked.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called when the plugin command is invoked.
+ */
 MStatus MayaSavePview::
 doIt(const MArgList &args) {
   MStatus result;
@@ -59,7 +55,7 @@ doIt(const MArgList &args) {
     result.perror("isFlagSet");
     return result;
   }
-  
+
   // Now make sure the current buffer is saved.
   result = MFileIO::save(false);
   if (result != MS::kSuccess) {
@@ -77,7 +73,7 @@ doIt(const MArgList &args) {
   // On Windows, we use the spawn function to run pview
   // asynchronously.
   MString quoted = MString("\"") + filename + MString("\"");
-  int retval = _spawnlp(_P_DETACH, "pview", 
+  int retval = _spawnlp(_P_DETACH, "pview",
                         "pview", pview_args.asChar(), quoted.asChar(), NULL);
   if (retval == -1) {
     return MS::kFailure;
@@ -98,11 +94,9 @@ doIt(const MArgList &args) {
   return MS::kSuccess;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaSavePview::creator
-//       Access: Public, Static
-//  Description: This is used to create a new instance of the plugin.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is used to create a new instance of the plugin.
+ */
 void *MayaSavePview::
 creator() {
   return new MayaSavePview;
@@ -110,11 +104,10 @@ creator() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: initializePlugin
-//  Description: Called by Maya when the plugin is loaded.
-////////////////////////////////////////////////////////////////////
-EXPCL_MISC MStatus 
+/**
+ * Called by Maya when the plugin is loaded.
+ */
+EXPCL_MISC MStatus
 initializePlugin(MObject obj) {
   MFnPlugin plugin(obj, "VR Studio", "1.0");
   MStatus status;
@@ -126,10 +119,9 @@ initializePlugin(MObject obj) {
   return status;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: uninitializePlugin
-//  Description: Called by Maya when the plugin is unloaded.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by Maya when the plugin is unloaded.
+ */
 EXPCL_MISC MStatus
 uninitializePlugin(MObject obj) {
   MFnPlugin plugin(obj);

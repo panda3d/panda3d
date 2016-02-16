@@ -18,10 +18,9 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxGroupsMask
-// Description : 128-bit bitmask class.
-////////////////////////////////////////////////////////////////////
+/**
+ * 128-bit bitmask class.
+ */
 class EXPCL_PANDAPHYSX PhysxGroupsMask {
 
 PUBLISHED:

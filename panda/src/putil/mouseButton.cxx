@@ -23,14 +23,10 @@ ButtonHandle MouseButton::_wheel_down;
 ButtonHandle MouseButton::_wheel_left;
 ButtonHandle MouseButton::_wheel_right;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::button
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               particular numbered mouse button (zero-based), if
-//               there is one, or ButtonHandle::none() if there is
-//               not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle associated with the particular numbered mouse button
+ * (zero-based), if there is one, or ButtonHandle::none() if there is not.
+ */
 ButtonHandle MouseButton::
 button(int button_number) {
   if (button_number >= 0 && button_number < num_mouse_buttons) {
@@ -39,113 +35,86 @@ button(int button_number) {
   return ButtonHandle::none();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::one
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               first mouse button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle associated with the first mouse button.
+ */
 ButtonHandle MouseButton::
 one() {
   return _buttons[0];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::two
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               second mouse button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle associated with the second mouse button.
+ */
 ButtonHandle MouseButton::
 two() {
   return _buttons[1];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::three
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               third mouse button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle associated with the third mouse button.
+ */
 ButtonHandle MouseButton::
 three() {
   return _buttons[2];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::four
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               fourth mouse button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle associated with the fourth mouse button.
+ */
 ButtonHandle MouseButton::
 four() {
   return _buttons[3];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::five
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle associated with the
-//               fifth mouse button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle associated with the fifth mouse button.
+ */
 ButtonHandle MouseButton::
 five() {
   return _buttons[4];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::wheel_up
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle generated when the mouse
-//               wheel is rolled one notch upwards.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle generated when the mouse wheel is rolled one notch
+ * upwards.
+ */
 ButtonHandle MouseButton::
 wheel_up() {
   return _wheel_up;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::wheel_down
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle generated when the mouse
-//               wheel is rolled one notch downwards.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle generated when the mouse wheel is rolled one notch
+ * downwards.
+ */
 ButtonHandle MouseButton::
 wheel_down() {
   return _wheel_down;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::wheel_left
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle generated when the mouse
-//               is scrolled to the left. Usually, you'll only
-//               find the horizontal scroll on laptops.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle generated when the mouse is scrolled to the left.
+ * Usually, you'll only find the horizontal scroll on laptops.
+ */
 ButtonHandle MouseButton::
 wheel_left() {
   return _wheel_left;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::wheel_right
-//       Access: Public, Static
-//  Description: Returns the ButtonHandle generated when the mouse
-//               is scrolled to the right. Usually, you'll only
-//               find the horizontal scroll on laptops.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the ButtonHandle generated when the mouse is scrolled to the right.
+ * Usually, you'll only find the horizontal scroll on laptops.
+ */
 ButtonHandle MouseButton::
 wheel_right() {
   return _wheel_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::is_mouse_button
-//       Access: Public, Static
-//  Description: Returns true if the indicated ButtonHandle is a mouse
-//               button, false if it is some other kind of button.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated ButtonHandle is a mouse button, false if it is
+ * some other kind of button.
+ */
 bool MouseButton::
 is_mouse_button(ButtonHandle button) {
   for (int i = 0; i < num_mouse_buttons; ++i) {
@@ -157,12 +126,10 @@ is_mouse_button(ButtonHandle button) {
   return button == _wheel_up || button == _wheel_down || button == _wheel_left || button == _wheel_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseButton::init_mouse_buttons
-//       Access: Public, Static
-//  Description: This is intended to be called only once, by the
-//               static initialization performed in config_util.cxx.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is intended to be called only once, by the static initialization
+ * performed in config_util.cxx.
+ */
 void MouseButton::
 init_mouse_buttons() {
   char numstr[20];

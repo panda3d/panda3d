@@ -31,14 +31,11 @@ class TextureImage;
 class TexturePlacement;
 class FactoryParams;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Palettizer
-// Description : This is the main engine behind egg-palettize.  It
-//               contains all of the program parameters, from the
-//               command line or saved from a previous session, and
-//               serves as the driving force in the actual palettizing
-//               process.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the main engine behind egg-palettize.  It contains all of the program
+ * parameters, from the command line or saved from a previous session, and
+ * serves as the driving force in the actual palettizing process.
+ */
 class Palettizer : public TypedWritable {
 public:
   Palettizer();

@@ -18,11 +18,10 @@
 
 #include "eggCompositePrimitive.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggLine
-// Description : A line segment, or a series of connected line
-//               segments, defined by a <Line> entry.
-////////////////////////////////////////////////////////////////////
+/**
+ * A line segment, or a series of connected line segments, defined by a <Line>
+ * entry.
+ */
 class EXPCL_PANDAEGG EggLine : public EggCompositePrimitive {
 PUBLISHED:
   INLINE EggLine(const string &name = "");

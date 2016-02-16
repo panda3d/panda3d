@@ -19,12 +19,10 @@
 #include "linearForce.h"
 #include "configVariableDouble.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearIntegrator
-// Description : Pure virtual base class for physical modeling.
-//               Takes physically modelable objects and applies
-//               forces to them.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pure virtual base class for physical modeling.  Takes physically modelable
+ * objects and applies forces to them.
+ */
 class EXPCL_PANDAPHYSICS LinearIntegrator : public BaseIntegrator {
 PUBLISHED:
   virtual ~LinearIntegrator();
@@ -33,7 +31,7 @@ public:
   void integrate(Physical *physical, LinearForceVector &forces,
                  PN_stdfloat dt);
 
-PUBLISHED:  
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
@@ -45,7 +43,7 @@ private:
 
   // this allows baseLinearIntegrator to censor/modify data that the
   // actual integration function receives.
-  virtual void child_integrate(Physical *physical, 
+  virtual void child_integrate(Physical *physical,
                                LinearForceVector &forces,
                                PN_stdfloat dt) = 0;
 };

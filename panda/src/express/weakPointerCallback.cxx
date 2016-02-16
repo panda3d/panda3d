@@ -13,11 +13,9 @@
 
 #include "weakPointerCallback.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: WeakPointerCallback::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WeakPointerCallback::
 ~WeakPointerCallback() {
 }

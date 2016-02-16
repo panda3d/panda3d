@@ -13,11 +13,9 @@
 
 #include "lpoint2.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::Constructor
-//       Access: Published
-//  Description: Creates the MeshDrawer2D low level system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the MeshDrawer2D low level system.
+ */
 INLINE MeshDrawer2D::
 MeshDrawer2D() {
   _root = NodePath("MeshDrawer");
@@ -33,11 +31,9 @@ MeshDrawer2D() {
   _clip_h = 1000000;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::Destructor
-//       Access: Published
-//  Description: Destroys the MeshDrawer2D low level system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Destroys the MeshDrawer2D low level system.
+ */
 INLINE MeshDrawer2D::
 ~MeshDrawer2D() {
   _root.remove_node();
@@ -46,42 +42,34 @@ INLINE MeshDrawer2D::
   if (_color != NULL)  delete _color;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::get_root
-//       Access: Published
-//  Description: Returns the root NodePath.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the root NodePath.
+ */
 INLINE NodePath MeshDrawer2D::
 get_root() {
   return _root;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::set_budget
-//       Access: Published
-//  Description: Sets the total triangle budget of the drawer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the total triangle budget of the drawer.
+ */
 INLINE void MeshDrawer2D::
 set_budget(int total_budget) {
   _budget = total_budget;
   generator(_budget);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::get_budget()
-//       Access: Published
-//  Description: Gets the total triangle budget of the drawer
-////////////////////////////////////////////////////////////////////
+/**
+ * Gets the total triangle budget of the drawer
+ */
 INLINE int MeshDrawer2D::
 get_budget() {
   return _budget;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::set_budget
-//       Access: Published
-//  Description: Sets clipping rectangle
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets clipping rectangle
+ */
 INLINE void MeshDrawer2D::
 set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
   _clip_x = x;
@@ -90,12 +78,9 @@ set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
   _clip_h = h;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::quad
-//       Access: Published
-//  Description: Draws a 2d rectangle.
-//               Ignores the cliping rectangle
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a 2d rectangle.  Ignores the cliping rectangle
+ */
 INLINE void MeshDrawer2D::
 quad_raw(const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
      const LVector3 &v2, const LVector4 &c2, const LVector2 &uv2,
@@ -139,11 +124,9 @@ rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
     );
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MeshDrawer2D::quad
-//       Access: Published
-//  Description: Draws a 2d rectangle, that can be cliped
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws a 2d rectangle, that can be cliped
+ */
 INLINE void MeshDrawer2D::
 rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
      PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
@@ -198,4 +181,3 @@ rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
   rectangle_raw(x,y,w,h,u,v,us,vs,color);
 
 }
-

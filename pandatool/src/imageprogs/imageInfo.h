@@ -18,12 +18,10 @@
 
 #include "programBase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ImageInfo
-// Description : This program reads the headers of a series of one or
-//               more images and reports their sizes to standard
-//               output.
-////////////////////////////////////////////////////////////////////
+/**
+ * This program reads the headers of a series of one or more images and reports
+ * their sizes to standard output.
+ */
 class ImageInfo : public ProgramBase {
 public:
   ImageInfo();
@@ -41,4 +39,3 @@ private:
 };
 
 #endif
-

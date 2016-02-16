@@ -23,16 +23,12 @@
 #include "pmap.h"
 #include "pvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BamCacheIndex
-// Description : This represents the in-memory index that records the
-//               list of files stored in the BamCache.  Since the
-//               memory is also flushed to disk from time to time,
-//               this class is a TypedWritable object.
-//
-//               For the most part, this class is used only by the
-//               BamCache class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This represents the in-memory index that records the list of files stored in
+ * the BamCache.  Since the memory is also flushed to disk from time to time,
+ * this class is a TypedWritable object.  For the most part, this class is used
+ * only by the BamCache class.
+ */
 class EXPCL_PANDA_PUTIL BamCacheIndex : public TypedWritable, public LinkedListNode {
 private:
   INLINE BamCacheIndex();
@@ -68,7 +64,7 @@ protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

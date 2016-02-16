@@ -25,4 +25,3 @@ bool parse_image_type_request(const string &word, PNMFileType *&color_type,
                               PNMFileType *&alpha_type);
 
 #endif
-

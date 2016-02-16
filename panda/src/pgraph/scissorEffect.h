@@ -23,14 +23,11 @@
 // Forward declarations
 class Lens;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ScissorEffect
-// Description : This provides a higher-level wrapper around
-//               ScissorAttrib.  It allows for the scissor region to
-//               be defined via points relative to the current node,
-//               and also performs culling based on the scissor
-//               region.
-////////////////////////////////////////////////////////////////////
+/**
+ * This provides a higher-level wrapper around ScissorAttrib.  It allows for the
+ * scissor region to be defined via points relative to the current node, and
+ * also performs culling based on the scissor region.
+ */
 class EXPCL_PANDA_PGRAPH ScissorEffect : public RenderEffect {
 private:
   class PointDef {
@@ -90,7 +87,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -112,4 +109,3 @@ private:
 #include "scissorEffect.I"
 
 #endif
-

@@ -20,15 +20,12 @@
 
 CullBinManager *CullBinManager::_global_ptr = (CullBinManager *)NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::Constructor
-//       Access: Protected
-//  Description: The constructor is not intended to be called
-//               directly; there is only one CullBinManager and it
-//               constructs itself.  This could have been a private
-//               constructor, but gcc issues a spurious warning if the
-//               constructor is private and the class has no friends.
-////////////////////////////////////////////////////////////////////
+/**
+ * The constructor is not intended to be called directly; there is only one
+ * CullBinManager and it constructs itself.  This could have been a private
+ * constructor, but gcc issues a spurious warning if the constructor is private
+ * and the class has no friends.
+ */
 CullBinManager::
 CullBinManager() {
   _bins_are_sorted = true;
@@ -37,24 +34,18 @@ CullBinManager() {
   setup_initial_bins();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::Destructor
-//       Access: Protected
-//  Description: Don't call the destructor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Don't call the destructor.
+ */
 CullBinManager::
 ~CullBinManager() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::add_bin
-//       Access: Published
-//  Description: Defines a new bin with the indicated name, and
-//               returns the new bin_index.  If there is already a bin
-//               with the same name returns its bin_index if it had
-//               the same properties; otherwise, reports an error and
-//               returns -1.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a new bin with the indicated name, and returns the new bin_index.  If
+ * there is already a bin with the same name returns its bin_index if it had the
+ * same properties; otherwise, reports an error and returns -1.
+ */
 int CullBinManager::
 add_bin(const string &name, BinType type, int sort) {
   BinsByName::const_iterator bni = _bins_by_name.find(name);
@@ -127,17 +118,13 @@ add_bin(const string &name, BinType type, int sort) {
   return new_bin_index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::remove_bin
-//       Access: Published
-//  Description: Permanently removes the indicated bin.  This
-//               operation is not protected from the pipeline and will
-//               disturb whatever is currently rendering in draw.  You
-//               should not call this during the normal course of
-//               rendering a frame; it is intended only as an aid to
-//               development, to allow the developer to interactively
-//               fiddle with the set of bins.
-////////////////////////////////////////////////////////////////////
+/**
+ * Permanently removes the indicated bin.  This operation is not protected from
+ * the pipeline and will disturb whatever is currently rendering in draw.  You
+ * should not call this during the normal course of rendering a frame; it is
+ * intended only as an aid to development, to allow the developer to
+ * interactively fiddle with the set of bins.
+ */
 void CullBinManager::
 remove_bin(int bin_index) {
   nassertv(bin_index >= 0 && bin_index < (int)_bin_definitions.size());
@@ -162,12 +149,10 @@ remove_bin(int bin_index) {
   CullResult::bin_removed(bin_index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::find_bin
-//       Access: Published
-//  Description: Returns the bin_index associated with the bin of the
-//               given name, or -1 if no bin has that name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the bin_index associated with the bin of the given name, or -1 if no
+ * bin has that name.
+ */
 int CullBinManager::
 find_bin(const string &name) const {
   BinsByName::const_iterator bni;
@@ -178,11 +163,9 @@ find_bin(const string &name) const {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CullBinManager::
 write(ostream &out) const {
   if (!_bins_are_sorted) {
@@ -196,14 +179,11 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::make_new_bin
-//       Access: Public
-//  Description: Intended to be called by CullResult when a new
-//               CullBin pointer corresponding to the indicated
-//               bin_index is required.  It allocates and returns a
-//               brand new CullBin object of the appropriate type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called by CullResult when a new CullBin pointer corresponding
+ * to the indicated bin_index is required.  It allocates and returns a brand new
+ * CullBin object of the appropriate type.
+ */
 PT(CullBin) CullBinManager::
 make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
              const PStatCollector &draw_region_pcollector) {
@@ -223,37 +203,29 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
   return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::register_bin_type
-//       Access: Public
-//  Description: Intended to be called at startup type by each CullBin
-//               type, to register the constructor for each type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Intended to be called at startup type by each CullBin type, to register the
+ * constructor for each type.
+ */
 void CullBinManager::
 register_bin_type(BinType type, CullBinManager::BinConstructor *constructor) {
   bool inserted = _bin_constructors.insert(BinConstructors::value_type(type, constructor)).second;
   nassertv(inserted);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::do_sort_bins
-//       Access: Private
-//  Description: Puts the _sorted_bins vector in proper rendering
-//               order.
-////////////////////////////////////////////////////////////////////
+/**
+ * Puts the _sorted_bins vector in proper rendering order.
+ */
 void CullBinManager::
 do_sort_bins() {
   sort(_sorted_bins.begin(), _sorted_bins.end(), SortBins(this));
   _bins_are_sorted = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::setup_initial_bins
-//       Access: Private
-//  Description: Called only at construction time to create the
-//               default bins and the bins specified in the Configrc
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called only at construction time to create the default bins and the bins
+ * specified in the Configrc file.
+ */
 void CullBinManager::
 setup_initial_bins() {
   ConfigVariableList cull_bin
@@ -317,13 +289,10 @@ setup_initial_bins() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::parse_bin_type
-//       Access: Private, Static
-//  Description: Given the name of a bin type, returns the
-//               corresponding BinType value, or BT_invalid if it is
-//               an unknown type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given the name of a bin type, returns the corresponding BinType value, or
+ * BT_invalid if it is an unknown type.
+ */
 CullBinManager::BinType CullBinManager::
 parse_bin_type(const string &bin_type) {
   if (cmp_nocase_uh(bin_type, "unsorted") == 0) {
@@ -346,10 +315,9 @@ parse_bin_type(const string &bin_type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullBinManager::BinType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, CullBinManager::BinType bin_type) {
   switch (bin_type) {

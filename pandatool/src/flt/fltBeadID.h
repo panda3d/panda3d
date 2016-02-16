@@ -18,11 +18,9 @@
 
 #include "fltBead.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltBeadID
-// Description : A base class for any of a broad family of flt beads
-//               that include an ID.
-////////////////////////////////////////////////////////////////////
+/**
+ * A base class for any of a broad family of flt beads that include an ID.
+ */
 class FltBeadID : public FltBead {
 public:
   FltBeadID(FltHeader *header);
@@ -61,5 +59,3 @@ private:
 };
 
 #endif
-
-

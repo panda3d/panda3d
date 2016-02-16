@@ -32,10 +32,9 @@ class FltVertex;
 class FltBead;
 class FltTexture;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggToFlt
-// Description : A program to read an egg file and write a flt file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an egg file and write a flt file.
+ */
 class EggToFlt : public EggToSomething {
 public:
   EggToFlt();
@@ -47,7 +46,7 @@ private:
 
   void traverse(EggNode *egg_node, FltBead *flt_node,
                 FltGeometry::BillboardType billboard);
-  void convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node, 
+  void convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
                          FltGeometry::BillboardType billboard);
   void convert_group(EggGroup *egg_group, FltBead *flt_node,
                      FltGeometry::BillboardType billboard);
@@ -59,14 +58,13 @@ private:
   FltHeader::AttrUpdate _auto_attr_update;
 
   PT(FltHeader) _flt_header;
-  
+
   typedef pmap<EggVertex *, FltVertex *> VertexMap;
   typedef pmap<const LMatrix4d *, VertexMap> VertexMapPerFrame;
   VertexMapPerFrame _vertex_map_per_frame;
-  
+
   typedef pmap<Filename, FltTexture *> TextureMap;
   TextureMap _texture_map;
 };
 
 #endif
-

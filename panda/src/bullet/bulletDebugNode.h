@@ -20,10 +20,9 @@
 
 #include "geomNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletDebugNode
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletDebugNode : public GeomNode {
 
 PUBLISHED:
@@ -72,16 +71,16 @@ private:
 
     virtual void drawLine(const btVector3 &from, const btVector3 &to,
       const btVector3 &color);
-    virtual void drawContactPoint(const btVector3 &point, 
-      const btVector3 &normal, btScalar distance, int lifetime, 
+    virtual void drawContactPoint(const btVector3 &point,
+      const btVector3 &normal, btScalar distance, int lifetime,
       const btVector3 &color);
     virtual void draw3dText(const btVector3 &location, const char *text);
-    virtual void drawTriangle(const btVector3 &v0, const btVector3 &v1, 
+    virtual void drawTriangle(const btVector3 &v0, const btVector3 &v1,
       const btVector3 &v2, const btVector3 &color, btScalar);
-    virtual void drawTriangle(const btVector3 &v0, const btVector3 &v1, 
-      const btVector3 &v2, const btVector3 &n0, const btVector3 &n1, 
+    virtual void drawTriangle(const btVector3 &v0, const btVector3 &v1,
+      const btVector3 &v2, const btVector3 &n0, const btVector3 &n1,
       const btVector3 &n2, const btVector3 &color, btScalar alpha);
-    virtual void drawSphere(btScalar radius, const btTransform &transform, 
+    virtual void drawSphere(btScalar radius, const btTransform &transform,
       const btVector3 &color);
 
   public:
@@ -114,7 +113,7 @@ public:
   }
   static void init_type() {
     GeomNode::init_type();
-    register_type(_type_handle, "BulletDebugNode", 
+    register_type(_type_handle, "BulletDebugNode",
                   GeomNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -132,4 +131,3 @@ private:
 #include "bulletDebugNode.I"
 
 #endif // __BULLET_DEBUG_NODE_H__
-

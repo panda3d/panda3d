@@ -23,11 +23,9 @@ class ColladaPrimitive;
 class domBind_material;
 class domInstance_material;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColladaBindMaterial
-// Description : Class that deals with binding materials to
-//               COLLADA geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class that deals with binding materials to COLLADA geometry.
+ */
 class ColladaBindMaterial {
 public:
   CPT(RenderState) get_material(const ColladaPrimitive *prim) const;

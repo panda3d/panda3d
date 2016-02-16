@@ -19,14 +19,13 @@
 #include "mathNumbers.h"
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearRandomForce
-// Description : Pure virtual, parent to noiseForce and jitterForce
-////////////////////////////////////////////////////////////////////
+/**
+ * Pure virtual, parent to noiseForce and jitterForce
+ */
 class EXPCL_PANDAPHYSICS LinearRandomForce : public LinearForce {
 PUBLISHED:
   virtual ~LinearRandomForce();
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

@@ -11,11 +11,10 @@
  * @date 1997-01-09
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LPlane
-// Description : An abstract mathematical description of a plane.  A
-//               plane is defined by the equation Ax + By + Cz + D = 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract mathematical description of a plane.  A plane is defined by the
+ * equation Ax + By + Cz + D = 0.
+ */
 class EXPCL_PANDA_MATHUTIL FLOATNAME(LPlane) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(LPlane)();

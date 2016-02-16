@@ -23,13 +23,11 @@ typedef vector<NodeArray> NavMesh;
 
 Node* find_in_mesh(NavMesh nav_mesh, LVecBase3 pos, int grid_size);
 
-////////////////////////////////////////////////////////////////////
-//       Class : PathFinder
-// Description : This class implements pathfinding using A* algorithm.
-//               It also uses a Binary Heap search to search the
-//               open list.  The heuristics are calculated using
-//               the manhattan method.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class implements pathfinding using A* algorithm.  It also uses a Binary
+ * Heap search to search the open list.  The heuristics are calculated using the
+ * manhattan method.
+ */
 class EXPCL_PANDAAI PathFinder {
 public:
   Node *_src_node;

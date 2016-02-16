@@ -18,13 +18,10 @@
 #include "virtualFileSystem.h"
 #include "config_express.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: encrypt_string
-//       Access: Published
-//  Description: Encrypts the indicated source string using the given
-//               password, and the algorithm specified by
-//               encryption-algorithm.  Returns the encrypted string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encrypts the indicated source string using the given password, and the
+ * algorithm specified by encryption-algorithm.  Returns the encrypted string.
+ */
 string
 encrypt_string(const string &source, const string &password,
                const string &algorithm, int key_length, int iteration_count) {
@@ -52,18 +49,13 @@ encrypt_string(const string &source, const string &password,
   return dest.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: decrypt_string
-//       Access: Published
-//  Description: Decrypts the previously-encrypted string using the
-//               given password (which must be the same password
-//               passed to encrypt()).  The return value is the
-//               decrypted string.
-//
-//               Note that a decryption error, including an incorrect
-//               password, cannot easily be detected, and the return
-//               value may simply be a garbage string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decrypts the previously-encrypted string using the given password (which must
+ * be the same password passed to encrypt()).  The return value is the decrypted
+ * string.  Note that a decryption error, including an incorrect password,
+ * cannot easily be detected, and the return value may simply be a garbage
+ * string.
+ */
 string
 decrypt_string(const string &source, const string &password) {
   istringstream source_stream(source);
@@ -76,16 +68,13 @@ decrypt_string(const string &source, const string &password) {
   return dest_stream.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: encrypt_file
-//       Access: Published
-//  Description: Encrypts the data from the source file using the
-//               given password.  The source file is read in its
-//               entirety, and the encrypted results are written to
-//               the dest file, overwriting its contents.  The return
-//               value is bool on success, or false on failure.
-////////////////////////////////////////////////////////////////////
-EXPCL_PANDAEXPRESS bool 
+/**
+ * Encrypts the data from the source file using the given password.  The source
+ * file is read in its entirety, and the encrypted results are written to the
+ * dest file, overwriting its contents.  The return value is bool on success, or
+ * false on failure.
+ */
+EXPCL_PANDAEXPRESS bool
 encrypt_file(const Filename &source, const Filename &dest, const string &password,
              const string &algorithm, int key_length, int iteration_count) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -99,7 +88,7 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
   }
-  
+
   Filename dest_filename = Filename::binary_filename(dest);
   ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
   if (dest_stream == NULL) {
@@ -107,7 +96,7 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
     vfs->close_read_file(source_stream);
     return false;
   }
-    
+
   bool result = encrypt_stream(*source_stream, *dest_stream, password,
                                algorithm, key_length, iteration_count);
   vfs->close_read_file(source_stream);
@@ -115,21 +104,15 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: decrypt_file
-//       Access: Published
-//  Description: Decrypts the data from the source file using the
-//               given password (which must match the same password
-//               passed to encrypt()).  The source file is read in its
-//               entirety, and the decrypted results are written to
-//               the dest file, overwriting its contents.  The return
-//               value is bool on success, or false on failure.
-//
-//               Note that a decryption error, including an incorrect
-//               password, cannot easily be detected, and the output
-//               may simply be a garbage string.
-////////////////////////////////////////////////////////////////////
-EXPCL_PANDAEXPRESS bool 
+/**
+ * Decrypts the data from the source file using the given password (which must
+ * match the same password passed to encrypt()).  The source file is read in its
+ * entirety, and the decrypted results are written to the dest file, overwriting
+ * its contents.  The return value is bool on success, or false on failure.
+ * Note that a decryption error, including an incorrect password, cannot easily
+ * be detected, and the output may simply be a garbage string.
+ */
+EXPCL_PANDAEXPRESS bool
 decrypt_file(const Filename &source, const Filename &dest, const string &password) {
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -138,7 +121,7 @@ decrypt_file(const Filename &source, const Filename &dest, const string &passwor
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
   }
-  
+
   Filename dest_filename = dest;
   if (!dest_filename.is_binary_or_text()) {
     // The default is binary, if not specified otherwise.
@@ -150,23 +133,19 @@ decrypt_file(const Filename &source, const Filename &dest, const string &passwor
     vfs->close_read_file(source_stream);
     return false;
   }
-    
+
   bool result = decrypt_stream(*source_stream, *dest_stream, password);
   vfs->close_read_file(source_stream);
   vfs->close_write_file(dest_stream);
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: encrypt_stream
-//       Access: Published
-//  Description: Encrypts the data from the source stream using the
-//               given password.  The source stream is read from its
-//               current position to the end-of-file, and the
-//               encrypted results are written to the dest stream.
-//               The return value is bool on success, or false on
-//               failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Encrypts the data from the source stream using the given password.  The
+ * source stream is read from its current position to the end-of-file, and the
+ * encrypted results are written to the dest stream.  The return value is bool
+ * on success, or false on failure.
+ */
 bool
 encrypt_stream(istream &source, ostream &dest, const string &password,
                const string &algorithm, int key_length, int iteration_count) {
@@ -181,7 +160,7 @@ encrypt_stream(istream &source, ostream &dest, const string &password,
     encrypt.set_iteration_count(iteration_count);
   }
   encrypt.open(&dest, false, password);
-    
+
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
@@ -197,21 +176,15 @@ encrypt_stream(istream &source, ostream &dest, const string &password,
   return (!source.fail() || source.eof()) && (!encrypt.fail());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: decrypt_stream
-//       Access: Published
-//  Description: Decrypts the data from the previously-encrypted
-//               source stream using the given password (which must be
-//               the same password passed to encrypt()).  The source
-//               stream is read from its current position to the
-//               end-of-file, and the decrypted results are written to
-//               the dest stream.  The return value is bool on
-//               success, or false on failure.
-//
-//               Note that a decryption error, including an incorrect
-//               password, cannot easily be detected, and the output
-//               may simply be a garbage string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Decrypts the data from the previously-encrypted source stream using the given
+ * password (which must be the same password passed to encrypt()).  The source
+ * stream is read from its current position to the end-of-file, and the
+ * decrypted results are written to the dest stream.  The return value is bool
+ * on success, or false on failure.  Note that a decryption error, including an
+ * incorrect password, cannot easily be detected, and the output may simply be a
+ * garbage string.
+ */
 bool
 decrypt_stream(istream &source, ostream &dest, const string &password) {
   IDecryptStream decrypt(&source, false, password);
@@ -226,7 +199,7 @@ decrypt_stream(istream &source, ostream &dest, const string &password) {
     decrypt.read(buffer, buffer_size);
     count = decrypt.gcount();
   }
-  
+
   return (!decrypt.fail() || decrypt.eof()) && (!dest.fail());
 }
 

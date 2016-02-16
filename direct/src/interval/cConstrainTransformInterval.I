@@ -11,21 +11,17 @@
  * @date 2006-09-29
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainTransformInterval::get_node
-//       Access: Published
-//  Description: Returns the "source" node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "source" node.
+ */
 INLINE const NodePath &CConstrainTransformInterval::
 get_node() const {
   return _node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CConstrainTransformInterval::get_target
-//       Access: Published
-//  Description: Returns the "target" node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the "target" node.
+ */
 INLINE const NodePath &CConstrainTransformInterval::
 get_target() const {
   return _target;

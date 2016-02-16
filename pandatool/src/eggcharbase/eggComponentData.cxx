@@ -20,11 +20,9 @@
 TypeHandle EggComponentData::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggComponentData::
 EggComponentData(EggCharacterCollection *collection,
                  EggCharacterData *char_data) :
@@ -33,11 +31,9 @@ EggComponentData(EggCharacterCollection *collection,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggComponentData::
 ~EggComponentData() {
   BackPointers::iterator bpi;
@@ -49,16 +45,12 @@ EggComponentData::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::add_name
-//       Access: Public
-//  Description: Adds the indicated name to the set of names that this
-//               component can be identified with.  If this is the
-//               first name added, it becomes the primary name of the
-//               component; later names added do not replace the
-//               primary name, but do get added to the list of names
-//               that will be accepted by matched_name().
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated name to the set of names that this component can be
+ * identified with.  If this is the first name added, it becomes the primary
+ * name of the component; later names added do not replace the primary name, but
+ * do get added to the list of names that will be accepted by matched_name().
+ */
 void EggComponentData::
 add_name(const string &name, NameUniquifier &uniquifier) {
   if (_names.insert(name).second) {
@@ -73,13 +65,10 @@ add_name(const string &name, NameUniquifier &uniquifier) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::matches_name
-//       Access: Public
-//  Description: Returns true if the indicated name matches any name
-//               that was ever matched with this particular joint,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated name matches any name that was ever matched
+ * with this particular joint, false otherwise.
+ */
 bool EggComponentData::
 matches_name(const string &name) const {
   if (name == get_name()) {
@@ -88,12 +77,10 @@ matches_name(const string &name) const {
   return (_names.find(name) != _names.end());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::get_num_frames
-//       Access: Public, Virtual
-//  Description: Returns the number of frames of animation for this
-//               particular component in the indicated model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames of animation for this particular component in
+ * the indicated model.
+ */
 int EggComponentData::
 get_num_frames(int model_index) const {
   EggBackPointer *back = get_model(model_index);
@@ -103,13 +90,10 @@ get_num_frames(int model_index) const {
   return back->get_num_frames();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::extend_to
-//       Access: Public, Virtual
-//  Description: Extends the number of frames in the indicated model
-//               (presumably an animation table model) to the given
-//               number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extends the number of frames in the indicated model (presumably an animation
+ * table model) to the given number.
+ */
 void EggComponentData::
 extend_to(int model_index, int num_frames) const {
   EggBackPointer *back = get_model(model_index);
@@ -117,12 +101,10 @@ extend_to(int model_index, int num_frames) const {
   back->extend_to(num_frames);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::get_frame_rate
-//       Access: Public, Virtual
-//  Description: Returns the number of frames of animation for this
-//               particular component in the indicated model.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of frames of animation for this particular component in
+ * the indicated model.
+ */
 double EggComponentData::
 get_frame_rate(int model_index) const {
   EggBackPointer *back = get_model(model_index);
@@ -132,12 +114,9 @@ get_frame_rate(int model_index) const {
   return back->get_frame_rate();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggComponentData::set_model
-//       Access: Public
-//  Description: Sets the back_pointer associated with the given
-//               model_index.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the back_pointer associated with the given model_index.
+ */
 void EggComponentData::
 set_model(int model_index, EggBackPointer *back) {
   while ((int)_back_pointers.size() <= model_index) {

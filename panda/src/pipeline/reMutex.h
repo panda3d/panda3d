@@ -18,17 +18,13 @@
 #include "mutexDebug.h"
 #include "reMutexDirect.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ReMutex
-// Description : A reentrant mutex.  This kind of mutex can be locked
-//               more than once by the thread that already holds it,
-//               without deadlock.  The thread must eventually release
-//               the mutex the same number of times it locked it.
-//
-//               This class inherits its implementation either from
-//               MutexDebug or ReMutexDirect, depending on the
-//               definition of DEBUG_THREADS.
-////////////////////////////////////////////////////////////////////
+/**
+ * A reentrant mutex.  This kind of mutex can be locked more than once by the
+ * thread that already holds it, without deadlock.  The thread must eventually
+ * release the mutex the same number of times it locked it.  This class inherits
+ * its implementation either from MutexDebug or ReMutexDirect, depending on the
+ * definition of DEBUG_THREADS.
+ */
 #ifdef DEBUG_THREADS
 class EXPCL_PANDA_PIPELINE ReMutex : public MutexDebug
 #else

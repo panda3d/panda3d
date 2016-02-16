@@ -14,11 +14,9 @@
 #include "p3dCInstance.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DCInstance::Constructor
-//       Access: Public
-//  Description: Constructs a new Instance from an XML description.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs a new Instance from an XML description.
+ */
 P3DCInstance::
 P3DCInstance(TiXmlElement *xinstance) :
   _func(NULL)
@@ -26,11 +24,9 @@ P3DCInstance(TiXmlElement *xinstance) :
   xinstance->Attribute("instance_id", &_instance_id);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DCInstance::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 P3DCInstance::
 ~P3DCInstance() {
 }

@@ -18,11 +18,10 @@
 #include "numeric_types.h"
 #include "socket_address.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : NetAddress
-// Description : Represents a network address to which UDP packets may
-//               be sent or to which a TCP socket may be bound.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a network address to which UDP packets may be sent or to which a
+ * TCP socket may be bound.
+ */
 class EXPCL_PANDA_NET NetAddress {
 PUBLISHED:
   NetAddress();
@@ -59,4 +58,3 @@ INLINE ostream &operator << (ostream &out, const NetAddress &addr) {
 }
 
 #endif
-

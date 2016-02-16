@@ -23,15 +23,12 @@
 #include "coordinateSystem.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : BoundingHexahedron
-// Description : This defines a bounding convex hexahedron.  It is
-//               typically used to represent a frustum, but may
-//               represent any enclosing convex hexahedron, including
-//               simple boxes.  However, if all you want is an
-//               axis-aligned bounding box, you may be better off with
-//               the simpler BoundingBox class.
-////////////////////////////////////////////////////////////////////
+/**
+ * This defines a bounding convex hexahedron.  It is typically used to represent
+ * a frustum, but may represent any enclosing convex hexahedron, including
+ * simple boxes.  However, if all you want is an axis-aligned bounding box, you
+ * may be better off with the simpler BoundingBox class.
+ */
 class EXPCL_PANDA_MATHUTIL BoundingHexahedron : public FiniteBoundingVolume {
 public:
   INLINE_MATHUTIL BoundingHexahedron();

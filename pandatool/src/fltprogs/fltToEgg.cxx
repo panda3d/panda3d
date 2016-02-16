@@ -17,11 +17,9 @@
 #include "config_flt.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEgg::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltToEgg::
 FltToEgg() :
   SomethingToEgg("MultiGen", ".flt")
@@ -58,11 +56,9 @@ FltToEgg() :
   _coordinate_system = CS_zup_right;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEgg::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FltToEgg::
 run() {
   _data->set_coordinate_system(_coordinate_system);

@@ -15,23 +15,18 @@
 
 TypeHandle SamplerContext::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerContext::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SamplerContext::
 output(ostream &out) const {
   SavedContext::output(out);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerContext::write
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void SamplerContext::
 write(ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);
 }
-

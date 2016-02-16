@@ -17,11 +17,9 @@
 class EggData;
 class EggGroupNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : MaxNodeTree
-// Description : Describes a complete tree of max nodes for
-//               conversion.
-////////////////////////////////////////////////////////////////////
+/**
+ * Describes a complete tree of max nodes for conversion.
+ */
 class MaxNodeTree {
 public:
   MaxNodeTree();
@@ -34,7 +32,7 @@ public:
   int get_num_nodes() const;
   MaxNodeDesc *get_node(int n) const;
 
-  void clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
+  void clear_egg(EggData *egg_data, EggGroupNode *egg_root,
                  EggGroupNode *skeleton_node);
   EggGroup *get_egg_group(MaxNodeDesc *node_desc);
   EggTable *get_egg_table(MaxNodeDesc *node_desc);

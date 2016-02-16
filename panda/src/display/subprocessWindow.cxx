@@ -21,13 +21,10 @@
 
 TypeHandle SubprocessWindow::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::Constructor
-//       Access: Protected
-//  Description: Normally, the SubprocessWindow constructor is not
-//               called directly; these are created instead via the
-//               GraphicsEngine::make_window() function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normally, the SubprocessWindow constructor is not called directly; these are
+ * created instead via the GraphicsEngine::make_window() function.
+ */
 SubprocessWindow::
 SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                  const string &name,
@@ -57,27 +54,20 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _last_event_flags = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::Destructor
-//       Access: Published, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SubprocessWindow::
 ~SubprocessWindow() {
   nassertv(_buffer == NULL);
   nassertv(_swbuffer == NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::process_events
-//       Access: Public, Virtual
-//  Description: Do whatever processing is necessary to ensure that
-//               the window responds to user events.  Also, honor any
-//               requests recently made via request_properties().
-//
-//               This function is called only within the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Do whatever processing is necessary to ensure that the window responds to
+ * user events.  Also, honor any requests recently made via
+ * request_properties().  This function is called only within the window thread.
+ */
 void SubprocessWindow::
 process_events() {
   GraphicsWindow::process_events();
@@ -129,15 +119,12 @@ process_events() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::begin_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               before beginning rendering for a given frame.  It
-//               should do whatever setup is required, and return true
-//               if the frame should be rendered, or false if it
-//               should be skipped.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread before beginning
+ * rendering for a given frame.  It should do whatever setup is required, and
+ * return true if the frame should be rendered, or false if it should be
+ * skipped.
+ */
 bool SubprocessWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   if (_swbuffer == NULL || _buffer == NULL) {
@@ -148,13 +135,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::end_frame
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after rendering is completed for a given frame.  It
-//               should do whatever finalization is required.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is required.
+ */
 void SubprocessWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   _buffer->end_frame(mode, current_thread);
@@ -164,20 +148,14 @@ end_frame(FrameMode mode, Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::begin_flip
-//       Access: Public, Virtual
-//  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
-//
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called within the draw thread after end_frame() has
+ * been called on all windows, to initiate the exchange of the front and back
+ * buffers.  This should instruct the window to prepare for the flip at the next
+ * video sync, but it should not wait.  We have the two separate functions,
+ * begin_flip() and end_flip(), to make it easier to flip all of the windows at
+ * the same time.
+ */
 void SubprocessWindow::
 begin_flip() {
   nassertv(_buffer != (GraphicsBuffer *)NULL);
@@ -189,7 +167,7 @@ begin_flip() {
   buffer = _gsg->get_render_buffer(_buffer->get_draw_buffer_type(),
                                    _buffer->get_fb_properties());
 
-  bool copied = 
+  bool copied =
     _gsg->framebuffer_copy_to_ram(_texture, 0, -1,
                                   _overlay_display_region, buffer);
 
@@ -203,7 +181,7 @@ begin_flip() {
       // rendered.  We only wait so long before we give up, so we
       // don't completely starve the Python process just because the
       // render window is offscreen or something.
-      
+
       ClockObject *clock = ClockObject::get_global_clock();
       double start = clock->get_real_time();
       while (!_swbuffer->ready_for_write()) {
@@ -223,25 +201,17 @@ begin_flip() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The properties that have been applied are cleared
-//               from the structure by this function; so on return,
-//               whatever remains in the properties structure are
-//               those that were unchanged for some reason (probably
-//               because the underlying interface does not support
-//               changing that property on an open window).
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the requested set of properties to the window, if possible, for
+ * instance to request a change in size or minimization status.  The window
+ * properties are applied immediately, rather than waiting until the next frame.
+ * This implies that this method may *only* be called from within the window
+ * thread.  The properties that have been applied are cleared from the structure
+ * by this function; so on return, whatever remains in the properties structure
+ * are those that were unchanged for some reason (probably because the
+ * underlying interface does not support changing that property on an open
+ * window).
+ */
 void SubprocessWindow::
 set_properties_now(WindowProperties &properties) {
   Filename filename;
@@ -283,12 +253,9 @@ set_properties_now(WindowProperties &properties) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::close_window
-//       Access: Protected, Virtual
-//  Description: Closes the window right now.  Called from the window
-//               thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the window right now.  Called from the window thread.
+ */
 void SubprocessWindow::
 close_window() {
   internal_close_window();
@@ -299,13 +266,10 @@ close_window() {
   system_changed_properties(properties);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::open_window
-//       Access: Protected, Virtual
-//  Description: Opens the window right now.  Called from the window
-//               thread.  Returns true if the window is successfully
-//               opened, or false if there was a problem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the window right now.  Called from the window thread.  Returns true if
+ * the window is successfully opened, or false if there was a problem.
+ */
 bool SubprocessWindow::
 open_window() {
   if (!internal_open_window()) {
@@ -320,12 +284,10 @@ open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::internal_close_window
-//       Access: Private
-//  Description: Closes the "window" and resets the buffer, without
-//               changing the WindowProperties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the "window" and resets the buffer, without changing the
+ * WindowProperties.
+ */
 void SubprocessWindow::
 internal_close_window() {
   if (_swbuffer != NULL) {
@@ -355,12 +317,10 @@ internal_close_window() {
   _is_valid = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::internal_open_window
-//       Access: Private
-//  Description: Opens the "window" and the associated offscreen
-//               buffer, without changing the WindowProperties.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the "window" and the associated offscreen buffer, without changing the
+ * WindowProperties.
+ */
 bool SubprocessWindow::
 internal_open_window() {
   nassertr(_buffer == NULL, false);
@@ -370,8 +330,8 @@ internal_open_window() {
   flags = ((flags & ~GraphicsPipe::BF_require_window) | GraphicsPipe::BF_refuse_window);
   WindowProperties win_props = WindowProperties::size(_properties.get_x_size(), _properties.get_y_size());
 
-  GraphicsOutput *buffer = 
-    _engine->make_output(_pipe, _name, 0, _fb_properties, win_props, 
+  GraphicsOutput *buffer =
+    _engine->make_output(_pipe, _name, 0, _fb_properties, win_props,
                          flags, _gsg, _host);
   if (buffer != NULL) {
     _buffer = DCAST(GraphicsBuffer, buffer);
@@ -442,13 +402,11 @@ internal_open_window() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::translate_key
-//       Access: Private
-//  Description: Converts the os-specific keycode into the appropriate
-//               ButtonHandle object.  Also stores the corresponding
-//               Unicode keycode in keycode, if any; or 0 otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the os-specific keycode into the appropriate ButtonHandle object.
+ * Also stores the corresponding Unicode keycode in keycode, if any; or 0
+ * otherwise.
+ */
 ButtonHandle SubprocessWindow::
 translate_key(int &keycode, int os_code, unsigned int flags) const {
   keycode = 0;
@@ -512,8 +470,8 @@ translate_key(int &keycode, int os_code, unsigned int flags) const {
   case  51: nk = KeyboardButton::backspace(); break;
   case  48: nk = KeyboardButton::tab(); break;
   case  53: nk = KeyboardButton::escape(); break;
-  case  76: nk = KeyboardButton::enter(); break; 
-  case  36: nk = KeyboardButton::enter(); break; 
+  case  76: nk = KeyboardButton::enter(); break;
+  case  36: nk = KeyboardButton::enter(); break;
 
   case 123: nk = KeyboardButton::left(); break;
   case 124: nk = KeyboardButton::right(); break;
@@ -523,10 +481,10 @@ translate_key(int &keycode, int os_code, unsigned int flags) const {
   case 121: nk = KeyboardButton::page_down(); break;
   case 115: nk = KeyboardButton::home(); break;
   case 119: nk = KeyboardButton::end(); break;
-  case 114: nk = KeyboardButton::help(); break; 
-  case 117: nk = KeyboardButton::del(); break; 
+  case 114: nk = KeyboardButton::help(); break;
+  case 117: nk = KeyboardButton::del(); break;
 
-    // case  71: nk = KeyboardButton::num_lock() break; 
+    // case  71: nk = KeyboardButton::num_lock() break;
 
   case 122: nk = KeyboardButton::f1(); break;
   case 120: nk = KeyboardButton::f2(); break;
@@ -546,7 +504,7 @@ translate_key(int &keycode, int os_code, unsigned int flags) const {
   case 113: nk = KeyboardButton::f15(); break;
   case 106: nk = KeyboardButton::f16(); break;
 
-    // shiftable chartablet 
+    // shiftable chartablet
   case  50: nk = KeyboardButton::ascii_key('`'); break;
   case  27: nk = KeyboardButton::ascii_key('-'); break;
   case  24: nk = KeyboardButton::ascii_key('='); break;
@@ -561,7 +519,7 @@ translate_key(int &keycode, int os_code, unsigned int flags) const {
 
   default:
     // Punt.
-    nk = KeyboardButton::ascii_key(os_code & 0xff); 
+    nk = KeyboardButton::ascii_key(os_code & 0xff);
   }
 
   if (nk.has_ascii_equivalent()) {
@@ -572,24 +530,21 @@ translate_key(int &keycode, int os_code, unsigned int flags) const {
     // this old EventRecord interface?
     keycode = os_code & 0xff;
   }
-  
+
 #endif  // __APPLE__
 
   return nk;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::transition_button
-//       Access: Private
-//  Description: Sends the appropriate up/down transition for the
-//               indicated modifier key, as determined implicitly from
-//               the flags.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sends the appropriate up/down transition for the indicated modifier key, as
+ * determined implicitly from the flags.
+ */
 void SubprocessWindow::
 transition_button(unsigned int flags, ButtonHandle button) {
   if (flags) {
     _input_devices[0].button_down(button);
-  } else {  
+  } else {
     _input_devices[0].button_up(button);
   }
 }

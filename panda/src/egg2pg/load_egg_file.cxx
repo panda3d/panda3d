@@ -63,15 +63,12 @@ load_from_loader(EggLoader &loader) {
   return loader._root;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: load_egg_file
-//  Description: A convenience function.  Loads up the indicated egg
-//               file, and returns the root of a scene graph.  Returns
-//               NULL if the file cannot be read for some reason.
-//               Does not search along the egg path for the filename
-//               first; use EggData::resolve_egg_filename() if this is
-//               required.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function.  Loads up the indicated egg file, and returns the
+ * root of a scene graph.  Returns NULL if the file cannot be read for some
+ * reason.  Does not search along the egg path for the filename first; use
+ * EggData::resolve_egg_filename() if this is required.
+ */
 PT(PandaNode)
 load_egg_file(const Filename &filename, CoordinateSystem cs,
               BamCacheRecord *record) {
@@ -119,13 +116,10 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
   return load_from_loader(loader);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: load_egg_data
-//  Description: Another convenience function; works like
-//               load_egg_file() but starts from an already-filled
-//               EggData structure.  The structure is destroyed in the
-//               loading.
-////////////////////////////////////////////////////////////////////
+/**
+ * Another convenience function; works like load_egg_file() but starts from an
+ * already-filled EggData structure.  The structure is destroyed in the loading.
+ */
 PT(PandaNode)
 load_egg_data(EggData *data, CoordinateSystem cs) {
   // We temporarily shuttle the children to a holding node so we can

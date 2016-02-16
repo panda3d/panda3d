@@ -11,11 +11,9 @@
  * @date 2009-10-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMeshDesc::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxTriangleMeshDesc::
 PhysxTriangleMeshDesc() {
 
@@ -32,11 +30,9 @@ PhysxTriangleMeshDesc() {
   _materials = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMeshDesc::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxTriangleMeshDesc::
 ~PhysxTriangleMeshDesc() {
 
@@ -53,14 +49,11 @@ INLINE PhysxTriangleMeshDesc::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxTriangleMeshDesc::is_valid
-//       Access: Published
-//  Description: Returns true if the descriptor is valid.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the descriptor is valid.
+ */
 INLINE bool PhysxTriangleMeshDesc::
 is_valid() const {
 
   return _desc.isValid();
 }
-

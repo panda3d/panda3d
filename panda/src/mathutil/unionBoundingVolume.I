@@ -11,30 +11,24 @@
  * @date 2012-02-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::Constructor
-//       Access: Published
-//  Description: Constructs an empty union.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructs an empty union.
+ */
 INLINE_MATHUTIL UnionBoundingVolume::
 UnionBoundingVolume() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::get_num_components
-//       Access: Published
-//  Description: Returns the number of components in the union.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of components in the union.
+ */
 INLINE_MATHUTIL int UnionBoundingVolume::
 get_num_components() const {
   return (int)_components.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: UnionBoundingVolume::get_component
-//       Access: Published
-//  Description: Returns the nth component in the union.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth component in the union.
+ */
 INLINE_MATHUTIL const GeometricBoundingVolume *UnionBoundingVolume::
 get_component(int n) const {
   nassertr(n >= 0 && n < (int)_components.size(), NULL);

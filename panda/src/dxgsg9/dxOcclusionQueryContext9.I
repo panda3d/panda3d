@@ -11,11 +11,9 @@
  * @date 2007-06-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXOcclusionQueryContext9::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE DXOcclusionQueryContext9::
 DXOcclusionQueryContext9(IDirect3DQuery9 *query) : _query(query) {
 }

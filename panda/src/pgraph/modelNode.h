@@ -18,18 +18,14 @@
 
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ModelNode
-// Description : This node is placed at key points within the scene
-//               graph to indicate the roots of "models": subtrees
-//               that are conceptually to be treated as a single unit,
-//               like a car or a room, for instance.  It doesn't
-//               affect rendering or any other operations; it's
-//               primarily useful as a high-level model indication.
-//
-//               ModelNodes are created in response to a <Model> { 1 }
-//               flag within an egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This node is placed at key points within the scene graph to indicate the
+ * roots of "models": subtrees that are conceptually to be treated as a single
+ * unit, like a car or a room, for instance.  It doesn't affect rendering or any
+ * other operations; it's primarily useful as a high-level model indication.
+ * ModelNodes are created in response to a <Model> { 1 } flag within an egg
+ * file.
+ */
 class EXPCL_PANDA_PGRAPH ModelNode : public PandaNode {
 PUBLISHED:
   INLINE ModelNode(const string &name);
@@ -40,7 +36,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
 
-  virtual PandaNode *combine_with(PandaNode *other); 
+  virtual PandaNode *combine_with(PandaNode *other);
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_flatten_below() const;
   virtual bool safe_to_transform() const;
@@ -106,5 +102,3 @@ private:
 #include "modelNode.I"
 
 #endif
-
-

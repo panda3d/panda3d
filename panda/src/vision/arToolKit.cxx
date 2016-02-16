@@ -101,20 +101,15 @@ static void analyze_fov(double cparam[3][4], int width, int height, double &xfov
   yfov = 2.0 * atan(1.0/yval) * (180.0/3.141592654);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::make
-//       Access: Private
-//  Description: Create a new ARToolKit instance.
-//
-//               Camera must be the nodepath of a panda camera object.
-//               The panda camera's field of view is initialized to match
-//               the field of view of the physical webcam.  Each time
-//               you call analyze, all marker nodepaths will be moved
-//               into a position which is relative to this camera.
-//               The marker_size parameter indicates how large you
-//               printed the physical markers.  You should use the same
-//               size units that you wish to use in the panda code.
-////////////////////////////////////////////////////////////////////
+/**
+ * Create a new ARToolKit instance.  Camera must be the nodepath of a panda
+ * camera object.  The panda camera's field of view is initialized to match the
+ * field of view of the physical webcam.  Each time you call analyze, all marker
+ * nodepaths will be moved into a position which is relative to this camera.
+ * The marker_size parameter indicates how large you printed the physical
+ * markers.  You should use the same size units that you wish to use in the
+ * panda code.
+ */
 ARToolKit *ARToolKit::
 make(NodePath camera, const Filename &paramfile, double marker_size) {
 
@@ -172,11 +167,9 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::cleanup
-//       Access: Private
-//  Description: Pre-destructor deallocation and cleanup.
-////////////////////////////////////////////////////////////////////
+/**
+ * Pre-destructor deallocation and cleanup.
+ */
 void ARToolKit::
 cleanup() {
   if (_camera_param) {
@@ -186,32 +179,25 @@ cleanup() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::Constructor
-//       Access: Private
-//  Description: Use ARToolKit::make to create an ARToolKit.
-////////////////////////////////////////////////////////////////////
+/**
+ * Use ARToolKit::make to create an ARToolKit.
+ */
 ARToolKit::
 ARToolKit() : _have_prev_conv(false) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ARToolKit::
 ~ARToolKit() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::get_pattern
-//       Access: Private
-//  Description: Load the specified pattern into the toolkit, and
-//               return the pattern index.  Initially, the pattern
-//               is inactive.
-////////////////////////////////////////////////////////////////////
+/**
+ * Load the specified pattern into the toolkit, and return the pattern index.
+ * Initially, the pattern is inactive.
+ */
 int ARToolKit::
 get_pattern(const Filename &filename) {
   PatternTable::iterator ptf = _pattern_table.find(filename);
@@ -230,14 +216,11 @@ get_pattern(const Filename &filename) {
   return id;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::attach_pattern
-//       Access: Public
-//  Description: Associates the specified glyph with the specified
-//               NodePath.  Each time you call analyze, ARToolKit
-//               will update the NodePath's transform.  If the node
-//               is not visible, its scale will be set to zero.
-////////////////////////////////////////////////////////////////////
+/**
+ * Associates the specified glyph with the specified NodePath.  Each time you
+ * call analyze, ARToolKit will update the NodePath's transform.  If the node is
+ * not visible, its scale will be set to zero.
+ */
 void ARToolKit::
 attach_pattern(const Filename &filename, NodePath path) {
   int patt = get_pattern(filename);
@@ -245,27 +228,21 @@ attach_pattern(const Filename &filename, NodePath path) {
   _controls[patt] = path;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::detach_patterns
-//       Access: Public
-//  Description: Dissociates all patterns from all NodePaths.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dissociates all patterns from all NodePaths.
+ */
 void ARToolKit::
 detach_patterns() {
   _controls.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::analyze
-//       Access: Public
-//  Description: Analyzes the non-pad region of the specified texture.
-//               This causes all attached nodepaths to move.
-//               The parameter do_flip_texture is true by default,
-//               because Panda's representation of textures is
-//               upside down from ARToolKit. If you already have
-//               a texture that's upside-down, however, you should
-//               set it to false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Analyzes the non-pad region of the specified texture.  This causes all
+ * attached nodepaths to move.  The parameter do_flip_texture is true by
+ * default, because Panda's representation of textures is upside down from
+ * ARToolKit.  If you already have a texture that's upside-down, however, you
+ * should set it to false.
+ */
 void ARToolKit::
 analyze(Texture *tex, bool do_flip_texture) {
   // We shouldn't assert on has_ram_image since it also returns false
@@ -501,4 +478,3 @@ analyze(Texture *tex, bool do_flip_texture) {
 }
 
 #endif // HAVE_ARTOOLKIT
-

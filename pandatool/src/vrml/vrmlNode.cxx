@@ -27,7 +27,7 @@ VrmlNode::
 ~VrmlNode() {
 }
 
- 
+
 const VrmlFieldValue &VrmlNode::
 get_value(const char *field_name) const {
   Fields::const_iterator fi;

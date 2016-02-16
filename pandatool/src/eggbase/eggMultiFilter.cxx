@@ -16,11 +16,9 @@
 #include "pnotify.h"
 #include "eggData.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMultiFilter::
 EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
   clear_runlines();
@@ -68,14 +66,11 @@ EggMultiFilter(bool allow_empty) : _allow_empty(allow_empty) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggMultiFilter::
 handle_args(ProgramBase::Args &args) {
   if (_got_input_filename) {
@@ -154,11 +149,9 @@ handle_args(ProgramBase::Args &args) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::post_command_line
-//       Access: Protected, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggMultiFilter::
 post_command_line() {
   Eggs::iterator ei;
@@ -173,13 +166,10 @@ post_command_line() {
   return EggMultiBase::post_command_line();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::get_output_filename
-//       Access: Protected
-//  Description: Returns the output filename of the egg file with the
-//               given input filename.  This is based on the user's
-//               choice of -inplace, -o, or -d.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the output filename of the egg file with the given input filename.
+ * This is based on the user's choice of -inplace, -o, or -d.
+ */
 Filename EggMultiFilter::
 get_output_filename(const Filename &source_filename) const {
   if (_got_output_filename) {
@@ -197,13 +187,10 @@ get_output_filename(const Filename &source_filename) const {
   return source_filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMultiFilter::write_eggs
-//       Access: Protected, Virtual
-//  Description: Writes out all of the egg files in the _eggs vector,
-//               to the output directory if one is specified, or over
-//               the input files if -inplace was specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out all of the egg files in the _eggs vector, to the output directory
+ * if one is specified, or over the input files if -inplace was specified.
+ */
 void EggMultiFilter::
 write_eggs() {
   nassertv(!_read_only);

@@ -21,10 +21,9 @@
 #include "vector_double.h"
 #include "plist.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggNurbsSurface
-// Description : A parametric NURBS surface.
-////////////////////////////////////////////////////////////////////
+/**
+ * A parametric NURBS surface.
+ */
 class EXPCL_PANDAEGG EggNurbsSurface : public EggSurface {
 PUBLISHED:
   typedef plist< PT(EggNurbsCurve) > Curves;

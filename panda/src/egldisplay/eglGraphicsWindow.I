@@ -11,11 +11,9 @@
  * @date 2009-05-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: eglGraphicsWindow::get_xwindow
-//       Access: Public
-//  Description: Returns the X11 Window handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the X11 Window handle.
+ */
 INLINE X11_Window eglGraphicsWindow::
 get_xwindow() const {
   return _xwindow;

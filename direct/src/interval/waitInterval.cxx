@@ -16,20 +16,17 @@
 
 TypeHandle WaitInterval::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WaitInterval::priv_step
-//       Access: Published, Virtual
-//  Description: Advances the time on the interval.  The time may
-//               either increase (the normal case) or decrease
-//               (e.g. if the interval is being played by a slider).
-////////////////////////////////////////////////////////////////////
+/**
+ * Advances the time on the interval.  The time may either increase (the normal
+ * case) or decrease (e.g.  if the interval is being played by a slider).
+ */
 void WaitInterval::
 priv_step(double t) {
   // The WaitInterval is normally not run directly; it just fills up
   // time when constructing a MetaInterval (specifically, a Sequence).
 #ifndef NDEBUG
   if (verify_intervals) {
-    interval_cat.info() 
+    interval_cat.info()
       << "running WaitInterval.  Intentional?\n";
   }
 #endif

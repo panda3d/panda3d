@@ -208,7 +208,7 @@ get_command_line_filenames(int argc, char *argv[],
 }
 
 void
-load_gridded_models(WindowFramework *window, 
+load_gridded_models(WindowFramework *window,
                     GriddedFilenames &filenames,
                     GriddedInfoArray &info_arr) {
   // Load up all the files indicated in the list of gridded filenames

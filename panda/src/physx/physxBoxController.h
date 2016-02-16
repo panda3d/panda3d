@@ -20,10 +20,9 @@
 #include "physxController.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBoxController
-// Description : Box character controller.
-////////////////////////////////////////////////////////////////////
+/**
+ * Box character controller.
+ */
 class EXPCL_PANDAPHYSX PhysxBoxController : public PhysxController {
 
 PUBLISHED:
@@ -50,7 +49,7 @@ public:
   }
   static void init_type() {
     PhysxController::init_type();
-    register_type(_type_handle, "PhysxBoxController", 
+    register_type(_type_handle, "PhysxBoxController",
                   PhysxController::get_class_type());
   }
   virtual TypeHandle get_type() const {

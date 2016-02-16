@@ -18,11 +18,9 @@
 
 PStatCollector BufferResidencyTracker::_gmem_collector("Graphics memory");
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferResidencyTracker::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BufferResidencyTracker::
 BufferResidencyTracker(const string &pgo_name, const string &type_name) :
   _pgo_collector(_gmem_collector, pgo_name),
@@ -34,11 +32,9 @@ BufferResidencyTracker(const string &pgo_name, const string &type_name) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferResidencyTracker::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BufferResidencyTracker::
 ~BufferResidencyTracker() {
   _inactive_nonresident_collector.set_level(0);
@@ -47,12 +43,10 @@ BufferResidencyTracker::
   _active_resident_collector.set_level(0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferResidencyTracker::begin_frame
-//       Access: Public
-//  Description: To be called at the beginning of a frame, this
-//               initializes the active/inactive status.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called at the beginning of a frame, this initializes the
+ * active/inactive status.
+ */
 void BufferResidencyTracker::
 begin_frame(Thread *current_thread) {
   int this_frame = ClockObject::get_global_clock()->get_frame_count(current_thread);
@@ -68,12 +62,10 @@ begin_frame(Thread *current_thread) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferResidencyTracker::end_frame
-//       Access: Public
-//  Description: To be called at the end of a frame, this
-//               updates the PStatCollectors appropriately.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called at the end of a frame, this updates the PStatCollectors
+ * appropriately.
+ */
 void BufferResidencyTracker::
 end_frame(Thread *current_thread) {
   _inactive_nonresident_collector.set_level(_chains[S_inactive_nonresident].get_total_size());
@@ -82,12 +74,10 @@ end_frame(Thread *current_thread) {
   _active_resident_collector.set_level(_chains[S_active_resident].get_total_size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferResidencyTracker::set_levels
-//       Access: Public
-//  Description: Resets the pstats levels to their appropriate values,
-//               possibly in the middle of a frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the pstats levels to their appropriate values, possibly in the middle
+ * of a frame.
+ */
 void BufferResidencyTracker::
 set_levels() {
   _inactive_nonresident_collector.set_level(_chains[S_inactive_nonresident].get_total_size());
@@ -96,11 +86,9 @@ set_levels() {
   _active_resident_collector.set_level(_chains[S_active_resident].get_total_size());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferResidencyTracker::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BufferResidencyTracker::
 write(ostream &out, int indent_level) const {
   if (_chains[S_inactive_nonresident].get_count() != 0) {
@@ -124,11 +112,9 @@ write(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BufferResidencyTracker::move_inactive
-//       Access: Private
-//  Description: Moves all of the "active" objects into "inactive".
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves all of the "active" objects into "inactive".
+ */
 void BufferResidencyTracker::
 move_inactive(BufferContextChain &inactive, BufferContextChain &active) {
   BufferContext *node = active.get_first();

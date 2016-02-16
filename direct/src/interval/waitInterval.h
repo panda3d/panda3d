@@ -17,12 +17,10 @@
 #include "directbase.h"
 #include "cInterval.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : WaitInterval
-// Description : This interval does absolutely nothing, and is mainly
-//               useful for marking time between other intervals
-//               within a sequence.
-////////////////////////////////////////////////////////////////////
+/**
+ * This interval does absolutely nothing, and is mainly useful for marking time
+ * between other intervals within a sequence.
+ */
 class EXPCL_DIRECT WaitInterval : public CInterval {
 PUBLISHED:
   INLINE WaitInterval(double duration);
@@ -50,4 +48,3 @@ private:
 #include "waitInterval.I"
 
 #endif
-

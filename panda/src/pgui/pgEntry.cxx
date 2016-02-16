@@ -29,13 +29,11 @@
 
 TypeHandle PGEntry::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGEntry::
-PGEntry(const string &name) : 
+PGEntry(const string &name) :
   PGItem(name),
   _text(get_text_node()),
   _obscure_text(get_text_node())
@@ -86,20 +84,16 @@ PGEntry(const string &name) :
   setup_minimal(10, 1);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGEntry::
 ~PGEntry() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::Copy Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PGEntry::
 PGEntry(const PGEntry &copy) :
   PGItem(copy),
@@ -134,27 +128,21 @@ PGEntry(const PGEntry &copy) :
   _cursor_def = copy._cursor_def.copy_to(_cursor_scale);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a newly-allocated Node that is a shallow copy
-//               of this one.  It will be a different Node pointer,
-//               but its internal data may or may not be shared with
-//               that of the original Node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a newly-allocated Node that is a shallow copy of this one.  It will
+ * be a different Node pointer, but its internal data may or may not be shared
+ * with that of the original Node.
+ */
 PandaNode *PGEntry::
 make_copy() const {
   LightReMutexHolder holder(_lock);
   return new PGEntry(*this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::xform
-//       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Transforms the contents of this node by the indicated matrix, if it means
+ * anything to do so.  For most kinds of nodes, this does nothing.
+ */
 void PGEntry::
 xform(const LMatrix4 &mat) {
   LightReMutexHolder holder(_lock);
@@ -162,31 +150,20 @@ xform(const LMatrix4 &mat) {
   _text_render_root.set_mat(_text_render_root.get_mat() * mat);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::cull_callback
-//       Access: Protected, Virtual
-//  Description: This function will be called during the cull
-//               traversal to perform any additional operations that
-//               should be performed at cull time.  This may include
-//               additional manipulation of render state or additional
-//               visible/invisible decisions, or any other arbitrary
-//               operation.
-//
-//               Note that this function will *not* be called unless
-//               set_cull_callback() is called in the constructor of
-//               the derived class.  It is necessary to call
-//               set_cull_callback() to indicated that we require
-//               cull_callback() to be called.
-//
-//               By the time this function is called, the node has
-//               already passed the bounding-volume test for the
-//               viewing frustum, and the node's transform and state
-//               have already been applied to the indicated
-//               CullTraverserData object.
-//
-//               The return value is true if this node should be
-//               visible, or false if it should be culled.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function will be called during the cull traversal to perform any
+ * additional operations that should be performed at cull time.  This may
+ * include additional manipulation of render state or additional
+ * visible/invisible decisions, or any other arbitrary operation.  Note that
+ * this function will *not* be called unless set_cull_callback() is called in
+ * the constructor of the derived class.  It is necessary to call
+ * set_cull_callback() to indicated that we require cull_callback() to be
+ * called.  By the time this function is called, the node has already passed the
+ * bounding-volume test for the viewing frustum, and the node's transform and
+ * state have already been applied to the indicated CullTraverserData object.
+ * The return value is true if this node should be visible, or false if it
+ * should be culled.
+ */
 bool PGEntry::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LightReMutexHolder holder(_lock);
@@ -202,13 +179,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::press
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever a
-//               mouse or keyboard entry is depressed while the mouse
-//               is within the region.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever a mouse or keyboard entry
+ * is depressed while the mouse is within the region.
+ */
 void PGEntry::
 press(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -220,7 +194,7 @@ press(const MouseWatcherParameter &param, bool background) {
       bool overflow_mode = get_overflow_mode() && _num_lines == 1;
 
       ButtonHandle button = param.get_button();
-      
+
       if (button == MouseButton::one() ||
           button == MouseButton::two() ||
           button == MouseButton::three() ||
@@ -228,8 +202,8 @@ press(const MouseWatcherParameter &param, bool background) {
           button == MouseButton::five()) {
         // Mouse button; set focus.
         set_focus(true);
-        
-      } else if ((!background && get_focus()) || 
+
+      } else if ((!background && get_focus()) ||
                  (background && get_background_focus())) {
         // Keyboard button.
         if (!_candidate_wtext.empty()) {
@@ -247,7 +221,7 @@ press(const MouseWatcherParameter &param, bool background) {
           else {
             accept_failed(param);
           }
-          
+
         } else if (button == KeyboardButton::backspace()) {
           // Backspace.  Remove the character to the left of the cursor.
           if (_cursor_position > 0) {
@@ -257,7 +231,7 @@ press(const MouseWatcherParameter &param, bool background) {
             _text_geom_stale = true;
             erase(param);
           }
-          
+
         } else if (button == KeyboardButton::del()) {
           // Delete.  Remove the character to the right of the cursor.
           if (_cursor_position < _text.get_num_characters()) {
@@ -265,7 +239,7 @@ press(const MouseWatcherParameter &param, bool background) {
             _text_geom_stale = true;
             erase(param);
           }
-          
+
         } else if (button == KeyboardButton::left()) {
           if (_cursor_keys_active) {
             // Left arrow.  Move the cursor position to the left.
@@ -274,14 +248,14 @@ press(const MouseWatcherParameter &param, bool background) {
               _cursor_position = 0;
               overflow(param);
             } else {
-              type(param);    
+              type(param);
             }
             _cursor_stale = true;
             if (overflow_mode){
                 _text_geom_stale = true;
             }
           }
-          
+
         } else if (button == KeyboardButton::right()) {
           if (_cursor_keys_active) {
             // Right arrow.  Move the cursor position to the right.
@@ -297,7 +271,7 @@ press(const MouseWatcherParameter &param, bool background) {
                 _text_geom_stale = true;
             }
           }
-          
+
         } else if (button == KeyboardButton::home()) {
           if (_cursor_keys_active) {
             // Home.  Move the cursor position to the beginning.
@@ -308,7 +282,7 @@ press(const MouseWatcherParameter &param, bool background) {
             }
             type(param);
           }
-          
+
         } else if (button == KeyboardButton::end()) {
           if (_cursor_keys_active) {
             // End.  Move the cursor position to the end.
@@ -319,19 +293,16 @@ press(const MouseWatcherParameter &param, bool background) {
             }
             type(param);
           }
-        }          
+        }
       }
     }
   }
   PGItem::press(param, background);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::keystroke
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever
-//               the user types a key.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user types a key.
+ */
 void PGEntry::
 keystroke(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -374,11 +345,11 @@ keystroke(const MouseWatcherParameter &param, bool background) {
               // the end).
               int r = _num_lines - 1;
               int c = _text.get_num_cols(r);
-              PN_stdfloat last_line_width = 
+              PN_stdfloat last_line_width =
                 _text.get_xpos(r, c) - _text.get_xpos(r, 0);
               too_long = (last_line_width > _max_width);
             }
-            
+
             if (!too_long && keycode == ' ' && !overflow_mode) {
               // Even if we haven't filled up all of the available
               // lines, we should reject a space that's typed at the
@@ -397,18 +368,18 @@ keystroke(const MouseWatcherParameter &param, bool background) {
                   // Ok, the user is putting multiple spaces on the
                   // end of a line; we need to make sure the line does
                   // not grow too wide.  Measure the line's width.
-                  PN_stdfloat current_line_width = 
+                  PN_stdfloat current_line_width =
                     _text.get_xpos(r, c + 1) - _text.get_xpos(r, 0);
                   if (current_line_width > _max_width) {
                     // We have to reject the space, but we don't treat
-                    // it as an overflow condition.  
+                    // it as an overflow condition.
                     _text.set_wsubstr(wstring(), _cursor_position, 1);
                     // If the user is typing over existing space
                     // characters, we act as if the right-arrow key
                     // were pressed instead, and advance the cursor to
                     // the next position.  Otherwise, we just quietly
                     // eat the space character.
-                    if (_cursor_position < _text.get_num_characters() && 
+                    if (_cursor_position < _text.get_num_characters() &&
                         _text.get_character(_cursor_position) == ' ') {
                       _cursor_position++;
                       _cursor_stale = true;
@@ -419,11 +390,11 @@ keystroke(const MouseWatcherParameter &param, bool background) {
               }
             }
           }
-          
+
           if (too_long) {
             _text.set_wsubstr(wstring(), _cursor_position, 1);
             overflow(param);
-              
+
           } else {
             _cursor_position += new_char.length();
             _cursor_stale = true;
@@ -437,12 +408,10 @@ keystroke(const MouseWatcherParameter &param, bool background) {
   PGItem::keystroke(param, background);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::candidate
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever
-//               the user selects an item from the IME menu.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user selects an item
+ * from the IME menu.
+ */
 void PGEntry::
 candidate(const MouseWatcherParameter &param, bool background) {
   LightReMutexHolder holder(_lock);
@@ -462,12 +431,10 @@ candidate(const MouseWatcherParameter &param, bool background) {
   PGItem::candidate(param, background);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::accept
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               entry is accepted by the user pressing Enter normally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the entry is accepted by
+ * the user pressing Enter normally.
+ */
 void PGEntry::
 accept(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -478,12 +445,10 @@ accept(const MouseWatcherParameter &param) {
   set_focus(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::accept_failed
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               user presses Enter but we can't accept the input.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user presses Enter but
+ * we can't accept the input.
+ */
 void PGEntry::
 accept_failed(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -494,14 +459,11 @@ accept_failed(const MouseWatcherParameter &param) {
   //set_focus(false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::overflow
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               entry is overflowed because the user attempts to type
-//               too many characters, exceeding either set_max_chars()
-//               or set_max_width().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the entry is overflowed
+ * because the user attempts to type too many characters, exceeding either
+ * set_max_chars() or set_max_width().
+ */
 void PGEntry::
 overflow(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -511,12 +473,10 @@ overflow(const MouseWatcherParameter &param) {
   throw_event(event, EventParameter(ep));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::type
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               user extends the text by typing.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user extends the text
+ * by typing.
+ */
 void PGEntry::
 type(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -526,12 +486,10 @@ type(const MouseWatcherParameter &param) {
   throw_event(event, EventParameter(ep));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::erase
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               user erase characters in the text.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the user erase characters
+ * in the text.
+ */
 void PGEntry::
 erase(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
@@ -541,12 +499,9 @@ erase(const MouseWatcherParameter &param) {
   throw_event(event, EventParameter(ep));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::cursormove
-//       Access: Public, Virtual
-//  Description: This is a callback hook function, called whenever the
-//               cursor moves.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a callback hook function, called whenever the cursor moves.
+ */
 void PGEntry::
 cursormove() {
   LightReMutexHolder holder(_lock);
@@ -554,15 +509,12 @@ cursormove() {
   throw_event(event, EventParameter(_cursor_def.get_x()), EventParameter(_cursor_def.get_y()));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::setup
-//       Access: Published
-//  Description: Sets up the entry for normal use.  The width is the
-//               maximum width of characters that will be typed, and
-//               num_lines is the integer number of lines of text of
-//               the entry.  Both of these together determine the size
-//               of the entry, based on the TextNode in effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the entry for normal use.  The width is the maximum width of
+ * characters that will be typed, and num_lines is the integer number of lines
+ * of text of the entry.  Both of these together determine the size of the
+ * entry, based on the TextNode in effect.
+ */
 void PGEntry::
 setup(PN_stdfloat width, int num_lines) {
   LightReMutexHolder holder(_lock);
@@ -647,12 +599,9 @@ setup(PN_stdfloat width, int num_lines) {
   set_frame_style(S_inactive, style);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::setup_minimal
-//       Access: Published
-//  Description: Sets up the entry without creating any frame or other
-//               decoration.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the entry without creating any frame or other decoration.
+ */
 void PGEntry::
 setup_minimal(PN_stdfloat width, int num_lines) {
   LightReMutexHolder holder(_lock);
@@ -676,7 +625,7 @@ setup_minimal(PN_stdfloat width, int num_lines) {
   ls.move_to(0.0f, 0.0f, -0.15f * line_height);
   ls.draw_to(0.0f, 0.0f, 0.70f * line_height);
   get_cursor_def().attach_new_node(ls.create());
-  
+
   /*
   // An underscore cursor would work too.
   text_node->set_text("_");
@@ -684,15 +633,11 @@ setup_minimal(PN_stdfloat width, int num_lines) {
   */
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::set_text_def
-//       Access: Published
-//  Description: Changes the TextNode that will be used to render the
-//               text within the entry when the entry is in the
-//               indicated state.  The default if nothing is specified
-//               is the same TextNode returned by
-//               PGItem::get_text_node().
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the TextNode that will be used to render the text within the entry
+ * when the entry is in the indicated state.  The default if nothing is
+ * specified is the same TextNode returned by PGItem::get_text_node().
+ */
 void PGEntry::
 set_text_def(int state, TextNode *node) {
   LightReMutexHolder holder(_lock);
@@ -706,14 +651,11 @@ set_text_def(int state, TextNode *node) {
   _text_defs[state] = node;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::get_text_def
-//       Access: Published
-//  Description: Returns the TextNode that will be used to render the
-//               text within the entry when the entry is in the
-//               indicated state.  See set_text_def().
-////////////////////////////////////////////////////////////////////
-TextNode *PGEntry:: 
+/**
+ * Returns the TextNode that will be used to render the text within the entry
+ * when the entry is in the indicated state.  See set_text_def().
+ */
+TextNode *PGEntry::
 get_text_def(int state) const {
   LightReMutexHolder holder(_lock);
   if (state < 0 || state >= (int)_text_defs.size()) {
@@ -726,27 +668,22 @@ get_text_def(int state) const {
   return _text_defs[state];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::set_active
-//       Access: Published, Virtual
-//  Description: Toggles the active/inactive state of the entry.  In
-//               the case of a PGEntry, this also changes its visual
-//               appearance.
-////////////////////////////////////////////////////////////////////
-void PGEntry:: 
+/**
+ * Toggles the active/inactive state of the entry.  In the case of a PGEntry,
+ * this also changes its visual appearance.
+ */
+void PGEntry::
 set_active(bool active) {
   LightReMutexHolder holder(_lock);
   PGItem::set_active(active);
   update_state();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::set_focus
-//       Access: Published, Virtual
-//  Description: Toggles the focus state of the entry.  In the case of
-//               a PGEntry, this also changes its visual appearance.
-////////////////////////////////////////////////////////////////////
-void PGEntry:: 
+/**
+ * Toggles the focus state of the entry.  In the case of a PGEntry, this also
+ * changes its visual appearance.
+ */
+void PGEntry::
 set_focus(bool focus) {
   LightReMutexHolder holder(_lock);
   PGItem::set_focus(focus);
@@ -754,15 +691,12 @@ set_focus(bool focus) {
   update_state();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::is_wtext
-//       Access: Published
-//  Description: Returns true if any of the characters in the string
-//               returned by get_wtext() are out of the range of an
-//               ASCII character (and, therefore, get_wtext() should
-//               be called in preference to get_text()).
-////////////////////////////////////////////////////////////////////
-bool PGEntry:: 
+/**
+ * Returns true if any of the characters in the string returned by get_wtext()
+ * are out of the range of an ASCII character (and, therefore, get_wtext()
+ * should be called in preference to get_text()).
+ */
+bool PGEntry::
 is_wtext() const {
   LightReMutexHolder holder(_lock);
   for (int i = 0; i < _text.get_num_characters(); ++i) {
@@ -775,12 +709,9 @@ is_wtext() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::slot_text_def
-//       Access: Private
-//  Description: Ensures there is a slot in the array for the given
-//               text definition.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures there is a slot in the array for the given text definition.
+ */
 void PGEntry::
 slot_text_def(int state) {
   while (state >= (int)_text_defs.size()) {
@@ -788,17 +719,14 @@ slot_text_def(int state) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::update_text
-//       Access: Private
-//  Description: Causes the PGEntry to recompute its text, if
-//               necessary.
-////////////////////////////////////////////////////////////////////
-void PGEntry:: 
+/**
+ * Causes the PGEntry to recompute its text, if necessary.
+ */
+void PGEntry::
 update_text() {
   TextNode *node = get_text_def(get_state());
   nassertv(node != (TextNode *)NULL);
-    
+
   if (_text_geom_stale || node != _last_text_def) {
     TextProperties props = *node;
     props.set_wordwrap(_max_width);
@@ -859,7 +787,7 @@ update_text() {
       _current_text.remove_node();
     }
 
-    _current_text = 
+    _current_text =
       _text_render_root.attach_new_node(assembled);
 
     _current_text.set_mat(node->get_transform());
@@ -914,12 +842,10 @@ update_text() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::update_cursor
-//       Access: Private
-//  Description: Moves the cursor to its correct position.
-////////////////////////////////////////////////////////////////////
-void PGEntry:: 
+/**
+ * Moves the cursor to its correct position.
+ */
+void PGEntry::
 update_cursor() {
   TextNode *node = get_text_def(get_state());
   nassertv(node != (TextNode *)NULL);
@@ -947,14 +873,14 @@ update_cursor() {
     _cursor_def.set_pos(xpos - _current_padding, 0.0f, ypos);
     _cursor_stale = false;
     cursormove();
-    
+
   }
 
   // Should the cursor be visible?
   if (!get_focus() || !_candidate_wtext.empty()) {
     show_hide_cursor(false);
   } else {
-    double elapsed_time = 
+    double elapsed_time =
       ClockObject::get_global_clock()->get_frame_time() - _blink_start;
     int cycle = (int)(elapsed_time * _blink_rate * 2.0f);
     bool visible = ((cycle & 1) == 0);
@@ -962,13 +888,10 @@ update_cursor() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::show_hide_cursor
-//       Access: Private
-//  Description: Makes the cursor visible or invisible, e.g. during a
-//               blink cycle.
-////////////////////////////////////////////////////////////////////
-void PGEntry:: 
+/**
+ * Makes the cursor visible or invisible, e.g.  during a blink cycle.
+ */
+void PGEntry::
 show_hide_cursor(bool visible) {
   if (visible != _cursor_visible) {
     if (visible) {
@@ -980,13 +903,10 @@ show_hide_cursor(bool visible) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::update_state
-//       Access: Private
-//  Description: Determines what the correct state for the PGEntry
-//               should be.
-////////////////////////////////////////////////////////////////////
-void PGEntry:: 
+/**
+ * Determines what the correct state for the PGEntry should be.
+ */
+void PGEntry::
 update_state() {
   if (get_active()) {
     if (get_focus()) {

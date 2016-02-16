@@ -31,12 +31,9 @@
 
 TypeHandle PaletteImage::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::ClearedRegion::Default Constructor
-//       Access: Public
-//  Description: The default constructor is only for the convenience
-//               of the bam reader.
-////////////////////////////////////////////////////////////////////
+/**
+ * The default constructor is only for the convenience of the bam reader.
+ */
 PaletteImage::ClearedRegion::
 ClearedRegion() {
   _x = 0;
@@ -45,11 +42,9 @@ ClearedRegion() {
   _y_size = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::ClearedRegion::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PaletteImage::ClearedRegion::
 ClearedRegion(TexturePlacement *placement) {
   _x = placement->get_placed_x();
@@ -58,11 +53,9 @@ ClearedRegion(TexturePlacement *placement) {
   _y_size = placement->get_placed_y_size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::ClearedRegion::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PaletteImage::ClearedRegion::
 ClearedRegion(const PaletteImage::ClearedRegion &copy) :
   _x(copy._x),
@@ -72,11 +65,9 @@ ClearedRegion(const PaletteImage::ClearedRegion &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::ClearedRegion::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PaletteImage::ClearedRegion::
 operator = (const PaletteImage::ClearedRegion &copy) {
   _x = copy._x;
@@ -85,11 +76,9 @@ operator = (const PaletteImage::ClearedRegion &copy) {
   _y_size = copy._y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::ClearedRegion::clear
-//       Access: Public
-//  Description: Sets the appropriate region of the image to black.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the appropriate region of the image to black.
+ */
 void PaletteImage::ClearedRegion::
 clear(PNMImage &image) {
   LRGBColorf rgb(pal->_background[0], pal->_background[1], pal->_background[2]);
@@ -109,12 +98,9 @@ clear(PNMImage &image) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::ClearedRegion::write_datagram
-//       Access: Public
-//  Description: Writes the contents of the ClearedRegion to the
-//               indicated datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the contents of the ClearedRegion to the indicated datagram.
+ */
 void PaletteImage::ClearedRegion::
 write_datagram(Datagram &datagram) const {
   datagram.add_int32(_x);
@@ -123,12 +109,9 @@ write_datagram(Datagram &datagram) const {
   datagram.add_int32(_y_size);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::ClearedRegion::write_datagram
-//       Access: Public
-//  Description: Extracts the contents of the ClearedRegion from the
-//               indicated datagram.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts the contents of the ClearedRegion from the indicated datagram.
+ */
 void PaletteImage::ClearedRegion::
 fillin(DatagramIterator &scan) {
   _x = scan.get_int32();
@@ -142,12 +125,9 @@ fillin(DatagramIterator &scan) {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::Default Constructor
-//       Access: Private
-//  Description: The default constructor is only for the convenience
-//               of the Bam reader.
-////////////////////////////////////////////////////////////////////
+/**
+ * The default constructor is only for the convenience of the Bam reader.
+ */
 PaletteImage::
 PaletteImage() {
   _page = (PalettePage *)NULL;
@@ -158,11 +138,9 @@ PaletteImage() {
   _swapped_image = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PaletteImage::
 PaletteImage(PalettePage *page, int index) :
   _page(page),
@@ -179,11 +157,9 @@ PaletteImage(PalettePage *page, int index) :
   setup_filename();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PaletteImage::
 PaletteImage(PalettePage *page, int index, unsigned swapIndex) :
   _page(page),
@@ -201,24 +177,18 @@ PaletteImage(PalettePage *page, int index, unsigned swapIndex) :
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::get_page
-//       Access: Public
-//  Description: Returns the particular PalettePage this image is
-//               associated with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the particular PalettePage this image is associated with.
+ */
 PalettePage *PaletteImage::
 get_page() const {
   return _page;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::is_empty
-//       Access: Public
-//  Description: Returns true if there are no textures, or only one
-//               "solitary" texture, placed on the image.  In either
-//               case, the PaletteImage need not be generated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if there are no textures, or only one "solitary" texture, placed
+ * on the image.  In either case, the PaletteImage need not be generated.
+ */
 bool PaletteImage::
 is_empty() const {
   if (_placements.empty()) {
@@ -237,14 +207,11 @@ is_empty() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::count_utilization
-//       Access: Public
-//  Description: Returns the fraction of the PaletteImage that is
-//               actually used by any textures.  This is 1.0 if every
-//               pixel in the PaletteImage is used, or 0.0 if none
-//               are.  Normally it will be somewhere in between.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the fraction of the PaletteImage that is actually used by any
+ * textures.  This is 1.0 if every pixel in the PaletteImage is used, or 0.0 if
+ * none are.  Normally it will be somewhere in between.
+ */
 double PaletteImage::
 count_utilization() const {
   int used_pixels = 0;
@@ -264,18 +231,14 @@ count_utilization() const {
   return (double)used_pixels / (double)total_pixels;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::count_coverage
-//       Access: Public
-//  Description: Returns the a weighted average of the fraction of
-//               coverage represented by all of the textures placed on
-//               the palette.  This number represents the fraction of
-//               wasted pixels in the palette image consumed by
-//               copying the same pixels multiple times into the
-//               palette, or if the number is negative, it represents
-//               the fraction of pixels saved by not having to copy
-//               the entire texture into the palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the a weighted average of the fraction of coverage represented by all
+ * of the textures placed on the palette.  This number represents the fraction
+ * of wasted pixels in the palette image consumed by copying the same pixels
+ * multiple times into the palette, or if the number is negative, it represents
+ * the fraction of pixels saved by not having to copy the entire texture into
+ * the palette.
+ */
 double PaletteImage::
 count_coverage() const {
   int coverage_pixels = 0;
@@ -301,13 +264,10 @@ count_coverage() const {
   return (double)coverage_pixels / (double)total_pixels;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::place
-//       Access: Public
-//  Description: Attempts to place the indicated texture on the image.
-//               Returns true if successful, or false if there was no
-//               available space.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to place the indicated texture on the image.  Returns true if
+ * successful, or false if there was no available space.
+ */
 bool PaletteImage::
 place(TexturePlacement *placement) {
   nassertr(placement->is_size_known(), true);
@@ -334,11 +294,9 @@ place(TexturePlacement *placement) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::unplace
-//       Access: Public
-//  Description: Removes the texture from the image.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the texture from the image.
+ */
 void PaletteImage::
 unplace(TexturePlacement *placement) {
   nassertv(placement->is_placed() && placement->get_image() == this);
@@ -352,18 +310,13 @@ unplace(TexturePlacement *placement) {
   _cleared_regions.push_back(ClearedRegion(placement));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::check_solitary
-//       Access: Public
-//  Description: To be called after all textures have been placed on
-//               the image, this checks to see if there is only one
-//               texture on the image.  If there is, it is flagged as
-//               'solitary' so that the egg files will not needlessly
-//               reference the palettized image.
-//
-//               However, if pal->_omit_solitary is false, we
-//               generally don't change textures to solitary state.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called after all textures have been placed on the image, this checks to
+ * see if there is only one texture on the image.  If there is, it is flagged as
+ * 'solitary' so that the egg files will not needlessly reference the palettized
+ * image.  However, if pal->_omit_solitary is false, we generally don't change
+ * textures to solitary state.
+ */
 void PaletteImage::
 check_solitary() {
   if (_placements.size() == 1) {
@@ -399,12 +352,9 @@ check_solitary() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::optimal_resize
-//       Access: Public
-//  Description: Attempts to resize the palette image to as small as
-//               it can go.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to resize the palette image to as small as it can go.
+ */
 void PaletteImage::
 optimal_resize() {
   if (is_empty()) { // && (_swapped_image == 0)) {
@@ -439,19 +389,15 @@ optimal_resize() {
     for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
       PaletteImage *swappedImage = (*si);
       swappedImage->resize_swapped_image(_x_size, _y_size);
-    }  
+    }
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::resize_image
-//       Access: Public
-//  Description: Attempts to resize the palette image, and repack all
-//               of the textures within the new size.  Returns true if
-//               successful, false otherwise.  If this fails, it will
-//               still result in repacking all the textures in the
-//               original size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to resize the palette image, and repack all of the textures within
+ * the new size.  Returns true if successful, false otherwise.  If this fails,
+ * it will still result in repacking all the textures in the original size.
+ */
 bool PaletteImage::
 resize_image(int x_size, int y_size) {
   // We already know we're going to be generating a new image from
@@ -513,15 +459,11 @@ resize_image(int x_size, int y_size) {
   return packed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::resize_swapped_image
-//       Access: Public
-//  Description: Attempts to resize the palette image, and repack all
-//               of the textures within the new size.  Returns true if
-//               successful, false otherwise.  If this fails, it will
-//               still result in repacking all the textures in the
-//               original size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to resize the palette image, and repack all of the textures within
+ * the new size.  Returns true if successful, false otherwise.  If this fails,
+ * it will still result in repacking all the textures in the original size.
+ */
 void PaletteImage::
 resize_swapped_image(int x_size, int y_size) {
   // Finally, apply the new size and try to fit all the textures.
@@ -529,13 +471,10 @@ resize_swapped_image(int x_size, int y_size) {
   _y_size = y_size;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::write_placements
-//       Access: Public
-//  Description: Writes a list of the textures that have been placed
-//               on this image to the indicated output stream, one per
-//               line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes a list of the textures that have been placed on this image to the
+ * indicated output stream, one per line.
+ */
 void PaletteImage::
 write_placements(ostream &out, int indent_level) const {
   Placements::const_iterator pi;
@@ -545,12 +484,10 @@ write_placements(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::reset_image
-//       Access: Public
-//  Description: Unpacks each texture that has been placed on this
-//               image, resetting the image to empty.
-////////////////////////////////////////////////////////////////////
+/**
+ * Unpacks each texture that has been placed on this image, resetting the image
+ * to empty.
+ */
 void PaletteImage::
 reset_image() {
   // We need a copy so we can modify this list as we traverse it.
@@ -566,13 +503,10 @@ reset_image() {
   remove_image();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::setup_shadow_image
-//       Access: Public
-//  Description: Ensures the _shadow_image has the correct filename
-//               and image types, based on what was supplied on the
-//               command line and in the .txa file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures the _shadow_image has the correct filename and image types, based on
+ * what was supplied on the command line and in the .txa file.
+ */
 void PaletteImage::
 setup_shadow_image() {
   _shadow_image.make_shadow_image(_basename);
@@ -582,17 +516,14 @@ setup_shadow_image() {
   for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
     PaletteImage *swappedImage = (*si);
     swappedImage->setup_shadow_image();
-  }  
+  }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::update_image
-//       Access: Public
-//  Description: If the palette has changed since it was last written
-//               out, updates the image and writes out a new one.  If
-//               redo_all is true, regenerates the image from scratch
-//               and writes it out again, whether it needed it or not.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the palette has changed since it was last written out, updates the image
+ * and writes out a new one.  If redo_all is true, regenerates the image from
+ * scratch and writes it out again, whether it needed it or not.
+ */
 void PaletteImage::
 update_image(bool redo_all) {
   if (is_empty() && pal->_aggressively_clean_mapdir) {
@@ -723,15 +654,11 @@ update_image(bool redo_all) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::update_filename
-//       Access: Public
-//  Description: Changes the image filename to match the current
-//               naming scheme, assuming something has changed since
-//               the image was created.  Returns true if the image
-//               filename changes (which means update_image() should
-//               be called).
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the image filename to match the current naming scheme, assuming
+ * something has changed since the image was created.  Returns true if the image
+ * filename changes (which means update_image() should be called).
+ */
 bool PaletteImage::
 update_filename() {
   Filename orig_filename = _filename;
@@ -739,7 +666,7 @@ update_filename() {
   Filename orig_shadow_filename = _shadow_image.get_filename();
 
   if (setup_filename()) {
-    nout << "Renaming " << FilenameUnifier::make_user_filename(orig_filename) 
+    nout << "Renaming " << FilenameUnifier::make_user_filename(orig_filename)
          << " to " << FilenameUnifier::make_user_filename(_filename) << "\n";
 
     if (!orig_filename.empty() && orig_filename.exists()) {
@@ -774,15 +701,11 @@ update_filename() {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::setup_filename
-//       Access: Private
-//  Description: Sets up the image's filename (and that of the
-//               _shadow_pal) according to the specified properties.
-//
-//               Returns true if the filename changes from what it was
-//               previously, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the image's filename (and that of the _shadow_pal) according to the
+ * specified properties.  Returns true if the filename changes from what it was
+ * previously, false otherwise.
+ */
 bool PaletteImage::
 setup_filename() {
   // Build up the basename for the palette image, based on the
@@ -829,7 +752,7 @@ setup_filename() {
     _basename += "_swp_";
     _basename += format_string(_swapped_image);
   }
-    
+
   // We must end the basename with a dot, so that it does not appear
   // to have a filename extension.  Otherwise, an embedded dot in the
   // group's name would make everything following appear to be an
@@ -847,18 +770,15 @@ setup_filename() {
   if (_shadow_image.make_shadow_image(_basename)) {
     any_changed = true;
   }
-  
+
   return any_changed;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::find_hole
-//       Access: Private
-//  Description: Searches for a hole of at least x_size by y_size
-//               pixels somewhere within the PaletteImage.  If a
-//               suitable hole is found, sets x and y to the top left
-//               corner and returns true; otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for a hole of at least x_size by y_size pixels somewhere within the
+ * PaletteImage.  If a suitable hole is found, sets x and y to the top left
+ * corner and returns true; otherwise, returns false.
+ */
 bool PaletteImage::
 find_hole(int &x, int &y, int x_size, int y_size) const {
   y = 0;
@@ -891,17 +811,13 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::find_overlap
-//       Access: Private
-//  Description: If the rectangle whose top left corner is x, y and
-//               whose size is x_size, y_size describes an empty hole
-//               that does not overlap any placed images, returns
-//               NULL; otherwise, returns the first placed texture
-//               that the image does overlap.  It is assumed the
-//               rectangle lies completely within the boundaries of
-//               the image itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the rectangle whose top left corner is x, y and whose size is x_size,
+ * y_size describes an empty hole that does not overlap any placed images,
+ * returns NULL; otherwise, returns the first placed texture that the image does
+ * overlap.  It is assumed the rectangle lies completely within the boundaries
+ * of the image itself.
+ */
 TexturePlacement *PaletteImage::
 find_overlap(int x, int y, int x_size, int y_size) const {
   Placements::const_iterator pi;
@@ -916,12 +832,10 @@ find_overlap(int x, int y, int x_size, int y_size) const {
   return (TexturePlacement *)NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::get_image
-//       Access: Public
-//  Description: Reads or generates the PNMImage that corresponds to
-//               the palette as it is known so far.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads or generates the PNMImage that corresponds to the palette as it is
+ * known so far.
+ */
 void PaletteImage::
 get_image() {
   if (_got_image) {
@@ -965,11 +879,9 @@ get_image() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::get_swapped_image
-//       Access: Public
-//  Description: Reads or generates the PNMImage for swapped textures
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads or generates the PNMImage for swapped textures
+ */
 void PaletteImage::
 get_swapped_image(int index) {
   if (_got_image) {
@@ -1017,12 +929,10 @@ get_swapped_image(int index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::get_swapped_images
-//       Access: Public
-//  Description: Reads or generates the PNMImage that corresponds to
-//               the palette as it is known so far.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads or generates the PNMImage that corresponds to the palette as it is
+ * known so far.
+ */
 void PaletteImage::
 get_swapped_images() {
   SwappedImages::iterator si;
@@ -1032,23 +942,18 @@ get_swapped_images() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::release_image
-//       Access: Public
-//  Description: Deallocates the memory allocated by a previous call to
-//               get_image().
-////////////////////////////////////////////////////////////////////
+/**
+ * Deallocates the memory allocated by a previous call to get_image().
+ */
 void PaletteImage::
 release_image() {
   _image.clear();
   _got_image = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::remove_image
-//       Access: Private
-//  Description: Deletes the image file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Deletes the image file.
+ */
 void PaletteImage::
 remove_image() {
   unlink();
@@ -1058,25 +963,19 @@ remove_image() {
   _new_image = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void PaletteImage::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_PaletteImage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void PaletteImage::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   ImageFile::write_datagram(writer, datagram);
@@ -1107,15 +1006,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   // pal->_shadow_dirname if it changes).
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam file
+ * for each pointer object written.  The return value is the number of pointers
+ * processed from the list.
+ */
 int PaletteImage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = ImageFile::complete_pointers(p_list, manager);
@@ -1137,14 +1033,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::make_PaletteImage
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable *PaletteImage::
 make_PaletteImage(const FactoryParams &params) {
   PaletteImage *me = new PaletteImage;
@@ -1156,13 +1049,10 @@ make_PaletteImage(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PaletteImage::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written by
+ * a previous call to write_datagram().
+ */
 void PaletteImage::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ImageFile::fillin(scan, manager);

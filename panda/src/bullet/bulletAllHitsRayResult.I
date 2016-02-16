@@ -11,12 +11,10 @@
  * @date 2010-02-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletAllHitsRayResult::empty
-//       Access: Published
-//  Description: Named constructor intended to be used for asserts
-//               with have to return a concrete value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Named constructor intended to be used for asserts with have to return a
+ * concrete value.
+ */
 INLINE BulletAllHitsRayResult BulletAllHitsRayResult::
 empty() {
 
@@ -26,15 +24,12 @@ empty() {
   return BulletAllHitsRayResult(from, to, CollideMask::all_on());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRayHit::empty
-//       Access: Published
-//  Description: Named constructor intended to be used for asserts
-//               with have to return a concrete value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Named constructor intended to be used for asserts with have to return a
+ * concrete value.
+ */
 INLINE BulletRayHit BulletRayHit::
 empty() {
 
   return BulletRayHit();
 }
-

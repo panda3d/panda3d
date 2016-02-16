@@ -18,13 +18,11 @@
 
 class CPPType;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FunctionWriterPtrFromPython
-// Description : This specialization of FunctionWriter generates a
-//               function that converts a PyObject pointer
-//               representing a class wrapper object to the
-//               corresponding C++ pointer.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization of FunctionWriter generates a function that converts a
+ * PyObject pointer representing a class wrapper object to the corresponding C++
+ * pointer.
+ */
 class FunctionWriterPtrFromPython : public FunctionWriter {
 public:
   FunctionWriterPtrFromPython(CPPType *type);

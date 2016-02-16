@@ -20,10 +20,9 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMaterial
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAEGG EggMaterial : public EggNode {
 PUBLISHED:
   EggMaterial(const string &mref_name);
@@ -147,13 +146,11 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : UniqueEggMaterials
-// Description : An STL function object for sorting materials into
-//               order by properties.  Returns true if the two
-//               referenced EggMaterial pointers are in sorted order,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object for sorting materials into order by properties.
+ * Returns true if the two referenced EggMaterial pointers are in sorted order,
+ * false otherwise.
+ */
 class EXPCL_PANDAEGG UniqueEggMaterials {
 public:
   INLINE UniqueEggMaterials(int eq = ~0);

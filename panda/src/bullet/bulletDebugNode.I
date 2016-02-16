@@ -11,21 +11,17 @@
  * @date 2010-01-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletDebugNode::
 ~BulletDebugNode() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::show_wireframe
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletDebugNode::
 show_wireframe(bool show) {
 
@@ -33,11 +29,9 @@ show_wireframe(bool show) {
   draw_mask_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::show_constraints
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletDebugNode::
 show_constraints(bool show) {
 
@@ -45,11 +39,9 @@ show_constraints(bool show) {
   draw_mask_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::show_bounding_boxes
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletDebugNode::
 show_bounding_boxes(bool show) {
 
@@ -57,14 +49,11 @@ show_bounding_boxes(bool show) {
   draw_mask_changed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletDebugNode::show_normals
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletDebugNode::
 show_normals(bool show) {
 
   _drawer._normals = show;
 }
-

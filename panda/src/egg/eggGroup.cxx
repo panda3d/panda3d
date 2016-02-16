@@ -25,11 +25,9 @@
 
 TypeHandle EggGroup::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroup::
 EggGroup(const string &name) : EggGroupNode(name) {
   _flags = 0;
@@ -45,21 +43,17 @@ EggGroup(const string &name) : EggGroupNode(name) {
   _r_speed = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroup::
 EggGroup(const EggGroup &copy) {
   (*this) = copy;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::Copy assignment operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroup &EggGroup::
 operator = (const EggGroup &copy) {
   EggTransform::operator = (copy);
@@ -110,21 +104,17 @@ operator = (const EggGroup &copy) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggGroup::
 ~EggGroup() {
   unref_all_vertices();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::set_group_type
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggGroup::
 set_group_type(GroupType type) {
   if (type != get_group_type()) {
@@ -134,7 +124,7 @@ set_group_type(GroupType type) {
       // group refs.
       nassertv(_group_refs.empty());
     }
-#endif 
+#endif
 
     // Make sure the user didn't give us any stray bits.
     nassertv((type & ~F_group_type)==0);
@@ -146,12 +136,10 @@ set_group_type(GroupType type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::has_object_type
-//       Access: Published
-//  Description: Returns true if the indicated object type has been
-//               added to the group, or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated object type has been added to the group, or
+ * false otherwise.
+ */
 bool EggGroup::
 has_object_type(const string &object_type) const {
   vector_string::const_iterator oi;
@@ -163,14 +151,11 @@ has_object_type(const string &object_type) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::remove_object_type
-//       Access: Published
-//  Description: Removes the first instance of the indicated object
-//               type from the group if it is present.  Returns true
-//               if the object type was found and removed, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the first instance of the indicated object type from the group if it
+ * is present.  Returns true if the object type was found and removed, false
+ * otherwise.
+ */
 bool EggGroup::
 remove_object_type(const string &object_type) {
   vector_string::iterator oi;
@@ -183,12 +168,10 @@ remove_object_type(const string &object_type) {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write
-//       Access: Published, Virtual
-//  Description: Writes the group and all of its children to the
-//               indicated output stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the group and all of its children to the indicated output stream in
+ * Egg format.
+ */
 void EggGroup::
 write(ostream &out, int indent_level) const {
   test_under_integrity();
@@ -234,13 +217,13 @@ write(ostream &out, int indent_level) const {
   }
 
   if (get_scroll_u() != 0) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<Scalar> scroll_u { " << get_scroll_u() << " }\n";
 
   }
 
   if (get_scroll_v() != 0) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<Scalar> scroll_v { " << get_scroll_v() << " }\n";
 
   }
@@ -252,7 +235,7 @@ write(ostream &out, int indent_level) const {
   }
 
   if (get_scroll_r() != 0) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<Scalar> scroll_r { " << get_scroll_r() << " }\n";
 
   }
@@ -275,7 +258,7 @@ write(ostream &out, int indent_level) const {
   }
 
   if (has_indexed_flag()) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<Scalar> indexed { " << get_indexed_flag() << " }\n";
   }
 
@@ -322,12 +305,10 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_billboard_flags
-//       Access: Published
-//  Description: Writes just the <Billboard> entry and related fields to
-//               the indicated ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes just the <Billboard> entry and related fields to the indicated
+ * ostream.
+ */
 void EggGroup::
 write_billboard_flags(ostream &out, int indent_level) const {
   if (get_billboard_type() != BT_none) {
@@ -341,12 +322,9 @@ write_billboard_flags(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_collide_flags
-//       Access: Published
-//  Description: Writes just the <Collide> entry and related fields to
-//               the indicated ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes just the <Collide> entry and related fields to the indicated ostream.
+ */
 void EggGroup::
 write_collide_flags(ostream &out, int indent_level) const {
   if (get_cs_type() != CST_none) {
@@ -383,16 +361,13 @@ write_collide_flags(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_model_flags
-//       Access: Published
-//  Description: Writes the <Model> flag and related flags to the
-//               indicated ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the <Model> flag and related flags to the indicated ostream.
+ */
 void EggGroup::
 write_model_flags(ostream &out, int indent_level) const {
   if (get_dcs_type() != DC_unspecified) {
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "<DCS> { " << get_dcs_type() << " }\n";
   }
 
@@ -414,12 +389,9 @@ write_model_flags(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_switch_flags
-//       Access: Published
-//  Description: Writes the <Switch> flag and related flags to the
-//               indicated ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the <Switch> flag and related flags to the indicated ostream.
+ */
 void EggGroup::
 write_switch_flags(ostream &out, int indent_level) const {
   if (get_switch_flag()) {
@@ -431,12 +403,9 @@ write_switch_flags(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_object_types
-//       Access: Published
-//  Description: Writes just the <ObjectTypes> entries, if any, to the
-//               indicated ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes just the <ObjectTypes> entries, if any, to the indicated ostream.
+ */
 void EggGroup::
 write_object_types(ostream &out, int indent_level) const {
   vector_string::const_iterator oi;
@@ -447,11 +416,9 @@ write_object_types(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_decal_flags
-//       Access: Published
-//  Description: Writes the flags related to decaling, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the flags related to decaling, if any.
+ */
 void EggGroup::
 write_decal_flags(ostream &out, int indent_level) const {
   if (get_decal_flag()) {
@@ -459,12 +426,9 @@ write_decal_flags(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_tags
-//       Access: Published
-//  Description: Writes just the <Tag> entries, if any, to the
-//               indicated ostream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes just the <Tag> entries, if any, to the indicated ostream.
+ */
 void EggGroup::
 write_tags(ostream &out, int indent_level) const {
   TagData::const_iterator ti;
@@ -479,12 +443,10 @@ write_tags(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_render_mode
-//       Access: Published
-//  Description: Writes the flags inherited from EggRenderMode and
-//               similar flags that control obscure render effects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the flags inherited from EggRenderMode and similar flags that control
+ * obscure render effects.
+ */
 void EggGroup::
 write_render_mode(ostream &out, int indent_level) const {
   EggRenderMode::write(out, indent_level);
@@ -494,29 +456,22 @@ write_render_mode(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::is_joint
-//       Access: Published, Virtual
-//  Description: Returns true if this particular node represents a
-//               <Joint> entry or not.  This is a handy thing to know
-//               since Joints are sorted to the end of their sibling
-//               list when writing an egg file.  See
-//               EggGroupNode::write().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this particular node represents a <Joint> entry or not.  This
+ * is a handy thing to know since Joints are sorted to the end of their sibling
+ * list when writing an egg file.  See EggGroupNode::write().
+ */
 bool EggGroup::
 is_joint() const {
   return (get_group_type() == GT_joint);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_alpha_mode
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this group that has an alpha_mode other than
-//               AM_unspecified.  Returns a valid EggRenderMode pointer
-//               if one is found, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this group that has an alpha_mode other
+ * than AM_unspecified.  Returns a valid EggRenderMode pointer if one is found,
+ * or NULL otherwise.
+ */
 EggRenderMode *EggGroup::
 determine_alpha_mode() {
   if (get_alpha_mode() != AM_unspecified) {
@@ -525,15 +480,12 @@ determine_alpha_mode() {
   return EggGroupNode::determine_alpha_mode();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_depth_write_mode
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this group that has a depth_write_mode other
-//               than DWM_unspecified.  Returns a valid EggRenderMode
-//               pointer if one is found, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this group that has a depth_write_mode
+ * other than DWM_unspecified.  Returns a valid EggRenderMode pointer if one is
+ * found, or NULL otherwise.
+ */
 EggRenderMode *EggGroup::
 determine_depth_write_mode() {
   if (get_depth_write_mode() != DWM_unspecified) {
@@ -542,15 +494,12 @@ determine_depth_write_mode() {
   return EggGroupNode::determine_depth_write_mode();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_depth_test_mode
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this group that has a depth_test_mode other
-//               than DTM_unspecified.  Returns a valid EggRenderMode
-//               pointer if one is found, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this group that has a depth_test_mode
+ * other than DTM_unspecified.  Returns a valid EggRenderMode pointer if one is
+ * found, or NULL otherwise.
+ */
 EggRenderMode *EggGroup::
 determine_depth_test_mode() {
   if (get_depth_test_mode() != DTM_unspecified) {
@@ -559,15 +508,12 @@ determine_depth_test_mode() {
   return EggGroupNode::determine_depth_test_mode();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_visibility_mode
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this group that has a visibility_mode other
-//               than VM_unspecified.  Returns a valid EggRenderMode
-//               pointer if one is found, or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this group that has a visibility_mode
+ * other than VM_unspecified.  Returns a valid EggRenderMode pointer if one is
+ * found, or NULL otherwise.
+ */
 EggRenderMode *EggGroup::
 determine_visibility_mode() {
   if (get_visibility_mode() != VM_unspecified) {
@@ -576,15 +522,12 @@ determine_visibility_mode() {
   return EggGroupNode::determine_visibility_mode();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_depth_offset
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this group that has a depth_offset specified.
-//               Returns a valid EggRenderMode pointer if one is found,
-//               or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this group that has a depth_offset
+ * specified.  Returns a valid EggRenderMode pointer if one is found, or NULL
+ * otherwise.
+ */
 EggRenderMode *EggGroup::
 determine_depth_offset() {
   if (has_depth_offset()) {
@@ -593,15 +536,12 @@ determine_depth_offset() {
   return EggGroupNode::determine_depth_offset();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_draw_order
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this group that has a draw_order specified.
-//               Returns a valid EggRenderMode pointer if one is found,
-//               or NULL otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this group that has a draw_order
+ * specified.  Returns a valid EggRenderMode pointer if one is found, or NULL
+ * otherwise.
+ */
 EggRenderMode *EggGroup::
 determine_draw_order() {
   if (has_draw_order()) {
@@ -610,15 +550,11 @@ determine_draw_order() {
   return EggGroupNode::determine_draw_order();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_bin
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               or EggPrimitive or some such object at this level or
-//               above this group that has a bin specified.  Returns a
-//               valid EggRenderMode pointer if one is found, or NULL
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup or EggPrimitive or some
+ * such object at this level or above this group that has a bin specified.
+ * Returns a valid EggRenderMode pointer if one is found, or NULL otherwise.
+ */
 EggRenderMode *EggGroup::
 determine_bin() {
   if (has_bin()) {
@@ -627,17 +563,12 @@ determine_bin() {
   return EggGroupNode::determine_bin();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_indexed
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               at this level or above that has the "indexed" scalar
-//               set.  Returns the value of the indexed scalar if it
-//               is found, or false if it is not.
-//
-//               In other words, returns true if the "indexed" flag is
-//               in effect for the indicated node, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup at this level or above
+ * that has the "indexed" scalar set.  Returns the value of the indexed scalar
+ * if it is found, or false if it is not.  In other words, returns true if the
+ * "indexed" flag is in effect for the indicated node, false otherwise.
+ */
 bool EggGroup::
 determine_indexed() {
   if (has_indexed_flag()) {
@@ -646,17 +577,12 @@ determine_indexed() {
   return EggGroupNode::determine_indexed();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::determine_decal
-//       Access: Published, Virtual
-//  Description: Walks back up the hierarchy, looking for an EggGroup
-//               at this level or above that has the "decal" flag
-//               set.  Returns the value of the decal flag if it
-//               is found, or false if it is not.
-//
-//               In other words, returns true if the "decal" flag is
-//               in effect for the indicated node, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Walks back up the hierarchy, looking for an EggGroup at this level or above
+ * that has the "decal" flag set.  Returns the value of the decal flag if it is
+ * found, or false if it is not.  In other words, returns true if the "decal"
+ * flag is in effect for the indicated node, false otherwise.
+ */
 bool EggGroup::
 determine_decal() {
   if (get_decal_flag()) {
@@ -665,14 +591,11 @@ determine_decal() {
   return EggGroupNode::determine_decal();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::ref_vertex
-//       Access: Published
-//  Description: Adds the vertex to the set of those referenced by the
-//               group, at the indicated membership level.  If the
-//               vertex is already being referenced, increases the
-//               membership amount by the indicated amount.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the vertex to the set of those referenced by the group, at the indicated
+ * membership level.  If the vertex is already being referenced, increases the
+ * membership amount by the indicated amount.
+ */
 void EggGroup::
 ref_vertex(EggVertex *vert, double membership) {
   VertexRef::iterator vri = _vref.find(vert);
@@ -702,13 +625,10 @@ ref_vertex(EggVertex *vert, double membership) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::unref_vertex
-//       Access: Published
-//  Description: Removes the vertex from the set of those referenced
-//               by the group.  Does nothing if the vertex is not
-//               already reffed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the vertex from the set of those referenced by the group.  Does
+ * nothing if the vertex is not already reffed.
+ */
 void EggGroup::
 unref_vertex(EggVertex *vert) {
   VertexRef::iterator vri = _vref.find(vert);
@@ -722,11 +642,9 @@ unref_vertex(EggVertex *vert) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::unref_all_vertices
-//       Access: Published
-//  Description: Removes all vertices from the reference list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all vertices from the reference list.
+ */
 void EggGroup::
 unref_all_vertices() {
   // We must walk through the vertex ref list, and flag each vertex as
@@ -744,13 +662,10 @@ unref_all_vertices() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::get_vertex_membership
-//       Access: Published
-//  Description: Returns the amount of membership of the indicated
-//               vertex in this group.  If the vertex is not reffed by
-//               the group, returns 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the amount of membership of the indicated vertex in this group.  If
+ * the vertex is not reffed by the group, returns 0.
+ */
 double EggGroup::
 get_vertex_membership(const EggVertex *vert) const {
   VertexRef::const_iterator vri = _vref.find((EggVertex *)vert);
@@ -762,12 +677,10 @@ get_vertex_membership(const EggVertex *vert) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::set_vertex_membership
-//       Access: Published
-//  Description: Explicitly sets the net membership of the indicated
-//               vertex in this group to the given value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Explicitly sets the net membership of the indicated vertex in this group to
+ * the given value.
+ */
 void EggGroup::
 set_vertex_membership(EggVertex *vert, double membership) {
   if (membership == 0.0) {
@@ -794,14 +707,11 @@ set_vertex_membership(EggVertex *vert, double membership) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::steal_vrefs
-//       Access: Published
-//  Description: Moves all of the vertex references from the indicated
-//               other group into this one.  If a given vertex was
-//               previously shared by both groups, the relative
-//               memberships will be summed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Moves all of the vertex references from the indicated other group into this
+ * one.  If a given vertex was previously shared by both groups, the relative
+ * memberships will be summed.
+ */
 void EggGroup::
 steal_vrefs(EggGroup *other) {
   nassertv(other != this);
@@ -817,12 +727,10 @@ steal_vrefs(EggGroup *other) {
 
 #ifdef _DEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::test_vref_integrity
-//       Access: Published
-//  Description: Verifies that each vertex in the group exists and
-//               that it knows it is referenced by the group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Verifies that each vertex in the group exists and that it knows it is
+ * referenced by the group.
+ */
 void EggGroup::
 test_vref_integrity() const {
   test_ref_count_integrity();
@@ -838,61 +746,46 @@ test_vref_integrity() const {
 
 #endif  // _DEBUG
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::add_group_ref
-//       Access: Published
-//  Description: Adds a new <Ref> entry to the group.  This declares
-//               an internal reference to another node, and is used to
-//               implement scene-graph instancing; it is only valid if
-//               the group_type is GT_instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a new <Ref> entry to the group.  This declares an internal reference to
+ * another node, and is used to implement scene-graph instancing; it is only
+ * valid if the group_type is GT_instance.
+ */
 void EggGroup::
 add_group_ref(EggGroup *group) {
   nassertv(get_group_type() == GT_instance);
   _group_refs.push_back(group);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::get_num_group_refs
-//       Access: Published
-//  Description: Returns the number of <Ref> entries within this
-//               group.  See add_group_ref().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of <Ref> entries within this group.  See add_group_ref().
+ */
 int EggGroup::
 get_num_group_refs() const {
   return _group_refs.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::get_group_ref
-//       Access: Published
-//  Description: Returns the nth <Ref> entry within this group.  See
-//               add_group_ref().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth <Ref> entry within this group.  See add_group_ref().
+ */
 EggGroup *EggGroup::
 get_group_ref(int n) const {
   nassertr(n >= 0 && n < (int)_group_refs.size(), NULL);
   return _group_refs[n];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::remove_group_ref
-//       Access: Published
-//  Description: Removes the nth <Ref> entry within this group.  See
-//               add_group_ref().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes the nth <Ref> entry within this group.  See add_group_ref().
+ */
 void EggGroup::
 remove_group_ref(int n) {
   nassertv(n >= 0 && n < (int)_group_refs.size());
   _group_refs.erase(_group_refs.begin() + n);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::clear_group_refs
-//       Access: Published
-//  Description: Removes all of the <Ref> entries within this group.
-//               See add_group_ref().
-////////////////////////////////////////////////////////////////////
+/**
+ * Removes all of the <Ref> entries within this group.  See add_group_ref().
+ */
 void EggGroup::
 clear_group_refs() {
   _group_refs.clear();
@@ -900,13 +793,10 @@ clear_group_refs() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::string_group_type
-//       Access: Published, Static
-//  Description: Returns the GroupType value associated with the given
-//               string representation, or GT_invalid if the string
-//               does not match any known GroupType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the GroupType value associated with the given string representation,
+ * or GT_invalid if the string does not match any known GroupType value.
+ */
 EggGroup::GroupType EggGroup::
 string_group_type(const string &strval) {
   if (cmp_nocase_uh(strval, "group") == 0) {
@@ -920,13 +810,10 @@ string_group_type(const string &strval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::string_dart_type
-//       Access: Published, Static
-//  Description: Returns the DartType value associated with the given
-//               string representation, or DT_none if the string
-//               does not match any known DartType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DartType value associated with the given string representation,
+ * or DT_none if the string does not match any known DartType value.
+ */
 EggGroup::DartType EggGroup::
 string_dart_type(const string &strval) {
   if (cmp_nocase_uh(strval, "sync") == 0) {
@@ -942,13 +829,10 @@ string_dart_type(const string &strval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::string_dcs_type
-//       Access: Published, Static
-//  Description: Returns the DCSType value associated with the given
-//               string representation, or DC_unspecified if the
-//               string does not match any known DCSType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the DCSType value associated with the given string representation, or
+ * DC_unspecified if the string does not match any known DCSType value.
+ */
 EggGroup::DCSType EggGroup::
 string_dcs_type(const string &strval) {
   if (cmp_nocase_uh(strval, "none") == 0) {
@@ -966,13 +850,11 @@ string_dcs_type(const string &strval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::string_billboard_type
-//       Access: Published, Static
-//  Description: Returns the BillboardType value associated with the
-//               given string representation, or BT_none if the string
-//               does not match any known BillboardType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the BillboardType value associated with the given string
+ * representation, or BT_none if the string does not match any known
+ * BillboardType value.
+ */
 EggGroup::BillboardType EggGroup::
 string_billboard_type(const string &strval) {
   if (cmp_nocase_uh(strval, "axis") == 0) {
@@ -988,13 +870,11 @@ string_billboard_type(const string &strval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::string_cs_type
-//       Access: Published, Static
-//  Description: Returns the CollisionSolidType value associated with the
-//               given string representation, or CST_none if the string
-//               does not match any known CollisionSolidType value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CollisionSolidType value associated with the given string
+ * representation, or CST_none if the string does not match any known
+ * CollisionSolidType value.
+ */
 EggGroup::CollisionSolidType EggGroup::
 string_cs_type(const string &strval) {
   if (cmp_nocase_uh(strval, "plane") == 0) {
@@ -1020,15 +900,12 @@ string_cs_type(const string &strval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::string_collide_flags
-//       Access: Published, Static
-//  Description: Returns the CollideFlags value associated with the
-//               given string representation, or CF_none if the string
-//               does not match any known CollideFlags value.  This
-//               only recognizes a single keyword; it does not attempt
-//               to parse a string of keywords.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the CollideFlags value associated with the given string
+ * representation, or CF_none if the string does not match any known
+ * CollideFlags value.  This only recognizes a single keyword; it does not
+ * attempt to parse a string of keywords.
+ */
 EggGroup::CollideFlags EggGroup::
 string_collide_flags(const string &strval) {
   if (cmp_nocase_uh(strval, "intangible") == 0) {
@@ -1052,13 +929,10 @@ string_collide_flags(const string &strval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::string_blend_mode
-//       Access: Published, Static
-//  Description: Returns the BlendMode value associated with the
-//               given string representation, or BM_none if the string
-//               does not match any known BlendMode.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the BlendMode value associated with the given string representation,
+ * or BM_none if the string does not match any known BlendMode.
+ */
 EggGroup::BlendMode EggGroup::
 string_blend_mode(const string &strval) {
   if (cmp_nocase_uh(strval, "none") == 0) {
@@ -1078,13 +952,11 @@ string_blend_mode(const string &strval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::string_blend_operand
-//       Access: Published, Static
-//  Description: Returns the BlendOperand value associated with the
-//               given string representation, or BO_none if the string
-//               does not match any known BlendOperand.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the BlendOperand value associated with the given string
+ * representation, or BO_none if the string does not match any known
+ * BlendOperand.
+ */
 EggGroup::BlendOperand EggGroup::
 string_blend_operand(const string &strval) {
   if (cmp_nocase_uh(strval, "zero") == 0) {
@@ -1130,26 +1002,20 @@ string_blend_operand(const string &strval) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::as_transform
-//       Access: Public, Virtual
-//  Description: Returns this object cross-cast to an EggTransform
-//               pointer, if it inherits from EggTransform, or NULL if
-//               it does not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns this object cross-cast to an EggTransform pointer, if it inherits
+ * from EggTransform, or NULL if it does not.
+ */
 EggTransform *EggGroup::
 as_transform() {
   return this;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::write_vertex_ref
-//       Access: Protected
-//  Description: Writes out the vertex ref component of the group body
-//               only.  This may consist of a number of <VertexRef>
-//               entries, each with its own membership value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes out the vertex ref component of the group body only.  This may consist
+ * of a number of <VertexRef> entries, each with its own membership value.
+ */
 void EggGroup::
 write_vertex_ref(ostream &out, int indent_level) const {
   // We want to put the vertices together into groups first by vertex
@@ -1211,31 +1077,24 @@ write_vertex_ref(ostream &out, int indent_level) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::egg_start_parse_body
-//       Access: Protected, Virtual
-//  Description: This function is called within parse_egg().  It
-//               should call the appropriate function on the lexer to
-//               initialize the parser into the state associated with
-//               this object.  If the object cannot be parsed into
-//               directly, it should return false.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called within parse_egg().  It should call the appropriate
+ * function on the lexer to initialize the parser into the state associated with
+ * this object.  If the object cannot be parsed into directly, it should return
+ * false.
+ */
 bool EggGroup::
 egg_start_parse_body() {
   egg_start_group_body();
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::adjust_under
-//       Access: Protected, Virtual
-//  Description: This is called within update_under() after all the
-//               various under settings have been inherited directly
-//               from the parent node.  It is responsible for
-//               adjusting these settings to reflect states local to
-//               the current node; for instance, an <Instance> node
-//               will force the UF_under_instance bit on.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called within update_under() after all the various under settings
+ * have been inherited directly from the parent node.  It is responsible for
+ * adjusting these settings to reflect states local to the current node; for
+ * instance, an <Instance> node will force the UF_under_instance bit on.
+ */
 void EggGroup::
 adjust_under() {
   // If we have our own transform, it carries forward.
@@ -1286,19 +1145,13 @@ adjust_under() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::r_transform
-//       Access: Protected, Virtual
-//  Description: This is called from within the egg code by
-//               transform().  It applies a transformation matrix
-//               to the current node in some sensible way, then
-//               continues down the tree.
-//
-//               The first matrix is the transformation to apply; the
-//               second is its inverse.  The third parameter is the
-//               coordinate system we are changing to, or CS_default
-//               if we are not changing coordinate systems.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is called from within the egg code by transform().  It applies a
+ * transformation matrix to the current node in some sensible way, then
+ * continues down the tree.  The first matrix is the transformation to apply;
+ * the second is its inverse.  The third parameter is the coordinate system we
+ * are changing to, or CS_default if we are not changing coordinate systems.
+ */
 void EggGroup::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
             CoordinateSystem to_cs) {
@@ -1342,11 +1195,9 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::r_flatten_transforms
-//       Access: Protected, Virtual
-//  Description: The recursive implementation of flatten_transforms().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of flatten_transforms().
+ */
 void EggGroup::
 r_flatten_transforms() {
   EggGroupNode::r_flatten_transforms();
@@ -1377,12 +1228,10 @@ r_flatten_transforms() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::transform_changed
-//       Access: Protected, Virtual
-//  Description: This virtual method is inherited by EggTransform3d;
-//               it is called whenever the transform is changed.
-////////////////////////////////////////////////////////////////////
+/**
+ * This virtual method is inherited by EggTransform3d; it is called whenever the
+ * transform is changed.
+ */
 void EggGroup::
 transform_changed() {
   // Recompute all of the cached transforms at this node and below.
@@ -1394,10 +1243,9 @@ transform_changed() {
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: GroupType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &operator << (ostream &out, EggGroup::GroupType t) {
   switch (t) {
   case EggGroup::GT_invalid:
@@ -1414,10 +1262,9 @@ ostream &operator << (ostream &out, EggGroup::GroupType t) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DartType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &operator << (ostream &out, EggGroup::DartType t) {
   switch (t) {
   case EggGroup::DT_none:
@@ -1436,10 +1283,9 @@ ostream &operator << (ostream &out, EggGroup::DartType t) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCSType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &operator << (ostream &out, EggGroup::DCSType t) {
   switch (t) {
   case EggGroup::DC_unspecified:
@@ -1460,10 +1306,9 @@ ostream &operator << (ostream &out, EggGroup::DCSType t) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BillboardType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &operator << (ostream &out, EggGroup::BillboardType t) {
   switch (t) {
   case EggGroup::BT_none:
@@ -1480,10 +1325,9 @@ ostream &operator << (ostream &out, EggGroup::BillboardType t) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolidType output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &operator << (ostream &out, EggGroup::CollisionSolidType t) {
   switch (t) {
   case EggGroup::CST_none:
@@ -1510,10 +1354,9 @@ ostream &operator << (ostream &out, EggGroup::CollisionSolidType t) {
   return out << "(**invalid**)";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollideFlags output operator
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &operator << (ostream &out, EggGroup::CollideFlags t) {
   if (t == EggGroup::CF_none) {
     return out << "none";
@@ -1556,10 +1399,9 @@ ostream &operator << (ostream &out, EggGroup::CollideFlags t) {
   return out;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ostream << EggGroup::BlendMode
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, EggGroup::BlendMode t) {
   switch (t) {
@@ -1588,10 +1430,9 @@ operator << (ostream &out, EggGroup::BlendMode t) {
   return out << "**invalid EggGroup::BlendMode(" << (int)t << ")**";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ostream << EggGroup::BlendOperand
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ostream &
 operator << (ostream &out, EggGroup::BlendOperand t) {
   switch (t) {

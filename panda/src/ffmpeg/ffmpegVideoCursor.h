@@ -34,10 +34,9 @@ struct AVPacket;
 struct AVFrame;
 struct SwsContext;
 
-////////////////////////////////////////////////////////////////////
-//       Class : FfmpegVideoCursor
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_FFMPEG FfmpegVideoCursor : public MovieVideoCursor {
 private:
   FfmpegVideoCursor();
@@ -56,7 +55,7 @@ PUBLISHED:
   void start_thread();
   BLOCKING void stop_thread();
   bool is_thread_started() const;
-  
+
 public:
   virtual bool set_time(double timestamp, int loop_count);
   virtual PT(Buffer) fetch_buffer();
@@ -131,7 +130,7 @@ private:
 
   int _current_frame;
   PT(FfmpegBuffer) _current_frame_buffer;
-  
+
 private:
   // The following functions will be called in the sub-thread.
   static void st_thread_main(void *self);
@@ -177,7 +176,7 @@ private:
   static PStatCollector _fetch_buffer_pcollector;
   static PStatCollector _seek_pcollector;
   static PStatCollector _export_frame_pcollector;
-  
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
@@ -187,7 +186,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

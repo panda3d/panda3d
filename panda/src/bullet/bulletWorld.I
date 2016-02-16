@@ -11,11 +11,9 @@
  * @date 2010-01-23
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletWorld::
 ~BulletWorld() {
 
@@ -52,11 +50,9 @@ INLINE BulletWorld::
   delete _broadphase;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_debug_node
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletWorld::
 set_debug_node(BulletDebugNode *node) {
 
@@ -66,11 +62,9 @@ set_debug_node(BulletDebugNode *node) {
   _world->setDebugDrawer(&(_debug->_drawer));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::clear_debug_node
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletWorld::
 clear_debug_node() {
 
@@ -78,66 +72,54 @@ clear_debug_node() {
   _world->setDebugDrawer(NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_debug_node
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletDebugNode *BulletWorld::
 get_debug_node() const {
 
   return _debug;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_world
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE btDynamicsWorld *BulletWorld::
 get_world() const {
 
   return _world;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_broadphase
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE btBroadphaseInterface *BulletWorld::
 get_broadphase() const {
 
   return _broadphase;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_dispatcher
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE btDispatcher *BulletWorld::
 get_dispatcher() const {
 
   return _dispatcher;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_num_rigid_bodies
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int BulletWorld::
 get_num_rigid_bodies() const {
 
   return _bodies.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_rigid_body
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletRigidBodyNode *BulletWorld::
 get_rigid_body(int idx) const {
 
@@ -145,22 +127,18 @@ get_rigid_body(int idx) const {
   return _bodies[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_num_soft_bodies
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int BulletWorld::
 get_num_soft_bodies() const {
 
   return _softbodies.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_soft_body
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletSoftBodyNode *BulletWorld::
 get_soft_body(int idx) const {
 
@@ -168,22 +146,18 @@ get_soft_body(int idx) const {
   return _softbodies[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_num_ghosts
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int BulletWorld::
 get_num_ghosts() const {
 
   return _ghosts.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_ghost
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletGhostNode *BulletWorld::
 get_ghost(int idx) const {
 
@@ -191,22 +165,18 @@ get_ghost(int idx) const {
   return _ghosts[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_num_characters
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int BulletWorld::
 get_num_characters() const {
 
   return _characters.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_character
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletBaseCharacterControllerNode *BulletWorld::
 get_character(int idx) const {
 
@@ -214,22 +184,18 @@ get_character(int idx) const {
   return _characters[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_num_vehicles
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int BulletWorld::
 get_num_vehicles() const {
 
   return _vehicles.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_vehicle
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletVehicle *BulletWorld::
 get_vehicle(int idx) const {
 
@@ -237,22 +203,18 @@ get_vehicle(int idx) const {
   return _vehicles[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_num_constraints
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int BulletWorld::
 get_num_constraints() const {
 
   return _constraints.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_constraint
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletConstraint *BulletWorld::
 get_constraint(int idx) const {
 
@@ -260,15 +222,11 @@ get_constraint(int idx) const {
   return _constraints[idx];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_num_manifolds
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE int BulletWorld::
 get_num_manifolds() const {
 
   return _world->getDispatcher()->getNumManifolds();
 }
-
-

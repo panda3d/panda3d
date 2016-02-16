@@ -14,12 +14,9 @@
 #include "rocketSystemInterface.h"
 #include "clockObject.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketSystemInterface::GetElapsedTime
-//       Access: Public
-//  Description: Get the number of seconds elapsed since the start
-//               of the application.
-////////////////////////////////////////////////////////////////////
+/**
+ * Get the number of seconds elapsed since the start of the application.
+ */
 float RocketSystemInterface::
 GetElapsedTime() {
   ClockObject *clock = ClockObject::get_global_clock();
@@ -27,13 +24,10 @@ GetElapsedTime() {
   return clock->get_real_time();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: RocketSystemInterface::LogMessage
-//       Access: Public
-//  Description: Log the specified message.  Returns true to
-//               continue execution, false to break into the
-//               debugger.
-////////////////////////////////////////////////////////////////////
+/**
+ * Log the specified message.  Returns true to continue execution, false to
+ * break into the debugger.
+ */
 bool RocketSystemInterface::
 LogMessage(Rocket::Core::Log::Type type, const Rocket::Core::String& message) {
   switch(type) {

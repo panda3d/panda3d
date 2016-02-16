@@ -31,13 +31,11 @@ class EggPrimitive;
 class EggTexture;
 class EggMaterial;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggRenderState
-// Description : This class is used within this package only to record
-//               the render state that should be assigned to each
-//               primitive.  It is assigned to EggPrimitive objects
-//               via the EggBinner.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used within this package only to record the render state that
+ * should be assigned to each primitive.  It is assigned to EggPrimitive objects
+ * via the EggBinner.
+ */
 class EggRenderState : public EggUserData {
 public:
   INLINE EggRenderState(EggLoader &loader);
@@ -53,7 +51,7 @@ private:
   static TexGenAttrib::Mode get_tex_gen(const EggTexture *egg_tex);
 
   CPT(RenderAttrib)
-  apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib, 
+  apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib,
                 TextureStage *stage, const EggTexture *egg_tex);
 
 public:
@@ -79,4 +77,3 @@ private:
 #include "eggRenderState.I"
 
 #endif
-

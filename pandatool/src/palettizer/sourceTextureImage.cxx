@@ -23,12 +23,9 @@
 
 TypeHandle SourceTextureImage::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::Default Constructor
-//       Access: Private
-//  Description: The default constructor is only for the convenience
-//               of the Bam reader.
-////////////////////////////////////////////////////////////////////
+/**
+ * The default constructor is only for the convenience of the Bam reader.
+ */
 SourceTextureImage::
 SourceTextureImage() {
   _texture = (TextureImage *)NULL;
@@ -38,11 +35,9 @@ SourceTextureImage() {
   _successfully_read_header = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 SourceTextureImage::
 SourceTextureImage(TextureImage *texture, const Filename &filename,
                    const Filename &alpha_filename, int alpha_file_channel) :
@@ -56,50 +51,38 @@ SourceTextureImage(TextureImage *texture, const Filename &filename,
   _successfully_read_header = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::get_texture
-//       Access: Public
-//  Description: Returns the particular texture that this image is one
-//               of the sources for.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the particular texture that this image is one of the sources for.
+ */
 TextureImage *SourceTextureImage::
 get_texture() const {
   return _texture;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::increment_egg_count
-//       Access: Public
-//  Description: Increments by one the number of egg files that are
-//               known to reference this SourceTextureImage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Increments by one the number of egg files that are known to reference this
+ * SourceTextureImage.
+ */
 void SourceTextureImage::
 increment_egg_count() {
   _egg_count++;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::get_egg_count
-//       Access: Public
-//  Description: Returns the number of egg files that share this
-//               SourceTextureImage.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of egg files that share this SourceTextureImage.
+ */
 int SourceTextureImage::
 get_egg_count() const {
   return _egg_count;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::get_size
-//       Access: Public
-//  Description: Determines the size of the SourceTextureImage, if it
-//               is not already known.  Returns true if the size was
-//               successfully determined (or if was already known), or
-//               false if the size could not be determined (for
-//               instance, because the image file is missing).  After
-//               this call returns true, get_x_size() etc. may be
-//               safely called to return the size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines the size of the SourceTextureImage, if it is not already known.
+ * Returns true if the size was successfully determined (or if was already
+ * known), or false if the size could not be determined (for instance, because
+ * the image file is missing).  After this call returns true, get_x_size() etc.
+ * may be safely called to return the size.
+ */
 bool SourceTextureImage::
 get_size() {
   if (!_size_known) {
@@ -108,17 +91,13 @@ get_size() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::read_header
-//       Access: Public
-//  Description: Reads the actual image header to determine the image
-//               properties, like its size.  Returns true if the image
-//               header is successfully read (or if has previously
-//               been successfully read this session), false
-//               otherwise.  After this call returns true,
-//               get_x_size() etc. may be safely called to return the
-//               newly determined size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the actual image header to determine the image properties, like its
+ * size.  Returns true if the image header is successfully read (or if has
+ * previously been successfully read this session), false otherwise.  After this
+ * call returns true, get_x_size() etc.  may be safely called to return the
+ * newly determined size.
+ */
 bool SourceTextureImage::
 read_header() {
   if (_read_header) {
@@ -130,7 +109,7 @@ read_header() {
 
   PNMImageHeader header;
   if (!header.read_header(_filename)) {
-    nout << "Warning: cannot read texture " 
+    nout << "Warning: cannot read texture "
          << FilenameUnifier::make_user_filename(_filename) << "\n";
     return false;
   }
@@ -140,12 +119,10 @@ read_header() {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::set_header
-//       Access: Public
-//  Description: Sets the header information associated with this
-//               image, as if it were loaded from the disk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the header information associated with this image, as if it were loaded
+ * from the disk.
+ */
 void SourceTextureImage::
 set_header(const PNMImageHeader &header) {
   _x_size = header.get_x_size();
@@ -166,25 +143,19 @@ set_header(const PNMImageHeader &header) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::register_with_read_factory
-//       Access: Public, Static
-//  Description: Registers the current object as something that can be
-//               read from a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Registers the current object as something that can be read from a Bam file.
+ */
 void SourceTextureImage::
 register_with_read_factory() {
   BamReader::get_factory()->
     register_factory(get_class_type(), make_SourceTextureImage);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::write_datagram
-//       Access: Public, Virtual
-//  Description: Fills the indicated datagram up with a binary
-//               representation of the current object, in preparation
-//               for writing to a Bam file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated datagram up with a binary representation of the current
+ * object, in preparation for writing to a Bam file.
+ */
 void SourceTextureImage::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   ImageFile::write_datagram(writer, datagram);
@@ -199,15 +170,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   // sessions).
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::complete_pointers
-//       Access: Public, Virtual
-//  Description: Called after the object is otherwise completely read
-//               from a Bam file, this function's job is to store the
-//               pointers that were retrieved from the Bam file for
-//               each pointer object written.  The return value is the
-//               number of pointers processed from the list.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called after the object is otherwise completely read from a Bam file, this
+ * function's job is to store the pointers that were retrieved from the Bam file
+ * for each pointer object written.  The return value is the number of pointers
+ * processed from the list.
+ */
 int SourceTextureImage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = ImageFile::complete_pointers(p_list, manager);
@@ -216,14 +184,11 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   return pi;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::make_SourceTextureImage
-//       Access: Protected
-//  Description: This method is called by the BamReader when an object
-//               of this type is encountered in a Bam file; it should
-//               allocate and return a new object with all the data
-//               read.
-////////////////////////////////////////////////////////////////////
+/**
+ * This method is called by the BamReader when an object of this type is
+ * encountered in a Bam file; it should allocate and return a new object with
+ * all the data read.
+ */
 TypedWritable *SourceTextureImage::
 make_SourceTextureImage(const FactoryParams &params) {
   SourceTextureImage *me = new SourceTextureImage;
@@ -235,13 +200,10 @@ make_SourceTextureImage(const FactoryParams &params) {
   return me;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: SourceTextureImage::fillin
-//       Access: Protected
-//  Description: Reads the binary data from the given datagram
-//               iterator, which was written by a previous call to
-//               write_datagram().
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the binary data from the given datagram iterator, which was written by
+ * a previous call to write_datagram().
+ */
 void SourceTextureImage::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ImageFile::fillin(scan, manager);

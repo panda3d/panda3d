@@ -11,10 +11,9 @@
 
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramReader::GetMessageInplace
-//  Description: A function that will peal a core message of the input buffer
-////////////////////////////////////////////////////////////////////
+/**
+ * A function that will peal a core message of the input buffer
+ */
 inline bool Buffered_DatagramReader::
 GetMessageFromBuffer(Datagram &inmsg) {
   bool answer = false;
@@ -31,20 +30,17 @@ GetMessageFromBuffer(Datagram &inmsg) {
   }
   return answer;
 }
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramReader::Buffered_DatagramReader
-//  Description: Constructor.  Passes size up to ring buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Constructor.  Passes size up to ring buffer.
+ */
 inline Buffered_DatagramReader::
 Buffered_DatagramReader(int in_size) : RingBuffer(in_size) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Buffered_DatagramReader::ReSet
-//  Description: Reset all read content, ie. zeroes out buffer.
-//
-//	         If you lose framing, this will not help.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reset all read content, ie.  zeroes out buffer.  If you lose framing, this
+ * will not help.
+ */
 inline void Buffered_DatagramReader::
 ReSet(void) {
   ResetContent();

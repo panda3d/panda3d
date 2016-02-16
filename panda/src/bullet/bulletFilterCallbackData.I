@@ -11,11 +11,9 @@
  * @date 2012-11-26
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletFilterCallbackData::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletFilterCallbackData::
 BulletFilterCallbackData(PandaNode *node0, PandaNode *node1) :
   _node0(node0),
@@ -24,47 +22,38 @@ BulletFilterCallbackData(PandaNode *node0, PandaNode *node1) :
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletFilterCallbackData::get_node_0
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PandaNode *BulletFilterCallbackData::
 get_node_0() const {
 
   return _node0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletFilterCallbackData::get_node_1
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PandaNode *BulletFilterCallbackData::
 get_node_1() const {
 
   return _node1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletFilterCallbackData::get_collide
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool BulletFilterCallbackData::
 get_collide() const {
 
   return _collide;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletFilterCallbackData::set_collide
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletFilterCallbackData::
 set_collide(bool collide) {
 
   _collide = collide;
 }
-

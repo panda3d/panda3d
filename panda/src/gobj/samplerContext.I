@@ -11,11 +11,9 @@
  * @date 2014-12-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: SamplerContext::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE SamplerContext::
 SamplerContext(const SamplerState &sampler) :
   SimpleLruPage(1)

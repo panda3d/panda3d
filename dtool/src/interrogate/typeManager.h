@@ -31,13 +31,11 @@ class CPPIdentifier;
 class CPPNameComponent;
 class CPPManifest;
 
-////////////////////////////////////////////////////////////////////
-//       Class : TypeManager
-// Description : This is just a collection of static methods that
-//               perform useful operations on CPPTypes for
-//               interrogate.  The class is really just a namespace
-//               that groups these functions together.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is just a collection of static methods that perform useful operations on
+ * CPPTypes for interrogate.  The class is really just a namespace that groups
+ * these functions together.
+ */
 class TypeManager {
 public:
 
@@ -152,4 +150,3 @@ public:
 };
 
 #endif
-

@@ -11,13 +11,10 @@
  * @date 2001-01-26
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnDialDevice::get_vrpn_dial
-//       Access: Public
-//  Description: Returns a pointer to the particular VrpnDial this
-//               device gets its data from.  This pointer may be
-//               shared with other VrpnDialDevice objects.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a pointer to the particular VrpnDial this device gets its data from.
+ * This pointer may be shared with other VrpnDialDevice objects.
+ */
 INLINE VrpnDial *VrpnDialDevice::
 get_vrpn_dial() const {
   return _vrpn_dial;

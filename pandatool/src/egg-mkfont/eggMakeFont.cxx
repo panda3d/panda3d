@@ -33,11 +33,9 @@
 
 #include <ctype.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggMakeFont::
 EggMakeFont() : EggWriter(true, false) {
   set_program_brief("generates .egg files with rasterized font glyphs");
@@ -210,7 +208,7 @@ EggMakeFont() : EggWriter(true, false) {
      "Specify the size of the palette texture images.  This is used if "
      "-nopal is not specified.",
      &EggMakeFont::dispatch_int_pair, NULL, _palette_size);
-  
+
   add_option
     ("face", "index", 0,
      "Specify the face index of the particular face within the font file "
@@ -236,14 +234,11 @@ EggMakeFont() : EggWriter(true, false) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggMakeFont::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {
@@ -256,11 +251,9 @@ handle_args(ProgramBase::Args &args) {
   return EggWriter::handle_args(args);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggMakeFont::
 run() {
   if (has_output_filename() && !get_output_filename().get_dirname().empty()) {
@@ -432,7 +425,7 @@ run() {
   // reduce all of the texture images by the inverse of our scale
   // factor.
   char buffer[1024];
-  sprintf(buffer, ":margin 0;:coverage 1000;:background %f %f %f %f;:palette %d %d;*: %f%% keep-format", 
+  sprintf(buffer, ":margin 0;:coverage 1000;:background %f %f %f %f;:palette %d %d;*: %f%% keep-format",
           _bg[0], _bg[1], _bg[2], _bg[3],
           _palette_size[0], _palette_size[1],
           100.0 / _palettize_scale_factor);
@@ -523,23 +516,19 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::dispatch_range
-//       Access: Private, Static
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool EggMakeFont::
 dispatch_range(const string &, const string &arg, void *var) {
   RangeDescription *ip = (RangeDescription *)var;
   return ip->parse_parameter(arg);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::make_vertex
-//       Access: Private
-//  Description: Allocates and returns a new vertex from the vertex
-//               pool representing the indicated 2-d coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new vertex from the vertex pool representing the
+ * indicated 2-d coordinates.
+ */
 EggVertex *EggMakeFont::
 make_vertex(const LPoint2d &xy) {
   return
@@ -547,12 +536,9 @@ make_vertex(const LPoint2d &xy) {
                             LVector3d::rfu(xy[0], 0.0, xy[1], _coordinate_system));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::add_character
-//       Access: Private
-//  Description: Generates the indicated character and adds it to the
-//               font description.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates the indicated character and adds it to the font description.
+ */
 void EggMakeFont::
 add_character(int code) {
   PNMTextGlyph *glyph = _text_maker->get_glyph(code);
@@ -565,11 +551,9 @@ add_character(int code) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::make_geom
-//       Access: Private
-//  Description: Creates the actual geometry for the glyph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the actual geometry for the glyph.
+ */
 void EggMakeFont::
 make_geom(PNMTextGlyph *glyph, int character) {
   // Create an egg group to hold the polygon.
@@ -582,13 +566,13 @@ make_geom(PNMTextGlyph *glyph, int character) {
     int bitmap_left = glyph->get_left();
     double tex_x_size = glyph->get_width();
     double tex_y_size = glyph->get_height();
-    
+
     double poly_margin = _poly_margin;
     double x_origin = _tex_margin;
     double y_origin = _tex_margin;
     double page_y_size = tex_y_size + _tex_margin * 2;
     double page_x_size = tex_x_size + _tex_margin * 2;
-    
+
     // Determine the corners of the rectangle in geometric units.
     double tex_poly_margin = poly_margin / _pixels_per_unit;
     double origin_y = bitmap_top / _pixels_per_unit;
@@ -597,24 +581,24 @@ make_geom(PNMTextGlyph *glyph, int character) {
     double left = origin_x - tex_poly_margin;
     double bottom = origin_y - tex_y_size / _pixels_per_unit - tex_poly_margin;
     double right = origin_x + tex_x_size / _pixels_per_unit + tex_poly_margin;
-    
+
     // And the corresponding corners in UV units.
     double uv_top = 1.0f - (double)(y_origin - poly_margin) / page_y_size;
     double uv_left = (double)(x_origin - poly_margin) / page_x_size;
     double uv_bottom = 1.0f - (double)(y_origin + poly_margin + tex_y_size) / page_y_size;
     double uv_right = (double)(x_origin + poly_margin + tex_x_size) / page_x_size;
-    
+
     // Create the vertices for the polygon.
     EggVertex *v1 = make_vertex(LPoint2d(left, bottom));
     EggVertex *v2 = make_vertex(LPoint2d(right, bottom));
     EggVertex *v3 = make_vertex(LPoint2d(right, top));
     EggVertex *v4 = make_vertex(LPoint2d(left, top));
-    
+
     v1->set_uv(LTexCoordd(uv_left, uv_bottom));
     v2->set_uv(LTexCoordd(uv_right, uv_bottom));
     v3->set_uv(LTexCoordd(uv_right, uv_top));
     v4->set_uv(LTexCoordd(uv_left, uv_top));
-    
+
     EggPolygon *poly = new EggPolygon();
     group->add_child(poly);
     poly->set_texture(get_tref(glyph, character));
@@ -634,13 +618,10 @@ make_geom(PNMTextGlyph *glyph, int character) {
   point->add_vertex(v0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::get_tref
-//       Access: Private
-//  Description: Returns the egg texture reference for a particular
-//               glyph, creating it if it has not already been
-//               created.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the egg texture reference for a particular glyph, creating it if it
+ * has not already been created.
+ */
 EggTexture *EggMakeFont::
 get_tref(PNMTextGlyph *glyph, int character) {
   TRefs::iterator ti = _trefs.find(glyph);
@@ -653,12 +634,10 @@ get_tref(PNMTextGlyph *glyph, int character) {
   return tref;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::make_tref
-//       Access: Private
-//  Description: Generates a texture image for the indicated glyph,
-//               and returns its egg reference.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a texture image for the indicated glyph, and returns its egg
+ * reference.
+ */
 EggTexture *EggMakeFont::
 make_tref(PNMTextGlyph *glyph, int character) {
   char buffer[1024];
@@ -672,10 +651,10 @@ make_tref(PNMTextGlyph *glyph, int character) {
     image.alpha_fill(_bg[3]);
   }
   if (_got_interior) {
-    glyph->place(image, -glyph->get_left() + _tex_margin, 
+    glyph->place(image, -glyph->get_left() + _tex_margin,
                  glyph->get_top() + _tex_margin, _fg, _interior);
   } else {
-    glyph->place(image, -glyph->get_left() + _tex_margin, 
+    glyph->place(image, -glyph->get_left() + _tex_margin,
                  glyph->get_top() + _tex_margin, _fg);
   }
 
@@ -702,12 +681,10 @@ make_tref(PNMTextGlyph *glyph, int character) {
   return tref;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::add_extra_glyphs
-//       Access: Private
-//  Description: Reads the indicated filename and adds any numbered
-//               groups into the current egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the indicated filename and adds any numbered groups into the current
+ * egg file.
+ */
 void EggMakeFont::
 add_extra_glyphs(const Filename &extra_filename) {
   PT(EggData) extra_data = new EggData;
@@ -719,13 +696,10 @@ add_extra_glyphs(const Filename &extra_filename) {
   _group->steal_children(*extra_data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::r_add_extra_glyphs
-//       Access: Private
-//  Description: Recursively searches for numbered groups in the
-//               indicated egg file, and copies them to the current
-//               egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recursively searches for numbered groups in the indicated egg file, and
+ * copies them to the current egg file.
+ */
 void EggMakeFont::
 r_add_extra_glyphs(EggGroupNode *egg_group) {
   if (egg_group->is_of_type(EggGroup::get_class_type())) {
@@ -747,12 +721,9 @@ r_add_extra_glyphs(EggGroupNode *egg_group) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggMakeFont::is_numeric
-//       Access: Private, Static
-//  Description: Returns true if the indicated string is all numeric
-//               digits, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the indicated string is all numeric digits, false otherwise.
+ */
 bool EggMakeFont::
 is_numeric(const string &str) {
   if (str.empty()) {

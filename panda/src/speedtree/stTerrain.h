@@ -20,23 +20,17 @@
 #include "geomVertexData.h"
 #include "speedtree_api.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : STTerrain
-// Description : This is the abstract base class that defines the
-//               interface needed to describe a terrain for rendering
-//               by SpeedTree.  To use it, you must subclass and
-//               override the appropriate virtual methods.  Or,
-//               consider just using STBasicTerrain.
-//
-//               A terrain is defined as a 2-d height function over
-//               all space: get_height(x, y) may be called for any
-//               point in space and it should return a reasonable
-//               value.  A terrain also provides normal maps and splat
-//               maps, as rendered by SpeedTree's Terrain.hlsl shader
-//               file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the abstract base class that defines the interface needed to describe
+ * a terrain for rendering by SpeedTree.  To use it, you must subclass and
+ * override the appropriate virtual methods.  Or, consider just using
+ * STBasicTerrain.  A terrain is defined as a 2-d height function over all
+ * space: get_height(x, y) may be called for any point in space and it should
+ * return a reasonable value.  A terrain also provides normal maps and splat
+ * maps, as rendered by SpeedTree's Terrain.hlsl shader file.
+ */
 class EXPCL_PANDASPEEDTREE STTerrain : public TypedReferenceCount, public Namable {
-protected:  
+protected:
   STTerrain();
   STTerrain(const STTerrain &copy);
 PUBLISHED:
@@ -65,7 +59,7 @@ PUBLISHED:
   virtual PN_stdfloat get_slope(PN_stdfloat x, PN_stdfloat y) const;
 
   bool placement_is_acceptable(PN_stdfloat x, PN_stdfloat y,
-                               PN_stdfloat height_min, PN_stdfloat height_max, 
+                               PN_stdfloat height_min, PN_stdfloat height_max,
                                PN_stdfloat slope_min, PN_stdfloat slope_max);
 
   virtual void fill_vertices(GeomVertexData *data,

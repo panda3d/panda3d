@@ -11,11 +11,9 @@
  * @date 2002-07-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseData::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MouseData::
 MouseData() {
   _in_window = false;
@@ -23,11 +21,9 @@ MouseData() {
   _ypos = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseData::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE MouseData::
 MouseData(const MouseData &copy) :
   _in_window(copy._in_window),
@@ -36,11 +32,9 @@ MouseData(const MouseData &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseData::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void MouseData::
 operator = (const MouseData &copy) {
   _in_window = copy._in_window;
@@ -48,31 +42,25 @@ operator = (const MouseData &copy) {
   _ypos = copy._ypos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseData::get_x
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE double MouseData::
 get_x() const {
   return _xpos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseData::get_y
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE double MouseData::
 get_y() const {
   return _ypos;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MouseData::get_in_window
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool MouseData::
 get_in_window() const {
   return _in_window;

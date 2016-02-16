@@ -44,10 +44,9 @@ class BulletSoftBodyWorldInfo;
 
 extern PT(CallbackObject) bullet_contact_added_callback;
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletWorld
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletWorld : public TypedReferenceCount {
 
 PUBLISHED:
@@ -255,7 +254,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "BulletWorld", 
+    register_type(_type_handle, "BulletWorld",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

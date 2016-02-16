@@ -11,23 +11,18 @@
  * @date 2009-11-15
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxBoxForceFieldShape::
 PhysxBoxForceFieldShape() : PhysxForceFieldShape() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxBoxForceFieldShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxBoxForceFieldShape::
 ~PhysxBoxForceFieldShape() {
 
 }
-

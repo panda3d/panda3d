@@ -18,12 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceBlockCoordSys
-// Description : Specifies whether texture coordinates are computed
-//               based on the vertices' world coordinates or local
-//               coordinates.
-////////////////////////////////////////////////////////////////////
+/**
+ * Specifies whether texture coordinates are computed based on the vertices'
+ * world coordinates or local coordinates.
+ */
 class LwoSurfaceBlockCoordSys : public LwoChunk {
 public:
   enum Type {
@@ -56,5 +54,3 @@ private:
 };
 
 #endif
-
-

@@ -23,13 +23,11 @@
 // Panda.
 #include <math.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : DCAtomicField
-// Description : A single atomic field of a Distributed Class, as read
-//               from a .dc file.  This defines an interface to the
-//               Distributed Class, and is always implemented as a
-//               remote procedure method.
-////////////////////////////////////////////////////////////////////
+/**
+ * A single atomic field of a Distributed Class, as read from a .dc file.  This
+ * defines an interface to the Distributed Class, and is always implemented as a
+ * remote procedure method.
+ */
 class EXPCL_DIRECT DCAtomicField : public DCField {
 public:
   DCAtomicField(const string &name, DCClass *dclass, bool bogus_field);

@@ -11,11 +11,9 @@
  * @date 2010-02-09
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::Copy Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletTriangleMeshShape::
 BulletTriangleMeshShape(const BulletTriangleMeshShape &copy) :
   _bvh_shape(copy._bvh_shape),
@@ -23,11 +21,9 @@ BulletTriangleMeshShape(const BulletTriangleMeshShape &copy) :
   _mesh(copy._mesh) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::Copy Assignment Operator
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletTriangleMeshShape::
 operator = (const BulletTriangleMeshShape &copy) {
 
@@ -36,11 +32,9 @@ operator = (const BulletTriangleMeshShape &copy) {
   _mesh = copy._mesh;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE BulletTriangleMeshShape::
 ~BulletTriangleMeshShape() {
 
@@ -53,25 +47,20 @@ INLINE BulletTriangleMeshShape::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::is_static
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool BulletTriangleMeshShape::
 is_static() const {
 
   return (_bvh_shape != NULL);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletTriangleMeshShape::is_dynamic
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool BulletTriangleMeshShape::
 is_dynamic() const {
 
   return (_gimpact_shape != NULL);
 }
-

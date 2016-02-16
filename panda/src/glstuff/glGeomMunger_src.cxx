@@ -17,11 +17,9 @@ TypeHandle CLP(GeomMunger)::_type_handle;
 
 ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 4, NT_uint8, C_color),
@@ -42,11 +40,9 @@ CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLP(GeomMunger)::
 ~CLP(GeomMunger)() {
   // We need to remove this pointer from all of the geom contexts that
@@ -58,25 +54,20 @@ CLP(GeomMunger)::
   _geom_contexts.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::wp_callback
-//       Access: Public, Virtual
-//  Description: This callback is set to be made whenever the
-//               associated _texture or _tex_gen attributes are
-//               destructed, in which case the GeomMunger is invalid
-//               and should no longer be used.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback is set to be made whenever the associated _texture or _tex_gen
+ * attributes are destructed, in which case the GeomMunger is invalid and should
+ * no longer be used.
+ */
 void CLP(GeomMunger)::
 wp_callback(void *) {
   unregister_myself();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::munge_format_impl
-//       Access: Protected, Virtual
-//  Description: Given a source GeomVertexFormat, converts it if
-//               necessary to the appropriate format for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source GeomVertexFormat, converts it if necessary to the appropriate
+ * format for rendering.
+ */
 CPT(GeomVertexFormat) CLP(GeomMunger)::
 munge_format_impl(const GeomVertexFormat *orig,
                   const GeomVertexAnimationSpec &animation) {
@@ -263,12 +254,10 @@ munge_format_impl(const GeomVertexFormat *orig,
   return format;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::premunge_format_impl
-//       Access: Protected, Virtual
-//  Description: Given a source GeomVertexFormat, converts it if
-//               necessary to the appropriate format for rendering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Given a source GeomVertexFormat, converts it if necessary to the appropriate
+ * format for rendering.
+ */
 CPT(GeomVertexFormat) CLP(GeomMunger)::
 premunge_format_impl(const GeomVertexFormat *orig) {
   PT(GeomVertexFormat) new_format = new GeomVertexFormat(*orig);
@@ -426,11 +415,9 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 }
 
 #ifdef OPENGLES
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::munge_geom_impl
-//       Access: Protected, Virtual
-//  Description: Converts a Geom and/or its data as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a Geom and/or its data as necessary.
+ */
 void CLP(GeomMunger)::
 munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
                 Thread *current_thread) {
@@ -445,11 +432,9 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::premunge_geom_impl
-//       Access: Protected, Virtual
-//  Description: Converts a Geom and/or its data as necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts a Geom and/or its data as necessary.
+ */
 void CLP(GeomMunger)::
 premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
   StandardMunger::premunge_geom_impl(geom, vertex_data);
@@ -464,14 +449,11 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
 }
 #endif  // OPENGLES
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to compare two GeomMungers who are known to be of the same type, for
+ * an apples-to-apples comparison.  This will never be called on two pointers of
+ * a different type.
+ */
 int CLP(GeomMunger)::
 compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
@@ -488,14 +470,11 @@ compare_to_impl(const GeomMunger *other) const {
   return StandardMunger::compare_to_impl(other);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::geom_compare_to_impl
-//       Access: Protected, Virtual
-//  Description: Called to compare two GeomMungers who are known to be
-//               of the same type, for an apples-to-apples comparison.
-//               This will never be called on two pointers of a
-//               different type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called to compare two GeomMungers who are known to be of the same type, for
+ * an apples-to-apples comparison.  This will never be called on two pointers of
+ * a different type.
+ */
 int CLP(GeomMunger)::
 geom_compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;

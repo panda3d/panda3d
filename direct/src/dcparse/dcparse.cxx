@@ -21,7 +21,7 @@
 
 void
 usage() {
-  cerr << 
+  cerr <<
     "\n"
     "Usage:\n\n"
     "dcparse [options]  [file1 file2 ...]\n"
@@ -31,7 +31,7 @@ usage() {
 void
 help() {
   usage();
-  cerr << 
+  cerr <<
     "This program reads one or more DC files, which are used to describe the\n"
     "communication channels in the distributed class system.  By default,\n"
     "the file(s) are read and concatenated, and a single hash code is printed\n"
@@ -57,7 +57,7 @@ help() {
 }
 
 void
-write_class_hierarchy(int indent_level, const DCFile &file, 
+write_class_hierarchy(int indent_level, const DCFile &file,
                       const DCClass *this_dclass) {
   indent(cout, indent_level)
     << this_dclass->get_name() << "\n";

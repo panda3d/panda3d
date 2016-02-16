@@ -21,14 +21,12 @@
 
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : AnimChannelBase
-// Description : Parent class for all animation channels.  An
-//               AnimChannel is an arbitrary function that changes
-//               over time (actually, over frames), usually defined by
-//               a table read from an egg file (but possibly computed
-//               or generated in any other way).
-////////////////////////////////////////////////////////////////////
+/**
+ * Parent class for all animation channels.  An AnimChannel is an arbitrary
+ * function that changes over time (actually, over frames), usually defined by a
+ * table read from an egg file (but possibly computed or generated in any other
+ * way).
+ */
 class EXPCL_PANDA_CHAN AnimChannelBase : public AnimGroup {
 protected:
   // The default constructor is protected: don't try to create an
@@ -41,7 +39,7 @@ protected:
 public:
   INLINE AnimChannelBase(AnimGroup *parent, const string &name);
 
-  virtual bool has_changed(int last_frame, double last_frac, 
+  virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
 
   virtual TypeHandle get_value_type() const=0;

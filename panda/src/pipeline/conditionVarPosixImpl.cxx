@@ -18,11 +18,9 @@
 #include "conditionVarPosixImpl.h"
 #include <sys/time.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarPosixImpl::wait
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConditionVarPosixImpl::
 wait(double timeout) {
   //TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);

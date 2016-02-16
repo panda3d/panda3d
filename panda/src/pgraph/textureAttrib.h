@@ -24,12 +24,10 @@
 #include "vector_int.h"
 #include "epvector.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : TextureAttrib
-// Description : Indicates the set of TextureStages and their
-//               associated Textures that should be applied to (or
-//               removed from) a node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates the set of TextureStages and their associated Textures that should
+ * be applied to (or removed from) a node.
+ */
 class EXPCL_PANDA_PGRAPH TextureAttrib : public RenderAttrib {
 protected:
   INLINE TextureAttrib();

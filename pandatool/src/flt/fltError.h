@@ -35,6 +35,3 @@ enum FltError {
 ostream &operator << (ostream &out, FltError error);
 
 #endif
-
-
-

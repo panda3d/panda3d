@@ -27,11 +27,9 @@ int x11GraphicsPipe::_x_error_count = 0;
 
 LightReMutex x11GraphicsPipe::_x_mutex;
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 x11GraphicsPipe::
 x11GraphicsPipe(const string &display) {
   string display_spec = display;
@@ -98,7 +96,7 @@ x11GraphicsPipe(const string &display) {
     XRRRates(_display, 0, i, &num_rates);
     _display_information->_total_display_modes += num_rates;
   }
-  
+
   short *rates;
   short counter = 0;
   _display_information->_display_mode_array = new DisplayMode[_display_information->_total_display_modes];
@@ -152,11 +150,9 @@ x11GraphicsPipe(const string &display) {
   _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 x11GraphicsPipe::
 ~x11GraphicsPipe() {
   release_hidden_cursor();
@@ -168,15 +164,12 @@ x11GraphicsPipe::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::get_preferred_window_thread
-//       Access: Public, Virtual
-//  Description: Returns an indication of the thread in which this
-//               GraphicsPipe requires its window processing to be
-//               performed: typically either the app thread (e.g. X)
-//               or the draw thread (Windows).
-////////////////////////////////////////////////////////////////////
-GraphicsPipe::PreferredWindowThread 
+/**
+ * Returns an indication of the thread in which this GraphicsPipe requires its
+ * window processing to be performed: typically either the app thread (e.g.  X)
+ * or the draw thread (Windows).
+ */
+GraphicsPipe::PreferredWindowThread
 x11GraphicsPipe::get_preferred_window_thread() const {
   // Actually, since we're creating the graphics context in
   // open_window() now, it appears we need to ensure the open_window()
@@ -192,12 +185,9 @@ x11GraphicsPipe::get_preferred_window_thread() const {
   return PWT_draw;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::make_hidden_cursor
-//       Access: Private
-//  Description: Called once to make an invisible Cursor for return
-//               from get_hidden_cursor().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to make an invisible Cursor for return from get_hidden_cursor().
+ */
 void x11GraphicsPipe::
 make_hidden_cursor() {
   nassertv(_hidden_cursor == None);
@@ -210,17 +200,14 @@ make_hidden_cursor() {
   XColor black;
   memset(&black, 0, sizeof(black));
 
-  _hidden_cursor = XCreatePixmapCursor(_display, empty, empty, 
+  _hidden_cursor = XCreatePixmapCursor(_display, empty, empty,
                                        &black, &black, x_size, y_size);
   XFreePixmap(_display, empty);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::release_hidden_cursor
-//       Access: Private
-//  Description: Called once to release the invisible cursor created
-//               by make_hidden_cursor().
-////////////////////////////////////////////////////////////////////
+/**
+ * Called once to release the invisible cursor created by make_hidden_cursor().
+ */
 void x11GraphicsPipe::
 release_hidden_cursor() {
   if (_hidden_cursor != None) {
@@ -229,17 +216,13 @@ release_hidden_cursor() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::install_error_handlers
-//       Access: Private, Static
-//  Description: Installs new Xlib error handler functions if this is
-//               the first time this function has been called.  These
-//               error handler functions will attempt to reduce Xlib's
-//               annoying tendency to shut down the client at the
-//               first error.  Unfortunately, it is difficult to play
-//               nice with the client if it has already installed its
-//               own error handlers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Installs new Xlib error handler functions if this is the first time this
+ * function has been called.  These error handler functions will attempt to
+ * reduce Xlib's annoying tendency to shut down the client at the first error.
+ * Unfortunately, it is difficult to play nice with the client if it has already
+ * installed its own error handlers.
+ */
 void x11GraphicsPipe::
 install_error_handlers() {
   if (_error_handlers_installed) {
@@ -251,12 +234,9 @@ install_error_handlers() {
   _error_handlers_installed = true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::error_handler
-//       Access: Private, Static
-//  Description: This function is installed as the error handler for a
-//               non-fatal Xlib error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is installed as the error handler for a non-fatal Xlib error.
+ */
 int x11GraphicsPipe::
 error_handler(X11_Display *display, XErrorEvent *error) {
   ++_x_error_count;
@@ -285,12 +265,9 @@ error_handler(X11_Display *display, XErrorEvent *error) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsPipe::io_error_handler
-//       Access: Private, Static
-//  Description: This function is installed as the error handler for a
-//               fatal Xlib error.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is installed as the error handler for a fatal Xlib error.
+ */
 int x11GraphicsPipe::
 io_error_handler(X11_Display *display) {
   x11display_cat.fatal()

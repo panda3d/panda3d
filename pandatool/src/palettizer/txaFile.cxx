@@ -20,21 +20,17 @@
 #include "pnotify.h"
 #include "pnmFileTypeRegistry.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 TxaFile::
 TxaFile() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::read
-//       Access: Public
-//  Description: Reads the indicated stream, and returns true
-//               if successful, or false if there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the indicated stream, and returns true if successful, or false if there
+ * is an error.
+ */
 bool TxaFile::
 read(istream &in, const string &filename) {
   string line;
@@ -123,15 +119,12 @@ read(istream &in, const string &filename) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::match_egg
-//       Access: Public
-//  Description: Searches for a matching line in the .txa file for the
-//               given egg file and applies its specifications.  If a
-//               match is found, returns true; otherwise, returns
-//               false.  Also returns false if all the matching lines
-//               for the egg file include the keyword "cont".
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for a matching line in the .txa file for the given egg file and
+ * applies its specifications.  If a match is found, returns true; otherwise,
+ * returns false.  Also returns false if all the matching lines for the egg file
+ * include the keyword "cont".
+ */
 bool TxaFile::
 match_egg(EggFile *egg_file) const {
   Lines::const_iterator li;
@@ -144,15 +137,12 @@ match_egg(EggFile *egg_file) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::match_texture
-//       Access: Public
-//  Description: Searches for a matching line in the .txa file for the
-//               given texture and applies its specifications.  If a
-//               match is found, returns true; otherwise, returns
-//               false.  Also returns false if all the matching lines
-//               for the texture include the keyword "cont".
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches for a matching line in the .txa file for the given texture and
+ * applies its specifications.  If a match is found, returns true; otherwise,
+ * returns false.  Also returns false if all the matching lines for the texture
+ * include the keyword "cont".
+ */
 bool TxaFile::
 match_texture(TextureImage *texture) const {
   Lines::const_iterator li;
@@ -165,13 +155,10 @@ match_texture(TextureImage *texture) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::write
-//       Access: Public
-//  Description: Outputs a representation of the lines that were read
-//               in to the indicated output stream.  This is primarily
-//               useful for debugging.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a representation of the lines that were read in to the indicated
+ * output stream.  This is primarily useful for debugging.
+ */
 void TxaFile::
 write(ostream &out) const {
   Lines::const_iterator li;
@@ -180,14 +167,11 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::get_line_or_semicolon
-//       Access: Private, Static
-//  Description: Reads the next line, or the next semicolon-delimited
-//               phrase, from the indicated input stream.  Returns
-//               the character that marks the end of the line, or EOF
-//               if the end of file has been reached.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads the next line, or the next semicolon-delimited phrase, from the
+ * indicated input stream.  Returns the character that marks the end of the
+ * line, or EOF if the end of file has been reached.
+ */
 int TxaFile::
 get_line_or_semicolon(istream &in, string &line) {
   line = string();
@@ -207,13 +191,10 @@ get_line_or_semicolon(istream &in, string &line) {
   return ch;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_group_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":group" and indicates the relationships
-//               between one or more groups.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":group" and
+ * indicates the relationships between one or more groups.
+ */
 bool TxaFile::
 parse_group_line(const vector_string &words) {
   vector_string::const_iterator wi;
@@ -299,13 +280,10 @@ parse_group_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_palette_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":palette" and indicates the appropriate size
-//               for the palette images.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":palette" and
+ * indicates the appropriate size for the palette images.
+ */
 bool TxaFile::
 parse_palette_line(const vector_string &words) {
   if (words.size() != 3) {
@@ -329,13 +307,10 @@ parse_palette_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_margin_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":margin" and indicates the default margin
-//               size.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":margin" and
+ * indicates the default margin size.
+ */
 bool TxaFile::
 parse_margin_line(const vector_string &words) {
   if (words.size() != 2) {
@@ -357,13 +332,10 @@ parse_margin_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_background_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":background" and indicates the palette
-//               background color.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":background"
+ * and indicates the palette background color.
+ */
 bool TxaFile::
 parse_background_line(const vector_string &words) {
   if (words.size() != 5) {
@@ -385,13 +357,10 @@ parse_background_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_coverage_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":coverage" and indicates the default
-//               coverage threshold.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":coverage" and
+ * indicates the default coverage threshold.
+ */
 bool TxaFile::
 parse_coverage_line(const vector_string &words) {
   if (words.size() != 2) {
@@ -414,13 +383,10 @@ parse_coverage_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_powertwo_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":powertwo" and indicates whether textures
-//               should by default be forced to a power of two.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":powertwo" and
+ * indicates whether textures should by default be forced to a power of two.
+ */
 bool TxaFile::
 parse_powertwo_line(const vector_string &words) {
   if (words.size() != 2) {
@@ -445,13 +411,10 @@ parse_powertwo_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_imagetype_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":imagetype" and indicates the default image
-//               file type to convert palettes and textures to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":imagetype" and
+ * indicates the default image file type to convert palettes and textures to.
+ */
 bool TxaFile::
 parse_imagetype_line(const vector_string &words) {
   if (words.size() != 2) {
@@ -469,14 +432,11 @@ parse_imagetype_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_shadowtype_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":shadowtype" and indicates the image file
-//               type to convert working copies of the palette images
-//               to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":shadowtype"
+ * and indicates the image file type to convert working copies of the palette
+ * images to.
+ */
 bool TxaFile::
 parse_shadowtype_line(const vector_string &words) {
   if (words.size() != 2) {
@@ -495,13 +455,10 @@ parse_shadowtype_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_round_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":round" and indicates how or whether to
-//               round up UV minmax boxes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":round" and
+ * indicates how or whether to round up UV minmax boxes.
+ */
 bool TxaFile::
 parse_round_line(const vector_string &words) {
   if (words.size() == 2) {
@@ -537,13 +494,11 @@ parse_round_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_remap_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":remap" and indicates how or whether to
-//               remap UV coordinates in egg files to the unit box.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":remap" and
+ * indicates how or whether to remap UV coordinates in egg files to the unit
+ * box.
+ */
 bool TxaFile::
 parse_remap_line(const vector_string &words) {
   int i = 1;
@@ -580,15 +535,12 @@ parse_remap_line(const vector_string &words) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_cutout_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":cutout" and indicates how to handle
-//               alpha-cutout textures: those textures that appear to
-//               be mostly solid parts and invisible parts, with a
-//               thin border of antialiased alpha along the boundary.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":cutout" and
+ * indicates how to handle alpha-cutout textures: those textures that appear to
+ * be mostly solid parts and invisible parts, with a thin border of antialiased
+ * alpha along the boundary.
+ */
 bool TxaFile::
 parse_cutout_line(const vector_string &words) {
   if (words.size() < 2 || words.size() > 3) {
@@ -612,13 +564,10 @@ parse_cutout_line(const vector_string &words) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: TxaFile::parse_textureswap_line
-//       Access: Private
-//  Description: Handles the line in a .txa file that begins with the
-//               keyword ":textureswap" and indicates the relationships
-//               between textures to be swapped.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the line in a .txa file that begins with the keyword ":textureswap"
+ * and indicates the relationships between textures to be swapped.
+ */
 bool TxaFile::
 parse_textureswap_line(const vector_string &words) {
   vector_string::const_iterator wi;
@@ -641,6 +590,6 @@ parse_textureswap_line(const vector_string &words) {
     sourceTextureName = sourceTextureName.substr(0, dot);
   }
   group->add_texture_swap_info(sourceTextureName, words);
-  
+
   return true;
 }

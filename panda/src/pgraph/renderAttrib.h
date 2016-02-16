@@ -29,33 +29,22 @@ class CullTraverser;
 class CullTraverserData;
 class RenderState;
 
-////////////////////////////////////////////////////////////////////
-//       Class : RenderAttrib
-// Description : This is the base class for a number of render
-//               attributes (other than transform) that may be set on
-//               scene graph nodes to control the appearance of
-//               geometry.  This includes TextureAttrib, ColorAttrib,
-//               etc.
-//
-//               RenderAttrib represents render attributes that always
-//               propagate down to the leaves without regard to the
-//               particular node they are assigned to.  A RenderAttrib
-//               will have the same effect on a leaf node whether it
-//               is assigned to the graph at the leaf or several nodes
-//               above.  This is different from RenderEffect, which
-//               represents a particular render property that is
-//               applied immediately to the node on which it is
-//               encountered, like billboarding or decaling.
-//
-//               You should not attempt to create or modify a
-//               RenderAttrib directly; instead, use the make() method
-//               of the appropriate kind of attrib you want.  This
-//               will allocate and return a new RenderAttrib of the
-//               appropriate type, and it may share pointers if
-//               possible.  Do not modify the new RenderAttrib if you
-//               wish to change its properties; instead, create a new
-//               one.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for a number of render attributes (other than
+ * transform) that may be set on scene graph nodes to control the appearance of
+ * geometry.  This includes TextureAttrib, ColorAttrib, etc.  RenderAttrib
+ * represents render attributes that always propagate down to the leaves without
+ * regard to the particular node they are assigned to.  A RenderAttrib will have
+ * the same effect on a leaf node whether it is assigned to the graph at the
+ * leaf or several nodes above.  This is different from RenderEffect, which
+ * represents a particular render property that is applied immediately to the
+ * node on which it is encountered, like billboarding or decaling.  You should
+ * not attempt to create or modify a RenderAttrib directly; instead, use the
+ * make() method of the appropriate kind of attrib you want.  This will allocate
+ * and return a new RenderAttrib of the appropriate type, and it may share
+ * pointers if possible.  Do not modify the new RenderAttrib if you wish to
+ * change its properties; instead, create a new one.
+ */
 class EXPCL_PANDA_PGRAPH RenderAttrib : public TypedWritableReferenceCount {
 protected:
   RenderAttrib();
@@ -249,4 +238,3 @@ INLINE ostream &operator << (ostream &out, const RenderAttrib &attrib) {
 #include "renderAttrib.I"
 
 #endif
-

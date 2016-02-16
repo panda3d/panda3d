@@ -24,19 +24,14 @@
 
 class BamCacheRecord;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggData
-// Description : This is the primary interface into all the egg data,
-//               and the root of the egg file structure.  An EggData
-//               structure corresponds exactly with an egg file on the
-//               disk.
-//
-//               The EggData class inherits from EggGroupNode its
-//               collection of children, which are accessed by using
-//               the EggData itself as an STL container with begin()
-//               and end() calls.  The children of the EggData class
-//               are the toplevel nodes in the egg file.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the primary interface into all the egg data, and the root of the egg
+ * file structure.  An EggData structure corresponds exactly with an egg file on
+ * the disk.  The EggData class inherits from EggGroupNode its collection of
+ * children, which are accessed by using the EggData itself as an STL container
+ * with begin() and end() calls.  The children of the EggData class are the
+ * toplevel nodes in the egg file.
+ */
 class EXPCL_PANDAEGG EggData : public EggGroupNode {
 PUBLISHED:
   INLINE EggData();

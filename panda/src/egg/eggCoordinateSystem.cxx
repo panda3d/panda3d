@@ -18,12 +18,10 @@
 TypeHandle EggCoordinateSystem::_type_handle;
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggCoordinateSystem::write
-//       Access: Public, Virtual
-//  Description: Writes the coordinate system definition to the
-//               indicated output stream in Egg format.
-////////////////////////////////////////////////////////////////////
+/**
+ * Writes the coordinate system definition to the indicated output stream in Egg
+ * format.
+ */
 void EggCoordinateSystem::
 write(ostream &out, int indent_level) const {
   if (get_value() != CS_default &&

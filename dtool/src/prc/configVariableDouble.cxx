@@ -14,11 +14,9 @@
 #include "configVariableDouble.h"
 #include "string_utils.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableDouble::set_default_value
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigVariableDouble::
 set_default_value(double default_value) {
   _core->set_default_value(format_string(default_value));

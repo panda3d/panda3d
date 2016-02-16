@@ -13,22 +13,18 @@
 
 #include "config_particlesystem.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: set_radius
-//       Access: Public
-//  Description: radius set
-////////////////////////////////////////////////////////////////////
+/**
+ * radius set
+ */
 
 INLINE void SphereSurfaceEmitter::
 set_radius(PN_stdfloat r) {
   _radius = r;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_radius
-//       Access: Public
-//  Description: radius get
-////////////////////////////////////////////////////////////////////
+/**
+ * radius get
+ */
 
 INLINE PN_stdfloat SphereSurfaceEmitter::
 get_radius() const {

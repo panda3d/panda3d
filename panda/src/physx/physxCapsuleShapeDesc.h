@@ -19,10 +19,9 @@
 #include "physxShapeDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxCapsuleShapeDesc
-// Description : Descriptor class for PhysxCapsuleShape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for PhysxCapsuleShape.
+ */
 class EXPCL_PANDAPHYSX PhysxCapsuleShapeDesc : public PhysxShapeDesc {
 
 PUBLISHED:

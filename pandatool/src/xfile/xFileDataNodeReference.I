@@ -11,11 +11,9 @@
  * @date 2004-10-08
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: XFileDataNodeReference::get_object
-//       Access: Public
-//  Description: Returns the actual data object being referenced.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the actual data object being referenced.
+ */
 INLINE XFileDataNodeTemplate *XFileDataNodeReference::
 get_object() const {
   return _object;

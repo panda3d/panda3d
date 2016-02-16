@@ -32,17 +32,13 @@ class PalettePage;
 class TextureImage;
 class TxaFile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PaletteGroup
-// Description : This is the highest level of grouping for
-//               TextureImages.  Textures are assigned to one or
-//               several PaletteGroups based on the information in the
-//               .txa file; each PaletteGroup is conceptually a
-//               collection of textures that are to be moved around
-//               (into texture memory, downloaded, etc.) in one big
-//               chunk.  It is the set of all textures that may be
-//               displayed together at any given time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the highest level of grouping for TextureImages.  Textures are
+ * assigned to one or several PaletteGroups based on the information in the .txa
+ * file; each PaletteGroup is conceptually a collection of textures that are to
+ * be moved around (into texture memory, downloaded, etc.) in one big chunk.  It
+ * is the set of all textures that may be displayed together at any given time.
+ */
 class PaletteGroup : public TypedWritable, public Namable {
 public:
   PaletteGroup();
@@ -152,4 +148,3 @@ private:
 };
 
 #endif
-

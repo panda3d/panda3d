@@ -19,16 +19,12 @@
 #include "httpEntityTag.h"
 #include "httpDate.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DocumentSpec
-// Description : A descriptor that refers to a particular version of a
-//               document.  This includes the URL of the document and
-//               its identity tag and last-modified dates.
-//
-//               The DocumentSpec may also be used to request a newer
-//               document than a particular one if available, for
-//               instance to refresh a cached document.
-////////////////////////////////////////////////////////////////////
+/**
+ * A descriptor that refers to a particular version of a document.  This
+ * includes the URL of the document and its identity tag and last-modified
+ * dates.  The DocumentSpec may also be used to request a newer document than a
+ * particular one if available, for instance to refresh a cached document.
+ */
 class EXPCL_PANDAEXPRESS DocumentSpec {
 PUBLISHED:
   INLINE DocumentSpec();

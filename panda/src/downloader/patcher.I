@@ -11,11 +11,9 @@
  * @date 2000-12-20
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patcher::get_progress
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PN_stdfloat Patcher::
 get_progress() const {
   if(_patchfile) {

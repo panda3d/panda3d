@@ -16,11 +16,9 @@
 
 TypeHandle PhysxConvexForceFieldShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShape::link
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxConvexForceFieldShape::
 link(NxForceFieldShape *shapePtr) {
 
@@ -34,11 +32,9 @@ link(NxForceFieldShape *shapePtr) {
   group->_shapes.add(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShape::unlink
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PhysxConvexForceFieldShape::
 unlink() {
 
@@ -49,16 +45,12 @@ unlink() {
   group->_shapes.remove(this);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShape::save_to_desc
-//       Access: Published
-//  Description: Saves the state of the shape object to a
-//               descriptor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Saves the state of the shape object to a descriptor.
+ */
 void PhysxConvexForceFieldShape::
 save_to_desc(PhysxConvexForceFieldShapeDesc &shapeDesc) const {
 
   nassertv(_error_type == ET_ok);
   _ptr->saveToDesc(shapeDesc._desc);
 }
-

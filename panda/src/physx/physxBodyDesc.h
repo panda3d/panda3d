@@ -20,11 +20,9 @@
 #include "physxEnums.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBodyDesc
-// Description : Descriptor for the optional rigid body dynamic
-//               state of PhysxActor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for the optional rigid body dynamic state of PhysxActor.
+ */
 class EXPCL_PANDAPHYSX PhysxBodyDesc : public PhysxEnums {
 
 PUBLISHED:

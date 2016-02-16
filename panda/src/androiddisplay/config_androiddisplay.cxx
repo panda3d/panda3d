@@ -28,14 +28,12 @@ ConfigureFn(config_androiddisplay) {
   init_libandroiddisplay();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libandroiddisplay
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libandroiddisplay() {
   static bool initialized = false;
@@ -63,10 +61,9 @@ init_libandroiddisplay() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: get_egl_error_string
-//  Description: Returns the given EGL error as string.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the given EGL error as string.
+ */
 const string get_egl_error_string(int error) {
   switch (error) {
     case 0x3000: return "EGL_SUCCESS"; break;

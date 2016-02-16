@@ -29,10 +29,9 @@ class CPPType;
 class CPPPreprocessor;
 class CPPTemplateParameterList;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPIdentifier
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPIdentifier {
 public:
   CPPIdentifier(const string &name, const CPPFile &file = CPPFile());

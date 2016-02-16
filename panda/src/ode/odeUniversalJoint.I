@@ -301,4 +301,3 @@ get_param_stop_CFM(int axis) const {
   }
   return 0;
 }
-

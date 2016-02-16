@@ -18,11 +18,10 @@
 #include "numeric_types.h"
 #include "socket_portable.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Socket_Address
-// Description : A simple place to store and munipulate tcp and port
-//               address for communication layer
-////////////////////////////////////////////////////////////////////
+/**
+ * A simple place to store and munipulate tcp and port address for communication
+ * layer
+ */
 class EXPCL_PANDA_NATIVENET Socket_Address {
 public:
   typedef struct sockaddr_in AddressType;

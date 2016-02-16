@@ -13,11 +13,9 @@
 
 TypeHandle FLOATNAME(LOrientation)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LOrientation::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LOrientation)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {

@@ -36,5 +36,3 @@ INLINE_LINMATH LMatrix4f cast_to_float(const LMatrix4d &source);
 #include "cast_to_float.I"
 
 #endif
-
-

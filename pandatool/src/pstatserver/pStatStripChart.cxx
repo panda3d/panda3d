@@ -22,11 +22,9 @@
 
 #include <algorithm>
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatStripChart::
 PStatStripChart(PStatMonitor *monitor, PStatView &view,
                 int thread_index, int collector_index, int xsize, int ysize) :
@@ -58,20 +56,16 @@ PStatStripChart(PStatMonitor *monitor, PStatView &view,
   set_default_vertical_scale();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 PStatStripChart::
 ~PStatStripChart() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::new_data
-//       Access: Public
-//  Description: Indicates that new data has become available.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates that new data has become available.
+ */
 void PStatStripChart::
 new_data(int frame_number) {
   // If the new frame is older than the last one we've drawn, we'll
@@ -80,11 +74,9 @@ new_data(int frame_number) {
   _next_frame = min(frame_number, _next_frame);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::update
-//       Access: Public
-//  Description: Updates the chart with the latest data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the chart with the latest data.
+ */
 void PStatStripChart::
 update() {
   const PStatClientData *client_data = get_monitor()->get_client_data();
@@ -124,23 +116,19 @@ update() {
   idle();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::first_data
-//       Access: Public
-//  Description: Returns true if the chart has seen its first data
-//               appear on it, false if it is still a virgin chart.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the chart has seen its first data appear on it, false if it
+ * is still a virgin chart.
+ */
 bool PStatStripChart::
 first_data() const {
   return _first_data;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::set_collector_index
-//       Access: Public
-//  Description: Changes the collector represented by this strip
-//               chart.  This may force a redraw.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the collector represented by this strip chart.  This may force a
+ * redraw.
+ */
 void PStatStripChart::
 set_collector_index(int collector_index) {
   if (_collector_index != collector_index) {
@@ -153,13 +141,10 @@ set_collector_index(int collector_index) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::set_default_vertical_scale
-//       Access: Public
-//  Description: Sets the vertical scale according to the suggested
-//               scale of the base collector, if any, or to center the
-//               target frame rate bar otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the vertical scale according to the suggested scale of the base
+ * collector, if any, or to center the target frame rate bar otherwise.
+ */
 void PStatStripChart::
 set_default_vertical_scale() {
   const PStatClientData *client_data = _monitor->get_client_data();
@@ -175,11 +160,9 @@ set_default_vertical_scale() {
   set_vertical_scale(2.0 / get_target_frame_rate());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::set_auto_vertical_scale
-//       Access: Public
-//  Description: Sets the vertical scale to make all the data visible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the vertical scale to make all the data visible.
+ */
 void PStatStripChart::
 set_auto_vertical_scale() {
   const PStatThreadData *thread_data = _view.get_thread_data();
@@ -207,13 +190,10 @@ set_auto_vertical_scale() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::get_collector_under_pixel
-//       Access: Public
-//  Description: Return the collector index associated with the
-//               particular band of color at the indicated pixel
-//               location, or -1 if no band of color was at the pixel.
-////////////////////////////////////////////////////////////////////
+/**
+ * Return the collector index associated with the particular band of color at
+ * the indicated pixel location, or -1 if no band of color was at the pixel.
+ */
 int PStatStripChart::
 get_collector_under_pixel(int xpoint, int ypoint) {
   // First, we need to know what frame it was; to know that, we need
@@ -234,7 +214,7 @@ get_collector_under_pixel(int xpoint, int ypoint) {
     compute_average_pixel_data(fdata, then_i, now_i, start_time);
     double overall_value = 0.0;
     int y = get_ysize();
-    
+
     FrameData::const_iterator fi;
     for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
       const ColorData &cd = (*fi);
@@ -250,7 +230,7 @@ get_collector_under_pixel(int xpoint, int ypoint) {
     const FrameData &fdata = get_frame_data(frame_number);
     double overall_value = 0.0;
     int y = get_ysize();
-    
+
     FrameData::const_iterator fi;
     for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
       const ColorData &cd = (*fi);
@@ -261,16 +241,13 @@ get_collector_under_pixel(int xpoint, int ypoint) {
       }
     }
   }
-    
+
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::get_title_text
-//       Access: Private
-//  Description: Returns the text suitable for the title label on the
-//               top line.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the text suitable for the title label on the top line.
+ */
 string PStatStripChart::
 get_title_text() {
   string text;
@@ -303,25 +280,21 @@ get_title_text() {
   return text;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::is_title_unknown
-//       Access: Public
-//  Description: Returns true if get_title_text() has never yet
-//               returned an answer, false if it has.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if get_title_text() has never yet returned an answer, false if
+ * it has.
+ */
 bool PStatStripChart::
 is_title_unknown() const {
   return _title_unknown;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::accumulate_frame_data
-//       Access: Protected, Static
-//  Description: Adds the data from additional into the data from
-//               fdata, after applying the scale weight.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the data from additional into the data from fdata, after applying the
+ * scale weight.
+ */
 void PStatStripChart::
-accumulate_frame_data(FrameData &fdata, const FrameData &additional, 
+accumulate_frame_data(FrameData &fdata, const FrameData &additional,
                       double weight) {
   FrameData::iterator ai;
   FrameData::const_iterator bi;
@@ -409,12 +382,9 @@ accumulate_frame_data(FrameData &fdata, const FrameData &additional,
   fdata.swap(result);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::scale_frame_data
-//       Access: Protected, Static
-//  Description: Applies the indicated scale to all collector values
-//               in data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated scale to all collector values in data.
+ */
 void PStatStripChart::
 scale_frame_data(FrameData &fdata, double factor) {
   FrameData::iterator fi;
@@ -424,14 +394,11 @@ scale_frame_data(FrameData &fdata, double factor) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::get_frame_data
-//       Access: Protected
-//  Description: Returns the cached FrameData associated with the
-//               given frame number.  This describes the lengths of
-//               the color bands for a single vertical stripe in the
-//               chart.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the cached FrameData associated with the given frame number.  This
+ * describes the lengths of the color bands for a single vertical stripe in the
+ * chart.
+ */
 const PStatStripChart::FrameData &PStatStripChart::
 get_frame_data(int frame_number) {
   Data::const_iterator di;
@@ -473,23 +440,17 @@ get_frame_data(int frame_number) {
   return fdata;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::compute_average_pixel_data
-//       Access: Protected
-//  Description: Fills the indicated FrameData structure with the
-//               color data for the indicated pixel, averaged over the
-//               past pstats_average_time seconds.
-//
-//               now is the timestamp for which we are computing the
-//               data; then_i and now_i are the frame numbers that
-//               bound (now - pstats_average_time) and now.  At
-//               function initialization time, these should be at or
-//               below the actual values; they will be incremented as
-//               needed by this function.  This allows the function to
-//               be called repeatedly for successive pixels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills the indicated FrameData structure with the color data for the indicated
+ * pixel, averaged over the past pstats_average_time seconds.  now is the
+ * timestamp for which we are computing the data; then_i and now_i are the frame
+ * numbers that bound (now - pstats_average_time) and now.  At function
+ * initialization time, these should be at or below the actual values; they will
+ * be incremented as needed by this function.  This allows the function to be
+ * called repeatedly for successive pixels.
+ */
 void PStatStripChart::
-compute_average_pixel_data(PStatStripChart::FrameData &result, 
+compute_average_pixel_data(PStatStripChart::FrameData &result,
                            int &then_i, int &now_i, double now) {
   result.clear();
 
@@ -518,13 +479,13 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
 
   // We start with just the portion of frame then_i that actually
   // does fall within our "then to now" window.
-  accumulate_frame_data(result, get_frame_data(then_i), 
+  accumulate_frame_data(result, get_frame_data(then_i),
                         thread_data->get_frame(then_i).get_end() - then);
   double last = thread_data->get_frame(then_i).get_end();
 
   // Then we get all of each of the middle frames.
-  for (int frame_number = then_i + 1; 
-       frame_number < now_i; 
+  for (int frame_number = then_i + 1;
+       frame_number < now_i;
        frame_number++) {
     accumulate_frame_data(result, get_frame_data(frame_number),
                           thread_data->get_frame(frame_number).get_end() - last);
@@ -535,19 +496,17 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
   if (last <= now) {
     accumulate_frame_data(result, get_frame_data(now_i), now - last);
   }
-  
+
   scale_frame_data(result, 1.0f / (now - then));
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::get_net_value
-//       Access: Protected
-//  Description: Returns the net value of the chart's collector for
-//               the indicated frame number.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the net value of the chart's collector for the indicated frame
+ * number.
+ */
 double PStatStripChart::
 get_net_value(int frame_number) const {
-  const FrameData &frame = 
+  const FrameData &frame =
     ((PStatStripChart *)this)->get_frame_data(frame_number);
 
   double net_value = 0.0;
@@ -559,13 +518,11 @@ get_net_value(int frame_number) const {
 
   return net_value;
 }
-  
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::get_average_net_value
-//       Access: Protected
-//  Description: Computes the average value of the chart's collector
-//               over the past pstats_average_time number of seconds.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Computes the average value of the chart's collector over the past
+ * pstats_average_time number of seconds.
+ */
 double PStatStripChart::
 get_average_net_value() const {
   const PStatThreadData *thread_data = _view.get_thread_data();
@@ -597,7 +554,7 @@ get_average_net_value() const {
     // missing data for some frames, but what can you do?
 
     const PStatThreadData *thread_data = _view.get_thread_data();
-    
+
     double net_value = 0.0f;
     double net_time = 0.0f;
 
@@ -610,8 +567,8 @@ get_average_net_value() const {
       net_time += this_time;
     }
     // Then we get all of each of the remaining frames.
-    for (int frame_number = then_i + 1; 
-         frame_number <= now_i; 
+    for (int frame_number = then_i + 1;
+         frame_number <= now_i;
          frame_number++) {
       double this_time = thread_data->get_frame(frame_number).get_net_time();
       net_value += get_net_value(frame_number) * this_time;
@@ -622,14 +579,11 @@ get_average_net_value() const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::changed_size
-//       Access: Protected
-//  Description: To be called by the user class when the widget size
-//               has changed.  This updates the chart's internal data
-//               and causes it to issue redraw commands to reflect the
-//               new size.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called by the user class when the widget size has changed.  This
+ * updates the chart's internal data and causes it to issue redraw commands to
+ * reflect the new size.
+ */
 void PStatStripChart::
 changed_size(int xsize, int ysize) {
   if (xsize != _xsize || ysize != _ysize) {
@@ -659,12 +613,10 @@ changed_size(int xsize, int ysize) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::force_redraw
-//       Access: Protected
-//  Description: To be called by the user class when the whole thing
-//               needs to be redrawn for some reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called by the user class when the whole thing needs to be redrawn for
+ * some reason.
+ */
 void PStatStripChart::
 force_redraw() {
   if (!_first_data) {
@@ -672,12 +624,10 @@ force_redraw() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::force_reset
-//       Access: Protected
-//  Description: To be called by the user class to cause the chart to
-//               reset to empty and start filling again.
-////////////////////////////////////////////////////////////////////
+/**
+ * To be called by the user class to cause the chart to reset to empty and start
+ * filling again.
+ */
 void PStatStripChart::
 force_reset() {
   clear_region();
@@ -685,94 +635,70 @@ force_reset() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::clear_region
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class to wipe out
-//               the entire strip chart region.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class to wipe out the entire strip chart
+ * region.
+ */
 void PStatStripChart::
 clear_region() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::copy_region
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class to copy a
-//               region of the chart from one part of the chart to
-//               another.  This is used to implement scrolling.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class to copy a region of the chart from one
+ * part of the chart to another.  This is used to implement scrolling.
+ */
 void PStatStripChart::
 copy_region(int, int, int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::begin_draw
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class.  This hook
-//               will be called before drawing any color bars in the
-//               strip chart; it gives the pixel range that's about to
-//               be redrawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class.  This hook will be called before
+ * drawing any color bars in the strip chart; it gives the pixel range that's
+ * about to be redrawn.
+ */
 void PStatStripChart::
 begin_draw(int, int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::draw_slice
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class to draw a
-//               single vertical slice in the strip chart at the
-//               indicated pixel, with the data for the indicated
-//               frame.  
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class to draw a single vertical slice in the
+ * strip chart at the indicated pixel, with the data for the indicated frame.
+ */
 void PStatStripChart::
 draw_slice(int, int, const PStatStripChart::FrameData &fdata) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::draw_empty
-//       Access: Protected, Virtual
-//  Description: This is similar to draw_slice(), except it should
-//               draw a vertical line of the background color to
-//               represent a portion of the chart that has no data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to draw_slice(), except it should draw a vertical line of the
+ * background color to represent a portion of the chart that has no data.
+ */
 void PStatStripChart::
 draw_empty(int, int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::draw_cursor
-//       Access: Protected, Virtual
-//  Description: This is similar to draw_slice(), except that it
-//               should draw the black vertical stripe that represents
-//               the current position when not in scrolling mode.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to draw_slice(), except that it should draw the black
+ * vertical stripe that represents the current position when not in scrolling
+ * mode.
+ */
 void PStatStripChart::
 draw_cursor(int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::end_draw
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class.  This hook
-//               will be called after drawing a series of color bars
-//               in the strip chart; it gives the pixel range that
-//               was just redrawn.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class.  This hook will be called after
+ * drawing a series of color bars in the strip chart; it gives the pixel range
+ * that was just redrawn.
+ */
 void PStatStripChart::
 end_draw(int, int) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::idle
-//       Access: Protected, Virtual
-//  Description: Should be overridden by the user class to perform any
-//               other updates might be necessary after the color bars
-//               have been redrawn.  For instance, it could check the
-//               state of _labels_changed, and redraw the labels if it
-//               is true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Should be overridden by the user class to perform any other updates might be
+ * necessary after the color bars have been redrawn.  For instance, it could
+ * check the state of _labels_changed, and redraw the labels if it is true.
+ */
 void PStatStripChart::
 idle() {
 }
@@ -793,11 +719,9 @@ public:
   const PStatClientData *_client_data;
 };
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::update_labels
-//       Access: Protected, Virtual
-//  Description: Resets the list of labels.
-////////////////////////////////////////////////////////////////////
+/**
+ * Resets the list of labels.
+ */
 void PStatStripChart::
 update_labels() {
   const PStatViewLevel *level = _view.get_level(_collector_index);
@@ -822,23 +746,18 @@ update_labels() {
   _level_index = _view.get_level_index();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::normal_guide_bars
-//       Access: Protected, Virtual
-//  Description: Calls update_guide_bars with parameters suitable to
-//               this kind of graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calls update_guide_bars with parameters suitable to this kind of graph.
+ */
 void PStatStripChart::
 normal_guide_bars() {
   update_guide_bars(4, _value_height);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::draw_frames
-//       Access: Private
-//  Description: Draws the levels for the indicated frame range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the levels for the indicated frame range.
+ */
 void PStatStripChart::
 draw_frames(int first_frame, int last_frame) {
   const PStatThreadData *thread_data = _view.get_thread_data();
@@ -906,11 +825,9 @@ draw_frames(int first_frame, int last_frame) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::draw_pixels
-//       Access: Private
-//  Description: Draws the levels for the indicated pixel range.
-////////////////////////////////////////////////////////////////////
+/**
+ * Draws the levels for the indicated pixel range.
+ */
 void PStatStripChart::
 draw_pixels(int first_pixel, int last_pixel) {
   begin_draw(first_pixel, last_pixel);
@@ -940,7 +857,7 @@ draw_pixels(int first_pixel, int last_pixel) {
       if (x == _cursor_pixel && !_scroll_mode) {
         draw_cursor(x);
         x++;
-        
+
       } else {
         double time = pixel_to_timestamp(x);
         frame_number = thread_data->get_frame_number_at_time(time, frame_number);
@@ -949,7 +866,7 @@ draw_pixels(int first_pixel, int last_pixel) {
         if (!_scroll_mode) {
           stop_pixel = min(stop_pixel, _cursor_pixel);
         }
-        while (x + w < stop_pixel && 
+        while (x + w < stop_pixel &&
                thread_data->get_frame_number_at_time(pixel_to_timestamp(x + w), frame_number) == frame_number) {
           w++;
         }
@@ -966,25 +883,19 @@ draw_pixels(int first_pixel, int last_pixel) {
   end_draw(first_pixel, last_pixel);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::clear_label_usage
-//       Access: Private
-//  Description: Erases all elements from the label usage data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Erases all elements from the label usage data.
+ */
 void PStatStripChart::
 clear_label_usage() {
   _label_usage.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::dec_label_usage
-//       Access: Private
-//  Description: Erases the indicated frame data from the current
-//               label usage.  This indicates that the given FrameData
-//               has fallen off the end of the chart.  This must have
-//               been proceeded by an earlier call to
-//               inc_label_usage() for the same FrameData
-////////////////////////////////////////////////////////////////////
+/**
+ * Erases the indicated frame data from the current label usage.  This indicates
+ * that the given FrameData has fallen off the end of the chart.  This must have
+ * been proceeded by an earlier call to inc_label_usage() for the same FrameData
+ */
 void PStatStripChart::
 dec_label_usage(const FrameData &fdata) {
   FrameData::const_iterator fi;
@@ -1001,17 +912,13 @@ dec_label_usage(const FrameData &fdata) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatStripChart::inc_label_usage
-//       Access: Private
-//  Description: Records the labels named in the indicated FrameData
-//               in the table of current labels in use.  This should
-//               be called when the given FrameData has been added to
-//               the chart; it will increment the reference count for
-//               each collector named in the FrameData.  The reference
-//               count will eventually be decremented when
-//               dec_label_usage() is called later.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records the labels named in the indicated FrameData in the table of current
+ * labels in use.  This should be called when the given FrameData has been added
+ * to the chart; it will increment the reference count for each collector named
+ * in the FrameData.  The reference count will eventually be decremented when
+ * dec_label_usage() is called later.
+ */
 void PStatStripChart::
 inc_label_usage(const FrameData &fdata) {
   FrameData::const_iterator fi;

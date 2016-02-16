@@ -58,4 +58,3 @@ OdeQuadTreeSpace(OdeSpace &space,
 OdeQuadTreeSpace::
 ~OdeQuadTreeSpace() {
 }
-

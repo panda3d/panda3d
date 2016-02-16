@@ -20,12 +20,9 @@
 
 TypeHandle WebcamVideoOpenCV::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: find_all_webcams_opencv
-//       Access: Public, Static
-//  Description: Finds all OpenCV webcams and adds them to the global
-//               list _all_webcams.
-////////////////////////////////////////////////////////////////////
+/**
+ * Finds all OpenCV webcams and adds them to the global list _all_webcams.
+ */
 void
 find_all_webcams_opencv() {
   // OpenCV doesn't really provide a way to enumerate cameras.  We ask
@@ -42,25 +39,21 @@ find_all_webcams_opencv() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoOpenCV::Constructor
-//       Access: Published, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 WebcamVideoOpenCV::
-WebcamVideoOpenCV(int camera_index) : 
-  _camera_index(camera_index) 
+WebcamVideoOpenCV(int camera_index) :
+  _camera_index(camera_index)
 {
   ostringstream strm;
   strm << "OpenCV webcam " << _camera_index;
   set_name(strm.str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoOpenCV::open
-//       Access: Published, Virtual
-//  Description: Open this video, returning a MovieVideoCursor.
-////////////////////////////////////////////////////////////////////
+/**
+ * Open this video, returning a MovieVideoCursor.
+ */
 PT(MovieVideoCursor) WebcamVideoOpenCV::
 open() {
   return new WebcamVideoCursorOpenCV(this);

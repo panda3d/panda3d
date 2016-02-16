@@ -49,6 +49,3 @@ generic_read_datagram(FLOATNAME(LVecBase2) &result, DatagramIterator &source);
 
 
 #include "lvec2_ops_src.I"
-
-
-

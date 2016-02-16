@@ -26,14 +26,12 @@ static const int datagram_tcp32_header_size = sizeof(PN_uint32);
 
 class NetDatagram;
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramTCPHeader
-// Description : A class that encapsulates the extra bytes that are
-//               sent in front of each datagram to identify it when it
-//               is sent on TCP.  This is similar to
-//               DatagramUDPHeader, except it does not include a
-//               checksum, since this is unnecessary on UDP.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class that encapsulates the extra bytes that are sent in front of each
+ * datagram to identify it when it is sent on TCP.  This is similar to
+ * DatagramUDPHeader, except it does not include a checksum, since this is
+ * unnecessary on UDP.
+ */
 class EXPCL_PANDA_NET DatagramTCPHeader {
 public:
   DatagramTCPHeader(const NetDatagram &datagram, int header_size);
@@ -54,5 +52,3 @@ private:
 #include "datagramTCPHeader.I"
 
 #endif
-
-

@@ -37,14 +37,12 @@ ConfigVariableBool soft_default_double_sided("soft-default-double-sided", false)
 // set (false)?
 ConfigVariableBool soft_default_vertex_color("soft-default-vertex-color", true);
 
-////////////////////////////////////////////////////////////////////
-//     Function: init_libsoftegg
-//  Description: Initializes the library.  This must be called at
-//               least once before any of the functions or classes in
-//               this library can be used.  Normally it will be
-//               called by the static initializers and need not be
-//               called explicitly, but special cases exist.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the library.  This must be called at least once before any of the
+ * functions or classes in this library can be used.  Normally it will be called
+ * by the static initializers and need not be called explicitly, but special
+ * cases exist.
+ */
 void
 init_libsoftegg() {
   static bool initialized = false;
@@ -56,4 +54,3 @@ init_libsoftegg() {
   SoftEggGroupUserData::init_type();
   SoftNodeDesc::init_type();
 }
-

@@ -13,19 +13,12 @@
 #define __MEMBUFFER_GM_H__
 
 // RHH
-////////////////////////////////////////////////////////////////////
-//       Class : GmMemBuf
-// Description : This a base class designed to be used to for items
-//               that will share portions of a memory buffer and
-//               want to avoid copying the data.
-//
-//               Use if the class wants to allow for reference in
-//               place of data arrays.
-//               ** be careful could be dangerous **
-//
-//               GmCoreMessage
-//               GmRingBuffer
-////////////////////////////////////////////////////////////////////
+/**
+ * This a base class designed to be used to for items that will share portions
+ * of a memory buffer and want to avoid copying the data.  Use if the class
+ * wants to allow for reference in place of data arrays.  ** be careful could be
+ * dangerous **  GmCoreMessage GmRingBuffer
+ */
 class EXPCL_PANDA_NATIVENET MemBuffer {
 public:
   inline      MemBuffer(void);

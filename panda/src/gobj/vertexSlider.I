@@ -11,46 +11,36 @@
  * @date 2005-03-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexSlider::get_name
-//       Access: Published
-//  Description: Returns the name of this particular slider.  Every
-//               unique blend shape within a particular Geom must be
-//               identified with a different name, which is shared by
-//               the slider that controls it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of this particular slider.  Every unique blend shape within
+ * a particular Geom must be identified with a different name, which is shared
+ * by the slider that controls it.
+ */
 INLINE const InternalName *VertexSlider::
 get_name() const {
   return _name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexSlider::get_modified
-//       Access: Published
-//  Description: Returns a sequence number that's guaranteed to change
-//               at least every time the value reported by
-//               get_slider() changes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a sequence number that's guaranteed to change at least every time the
+ * value reported by get_slider() changes.
+ */
 INLINE UpdateSeq VertexSlider::
 get_modified(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   return cdata->_modified;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexSlider::CData::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VertexSlider::CData::
 CData() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VertexSlider::CData::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VertexSlider::CData::
 CData(const VertexSlider::CData &copy) :
   _modified(copy._modified)

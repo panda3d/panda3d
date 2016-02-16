@@ -61,14 +61,11 @@ load_from_loader(ColladaLoader &loader) {
   return DCAST(ModelRoot, loader._root);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: load_collada_file
-//  Description: A convenience function.  Loads up the indicated
-//               dae file, and returns the root of a scene graph.
-//               Returns NULL if the file cannot be read for some
-//               reason.  Does not search along the model path for
-//               the filename first.
-////////////////////////////////////////////////////////////////////
+/**
+ * A convenience function.  Loads up the indicated dae file, and returns the
+ * root of a scene graph.  Returns NULL if the file cannot be read for some
+ * reason.  Does not search along the model path for the filename first.
+ */
 PT(PandaNode)
 load_collada_file(const Filename &filename, CoordinateSystem cs,
                   BamCacheRecord *record) {

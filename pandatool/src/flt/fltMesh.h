@@ -21,11 +21,9 @@
 
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltMesh
-// Description : A mesh of connected polygons and tristrips, etc.,
-//               with a local vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * A mesh of connected polygons and tristrips, etc., with a local vertex pool.
+ */
 class FltMesh : public FltGeometry {
 public:
   FltMesh(FltHeader *header);
@@ -60,5 +58,3 @@ private:
 #include "fltMesh.I"
 
 #endif
-
-

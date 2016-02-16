@@ -21,11 +21,9 @@
 
 #include <zlib.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : ZStreamBuf
-// Description : The streambuf object that implements
-//               IDecompressStream and OCompressStream.
-////////////////////////////////////////////////////////////////////
+/**
+ * The streambuf object that implements IDecompressStream and OCompressStream.
+ */
 class EXPCL_PANDAEXPRESS ZStreamBuf : public streambuf {
 public:
   ZStreamBuf();

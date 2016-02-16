@@ -21,11 +21,10 @@
 
 class PhysxFixedJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxFixedJoint
-// Description : A fixed joint permits no relative movement between
-//               two bodies. ie the bodies are glued together. 
-////////////////////////////////////////////////////////////////////
+/**
+ * A fixed joint permits no relative movement between two bodies.  ie the bodies
+ * are glued together.
+ */
 class EXPCL_PANDAPHYSX PhysxFixedJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -50,7 +49,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxFixedJoint", 
+    register_type(_type_handle, "PhysxFixedJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

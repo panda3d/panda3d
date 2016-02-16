@@ -29,11 +29,9 @@
 #include <maya/MFnEnumAttribute.h>
 #include "post_maya_include.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaShaderColorDef::
 MayaShaderColorDef() {
 
@@ -43,11 +41,11 @@ MayaShaderColorDef() {
   _projection_matrix = LMatrix4d::ident_mat();
   _u_angle = 0.0;
   _v_angle = 0.0;
-    
+
   _texture_filename = "";
   _texture_name = "";
   _color_gain.set(1.0f, 1.0f, 1.0f, 1.0f);
-  
+
   _coverage.set(1.0, 1.0);
   _translate_frame.set(0.0, 0.0);
   _rotate_frame = 0.0;
@@ -79,11 +77,9 @@ MayaShaderColorDef() {
   _map_uvs = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaShaderColorDef::
 MayaShaderColorDef(MayaShaderColorDef &copy) {
   _has_texture = copy._has_texture;
@@ -120,18 +116,16 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
   _rotate_uv = copy._rotate_uv;
 
   _is_alpha = copy._is_alpha;
-  
+
   _map_uvs = copy._map_uvs;
   _color_object = copy._color_object;
-  
+
   _opposite = 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 MayaShaderColorDef::
 ~MayaShaderColorDef() {
   if (_color_object != (MObject *)NULL) {
@@ -139,12 +133,10 @@ MayaShaderColorDef::
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::compute_texture_matrix
-//       Access: Public
-//  Description: Returns a texture matrix corresponding to the texture
-//               transforms indicated by the shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a texture matrix corresponding to the texture transforms indicated by
+ * the shader.
+ */
 LMatrix3d MayaShaderColorDef::
 compute_texture_matrix() const {
   LVector2d scale(_repeat_uv[0] / _coverage[0],
@@ -160,37 +152,29 @@ compute_texture_matrix() const {
     LMatrix3d::translate_mat(trans);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::has_projection
-//       Access: Public
-//  Description: Returns true if the shader has a projection in effect.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the shader has a projection in effect.
+ */
 bool MayaShaderColorDef::
 has_projection() const {
   return (_projection_type != PT_off);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::project_uv
-//       Access: Public
-//  Description: If the shader has a projection (has_projection()
-//               returns true), this computes the appropriate UV
-//               corresponding to the indicated 3-d point.  Seams that
-//               might be introduced on polygons that cross quadrants
-//               are closed up by ensuring the point is in the same
-//               quadrant as the indicated reference point.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the shader has a projection (has_projection() returns true), this computes
+ * the appropriate UV corresponding to the indicated 3-d point.  Seams that
+ * might be introduced on polygons that cross quadrants are closed up by
+ * ensuring the point is in the same quadrant as the indicated reference point.
+ */
 LTexCoordd MayaShaderColorDef::
 project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
   nassertr(_map_uvs != NULL, LTexCoordd::zero());
   return (this->*_map_uvs)(pos * _projection_matrix, centroid * _projection_matrix);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::write
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void MayaShaderColorDef::
 write(ostream &out) const {
   if (_has_texture) {
@@ -214,16 +198,14 @@ write(ostream &out) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::reset_maya_texture
-//       Access: Public
-//  Description: Changes the texture filename stored in the Maya file
-//               for this particular shader.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes the texture filename stored in the Maya file for this particular
+ * shader.
+ */
 bool MayaShaderColorDef::
 reset_maya_texture(const Filename &texture) {
   if (_color_object != (MObject *)NULL) {
-    _has_texture = set_string_attribute(*_color_object, "fileTextureName", 
+    _has_texture = set_string_attribute(*_color_object, "fileTextureName",
                                         texture.to_os_generic());
     _texture_filename = texture;
 
@@ -241,13 +223,10 @@ reset_maya_texture(const Filename &texture) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::get_panda_uvset_name
-//       Access: Private
-//  Description: Maya's default uvset name is "map1".  Panda's default
-//               uvset name is "default".  Otherwise, leaves uvset
-//               name untranslated.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maya's default uvset name is "map1".  Panda's default uvset name is
+ * "default".  Otherwise, leaves uvset name untranslated.
+ */
 string MayaShaderColorDef::
 get_panda_uvset_name() {
   if (_uvset_name == "map1") {
@@ -256,14 +235,11 @@ get_panda_uvset_name() {
   return _uvset_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::find_textures_legacy
-//       Access: Private
-//  Description: This is part of the deprecated codepath.
-//               Determines the surface color specified by the shader.
-//               This includes texturing and other advanced shader
-//               properties.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is part of the deprecated codepath.  Determines the surface color
+ * specified by the shader.  This includes texturing and other advanced shader
+ * properties.
+ */
 void MayaShaderColorDef::
 find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
   LRGBColor color_gain;
@@ -336,7 +312,7 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
     if (!image_plug.isNull()) {
       MPlugArray image_pa;
       image_plug.connectedTo(image_pa, true, false);
-      
+
       for (size_t i = 0; i < image_pa.length(); i++) {
         find_textures_legacy(shader, image_pa[0].node());
       }
@@ -395,13 +371,13 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
         blendModePlug.getValue(blendValue);
 
         if (maya_cat.is_spam()) {
-          maya_cat.spam() 
+          maya_cat.spam()
             << blendModePlug.name() << ": has value " << blendValue << endl;
         }
 
         MFnEnumAttribute blendModeEnum(blendModePlug);
         MString blendName = blendModeEnum.fieldName(blendValue, &status);
-        
+
         switch (blendValue) {
         case 1:
           bt = BT_decal;
@@ -493,13 +469,10 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::find_textures
-//       Access: Private
-//  Description: Search to find any file textures that lead into the
-//               given input plug.  Any textures found will be added
-//               to the provided MayaShaderColorList.
-////////////////////////////////////////////////////////////////////
+/**
+ * Search to find any file textures that lead into the given input plug.  Any
+ * textures found will be added to the provided MayaShaderColorList.
+ */
 void MayaShaderColorDef::
 find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug, bool is_alpha) {
 
@@ -517,7 +490,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
   MPlug outplug = outplugs[0];
   MObject source = outplug.node();
   MFnDependencyNode sourceFn(source);
-  
+
   if (source.hasFn(MFn::kFileTexture)) {
 
     string filename;
@@ -535,9 +508,9 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
         << filename << " which is a directory, ignoring it.\n";
       return;
     }
-    
+
     MayaShaderColorDef *def = new MayaShaderColorDef;
-    
+
     def->_color_object = new MObject(source);
     def->_texture_filename = Filename::from_os_specific(filename);
     def->_texture_name = sourceFn.name().asChar();
@@ -545,7 +518,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     get_vec2_attribute(source, "coverage",       def->_coverage);
     get_vec2_attribute(source, "translateFrame", def->_translate_frame);
     get_angle_attribute(source, "rotateFrame",    def->_rotate_frame);
-    
+
     get_bool_attribute(source, "mirror",          def->_mirror);
     get_bool_attribute(source, "stagger",         def->_stagger);
     get_bool_attribute(source, "wrapU",           def->_wrap_u);
@@ -565,7 +538,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     def->_color_gain[3] = alpha_gain;
 
     def->_is_alpha = is_alpha;
-    
+
     if (maya_cat.is_debug()) {
       maya_cat.debug() << "pushed a file texture" << endl;
     }
@@ -582,17 +555,17 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     if (!image_plug.isNull()) {
       MPlugArray image_pa;
       image_plug.connectedTo(image_pa, true, false);
-      
+
       for (size_t i = 0; i < image_pa.length(); i++) {
         find_textures_modern(shadername, list, image_pa[0], is_alpha);
       }
     }
-    
+
     // Now apply any inherited attributes to all textures found.
-    
+
     for (size_t i=before; i<list.size(); i++) {
       MayaShaderColorDef *def = list[i];
-      
+
       if (!get_mat4d_attribute(source, "placementMatrix", def->_projection_matrix)) {
         def->_projection_matrix = LMatrix4d::ident_mat();
       }
@@ -613,7 +586,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     }
     return;
   }
-  
+
   if (source.hasFn(MFn::kLayeredTexture)) {
     if (maya_cat.is_debug()) {
       maya_cat.debug() << "Found layered texture" << endl;
@@ -656,7 +629,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     find_textures_modern(shadername, list, input_plug, is_alpha);
     return;
   }
-  
+
   // This shader wasn't understood.
   if (maya_cat.is_debug()) {
     maya_cat.info()
@@ -674,12 +647,9 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::set_projection_type
-//       Access: Private
-//  Description: Sets up the shader to apply UV's according to the
-//               indicated projection type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets up the shader to apply UV's according to the indicated projection type.
+ */
 void MayaShaderColorDef::
 set_projection_type(const string &type) {
   if (cmp_nocase(type, "planar") == 0) {
@@ -718,12 +688,9 @@ set_projection_type(const string &type) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::map_planar
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a planar projection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a UV based on the given point in space, using a planar projection.
+ */
 LPoint2d MayaShaderColorDef::
 map_planar(const LPoint3d &pos, const LPoint3d &) const {
   // A planar projection is about as easy as can be.  We ignore the Z
@@ -731,12 +698,10 @@ map_planar(const LPoint3d &pos, const LPoint3d &) const {
   return LPoint2d(pos[0], pos[1]);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::map_spherical
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a spherical projection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a UV based on the given point in space, using a spherical
+ * projection.
+ */
 LPoint2d MayaShaderColorDef::
 map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const {
   // To compute the x position on the frame, we only need to consider
@@ -780,12 +745,10 @@ map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const {
   return uv;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::map_cylindrical
-//       Access: Private
-//  Description: Computes a UV based on the given point in space,
-//               using a cylindrical projection.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes a UV based on the given point in space, using a cylindrical
+ * projection.
+ */
 LPoint2d MayaShaderColorDef::
 map_cylindrical(const LPoint3d &pos, const LPoint3d &centroid) const {
   // This is almost identical to the spherical projection, except for

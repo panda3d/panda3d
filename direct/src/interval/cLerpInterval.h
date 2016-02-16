@@ -17,12 +17,10 @@
 #include "directbase.h"
 #include "cInterval.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CLerpInterval
-// Description : The base class for a family of intervals that
-//               linearly interpolate one or more numeric values over
-//               time.
-////////////////////////////////////////////////////////////////////
+/**
+ * The base class for a family of intervals that linearly interpolate one or
+ * more numeric values over time.
+ */
 class EXPCL_DIRECT CLerpInterval : public CInterval {
 PUBLISHED:
   enum BlendType {
@@ -34,7 +32,7 @@ PUBLISHED:
   };
 
 public:
-  INLINE CLerpInterval(const string &name, double duration, 
+  INLINE CLerpInterval(const string &name, double duration,
                        BlendType blend_type);
 
 PUBLISHED:
@@ -48,7 +46,7 @@ protected:
 private:
   BlendType _blend_type;
 
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -70,4 +68,3 @@ private:
 #include "cLerpInterval.I"
 
 #endif
-

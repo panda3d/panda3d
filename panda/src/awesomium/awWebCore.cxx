@@ -18,12 +18,12 @@
 TypeHandle AwWebCore::_type_handle;
 
 AwWebCore::
-AwWebCore(AwWebCore::LogLevel level, bool enablePlugins , AwWebCore::PixelFormat pixelFormat) 
+AwWebCore(AwWebCore::LogLevel level, bool enablePlugins , AwWebCore::PixelFormat pixelFormat)
 #ifndef CPPPARSER
 :
-  WebCore(static_cast<Awesomium::LogLevel>(level), enablePlugins, static_cast<Awesomium::PixelFormat>(pixelFormat)) 
+  WebCore(static_cast<Awesomium::LogLevel>(level), enablePlugins, static_cast<Awesomium::PixelFormat>(pixelFormat))
 #endif
-  {  
+  {
   awesomium_cat.info() << "constructing webcore\n";
 }
 
@@ -53,4 +53,3 @@ AwWebCore::PixelFormat AwWebCore::
 getPixelFormat() const {
   return ( static_cast<AwWebCore::PixelFormat>( WebCore::getPixelFormat()) );
 }
-

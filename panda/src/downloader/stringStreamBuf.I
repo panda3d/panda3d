@@ -11,24 +11,19 @@
  * @date 2007-07-03
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::swap_data
-//       Access: Public
-//  Description: Swaps the indicated buffer for the contents of the
-//               internal buffer.  Does not affect the ppos or gpos,
-//               or the iostream buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Swaps the indicated buffer for the contents of the internal buffer.  Does not
+ * affect the ppos or gpos, or the iostream buffer.
+ */
 INLINE void StringStreamBuf::
 swap_data(vector_uchar &data) {
   _data.swap(data);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::get_data
-//       Access: Public
-//  Description: Returns a reference to the contents of the internal
-//               buffer, without any of the iostream buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a reference to the contents of the internal buffer, without any of
+ * the iostream buffer.
+ */
 INLINE const vector_uchar &StringStreamBuf::
 get_data() const {
   return _data;

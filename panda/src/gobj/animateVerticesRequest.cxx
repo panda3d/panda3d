@@ -16,12 +16,9 @@
 
 TypeHandle AnimateVerticesRequest::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnimateVerticesRequest::do_task
-//       Access: Protected, Virtual
-//  Description: Performs the task: that is, calls animate vertices
-//               on _geom_vertex_data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the task: that is, calls animate vertices on _geom_vertex_data.
+ */
 AsyncTask::DoneStatus AnimateVerticesRequest::
 do_task() {
   Thread *current_thread = Thread::get_current_thread();

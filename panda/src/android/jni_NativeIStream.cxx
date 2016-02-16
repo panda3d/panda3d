@@ -21,12 +21,9 @@
 #define EXPORT_JNI extern "C"
 #endif
 
-////////////////////////////////////////////////////////////////////
-//     Function: NativeIStream::nativeGet
-//       Access: Private, Static
-//  Description: Reads a single character from the istream.
-//               Should return -1 on EOF.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads a single character from the istream.  Should return -1 on EOF.
+ */
 EXPORT_JNI jint
 Java_org_panda3d_android_NativeIStream_nativeGet(JNIEnv *env, jclass clazz, jlong ptr) {
   std::istream *stream = (std::istream *) ptr;
@@ -35,13 +32,10 @@ Java_org_panda3d_android_NativeIStream_nativeGet(JNIEnv *env, jclass clazz, jlon
   return stream->good() ? ch : -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NativeIStream::nativeRead
-//       Access: Private, Static
-//  Description: Reads an array of bytes from the istream.  Returns
-//               the actual number of bytes that were read.
-//               Should return -1 on EOF.
-////////////////////////////////////////////////////////////////////
+/**
+ * Reads an array of bytes from the istream.  Returns the actual number of bytes
+ * that were read.  Should return -1 on EOF.
+ */
 EXPORT_JNI jint
 Java_org_panda3d_android_NativeIStream_nativeRead(JNIEnv *env, jclass clazz, jlong ptr, jbyteArray byte_array, jint offset, jint length) {
   std::istream *stream = (std::istream *) ptr;
@@ -62,12 +56,10 @@ Java_org_panda3d_android_NativeIStream_nativeRead(JNIEnv *env, jclass clazz, jlo
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NativeIStream::nativeIgnore
-//       Access: Private, Static
-//  Description: Skips ahead N bytes in the stream.  Returns the
-//               actual number of skipped bytes.
-////////////////////////////////////////////////////////////////////
+/**
+ * Skips ahead N bytes in the stream.  Returns the actual number of skipped
+ * bytes.
+ */
 EXPORT_JNI jlong
 Java_org_panda3d_android_NativeIStream_nativeIgnore(JNIEnv *env, jclass clazz, jlong ptr, jlong offset) {
   std::istream *stream = (std::istream *) ptr;

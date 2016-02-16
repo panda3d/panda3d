@@ -26,10 +26,9 @@ class PhysxScene;
 class PhysxGroupsMask;
 class PhysxClothNode;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxCloth
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDAPHYSX PhysxCloth : public PhysxObject, public PhysxEnums {
 
 PUBLISHED:
@@ -113,7 +112,7 @@ public:
   }
   static void init_type() {
     PhysxObject::init_type();
-    register_type(_type_handle, "PhysxCloth", 
+    register_type(_type_handle, "PhysxCloth",
                   PhysxObject::get_class_type());
   }
   virtual TypeHandle get_type() const {

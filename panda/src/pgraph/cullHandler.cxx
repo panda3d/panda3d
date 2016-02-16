@@ -18,35 +18,26 @@
 #include "renderState.h"
 #include "pnotify.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullHandler::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CullHandler::
 CullHandler() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullHandler::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CullHandler::
 ~CullHandler() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullHandler::record_object
-//       Access: Public, Virtual
-//  Description: This callback function is intended to be overridden
-//               by a derived class.  This is called as each Geom is
-//               discovered by the CullTraverser.
-//
-//               The CullHandler becomes the owner of the
-//               CullableObject pointer and is expected to delete it
-//               later.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is intended to be overridden by a derived class.  This
+ * is called as each Geom is discovered by the CullTraverser.  The CullHandler
+ * becomes the owner of the CullableObject pointer and is expected to delete it
+ * later.
+ */
 void CullHandler::
 record_object(CullableObject *object, const CullTraverser *traverser) {
   nout << *object->_geom << " " << *object->_internal_transform << " "
@@ -54,13 +45,10 @@ record_object(CullableObject *object, const CullTraverser *traverser) {
   delete object;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullHandler::end_traverse
-//       Access: Public, Virtual
-//  Description: This callback function is intended to be overridden
-//               by a derived class.  This is called at the end of the
-//               traversal.
-////////////////////////////////////////////////////////////////////
+/**
+ * This callback function is intended to be overridden by a derived class.  This
+ * is called at the end of the traversal.
+ */
 void CullHandler::
 end_traverse() {
 }

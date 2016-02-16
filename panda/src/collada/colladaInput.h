@@ -37,10 +37,9 @@ class domInput_local_offset;
 class domP;
 class domSource;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ColladaInput
-// Description : Class that deals with COLLADA data sources.
-////////////////////////////////////////////////////////////////////
+/**
+ * Class that deals with COLLADA data sources.
+ */
 class ColladaInput : public ReferenceCount {
 public:
   static ColladaInput *from_dom(domInput_local_offset &input);

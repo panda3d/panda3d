@@ -14,15 +14,11 @@
 #include "physxConvexForceFieldShapeDesc.h"
 #include "physxConvexMesh.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxConvexForceFieldShapeDesc::set_mesh
-//       Access: Published
-//  Description: Sets the convex mesh for this force field shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets the convex mesh for this force field shape.
+ */
 void PhysxConvexForceFieldShapeDesc::
 set_mesh(PhysxConvexMesh *mesh) {
 
   _desc.meshData = mesh->ptr();
 }
-
-

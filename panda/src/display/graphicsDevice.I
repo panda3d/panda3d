@@ -11,14 +11,10 @@
  * @date 2003-07-21
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsDevice::get_pipe
-//       Access: Published
-//  Description: Returns the GraphicsPipe that this device is
-//               associated with.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the GraphicsPipe that this device is associated with.
+ */
 INLINE GraphicsPipe *GraphicsDevice::
 get_pipe() const {
   return _pipe;
 }
-

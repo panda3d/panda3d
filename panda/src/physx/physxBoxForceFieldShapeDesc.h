@@ -20,10 +20,9 @@
 #include "physxForceFieldShapeDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxBoxForceFieldShapeDesc
-// Description : Descriptor for a box force field shape.
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor for a box force field shape.
+ */
 class EXPCL_PANDAPHYSX PhysxBoxForceFieldShapeDesc : public PhysxForceFieldShapeDesc {
 
 PUBLISHED:

@@ -29,19 +29,14 @@
 #include "nodePath.h"
 #include "clipPlaneAttrib.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CollisionEntry
-// Description : Defines a single collision event.  One of these is
-//               created for each collision detected by a
-//               CollisionTraverser, to be dealt with by the
-//               CollisionHandler.
-//
-//               A CollisionEntry provides slots for a number of data
-//               values (such as intersection point and normal) that
-//               might or might not be known for each collision.  It
-//               is up to the handler to determine what information is
-//               known and to do the right thing with it.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a single collision event.  One of these is created for each collision
+ * detected by a CollisionTraverser, to be dealt with by the CollisionHandler.
+ * A CollisionEntry provides slots for a number of data values (such as
+ * intersection point and normal) that might or might not be known for each
+ * collision.  It is up to the handler to determine what information is known
+ * and to do the right thing with it.
+ */
 class EXPCL_PANDA_COLLIDE CollisionEntry : public TypedWritableReferenceCount {
 public:
   INLINE CollisionEntry();
@@ -119,7 +114,7 @@ public:
   INLINE const ClipPlaneAttrib *get_into_clip_planes() const;
 
 private:
-  INLINE void test_intersection(CollisionHandler *record, 
+  INLINE void test_intersection(CollisionHandler *record,
                                 const CollisionTraverser *trav) const;
   void check_clip_planes();
 
@@ -151,7 +146,7 @@ private:
 
   LPoint3 _contact_pos;
   LVector3 _contact_normal;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -178,6 +173,3 @@ INLINE ostream &operator << (ostream &out, const CollisionEntry &entry);
 #include "collisionEntry.I"
 
 #endif
-
-
-

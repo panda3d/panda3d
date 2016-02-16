@@ -19,11 +19,9 @@
 #include "physxEnums.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxJointDriveDesc
-// Description : Used to describe drive properties for a
-//               PhysxD6Joint.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used to describe drive properties for a PhysxD6Joint.
+ */
 class EXPCL_PANDAPHYSX PhysxJointDriveDesc : public PhysxEnums {
 
 PUBLISHED:

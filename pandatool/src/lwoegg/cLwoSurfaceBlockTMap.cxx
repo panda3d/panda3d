@@ -19,11 +19,9 @@
 #include "compose_matrix.h"
 #include "dcast.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurfaceBlockTMap::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CLwoSurfaceBlockTMap::
 CLwoSurfaceBlockTMap(LwoToEggConverter *converter, const LwoSurfaceBlockTMap *tmap) :
   _converter(converter),
@@ -61,13 +59,10 @@ CLwoSurfaceBlockTMap(LwoToEggConverter *converter, const LwoSurfaceBlockTMap *tm
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CLwoSurfaceBlockTMap::get_transform
-//       Access: Public
-//  Description: Fills up the indicated matrix with the net transform
-//               indicated by the TMAP chunk, accounting for scale,
-//               rotate, and translate.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the indicated matrix with the net transform indicated by the TMAP
+ * chunk, accounting for scale, rotate, and translate.
+ */
 void CLwoSurfaceBlockTMap::
 get_transform(LMatrix4d &mat) const {
   LPoint3d hpr(rad_2_deg(_rotation[0]),

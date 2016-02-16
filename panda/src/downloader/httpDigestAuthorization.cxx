@@ -23,14 +23,12 @@
 
 const string HTTPDigestAuthorization::_mechanism = "digest";
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::Constructor
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HTTPDigestAuthorization::
-HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens, 
-                        const URLSpec &url, bool is_proxy) : 
+HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
+                        const URLSpec &url, bool is_proxy) :
   HTTPAuthorization(tokens, url, is_proxy)
 {
   Tokens::const_iterator ti;
@@ -88,53 +86,43 @@ HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
 
   // Compute an arbitrary client nonce.
   ostringstream strm;
-  strm << time(NULL) << ":" << clock() << ":" 
+  strm << time(NULL) << ":" << clock() << ":"
        << url.get_url() << ":Panda";
 
   _cnonce = calc_md5(strm.str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 HTTPDigestAuthorization::
 ~HTTPDigestAuthorization() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::is_valid
-//       Access: Public, Virtual
-//  Description: Returns true if the authorization challenge was
-//               correctly parsed and is usable, or false if there was
-//               some unsupported algorithm or some such requested by
-//               the server, rendering the challenge unmeetable.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the authorization challenge was correctly parsed and is
+ * usable, or false if there was some unsupported algorithm or some such
+ * requested by the server, rendering the challenge unmeetable.
+ */
 bool HTTPDigestAuthorization::
 is_valid() {
   return (_algorithm != A_unknown);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::get_mechanism
-//       Access: Public, Virtual
-//  Description: Returns the type of authorization mechanism,
-//               represented as a string, e.g. "digest".
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the type of authorization mechanism, represented as a string, e.g.
+ * "digest".
+ */
 const string &HTTPDigestAuthorization::
 get_mechanism() const {
   return _mechanism;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::generate
-//       Access: Public, Virtual
-//  Description: Generates a suitable authorization string to send
-//               to the server, based on the data stored within this
-//               object, for retrieving the indicated URL with the
-//               given username:password.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a suitable authorization string to send to the server, based on the
+ * data stored within this object, for retrieving the indicated URL with the
+ * given username:password.
+ */
 string HTTPDigestAuthorization::
 generate(HTTPEnum::Method method, const string &request_path,
          const string &username, const string &body) {
@@ -168,13 +156,10 @@ generate(HTTPEnum::Method method, const string &request_path,
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::match_qop_token
-//       Access: Private, Static
-//  Description: Returns the bitfield corresponding to the indicated
-//               qop token string, or 0 if the token string is
-//               unrecognized.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the bitfield corresponding to the indicated qop token string, or 0 if
+ * the token string is unrecognized.
+ */
 int HTTPDigestAuthorization::
 match_qop_token(const string &token) {
   if (token == "auth") {
@@ -185,15 +170,12 @@ match_qop_token(const string &token) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::calc_request_digest
-//       Access: Private
-//  Description: Calculates the appropriate digest response, according
-//               to RFC 2617.
-////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the appropriate digest response, according to RFC 2617.
+ */
 string HTTPDigestAuthorization::
 calc_request_digest(const string &username, const string &password,
-                    HTTPEnum::Method method, const string &request_path, 
+                    HTTPEnum::Method method, const string &request_path,
                     const string &body) {
   _chosen_qop = Q_unused;
   string h_a1 = calc_h(get_a1(username, password));
@@ -214,12 +196,9 @@ calc_request_digest(const string &username, const string &password,
   return calc_kd(h_a1, strm.str());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::calc_h
-//       Access: Private
-//  Description: Applies the specified checksum algorithm to the data,
-//               according to RFC 2617.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the specified checksum algorithm to the data, according to RFC 2617.
+ */
 string HTTPDigestAuthorization::
 calc_h(const string &data) const {
   switch (_algorithm) {
@@ -232,13 +211,10 @@ calc_h(const string &data) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::calc_kd
-//       Access: Private
-//  Description: Applies the specified digest algorithm to the
-//               indicated data with the indicated secret, according
-//               to RFC 2617.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the specified digest algorithm to the indicated data with the
+ * indicated secret, according to RFC 2617.
+ */
 string HTTPDigestAuthorization::
 calc_kd(const string &secret, const string &data) const {
   switch (_algorithm) {
@@ -251,11 +227,9 @@ calc_kd(const string &secret, const string &data) const {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::get_a1
-//       Access: Private
-//  Description: Returns the A1 value, as defined by RFC 2617.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the A1 value, as defined by RFC 2617.
+ */
 string HTTPDigestAuthorization::
 get_a1(const string &username, const string &password) {
   switch (_algorithm) {
@@ -274,11 +248,9 @@ get_a1(const string &username, const string &password) {
   return string();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::get_a2
-//       Access: Private
-//  Description: Returns the A2 value, as defined by RFC 2617.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the A2 value, as defined by RFC 2617.
+ */
 string HTTPDigestAuthorization::
 get_a2(HTTPEnum::Method method, const string &request_path,
        const string &body) {
@@ -296,13 +268,11 @@ get_a2(HTTPEnum::Method method, const string &request_path,
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::get_hex_nonce_count
-//       Access: Private
-//  Description: Returns the current nonce count (the number of times
-//               we have used the server's nonce value, including this
-//               time) as an eight-digit hexadecimal value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the current nonce count (the number of times we have used the
+ * server's nonce value, including this time) as an eight-digit hexadecimal
+ * value.
+ */
 string HTTPDigestAuthorization::
 get_hex_nonce_count() const {
   ostringstream strm;
@@ -310,13 +280,10 @@ get_hex_nonce_count() const {
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPDigestAuthorization::calc_md5
-//       Access: Private, Static
-//  Description: Computes the MD5 of the indicated source string and
-//               returns it as a hexadecimal string of 32 ASCII
-//               characters.
-////////////////////////////////////////////////////////////////////
+/**
+ * Computes the MD5 of the indicated source string and returns it as a
+ * hexadecimal string of 32 ASCII characters.
+ */
 string HTTPDigestAuthorization::
 calc_md5(const string &source) {
   unsigned char binary[MD5_DIGEST_LENGTH];

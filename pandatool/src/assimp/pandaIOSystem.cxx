@@ -14,44 +14,35 @@
 #include "pandaIOSystem.h"
 #include "pandaIOStream.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOSystem::Constructor
-//       Access: Public
-//  Description: Initializes the object with the given VFS, or the
-//               global one if none was specified.
-////////////////////////////////////////////////////////////////////
+/**
+ * Initializes the object with the given VFS, or the global one if none was
+ * specified.
+ */
 PandaIOSystem::
 PandaIOSystem(VirtualFileSystem *vfs) : _vfs(vfs) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOSystem::Exists
-//       Access: Public
-//  Description: Returns true if the file exists, duh.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the file exists, duh.
+ */
 bool PandaIOSystem::
 Exists(const char *file) const {
   Filename fn = Filename::from_os_specific(file);
   return _vfs->exists(fn);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOSystem::Close
-//       Access: Public
-//  Description: Closes the indicated file stream.
-////////////////////////////////////////////////////////////////////
+/**
+ * Closes the indicated file stream.
+ */
 void PandaIOSystem::
 Close(Assimp::IOStream *file) {
   PandaIOStream *pstr = (PandaIOStream*) file;
   _vfs->close_read_file(&pstr->_istream);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOSystem::ComparePaths
-//       Access: Public
-//  Description: Returns true if the two paths point to the same
-//               file, false if not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the two paths point to the same file, false if not.
+ */
 bool PandaIOSystem::
 ComparePaths(const char *p1, const char *p2) const {
   Filename fn1 = Filename::from_os_specific(p1);
@@ -61,12 +52,9 @@ ComparePaths(const char *p1, const char *p2) const {
   return fn1 == fn2;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOSystem::getOsSeparator
-//       Access: Public
-//  Description: Returns the path separator for this operating
-//               system.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the path separator for this operating system.
+ */
 char PandaIOSystem::
 getOsSeparator() const {
 #ifdef _WIN32
@@ -76,11 +64,9 @@ getOsSeparator() const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaIOSystem::Open
-//       Access: Public
-//  Description: Opens the indicated file.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated file.
+ */
 Assimp::IOStream *PandaIOSystem::
 Open(const char *file, const char *mode) {
   Filename fn = Filename::from_os_specific(file);

@@ -13,21 +13,17 @@
 
 #include "configVariableList.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::output
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigVariableList::
 output(ostream &out) const {
   out << get_num_values() << " values.";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableList::write
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void ConfigVariableList::
 write(ostream &out) const {
   size_t num_values = get_num_values();

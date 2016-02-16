@@ -23,14 +23,11 @@
 #include "pvector.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : XFileDataDef
-// Description : A definition of a single data element appearing
-//               within a template record.  This class represents the
-//               *definition* of the data element (e.g. DWORD
-//               nVertices); see XFileDataObject for its *value*
-//               (e.g. 12).
-////////////////////////////////////////////////////////////////////
+/**
+ * A definition of a single data element appearing within a template record.
+ * This class represents the *definition* of the data element (e.g.  DWORD
+ * nVertices); see XFileDataObject for its *value* (e.g.  12).
+ */
 class XFileDataDef : public XFileNode {
 public:
   enum Type {
@@ -48,7 +45,7 @@ public:
     T_template,
   };
 
-  INLINE XFileDataDef(XFile *x_file, const string &name, 
+  INLINE XFileDataDef(XFile *x_file, const string &name,
                       Type type, XFileTemplate *xtemplate = NULL);
   virtual ~XFileDataDef();
 
@@ -59,11 +56,11 @@ public:
   INLINE XFileTemplate *get_template() const;
 
   INLINE int get_num_array_defs() const;
-  INLINE const XFileArrayDef &get_array_def(int i) const; 
+  INLINE const XFileArrayDef &get_array_def(int i) const;
 
   virtual void write_text(ostream &out, int indent_level) const;
 
-  virtual bool repack_data(XFileDataObject *object, 
+  virtual bool repack_data(XFileDataObject *object,
                            const XFileParseDataList &parse_data_list,
                            PrevData &prev_data,
                            size_t &index, size_t &sub_index) const;
@@ -73,31 +70,31 @@ public:
   virtual bool matches(const XFileNode *other) const;
 
 private:
-  typedef PT(XFileDataObject) 
-    (XFileDataDef::*UnpackMethod)(const XFileParseDataList &parse_data_list, 
+  typedef PT(XFileDataObject)
+    (XFileDataDef::*UnpackMethod)(const XFileParseDataList &parse_data_list,
                                   const PrevData &prev_data,
                                   size_t &index, size_t &sub_index) const;
-  typedef PT(XFileDataObject) 
+  typedef PT(XFileDataObject)
     (XFileDataDef::*ZeroFillMethod)() const;
 
-  PT(XFileDataObject) 
+  PT(XFileDataObject)
     unpack_integer_value(const XFileParseDataList &parse_data_list,
                          const PrevData &prev_data,
                          size_t &index, size_t &sub_index) const;
-  PT(XFileDataObject) 
+  PT(XFileDataObject)
     unpack_double_value(const XFileParseDataList &parse_data_list,
                         const PrevData &prev_data,
                         size_t &index, size_t &sub_index) const;
-  PT(XFileDataObject) 
+  PT(XFileDataObject)
     unpack_string_value(const XFileParseDataList &parse_data_list,
                         const PrevData &prev_data,
                         size_t &index, size_t &sub_index) const;
-  PT(XFileDataObject) 
+  PT(XFileDataObject)
     unpack_template_value(const XFileParseDataList &parse_data_list,
                           const PrevData &prev_data,
                           size_t &index, size_t &sub_index) const;
 
-  PT(XFileDataObject) 
+  PT(XFileDataObject)
     unpack_value(const XFileParseDataList &parse_data_list, int array_index,
                  const PrevData &prev_data,
                  size_t &index, size_t &sub_index,
@@ -107,16 +104,16 @@ private:
   PT(XFileDataObject) zero_fill_double_value() const;
   PT(XFileDataObject) zero_fill_string_value() const;
   PT(XFileDataObject) zero_fill_template_value() const;
-  PT(XFileDataObject) 
+  PT(XFileDataObject)
     zero_fill_value(int array_index, ZeroFillMethod zero_fill_method) const;
-    
+
 private:
   Type _type;
   PT(XFileTemplate) _template;
-  
+
   typedef pvector<XFileArrayDef> ArrayDef;
   ArrayDef _array_def;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -138,6 +135,3 @@ private:
 #include "xFileDataDef.I"
 
 #endif
-  
-
-

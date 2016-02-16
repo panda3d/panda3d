@@ -19,14 +19,11 @@
 
 class P3DSession;
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DPythonObject
-// Description : An object type that references a PyObject in the
-//               subordinate process.  It allows querying and/or
-//               modifying the state of the referenced PyObject, via
-//               clever XML communication in
-//               P3DSession::command_and_response().
-////////////////////////////////////////////////////////////////////
+/**
+ * An object type that references a PyObject in the subordinate process.  It
+ * allows querying and/or modifying the state of the referenced PyObject, via
+ * clever XML communication in P3DSession::command_and_response().
+ */
 class P3DPythonObject : public P3DObject {
 public:
   P3DPythonObject(P3DSession *session, int object_id);
@@ -68,4 +65,3 @@ private:
 };
 
 #endif
-

@@ -19,17 +19,13 @@
 #include "conditionVar.h"
 #include "mutexHolder.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Semaphore
-// Description : A classic semaphore synchronization primitive.  
-//
-//               A semaphore manages an internal counter which is
-//               decremented by each acquire() call and incremented by
-//               each release() call. The counter can never go below
-//               zero; when acquire() finds that it is zero, it
-//               blocks, waiting until some other thread calls
-//               release().
-////////////////////////////////////////////////////////////////////
+/**
+ * A classic semaphore synchronization primitive.  A semaphore manages an
+ * internal counter which is decremented by each acquire() call and incremented
+ * by each release() call.  The counter can never go below zero; when acquire()
+ * finds that it is zero, it blocks, waiting until some other thread calls
+ * release().
+ */
 class EXPCL_PANDA_PIPELINE Semaphore {
 PUBLISHED:
   INLINE Semaphore(int initial_count = 1);

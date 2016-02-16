@@ -11,47 +11,38 @@
  * @date 2010-03-04
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::set_goal
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletSoftBodyControl::
 set_goal(PN_stdfloat goal) {
 
   _goal = (btScalar)goal;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::set_max_torque
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletSoftBodyControl::
 set_max_torque(PN_stdfloat maxtorque) {
 
   _maxtorque = (btScalar)maxtorque;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::set_angle
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletSoftBodyControl::
 set_angle(PN_stdfloat angle) {
 
   _angle = (btScalar)angle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletSoftBodyControl::set_sign
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void BulletSoftBodyControl::
 set_sign(PN_stdfloat sign) {
 
   _sign = (btScalar)sign;
 }
-

@@ -19,12 +19,10 @@
 #include "physxJointDesc.h"
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxFixedJointDesc
-// Description : Descriptor class for fixed joint. A fixed joint
-//               permits no relative movement between two bodies, 
-//               i. e. the bodies are glued together. 
-////////////////////////////////////////////////////////////////////
+/**
+ * Descriptor class for fixed joint.  A fixed joint permits no relative movement
+ * between two bodies, i.  e.  the bodies are glued together.
+ */
 class EXPCL_PANDAPHYSX PhysxFixedJointDesc : public PhysxJointDesc {
 
 PUBLISHED:

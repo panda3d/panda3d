@@ -16,11 +16,9 @@
 
 TypeHandle VrpnButtonDevice::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButtonDevice::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnButtonDevice::
 VrpnButtonDevice(VrpnClient *client, const string &device_name,
                  VrpnButton *vrpn_button) :
@@ -29,11 +27,9 @@ VrpnButtonDevice(VrpnClient *client, const string &device_name,
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VrpnButtonDevice::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 VrpnButtonDevice::
 ~VrpnButtonDevice() {
   disconnect();

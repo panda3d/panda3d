@@ -26,10 +26,9 @@
 #include "pta_LVecBase3.h"
 #include "pta_int.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletTriangleMesh
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletTriangleMesh : public TypedWritableReferenceCount {
 
 PUBLISHED:
@@ -43,7 +42,7 @@ PUBLISHED:
   void add_array(const PTA_LVecBase3 &points,
                  const PTA_int &indices,
                  bool remove_duplicate_vertices=false);
-  void add_geom(const Geom *geom, 
+  void add_geom(const Geom *geom,
                 bool remove_duplicate_vertices=false,
                 const TransformState *ts=TransformState::make_identity());
 
@@ -76,7 +75,7 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "BulletTriangleMesh", 
+    register_type(_type_handle, "BulletTriangleMesh",
                   TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -22,10 +22,9 @@
 
 #include "transformState.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : BulletMinkowskiSumShape
-// Description : 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDABULLET BulletMinkowskiSumShape : public BulletShape {
 
 PUBLISHED:
@@ -59,7 +58,7 @@ public:
   }
   static void init_type() {
     BulletShape::init_type();
-    register_type(_type_handle, "BulletMinkowskiSumShape", 
+    register_type(_type_handle, "BulletMinkowskiSumShape",
                   BulletShape::get_class_type());
   }
   virtual TypeHandle get_type() const {

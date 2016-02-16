@@ -36,22 +36,18 @@
 #include "string_utils.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltToEggConverter::
 FltToEggConverter() {
   _compose_transforms = false;
   _flt_units = DU_invalid;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltToEggConverter::
 FltToEggConverter(const FltToEggConverter &copy) :
   SomethingToEggConverter(copy),
@@ -59,73 +55,54 @@ FltToEggConverter(const FltToEggConverter &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 FltToEggConverter::
 ~FltToEggConverter() {
   cleanup();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::make_copy
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new copy of the converter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocates and returns a new copy of the converter.
+ */
 SomethingToEggConverter *FltToEggConverter::
 make_copy() {
   return new FltToEggConverter(*this);
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::get_name
-//       Access: Public, Virtual
-//  Description: Returns the English name of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the English name of the file type this converter supports.
+ */
 string FltToEggConverter::
 get_name() const {
   return "MultiGen";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::get_extension
-//       Access: Public, Virtual
-//  Description: Returns the common extension of the file type this
-//               converter supports.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the common extension of the file type this converter supports.
+ */
 string FltToEggConverter::
 get_extension() const {
   return "flt";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::supports_compressed
-//       Access: Published, Virtual
-//  Description: Returns true if this file type can transparently load
-//               compressed files (with a .pz extension), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this file type can transparently load compressed files (with
+ * a .pz extension), false otherwise.
+ */
 bool FltToEggConverter::
 supports_compressed() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_file
-//       Access: Public, Virtual
-//  Description: Handles the reading of the input file and converting
-//               it to egg.  Returns true if successful, false
-//               otherwise.
-//
-//               This is designed to be as generic as possible,
-//               generally in support of run-time loading.
-//               Command-line converters may choose to use
-//               convert_flt() instead, as it provides more control.
-////////////////////////////////////////////////////////////////////
+/**
+ * Handles the reading of the input file and converting it to egg.  Returns true
+ * if successful, false otherwise.  This is designed to be as generic as
+ * possible, generally in support of run-time loading.  Command-line converters
+ * may choose to use convert_flt() instead, as it provides more control.
+ */
 bool FltToEggConverter::
 convert_file(const Filename &filename) {
   PT(FltHeader) header = new FltHeader(_path_replace);
@@ -144,26 +121,19 @@ convert_file(const Filename &filename) {
   return convert_flt(header);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::get_input_units
-//       Access: Public, Virtual
-//  Description: This may be called after convert_file() has been
-//               called and returned true, indicating a successful
-//               conversion.  It will return the distance units
-//               represented by the converted egg file, if known, or
-//               DU_invalid if not known.
-////////////////////////////////////////////////////////////////////
+/**
+ * This may be called after convert_file() has been called and returned true,
+ * indicating a successful conversion.  It will return the distance units
+ * represented by the converted egg file, if known, or DU_invalid if not known.
+ */
 DistanceUnit FltToEggConverter::
 get_input_units() {
   return _flt_units;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_flt
-//       Access: Public
-//  Description: Fills up the egg_data structure according to the
-//               indicated lwo structure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Fills up the egg_data structure according to the indicated lwo structure.
+ */
 bool FltToEggConverter::
 convert_flt(const FltHeader *flt_header) {
   if (_egg_data->get_coordinate_system() == CS_default) {
@@ -198,13 +168,10 @@ convert_flt(const FltHeader *flt_header) {
   return !had_error();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::cleanup
-//       Access: Private
-//  Description: Frees all the internal data structures after we're
-//               done converting, and resets the converter to its
-//               initial state.
-////////////////////////////////////////////////////////////////////
+/**
+ * Frees all the internal data structures after we're done converting, and
+ * resets the converter to its initial state.
+ */
 void FltToEggConverter::
 cleanup() {
   _flt_header.clear();
@@ -212,11 +179,9 @@ cleanup() {
   _textures.clear();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_record
-//       Access: Private
-//  Description: Converts the record and all of its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the record and all of its children.
+ */
 void FltToEggConverter::
 convert_record(const FltRecord *flt_record, FltToEggLevelState &state) {
   int num_children = flt_record->get_num_children();
@@ -227,12 +192,10 @@ convert_record(const FltRecord *flt_record, FltToEggLevelState &state) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::dispatch_record
-//       Access: Private
-//  Description: Determines what kind of record this is and calls the
-//               appropriate convert function.
-////////////////////////////////////////////////////////////////////
+/**
+ * Determines what kind of record this is and calls the appropriate convert
+ * function.
+ */
 void FltToEggConverter::
 dispatch_record(const FltRecord *flt_record, FltToEggLevelState &state) {
   if (flt_record->is_of_type(FltLOD::get_class_type())) {
@@ -262,11 +225,9 @@ dispatch_record(const FltRecord *flt_record, FltToEggLevelState &state) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_lod
-//       Access: Private
-//  Description: Converts the LOD bead and all of its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the LOD bead and all of its children.
+ */
 void FltToEggConverter::
 convert_lod(const FltLOD *flt_lod, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_lod->get_id());
@@ -286,11 +247,9 @@ convert_lod(const FltLOD *flt_lod, FltToEggLevelState &state) {
   convert_record(flt_lod, next_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_group
-//       Access: Private
-//  Description: Converts the group and all of its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the group and all of its children.
+ */
 void FltToEggConverter::
 convert_group(const FltGroup *flt_group, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_group->get_id());
@@ -312,11 +271,9 @@ convert_group(const FltGroup *flt_group, FltToEggLevelState &state) {
   convert_record(flt_group, next_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_object
-//       Access: Private
-//  Description: Converts the object and all of its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the object and all of its children.
+ */
 void FltToEggConverter::
 convert_object(const FltObject *flt_object, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_object->get_id());
@@ -331,12 +288,9 @@ convert_object(const FltObject *flt_object, FltToEggLevelState &state) {
   convert_record(flt_object, next_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_bead_id
-//       Access: Private
-//  Description: Converts the generic bead (with ID) and all of its
-//               children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the generic bead (with ID) and all of its children.
+ */
 void FltToEggConverter::
 convert_bead_id(const FltBeadID *flt_bead, FltToEggLevelState &state) {
   nout << "Don't know how to convert beads of type " << flt_bead->get_type()
@@ -352,12 +306,9 @@ convert_bead_id(const FltBeadID *flt_bead, FltToEggLevelState &state) {
   convert_record(flt_bead, next_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_bead
-//       Access: Private
-//  Description: Converts the generic bead (without ID) and all of its
-//               children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the generic bead (without ID) and all of its children.
+ */
 void FltToEggConverter::
 convert_bead(const FltBead *flt_bead, FltToEggLevelState &state) {
   nout << "Don't know how to convert beads of type " << flt_bead->get_type()
@@ -373,11 +324,9 @@ convert_bead(const FltBead *flt_bead, FltToEggLevelState &state) {
   convert_record(flt_bead, next_state);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_face
-//       Access: Private
-//  Description: Converts the face and all of its children.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the face and all of its children.
+ */
 void FltToEggConverter::
 convert_face(const FltFace *flt_face, FltToEggLevelState &state) {
   bool is_light;
@@ -422,11 +371,9 @@ convert_face(const FltFace *flt_face, FltToEggLevelState &state) {
   setup_geometry(flt_face, state, egg_prim, _main_egg_vpool, vertices);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_ext_ref
-//       Access: Private
-//  Description: Converts the external reference node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the external reference node.
+ */
 void FltToEggConverter::
 convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) {
   // Get a group node to put the reference into.
@@ -436,15 +383,12 @@ convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) 
   handle_external_reference(egg_parent, flt_ext->get_ref_filename());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::setup_geometry
-//       Access: Private
-//  Description: Applies the state indicated in the FltGeometry record
-//               to the indicated EggPrimitive and all of its
-//               indicated vertices, and then officially adds the
-//               vertices to the vertex pool and to the primitive, and
-//               adds the primitive to its appropriate parent.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the state indicated in the FltGeometry record to the indicated
+ * EggPrimitive and all of its indicated vertices, and then officially adds the
+ * vertices to the vertex pool and to the primitive, and adds the primitive to
+ * its appropriate parent.
+ */
 void FltToEggConverter::
 setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
                EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
@@ -564,18 +508,13 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
   parse_comment(flt_geom, egg_prim);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::convert_subfaces
-//       Access: Public
-//  Description: Records all of the subfaces of the indicated group as
-//               coplanar polygons (i.e. decals) of the group.
-//
-//               If coplanar polygons exist, the state is modified so
-//               that _egg_parent is the new group to which the base
-//               polygons should be added.  Therefore, subfaces should
-//               be defined before the ordinary children are
-//               processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records all of the subfaces of the indicated group as coplanar polygons (i.e.
+ * decals) of the group.  If coplanar polygons exist, the state is modified so
+ * that _egg_parent is the new group to which the base polygons should be added.
+ * Therefore, subfaces should be defined before the ordinary children are
+ * processed.
+ */
 void FltToEggConverter::
 convert_subfaces(const FltRecord *flt_record, FltToEggLevelState &state) {
   int num_subfaces = flt_record->get_num_subfaces();
@@ -605,58 +544,42 @@ convert_subfaces(const FltRecord *flt_record, FltToEggLevelState &state) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::parse_comment
-//       Access: Private
-//  Description: Scans the comment on this record for "<egg> { ... }"
-//               and parses the enclosed string as if it appeared in
-//               the egg file.  Returns true on success, false on
-//               syntax error (in which case _error is also set to
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the comment on this record for "<egg> { ... }" and parses the enclosed
+ * string as if it appeared in the egg file.  Returns true on success, false on
+ * syntax error (in which case _error is also set to true).
+ */
 bool FltToEggConverter::
 parse_comment(const FltBeadID *flt_bead, EggNode *egg_node) {
   return parse_comment(flt_bead->get_comment(), flt_bead->get_id(), egg_node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::parse_comment
-//       Access: Private
-//  Description: Scans the comment on this record for "<egg> { ... }"
-//               and parses the enclosed string as if it appeared in
-//               the egg file.  Returns true on success, false on
-//               syntax error (in which case _error is also set to
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the comment on this record for "<egg> { ... }" and parses the enclosed
+ * string as if it appeared in the egg file.  Returns true on success, false on
+ * syntax error (in which case _error is also set to true).
+ */
 bool FltToEggConverter::
 parse_comment(const FltBead *flt_bead, EggNode *egg_node) {
   return parse_comment(flt_bead->get_comment(), "anonymous", egg_node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::parse_comment
-//       Access: Private
-//  Description: Scans the comment on this record for "<egg> { ... }"
-//               and parses the enclosed string as if it appeared in
-//               the egg file.  Returns true on success, false on
-//               syntax error (in which case _error is also set to
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the comment on this record for "<egg> { ... }" and parses the enclosed
+ * string as if it appeared in the egg file.  Returns true on success, false on
+ * syntax error (in which case _error is also set to true).
+ */
 bool FltToEggConverter::
 parse_comment(const FltTexture *flt_texture, EggNode *egg_node) {
-  return parse_comment(flt_texture->get_comment(), 
+  return parse_comment(flt_texture->get_comment(),
                        flt_texture->get_texture_filename(), egg_node);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::parse_comment
-//       Access: Private
-//  Description: Scans the comment on this record for "<egg> { ... }"
-//               and parses the enclosed string as if it appeared in
-//               the egg file.  Returns true on success, false on
-//               syntax error (in which case _error is also set to
-//               true).
-////////////////////////////////////////////////////////////////////
+/**
+ * Scans the comment on this record for "<egg> { ... }" and parses the enclosed
+ * string as if it appeared in the egg file.  Returns true on success, false on
+ * syntax error (in which case _error is also set to true).
+ */
 bool FltToEggConverter::
 parse_comment(const string &comment, const string &name,
               EggNode *egg_node) {
@@ -719,13 +642,10 @@ parse_comment(const string &comment, const string &name,
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::make_egg_vertex
-//       Access: Private
-//  Description: Makes a new EggVertex for the indicated FltVertex.
-//               The vertex is not automatically added to the vertex
-//               pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new EggVertex for the indicated FltVertex.  The vertex is not
+ * automatically added to the vertex pool.
+ */
 PT_EggVertex FltToEggConverter::
 make_egg_vertex(const FltVertex *flt_vertex) {
   PT_EggVertex egg_vertex = new EggVertex;
@@ -746,13 +666,10 @@ make_egg_vertex(const FltVertex *flt_vertex) {
   return egg_vertex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: FltToEggConverter::make_egg_texture
-//       Access: Private
-//  Description: Makes a new EggTexture for the indicated FltTexture,
-//               or returns a pointer to one previously made for the
-//               same FltTexture.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes a new EggTexture for the indicated FltTexture, or returns a pointer to
+ * one previously made for the same FltTexture.
+ */
 PT_EggTexture FltToEggConverter::
 make_egg_texture(const FltTexture *flt_texture) {
   Textures::const_iterator ti;

@@ -27,12 +27,10 @@
 
 extern int main(int argc, char **argv);
 
-////////////////////////////////////////////////////////////////////
-//     Function: android_main
-//  Description: This function is called by native_app_glue to
-//               initialize the program.  It simply stores the
-//               android_app object and calls main() normally.
-////////////////////////////////////////////////////////////////////
+/**
+ * This function is called by native_app_glue to initialize the program.  It
+ * simply stores the android_app object and calls main() normally.
+ */
 void android_main(struct android_app* app) {
   panda_android_app = app;
 

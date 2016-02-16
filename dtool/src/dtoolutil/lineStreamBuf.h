@@ -18,13 +18,10 @@
 
 #include <string>
 
-////////////////////////////////////////////////////////////////////
-//       Class : LineStreamBuf
-// Description : Used by LineStream to implement an ostream that
-//               writes to a memory buffer, whose contents can be
-//               continuously extracted as a sequence of lines of
-//               text.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used by LineStream to implement an ostream that writes to a memory buffer,
+ * whose contents can be continuously extracted as a sequence of lines of text.
+ */
 class EXPCL_DTOOL LineStreamBuf : public streambuf {
 public:
   LineStreamBuf();

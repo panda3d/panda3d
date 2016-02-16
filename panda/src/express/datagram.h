@@ -22,23 +22,15 @@
 #include "bigEndian.h"
 #include "pta_uchar.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Datagram
-// Description : An ordered list of data elements, formatted in memory
-//               for transmission over a socket or writing to a data
-//               file.
-//
-//               Data elements should be added one at a time, in
-//               order, to the Datagram.  The nature and contents of
-//               the data elements are totally up to the user.  When a
-//               Datagram has been transmitted and received, its data
-//               elements may be extracted using a DatagramIterator;
-//               it is up to the caller to know the correct type of
-//               each data element in order.
-//
-//               A Datagram is itself headerless; it is simply a
-//               collection of data elements.
-////////////////////////////////////////////////////////////////////
+/**
+ * An ordered list of data elements, formatted in memory for transmission over a
+ * socket or writing to a data file.  Data elements should be added one at a
+ * time, in order, to the Datagram.  The nature and contents of the data
+ * elements are totally up to the user.  When a Datagram has been transmitted
+ * and received, its data elements may be extracted using a DatagramIterator; it
+ * is up to the caller to know the correct type of each data element in order.
+ * A Datagram is itself headerless; it is simply a collection of data elements.
+ */
 class EXPCL_PANDAEXPRESS Datagram : public TypedObject {
 PUBLISHED:
   INLINE Datagram();

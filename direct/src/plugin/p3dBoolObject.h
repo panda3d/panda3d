@@ -17,10 +17,9 @@
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : P3DBoolObject
-// Description : An object type that contains a boolean value.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object type that contains a boolean value.
+ */
 class P3DBoolObject : public P3DObject {
 public:
   P3DBoolObject(bool value);
@@ -37,4 +36,3 @@ private:
 };
 
 #endif
-

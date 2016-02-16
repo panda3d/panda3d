@@ -15,11 +15,9 @@
 
 TypeHandle BulletMinkowskiSumShape::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletMinkowskiSumShape::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 BulletMinkowskiSumShape::
 BulletMinkowskiSumShape(const BulletShape *shape_a, const BulletShape *shape_b) {
 
@@ -36,14 +34,11 @@ BulletMinkowskiSumShape(const BulletShape *shape_a, const BulletShape *shape_b) 
   _shape_b = shape_b;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: BulletMinkowskiSumShape::ptr
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 btCollisionShape *BulletMinkowskiSumShape::
 ptr() const {
 
   return _shape;
 }
-

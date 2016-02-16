@@ -36,11 +36,9 @@
 #include "vector_string.h"
 #include "pystub.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggToFlt::
 EggToFlt() :
   EggToSomething("MultiGen", ".flt", true, false)
@@ -74,11 +72,9 @@ EggToFlt() :
   _auto_attr_update = FltHeader::AU_if_missing;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToFlt::
 run() {
   _flt_header = new FltHeader(_path_replace);
@@ -94,11 +90,9 @@ run() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::dispatch_attr
-//       Access: Protected, Static
-//  Description: Dispatch function for the -attr parameter.
-////////////////////////////////////////////////////////////////////
+/**
+ * Dispatch function for the -attr parameter.
+ */
 bool EggToFlt::
 dispatch_attr(const string &opt, const string &arg, void *var) {
   FltHeader::AttrUpdate *ip = (FltHeader::AttrUpdate *)var;
@@ -121,11 +115,9 @@ dispatch_attr(const string &opt, const string &arg, void *var) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::traverse
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggToFlt::
 traverse(EggNode *egg_node, FltBead *flt_node,
          FltGeometry::BillboardType billboard) {
@@ -159,13 +151,10 @@ traverse(EggNode *egg_node, FltBead *flt_node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::convert_primitive
-//       Access: Private
-//  Description: Converts an egg polygon or series of light points to
-//               the corresponding Flt geometry, and adds it to the
-//               indicated flt_node.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an egg polygon or series of light points to the corresponding Flt
+ * geometry, and adds it to the indicated flt_node.
+ */
 void EggToFlt::
 convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
                   FltGeometry::BillboardType billboard) {
@@ -236,13 +225,10 @@ convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::convert_group
-//       Access: Private
-//  Description: Converts an egg group to the corresponding flt group,
-//               and adds it to the indicated parent node.  Also
-//               recurses on the children of the egg group.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts an egg group to the corresponding flt group, and adds it to the
+ * indicated parent node.  Also recurses on the children of the egg group.
+ */
 void EggToFlt::
 convert_group(EggGroup *egg_group, FltBead *flt_node,
               FltGeometry::BillboardType billboard) {
@@ -307,12 +293,9 @@ convert_group(EggGroup *egg_group, FltBead *flt_node,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::apply_transform
-//       Access: Private
-//  Description: Applies the indicated egg transform to the indicated
-//               flt bead.
-////////////////////////////////////////////////////////////////////
+/**
+ * Applies the indicated egg transform to the indicated flt bead.
+ */
 void EggToFlt::
 apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
   flt_node->clear_transform();
@@ -463,15 +446,11 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::apply_egg_syntax
-//       Access: Private
-//  Description: Adds the indicated sequence of egg syntax lines
-//               (presumably representing egg features not directly
-//               supported by MultiGen) to the flt record as a
-//               comment, so that flt2egg will reapply it to the egg
-//               groups.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds the indicated sequence of egg syntax lines (presumably representing egg
+ * features not directly supported by MultiGen) to the flt record as a comment,
+ * so that flt2egg will reapply it to the egg groups.
+ */
 void EggToFlt::
 apply_egg_syntax(const string &egg_syntax, FltRecord *flt_record) {
   if (!egg_syntax.empty()) {
@@ -483,13 +462,11 @@ apply_egg_syntax(const string &egg_syntax, FltRecord *flt_record) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::get_flt_vertex
-//       Access: Private
-//  Description: Returns a FltVertex corresponding to the indicated
-//               EggVertex.  If the vertex has not been seen before
-//               (in this particular vertex frame), creates a new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a FltVertex corresponding to the indicated EggVertex.  If the vertex
+ * has not been seen before (in this particular vertex frame), creates a new
+ * one.
+ */
 FltVertex *EggToFlt::
 get_flt_vertex(EggVertex *egg_vertex, EggNode *context) {
   const LMatrix4d *frame = context->get_vertex_to_node_ptr();
@@ -525,13 +502,10 @@ get_flt_vertex(EggVertex *egg_vertex, EggNode *context) {
   return flt_vertex;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggToFlt::get_flt_texture
-//       Access: Private
-//  Description: Returns a FltTexture corresponding to the indicated
-//               EggTexture.  If the texture has not been seen before,
-//               creates a new one.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a FltTexture corresponding to the indicated EggTexture.  If the
+ * texture has not been seen before, creates a new one.
+ */
 FltTexture *EggToFlt::
 get_flt_texture(EggTexture *egg_texture) {
   // We have to maintain this map based on the filename, not the egg

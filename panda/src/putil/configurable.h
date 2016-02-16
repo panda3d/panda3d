@@ -13,25 +13,23 @@
 
 #define CONFIGURABLE_H
 //
-////////////////////////////////////////////////////////////////////
-// Includes
-////////////////////////////////////////////////////////////////////
+/*
+ * Includes
+ */
 
 #include "pandabase.h"
 
 #include "typedObject.h"
 
-////////////////////////////////////////////////////////////////////
-// Defines
-////////////////////////////////////////////////////////////////////
+/*
+ * Defines
+ */
 
-////////////////////////////////////////////////////////////////////
-//       Class : Configurable
-// Description : An object that has data or parameters that are set
-//               less frequently (at least occasionally) than every
-//               frame.  We can cache the configuration info by
-//               by using the "dirty" flag.
-////////////////////////////////////////////////////////////////////
+/**
+ * An object that has data or parameters that are set less frequently (at least
+ * occasionally) than every frame.  We can cache the configuration info by by
+ * using the "dirty" flag.
+ */
 class EXPCL_PANDA_PUTIL Configurable : public TypedObject {
 public:
 

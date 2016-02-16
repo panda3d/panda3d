@@ -27,10 +27,9 @@ class HermiteCurve;
 class ParametricCurve;
 class NurbsCurve;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CurveFitter
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class EXPCL_PANDA_GOBJ CurveFitter {
 PUBLISHED:
   CurveFitter();

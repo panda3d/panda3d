@@ -25,10 +25,9 @@ class CPPInstance;
 class CPPScope;
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPEnumType
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPEnumType : public CPPExtensionType {
 public:
   CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,

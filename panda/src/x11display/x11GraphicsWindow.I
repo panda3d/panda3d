@@ -11,11 +11,9 @@
  * @date 1999-03-07
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: x11GraphicsWindow::get_xwindow
-//       Access: Public
-//  Description: Returns the X11 Window handle.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the X11 Window handle.
+ */
 INLINE X11_Window x11GraphicsWindow::
 get_xwindow() const {
   return _xwindow;

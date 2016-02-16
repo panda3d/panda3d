@@ -11,58 +11,44 @@
  * @date 2006-08-29
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::get_filename
-//       Access: Published
-//  Description: Returns the filename associated with this
-//               asynchronous ModelLoadRequest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the filename associated with this asynchronous ModelLoadRequest.
+ */
 INLINE const Filename &ModelLoadRequest::
 get_filename() const {
   return _filename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::get_options
-//       Access: Published
-//  Description: Returns the LoaderOptions associated with this
-//               asynchronous ModelLoadRequest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the LoaderOptions associated with this asynchronous ModelLoadRequest.
+ */
 INLINE const LoaderOptions &ModelLoadRequest::
 get_options() const {
   return _options;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::get_loader
-//       Access: Published
-//  Description: Returns the Loader object associated with this
-//               asynchronous ModelLoadRequest.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the Loader object associated with this asynchronous ModelLoadRequest.
+ */
 INLINE Loader *ModelLoadRequest::
 get_loader() const {
   return _loader;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::is_ready
-//       Access: Published
-//  Description: Returns true if this request has completed, false if
-//               it is still pending.  When this returns true, you may
-//               retrieve the model loaded by calling get_model().
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if this request has completed, false if it is still pending.
+ * When this returns true, you may retrieve the model loaded by calling
+ * get_model().
+ */
 INLINE bool ModelLoadRequest::
 is_ready() const {
   return _is_ready;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::get_model
-//       Access: Published
-//  Description: Returns the model that was loaded asynchronously, if
-//               any, or NULL if there was an error.  It is an error
-//               to call this unless is_ready() returns true.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the model that was loaded asynchronously, if any, or NULL if there
+ * was an error.  It is an error to call this unless is_ready() returns true.
+ */
 INLINE PandaNode *ModelLoadRequest::
 get_model() const {
   nassertr(_is_ready, NULL);

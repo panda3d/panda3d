@@ -13,22 +13,18 @@
 
 #include "parameterRemapCharStarToString.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapCharStarToString::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParameterRemapCharStarToString::
 ParameterRemapCharStarToString(CPPType *orig_type) :
   ParameterRemapToString(orig_type)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ParameterRemapWCharStarToWString::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ParameterRemapWCharStarToWString::
 ParameterRemapWCharStarToWString(CPPType *orig_type) :
   ParameterRemapToWString(orig_type)

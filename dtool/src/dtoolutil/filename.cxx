@@ -285,13 +285,10 @@ convert_executable_pathname(const string &unix_style_pathname) {
 }
 #endif //WIN32
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::Constructor
-//       Access: Published
-//  Description: This constructor composes the filename out of a
-//               directory part and a basename part.  It will insert
-//               an intervening '/' if necessary.
-////////////////////////////////////////////////////////////////////
+/**
+ * This constructor composes the filename out of a directory part and a basename
+ * part.  It will insert an intervening '/' if necessary.
+ */
 Filename::
 Filename(const Filename &dirname, const Filename &basename) {
   if (dirname.empty()) {
@@ -307,26 +304,17 @@ Filename(const Filename &dirname, const Filename &basename) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::from_os_specific
-//       Access: Published, Static
-//  Description: This named constructor returns a Panda-style filename
-//               (that is, using forward slashes, and no drive letter)
-//               based on the supplied filename string that describes
-//               a filename in the local system conventions (for
-//               instance, on Windows, it may use backslashes or begin
-//               with a drive letter and a colon).
-//
-//               Use this function to create a Filename from an
-//               externally-given filename string.  Use
-//               to_os_specific() again later to reconvert it back to
-//               the local operating system's conventions.
-//
-//               This function will do the right thing even if the
-//               filename is partially local conventions and partially
-//               Panda conventions; e.g. some backslashes and some
-//               forward slashes.
-////////////////////////////////////////////////////////////////////
+/**
+ * This named constructor returns a Panda-style filename (that is, using forward
+ * slashes, and no drive letter) based on the supplied filename string that
+ * describes a filename in the local system conventions (for instance, on
+ * Windows, it may use backslashes or begin with a drive letter and a colon).
+ * Use this function to create a Filename from an externally-given filename
+ * string.  Use to_os_specific() again later to reconvert it back to the local
+ * operating system's conventions.  This function will do the right thing even
+ * if the filename is partially local conventions and partially Panda
+ * conventions; e.g.  some backslashes and some forward slashes.
+ */
 Filename Filename::
 from_os_specific(const string &os_specific, Filename::Type type) {
 #ifdef WIN32
@@ -389,13 +377,10 @@ from_os_specific(const string &os_specific, Filename::Type type) {
 #endif  // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::from_os_specific_w
-//       Access: Published, Static
-//  Description: The wide-string variant of from_os_specific().
-//               Returns a new Filename, converted from an os-specific
-//               wide-character string.
-////////////////////////////////////////////////////////////////////
+/**
+ * The wide-string variant of from_os_specific(). Returns a new Filename,
+ * converted from an os-specific wide-character string.
+ */
 Filename Filename::
 from_os_specific_w(const wstring &os_specific, Filename::Type type) {
   TextEncoder encoder;
@@ -404,15 +389,11 @@ from_os_specific_w(const wstring &os_specific, Filename::Type type) {
   return from_os_specific(encoder.get_text(), type);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::expand_from
-//       Access: Published, Static
-//  Description: Returns the same thing as from_os_specific(), but
-//               embedded environment variable references
-//               (e.g. "$DMODELS/foo.txt") are expanded out.  It also
-//               automatically elevates the file to its true case if
-//               needed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the same thing as from_os_specific(), but embedded environment
+ * variable references (e.g.  "$DMODELS/foo.txt") are expanded out.  It also
+ * automatically elevates the file to its true case if needed.
+ */
 Filename Filename::
 expand_from(const string &os_specific, Filename::Type type) {
   Filename file = from_os_specific(ExecutionEnvironment::expand_string(os_specific),
@@ -421,19 +402,13 @@ expand_from(const string &os_specific, Filename::Type type) {
   return file;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::temporary
-//       Access: Published, Static
-//  Description: Generates a temporary filename within the indicated
-//               directory, using the indicated prefix.  If the
-//               directory is empty, a system-defined directory is
-//               chosen instead.
-//
-//               The generated filename did not exist when the
-//               Filename checked, but since it does not specifically
-//               create the file, it is possible that another process
-//               could simultaneously create a file by the same name.
-////////////////////////////////////////////////////////////////////
+/**
+ * Generates a temporary filename within the indicated directory, using the
+ * indicated prefix.  If the directory is empty, a system-defined directory is
+ * chosen instead.  The generated filename did not exist when the Filename
+ * checked, but since it does not specifically create the file, it is possible
+ * that another process could simultaneously create a file by the same name.
+ */
 Filename Filename::
 temporary(const string &dirname, const string &prefix, const string &suffix,
           Type type) {
@@ -475,14 +450,11 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_home_directory
-//       Access: Published
-//  Description: Returns a path to the user's home directory, if such
-//               a thing makes sense in the current OS, or to the
-//               nearest equivalent.  This may or may not be directly
-//               writable by the application.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a path to the user's home directory, if such a thing makes sense in
+ * the current OS, or to the nearest equivalent.  This may or may not be
+ * directly writable by the application.
+ */
 const Filename &Filename::
 get_home_directory() {
   if (AtomicAdjust::get_ptr(_home_directory) == NULL) {
@@ -545,12 +517,9 @@ get_home_directory() {
   return (*(Filename *)_home_directory);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_temp_directory
-//       Access: Published
-//  Description: Returns a path to a system-defined temporary
-//               directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a path to a system-defined temporary directory.
+ */
 const Filename &Filename::
 get_temp_directory() {
   if (AtomicAdjust::get_ptr(_temp_directory) == NULL) {
@@ -596,14 +565,11 @@ get_temp_directory() {
   return (*(Filename *)_temp_directory);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_user_appdata_directory
-//       Access: Published
-//  Description: Returns a path to a system-defined directory
-//               appropriate for creating a subdirectory for storing
-//               application-specific data, specific to the current
-//               user.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a path to a system-defined directory appropriate for creating a
+ * subdirectory for storing application-specific data, specific to the current
+ * user.
+ */
 const Filename &Filename::
 get_user_appdata_directory() {
   if (AtomicAdjust::get_ptr(_user_appdata_directory) == NULL) {
@@ -650,13 +616,10 @@ get_user_appdata_directory() {
   return (*(Filename *)_user_appdata_directory);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_common_appdata_directory
-//       Access: Published
-//  Description: Returns a path to a system-defined directory
-//               appropriate for creating a subdirectory for storing
-//               application-specific data, common to all users.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a path to a system-defined directory appropriate for creating a
+ * subdirectory for storing application-specific data, common to all users.
+ */
 const Filename &Filename::
 get_common_appdata_directory() {
   if (AtomicAdjust::get_ptr(_common_appdata_directory) == NULL) {
@@ -702,25 +665,19 @@ get_common_appdata_directory() {
   return (*(Filename *)_common_appdata_directory);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::set_fullpath
-//       Access: Published
-//  Description: Replaces the entire filename: directory, basename,
-//               extension.  This can also be achieved with the
-//               assignment operator.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the entire filename: directory, basename, extension.  This can also
+ * be achieved with the assignment operator.
+ */
 void Filename::
 set_fullpath(const string &s) {
   (*this) = s;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::set_dirname
-//       Access: Published
-//  Description: Replaces the directory part of the filename.  This is
-//               everything in the filename up to, but not including
-//               the rightmost slash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the directory part of the filename.  This is everything in the
+ * filename up to, but not including the rightmost slash.
+ */
 void Filename::
 set_dirname(const string &s) {
   if (s.empty()) {
@@ -767,13 +724,10 @@ set_dirname(const string &s) {
   locate_hash();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::set_basename
-//       Access: Published
-//  Description: Replaces the basename part of the filename.  This is
-//               everything in the filename after the rightmost slash,
-//               including any extensions.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the basename part of the filename.  This is everything in the
+ * filename after the rightmost slash, including any extensions.
+ */
 void Filename::
 set_basename(const string &s) {
   _filename.replace(_basename_start, string::npos, s);
@@ -782,12 +736,10 @@ set_basename(const string &s) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::set_fullpath_wo_extension
-//       Access: Published
-//  Description: Replaces the full filename--directory and basename
-//               parts--except for the extension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the full filename--directory and basename parts--except for the
+ * extension.
+ */
 void Filename::
 set_fullpath_wo_extension(const string &s) {
   int length_change = (int)s.length() - (int)_basename_end;
@@ -802,12 +754,9 @@ set_fullpath_wo_extension(const string &s) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::set_basename_wo_extension
-//       Access: Published
-//  Description: Replaces the basename part of the filename, without
-//               the file extension.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the basename part of the filename, without the file extension.
+ */
 void Filename::
 set_basename_wo_extension(const string &s) {
   int length_change = (int)s.length() - (int)(_basename_end - _basename_start);
@@ -825,13 +774,10 @@ set_basename_wo_extension(const string &s) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::set_extension
-//       Access: Published
-//  Description: Replaces the file extension.  This is everything after
-//               the rightmost dot, if there is one, or the empty
-//               string if there is not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the file extension.  This is everything after the rightmost dot, if
+ * there is one, or the empty string if there is not.
+ */
 void Filename::
 set_extension(const string &s) {
   if (s.empty()) {
@@ -855,19 +801,13 @@ set_extension(const string &s) {
   locate_hash();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_filename_index
-//       Access: Published
-//  Description: If the pattern flag is set for this Filename and the
-//               filename string actually includes a sequence of hash
-//               marks, then this returns a new Filename with the
-//               sequence of hash marks replaced by the indicated
-//               index number.
-//
-//               If the pattern flag is not set for this Filename or
-//               it does not contain a sequence of hash marks, this
-//               quietly returns the original filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * If the pattern flag is set for this Filename and the filename string actually
+ * includes a sequence of hash marks, then this returns a new Filename with the
+ * sequence of hash marks replaced by the indicated index number.  If the
+ * pattern flag is not set for this Filename or it does not contain a sequence
+ * of hash marks, this quietly returns the original filename.
+ */
 Filename Filename::
 get_filename_index(int index) const {
   Filename file(*this);
@@ -884,12 +824,10 @@ get_filename_index(int index) const {
   return file;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::set_hash_to_end
-//       Access: Published
-//  Description: Replaces the part of the filename from the beginning
-//               of the hash sequence to the end of the filename.
-////////////////////////////////////////////////////////////////////
+/**
+ * Replaces the part of the filename from the beginning of the hash sequence to
+ * the end of the filename.
+ */
 void Filename::
 set_hash_to_end(const string &s) {
   _filename.replace(_hash_start, string::npos, s);
@@ -899,16 +837,12 @@ set_hash_to_end(const string &s) {
   locate_hash();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::extract_components
-//       Access: Published
-//  Description: Extracts out the individual directory components of
-//               the path into a series of strings.  get_basename()
-//               will be the last component stored in the vector.
-//               Note that no distinction is made by this method
-//               between a leading slash and no leading slash, but you
-//               can call is_local() to differentiate the two cases.
-////////////////////////////////////////////////////////////////////
+/**
+ * Extracts out the individual directory components of the path into a series of
+ * strings.  get_basename() will be the last component stored in the vector.
+ * Note that no distinction is made by this method between a leading slash and
+ * no leading slash, but you can call is_local() to differentiate the two cases.
+ */
 void Filename::
 extract_components(vector_string &components) const {
   components.clear();
@@ -932,14 +866,11 @@ extract_components(vector_string &components) const {
   components.push_back(string());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::standardize
-//       Access: Published
-//  Description: Converts the filename to standard form by replacing
-//               consecutive slashes with a single slash, removing a
-//               trailing slash if present, and backing up over ../
-//               sequences within the filename where possible.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the filename to standard form by replacing consecutive slashes with
+ * a single slash, removing a trailing slash if present, and backing up over ..
+ * sequences within the filename where possible.
+ */
 void Filename::
 standardize() {
   assert(!_filename.empty());
@@ -998,22 +929,15 @@ standardize() {
   (*this) = result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::make_absolute
-//       Access: Published
-//  Description: Converts the filename to a fully-qualified pathname
-//               from the root (if it is a relative pathname), and
-//               then standardizes it (see standardize()).
-//
-//               This is sometimes a little problematic, since it may
-//               convert the file to its 'true' absolute pathname,
-//               which could be an ugly NFS-named file, irrespective
-//               of symbolic links
-//               (e.g. /.automount/dimbo/root/usr2/fit/people/drose
-//               instead of /fit/people/drose); besides being ugly,
-//               filenames like this may not be consistent across
-//               multiple different platforms.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the filename to a fully-qualified pathname from the root (if it is a
+ * relative pathname), and then standardizes it (see standardize()).  This is
+ * sometimes a little problematic, since it may convert the file to its 'true'
+ * absolute pathname, which could be an ugly NFS-named file, irrespective of
+ * symbolic links (e.g.  /.automount/dimbo/root/usr2/fit/people/drose instead of
+ * /fit/people/drose); besides being ugly, filenames like this may not be
+ * consistent across multiple different platforms.
+ */
 void Filename::
 make_absolute() {
   if (is_local()) {
@@ -1023,15 +947,12 @@ make_absolute() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::make_absolute
-//       Access: Published
-//  Description: Converts the filename to a fully-qualified filename
-//               from the root (if it is a relative filename), and
-//               then standardizes it (see standardize()).  This
-//               flavor accepts a specific starting directory that the
-//               filename is known to be relative to.
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the filename to a fully-qualified filename from the root (if it is a
+ * relative filename), and then standardizes it (see standardize()).  This
+ * flavor accepts a specific starting directory that the filename is known to be
+ * relative to.
+ */
 void Filename::
 make_absolute(const Filename &start_directory) {
   if (is_local()) {
@@ -1043,30 +964,20 @@ make_absolute(const Filename &start_directory) {
   standardize();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::make_canonical
-//       Access: Published
-//  Description: Converts this filename to a canonical name by
-//               replacing the directory part with the fully-qualified
-//               directory part.  This is done by changing to that
-//               directory and calling getcwd().
-//
-//               This has the effect of (a) converting relative paths
-//               to absolute paths (but see make_absolute() if this is
-//               the only effect you want), and (b) always resolving a
-//               given directory name to the same string, even if
-//               different symbolic links are traversed, and (c)
-//               changing nice symbolic-link paths like
-//               /fit/people/drose to ugly NFS automounter names like
-//               /hosts/dimbo/usr2/fit/people/drose.  This can be
-//               troubling, but sometimes this is exactly what you
-//               want, particularly if you're about to call
-//               make_relative_to() between two filenames.
-//
-//               The return value is true if successful, or false on
-//               failure (usually because the directory name does not
-//               exist or cannot be chdir'ed into).
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts this filename to a canonical name by replacing the directory part
+ * with the fully-qualified directory part.  This is done by changing to that
+ * directory and calling getcwd().  This has the effect of (a) converting
+ * relative paths to absolute paths (but see make_absolute() if this is the only
+ * effect you want), and (b) always resolving a given directory name to the same
+ * string, even if different symbolic links are traversed, and (c) changing nice
+ * symbolic-link paths like fit/people/drose to ugly NFS automounter names like
+ * hosts/dimbo/usr2/fit/people/drose.  This can be troubling, but sometimes this
+ * is exactly what you want, particularly if you're about to call
+ * make_relative_to() between two filenames.  The return value is true if
+ * successful, or false on failure (usually because the directory name does not
+ * exist or cannot be chdir'ed into).
+ */
 bool Filename::
 make_canonical() {
   if (empty()) {
@@ -1098,23 +1009,14 @@ make_canonical() {
   return make_true_case();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::make_true_case
-//       Access: Published
-//  Description: On a case-insensitive operating system
-//               (e.g. Windows), this method looks up the file in the
-//               file system and resets the Filename to represent the
-//               actual case of the file as it exists on the disk.
-//               The return value is true if the file exists and the
-//               conversion can be made, or false if there is some
-//               error.
-//
-//               On a case-sensitive operating system, this method
-//               does nothing and always returns true.
-//
-//               An empty filename is considered to exist in this
-//               case.
-////////////////////////////////////////////////////////////////////
+/**
+ * On a case-insensitive operating system (e.g.  Windows), this method looks up
+ * the file in the file system and resets the Filename to represent the actual
+ * case of the file as it exists on the disk.  The return value is true if the
+ * file exists and the conversion can be made, or false if there is some error.
+ * On a case-sensitive operating system, this method does nothing and always
+ * returns true.  An empty filename is considered to exist in this case.
+ */
 bool Filename::
 make_true_case() {
   assert(!get_pattern());
@@ -1177,20 +1079,14 @@ make_true_case() {
 #endif  // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::to_os_specific
-//       Access: Published
-//  Description: Converts the filename from our generic Unix-like
-//               convention (forward slashes starting with the root at
-//               '/') to the corresponding filename in the local
-//               operating system (slashes in the appropriate
-//               direction, starting with the root at C:\, for
-//               instance).  Returns the string representing the
-//               converted filename, but does not change the Filename
-//               itself.
-//
-//               See also from_os_specific().
-////////////////////////////////////////////////////////////////////
+/**
+ * Converts the filename from our generic Unix-like convention (forward slashes
+ * starting with the root at '/') to the corresponding filename in the local
+ * operating system (slashes in the appropriate direction, starting with the
+ * root at C:\, for instance).  Returns the string representing the converted
+ * filename, but does not change the Filename itself.  See also
+ * from_os_specific().
+ */
 string Filename::
 to_os_specific() const {
   assert(!get_pattern());
@@ -1228,11 +1124,9 @@ to_os_specific() const {
 #endif // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::to_os_specific_w
-//       Access: Published
-//  Description: The wide-string variant on to_os_specific().
-////////////////////////////////////////////////////////////////////
+/**
+ * The wide-string variant on to_os_specific().
+ */
 wstring Filename::
 to_os_specific_w() const {
   TextEncoder encoder;
@@ -1241,21 +1135,15 @@ to_os_specific_w() const {
   return encoder.get_wtext();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::to_os_generic
-//       Access: Published
-//  Description: This is similar to to_os_specific(), but it is
-//               designed to generate a filename that can be
-//               understood on as many platforms as possible.  Since
-//               Windows can usually understand a
-//               forward-slash-delimited filename, this means it does
-//               the same thing as to_os_specific(), but it uses
-//               forward slashes instead of backslashes.
-//
-//               This method has a pretty limited use; it should
-//               generally be used for writing file references to a
-//               file that might be read on any operating system.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is similar to to_os_specific(), but it is designed to generate a
+ * filename that can be understood on as many platforms as possible.  Since
+ * Windows can usually understand a forward-slash-delimited filename, this means
+ * it does the same thing as to_os_specific(), but it uses forward slashes
+ * instead of backslashes.  This method has a pretty limited use; it should
+ * generally be used for writing file references to a file that might be read on
+ * any operating system.
+ */
 string Filename::
 to_os_generic() const {
   assert(!get_pattern());
@@ -1267,19 +1155,13 @@ to_os_generic() const {
 #endif // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::to_os_short_name
-//       Access: Published
-//  Description: This works like to_os_generic(), but it returns the
-//               "short name" version of the filename, if it exists,
-//               or the original filename otherwise.
-//
-//               On Windows platforms, this returns the 8.3 filename
-//               version of the given filename, if the file exists,
-//               and the same thing as to_os_specific() otherwise.  On
-//               non-Windows platforms, this always returns the same
-//               thing as to_os_specific().
-////////////////////////////////////////////////////////////////////
+/**
+ * This works like to_os_generic(), but it returns the "short name" version of
+ * the filename, if it exists, or the original filename otherwise.  On Windows
+ * platforms, this returns the 8.3 filename version of the given filename, if
+ * the file exists, and the same thing as to_os_specific() otherwise.  On non-
+ * Windows platforms, this always returns the same thing as to_os_specific().
+ */
 string Filename::
 to_os_short_name() const {
   assert(!get_pattern());
@@ -1309,14 +1191,11 @@ to_os_short_name() const {
 #endif // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::to_os_long_name
-//       Access: Published
-//  Description: This is the opposite of to_os_short_name(): it
-//               returns the "long name" of the filename, if the
-//               filename exists.  On non-Windows platforms, this
-//               returns the same thing as to_os_specific().
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the opposite of to_os_short_name(): it returns the "long name" of the
+ * filename, if the filename exists.  On non-Windows platforms, this returns the
+ * same thing as to_os_specific().
+ */
 string Filename::
 to_os_long_name() const {
   assert(!get_pattern());
@@ -1343,14 +1222,11 @@ to_os_long_name() const {
 #endif // WIN32
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::exists
-//       Access: Published
-//  Description: Returns true if the filename exists on the disk,
-//               false otherwise.  If the type is indicated to be
-//               executable, this also tests that the file has execute
-//               permission.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the filename exists on the disk, false otherwise.  If the
+ * type is indicated to be executable, this also tests that the file has execute
+ * permission.
+ */
 bool Filename::
 exists() const {
 #ifdef WIN32_VC
@@ -1377,13 +1253,10 @@ exists() const {
   return exists;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::is_regular_file
-//       Access: Published
-//  Description: Returns true if the filename exists and is the
-//               name of a regular file (i.e. not a directory or
-//               device), false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the filename exists and is the name of a regular file (i.e.
+ * not a directory or device), false otherwise.
+ */
 bool Filename::
 is_regular_file() const {
 #ifdef WIN32_VC
@@ -1410,13 +1283,10 @@ is_regular_file() const {
   return isreg;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::is_writable
-//       Access: Published
-//  Description: Returns true if the filename exists and is either a
-//               directory or a regular file that can be written to,
-//               or false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the filename exists and is either a directory or a regular
+ * file that can be written to, or false otherwise.
+ */
 bool Filename::
 is_writable() const {
   bool writable = false;
@@ -1445,12 +1315,9 @@ is_writable() const {
   return writable;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::is_directory
-//       Access: Published
-//  Description: Returns true if the filename exists and is a
-//               directory name, false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the filename exists and is a directory name, false otherwise.
+ */
 bool Filename::
 is_directory() const {
 #ifdef WIN32_VC
@@ -1476,12 +1343,9 @@ is_directory() const {
   return isdir;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::is_executable
-//       Access: Published
-//  Description: Returns true if the filename exists and is
-//               executable
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the filename exists and is executable
+ */
 bool Filename::
 is_executable() const {
 #ifdef WIN32_VC
@@ -1502,20 +1366,14 @@ is_executable() const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::compare_timestamps
-//       Access: Published
-//  Description: Returns a number less than zero if the file named by
-//               this object is older than the given file, zero if
-//               they have the same timestamp, or greater than zero if
-//               this one is newer.
-//
-//               If this_missing_is_old is true, it indicates that a
-//               missing file will be treated as if it were older than
-//               any other file; otherwise, a missing file will be
-//               treated as if it were newer than any other file.
-//               Similarly for other_missing_is_old.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a number less than zero if the file named by this object is older
+ * than the given file, zero if they have the same timestamp, or greater than
+ * zero if this one is newer.  If this_missing_is_old is true, it indicates that
+ * a missing file will be treated as if it were older than any other file;
+ * otherwise, a missing file will be treated as if it were newer than any other
+ * file.  Similarly for other_missing_is_old.
+ */
 int Filename::
 compare_timestamps(const Filename &other,
                    bool this_missing_is_old,
@@ -1586,20 +1444,14 @@ compare_timestamps(const Filename &other,
   return other_missing_is_old ? 1 : -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_timestamp
-//       Access: Published
-//  Description: Returns a time_t value that represents the time the
-//               file was last modified, to within whatever precision
-//               the operating system records this information (on a
-//               Windows95 system, for instance, this may only be
-//               accurate to within 2 seconds).
-//
-//               If the timestamp cannot be determined, either because
-//               it is not supported by the operating system or
-//               because there is some error (such as file not found),
-//               returns 0.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a time_t value that represents the time the file was last modified,
+ * to within whatever precision the operating system records this information
+ * (on a Windows95 system, for instance, this may only be accurate to within 2
+ * seconds).  If the timestamp cannot be determined, either because it is not
+ * supported by the operating system or because there is some error (such as
+ * file not found), returns 0.
+ */
 time_t Filename::
 get_timestamp() const {
 #ifdef WIN32_VC
@@ -1623,14 +1475,11 @@ get_timestamp() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_access_timestamp
-//       Access: Published
-//  Description: Returns a time_t value that represents the time the
-//               file was last accessed, if this information is
-//               available.  See also get_timestamp(), which returns
-//               the last modification time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a time_t value that represents the time the file was last accessed,
+ * if this information is available.  See also get_timestamp(), which returns
+ * the last modification time.
+ */
 time_t Filename::
 get_access_timestamp() const {
 #ifdef WIN32_VC
@@ -1654,12 +1503,9 @@ get_access_timestamp() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_file_size
-//       Access: Published
-//  Description: Returns the size of the file in bytes, or 0 if there
-//               is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the size of the file in bytes, or 0 if there is an error.
+ */
 streamsize Filename::
 get_file_size() const {
 #ifdef WIN32_VC
@@ -1686,14 +1532,11 @@ get_file_size() const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::resolve_filename
-//       Access: Published
-//  Description: Searches the given search path for the filename.  If
-//               it is found, updates the filename to the full
-//               pathname found and returns true; otherwise, returns
-//               false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Searches the given search path for the filename.  If it is found, updates the
+ * filename to the full pathname found and returns true; otherwise, returns
+ * false.
+ */
 bool Filename::
 resolve_filename(const DSearchPath &searchpath,
                  const string &default_extension) {
@@ -1736,31 +1579,19 @@ resolve_filename(const DSearchPath &searchpath,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::make_relative_to
-//       Access: Published
-//  Description: Adjusts this filename, which must be a
-//               fully-specified pathname beginning with a slash, to
-//               make it a relative filename, relative to the
-//               fully-specified directory indicated (which must also
-//               begin with, and may or may not end with, a slash--a
-//               terminating slash is ignored).
-//
-//               This only performs a string comparsion, so it may be
-//               wise to call make_canonical() on both filenames
-//               before calling make_relative_to().
-//
-//               If allow_backups is false, the filename will only be
-//               adjusted to be made relative if it is already
-//               somewhere within or below the indicated directory.
-//               If allow_backups is true, it will be adjusted in all
-//               cases, even if this requires putting a series of ../
-//               characters before the filename--unless it would have
-//               to back all the way up to the root.
-//
-//               Returns true if the file was adjusted, false if it
-//               was not.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adjusts this filename, which must be a fully-specified pathname beginning
+ * with a slash, to make it a relative filename, relative to the fully-specified
+ * directory indicated (which must also begin with, and may or may not end with,
+ * a slash--a terminating slash is ignored).  This only performs a string
+ * comparsion, so it may be wise to call make_canonical() on both filenames
+ * before calling make_relative_to().  If allow_backups is false, the filename
+ * will only be adjusted to be made relative if it is already somewhere within
+ * or below the indicated directory.  If allow_backups is true, it will be
+ * adjusted in all cases, even if this requires putting a series of ..
+ * characters before the filename--unless it would have to back all the way up
+ * to the root.  Returns true if the file was adjusted, false if it was not.
+ */
 bool Filename::
 make_relative_to(Filename directory, bool allow_backups) {
   if (_filename.empty() || directory.empty() ||
@@ -1800,21 +1631,14 @@ make_relative_to(Filename directory, bool allow_backups) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::find_on_searchpath
-//       Access: Published
-//  Description: Performs the reverse of the resolve_filename()
-//               operation: assuming that the current filename is
-//               fully-specified pathname (i.e. beginning with '/'),
-//               look on the indicated search path for a directory
-//               under which the file can be found.  When found,
-//               adjust the Filename to be relative to the indicated
-//               directory name.
-//
-//               Returns the index of the directory on the searchpath
-//               at which the file was found, or -1 if it was not
-//               found.
-////////////////////////////////////////////////////////////////////
+/**
+ * Performs the reverse of the resolve_filename() operation: assuming that the
+ * current filename is fully-specified pathname (i.e.  beginning with '/'), look
+ * on the indicated search path for a directory under which the file can be
+ * found.  When found, adjust the Filename to be relative to the indicated
+ * directory name.  Returns the index of the directory on the searchpath at
+ * which the file was found, or -1 if it was not found.
+ */
 int Filename::
 find_on_searchpath(const DSearchPath &searchpath) {
   if (_filename.empty() || _filename[0] != '/') {
@@ -1833,22 +1657,14 @@ find_on_searchpath(const DSearchPath &searchpath) {
   return -1;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::scan_directory
-//       Access: Published
-//  Description: Attempts to open the named filename as if it were a
-//               directory and looks for the non-hidden files within
-//               the directory.  Fills the given vector up with the
-//               sorted list of filenames that are local to this
-//               directory.
-//
-//               It is the user's responsibility to ensure that the
-//               contents vector is empty before making this call;
-//               otherwise, the new files will be appended to it.
-//
-//               Returns true on success, false if the directory could
-//               not be read for some reason.
-////////////////////////////////////////////////////////////////////
+/**
+ * Attempts to open the named filename as if it were a directory and looks for
+ * the non-hidden files within the directory.  Fills the given vector up with
+ * the sorted list of filenames that are local to this directory.  It is the
+ * user's responsibility to ensure that the contents vector is empty before
+ * making this call; otherwise, the new files will be appended to it.  Returns
+ * true on success, false if the directory could not be read for some reason.
+ */
 bool Filename::
 scan_directory(vector_string &contents) const {
   assert(!get_pattern());
@@ -1987,17 +1803,13 @@ scan_directory(vector_string &contents) const {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_read
-//       Access: Published
-//  Description: Opens the indicated ifstream for reading the file, if
-//               possible.  Returns true if successful, false
-//               otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated ifstream for reading the file, if possible.  Returns true
+ * if successful, false otherwise.  This requires the setting of the
+ * set_text()/set_binary() flags to open the file appropriately as indicated; it
+ * is an error to call open_read() without first calling one of set_text() or
+ * set_binary().
+ */
 bool Filename::
 open_read(ifstream &stream) const {
   assert(!get_pattern());
@@ -2025,21 +1837,15 @@ open_read(ifstream &stream) const {
   return (!stream.fail());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_write
-//       Access: Published
-//  Description: Opens the indicated ifstream for writing the file, if
-//               possible.  Returns true if successful, false
-//               otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
-//
-//               If truncate is true, the file is truncated to zero
-//               length upon opening it, if it already exists.
-//               Otherwise, the file is kept at its original length.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated ifstream for writing the file, if possible.  Returns true
+ * if successful, false otherwise.  This requires the setting of the
+ * set_text()/set_binary() flags to open the file appropriately as indicated; it
+ * is an error to call open_read() without first calling one of set_text() or
+ * set_binary().  If truncate is true, the file is truncated to zero length upon
+ * opening it, if it already exists.  Otherwise, the file is kept at its
+ * original length.
+ */
 bool Filename::
 open_write(ofstream &stream, bool truncate) const {
   assert(!get_pattern());
@@ -2085,17 +1891,13 @@ open_write(ofstream &stream, bool truncate) const {
   return (!stream.fail());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_append
-//       Access: Published
-//  Description: Opens the indicated ofstream for writing the file, if
-//               possible.  Returns true if successful, false
-//               otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated ofstream for writing the file, if possible.  Returns true
+ * if successful, false otherwise.  This requires the setting of the
+ * set_text()/set_binary() flags to open the file appropriately as indicated; it
+ * is an error to call open_read() without first calling one of set_text() or
+ * set_binary().
+ */
 bool Filename::
 open_append(ofstream &stream) const {
   assert(!get_pattern());
@@ -2127,17 +1929,13 @@ open_append(ofstream &stream) const {
   return (!stream.fail());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_read_write
-//       Access: Published
-//  Description: Opens the indicated fstream for read/write access to
-//               the file, if possible.  Returns true if successful,
-//               false otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read_write() without first calling one of
-//               set_text() or set_binary().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated fstream for read/write access to the file, if possible.
+ * Returns true if successful, false otherwise.  This requires the setting of
+ * the set_text()/set_binary() flags to open the file appropriately as
+ * indicated; it is an error to call open_read_write() without first calling one
+ * of set_text() or set_binary().
+ */
 bool Filename::
 open_read_write(fstream &stream, bool truncate) const {
   assert(!get_pattern());
@@ -2179,18 +1977,13 @@ open_read_write(fstream &stream, bool truncate) const {
   return (!stream.fail());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_read_append
-//       Access: Published
-//  Description: Opens the indicated ifstream for reading and writing
-//               the file, if possible; writes are appended to the end
-//               of the file.  Returns true if successful, false
-//               otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated ifstream for reading and writing the file, if possible;
+ * writes are appended to the end of the file.  Returns true if successful,
+ * false otherwise.  This requires the setting of the set_text()/set_binary()
+ * flags to open the file appropriately as indicated; it is an error to call
+ * open_read() without first calling one of set_text() or set_binary().
+ */
 bool Filename::
 open_read_append(fstream &stream) const {
   assert(!get_pattern());
@@ -2223,17 +2016,13 @@ open_read_append(fstream &stream) const {
 }
 
 #ifdef USE_PANDAFILESTREAM
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_read
-//       Access: Published
-//  Description: Opens the indicated pifstream for reading the file, if
-//               possible.  Returns true if successful, false
-//               otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated pifstream for reading the file, if possible.  Returns
+ * true if successful, false otherwise.  This requires the setting of the
+ * set_text()/set_binary() flags to open the file appropriately as indicated; it
+ * is an error to call open_read() without first calling one of set_text() or
+ * set_binary().
+ */
 bool Filename::
 open_read(pifstream &stream) const {
   assert(!get_pattern());
@@ -2257,21 +2046,15 @@ open_read(pifstream &stream) const {
 #endif  // USE_PANDAFILESTREAM
 
 #ifdef USE_PANDAFILESTREAM
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_write
-//       Access: Published
-//  Description: Opens the indicated pifstream for writing the file, if
-//               possible.  Returns true if successful, false
-//               otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
-//
-//               If truncate is true, the file is truncated to zero
-//               length upon opening it, if it already exists.
-//               Otherwise, the file is kept at its original length.
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated pifstream for writing the file, if possible.  Returns
+ * true if successful, false otherwise.  This requires the setting of the
+ * set_text()/set_binary() flags to open the file appropriately as indicated; it
+ * is an error to call open_read() without first calling one of set_text() or
+ * set_binary().  If truncate is true, the file is truncated to zero length upon
+ * opening it, if it already exists.  Otherwise, the file is kept at its
+ * original length.
+ */
 bool Filename::
 open_write(pofstream &stream, bool truncate) const {
   assert(!get_pattern());
@@ -2314,17 +2097,13 @@ open_write(pofstream &stream, bool truncate) const {
 #endif  // USE_PANDAFILESTREAM
 
 #ifdef USE_PANDAFILESTREAM
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_append
-//       Access: Published
-//  Description: Opens the indicated pifstream for writing the file, if
-//               possible.  Returns true if successful, false
-//               otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated pifstream for writing the file, if possible.  Returns
+ * true if successful, false otherwise.  This requires the setting of the
+ * set_text()/set_binary() flags to open the file appropriately as indicated; it
+ * is an error to call open_read() without first calling one of set_text() or
+ * set_binary().
+ */
 bool Filename::
 open_append(pofstream &stream) const {
   assert(!get_pattern());
@@ -2353,17 +2132,13 @@ open_append(pofstream &stream) const {
 #endif  // USE_PANDAFILESTREAM
 
 #ifdef USE_PANDAFILESTREAM
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_read_write
-//       Access: Published
-//  Description: Opens the indicated fstream for read/write access to
-//               the file, if possible.  Returns true if successful,
-//               false otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read_write() without first calling one of
-//               set_text() or set_binary().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated fstream for read/write access to the file, if possible.
+ * Returns true if successful, false otherwise.  This requires the setting of
+ * the set_text()/set_binary() flags to open the file appropriately as
+ * indicated; it is an error to call open_read_write() without first calling one
+ * of set_text() or set_binary().
+ */
 bool Filename::
 open_read_write(pfstream &stream, bool truncate) const {
   assert(!get_pattern());
@@ -2402,18 +2177,13 @@ open_read_write(pfstream &stream, bool truncate) const {
 #endif  // USE_PANDAFILESTREAM
 
 #ifdef USE_PANDAFILESTREAM
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::open_read_append
-//       Access: Published
-//  Description: Opens the indicated pfstream for reading and writing
-//               the file, if possible; writes are appended to the end
-//               of the file.  Returns true if successful, false
-//               otherwise.  This requires the setting of the
-//               set_text()/set_binary() flags to open the file
-//               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
-////////////////////////////////////////////////////////////////////
+/**
+ * Opens the indicated pfstream for reading and writing the file, if possible;
+ * writes are appended to the end of the file.  Returns true if successful,
+ * false otherwise.  This requires the setting of the set_text()/set_binary()
+ * flags to open the file appropriately as indicated; it is an error to call
+ * open_read() without first calling one of set_text() or set_binary().
+ */
 bool Filename::
 open_read_append(pfstream &stream) const {
   assert(!get_pattern());
@@ -2441,14 +2211,11 @@ open_read_append(pfstream &stream) const {
 }
 #endif  // USE_PANDAFILESTREAM
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::touch
-//       Access: Published
-//  Description: Updates the modification time of the file to the
-//               current time.  If the file does not already exist, it
-//               will be created.  Returns true if successful, false
-//               if there is an error.
-////////////////////////////////////////////////////////////////////
+/**
+ * Updates the modification time of the file to the current time.  If the file
+ * does not already exist, it will be created.  Returns true if successful,
+ * false if there is an error.
+ */
 bool Filename::
 touch() const {
   assert(!get_pattern());
@@ -2524,12 +2291,10 @@ touch() const {
 #endif  // WIN32, PHAVE_UTIME_H
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::chdir
-//       Access: Published
-//  Description: Changes directory to the specified location.
-//               Returns true if successful, false if failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Changes directory to the specified location.  Returns true if successful,
+ * false if failure.
+ */
 bool Filename::
 chdir() const {
 #ifdef WIN32_VC
@@ -2541,14 +2306,11 @@ chdir() const {
 #endif  // WIN32_VC
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::unlink
-//       Access: Published
-//  Description: Permanently deletes the file associated with the
-//               filename, if possible.  Returns true if successful,
-//               false if failure (for instance, because the file did
-//               not exist, or because permissions were inadequate).
-////////////////////////////////////////////////////////////////////
+/**
+ * Permanently deletes the file associated with the filename, if possible.
+ * Returns true if successful, false if failure (for instance, because the file
+ * did not exist, or because permissions were inadequate).
+ */
 bool Filename::
 unlink() const {
   assert(!get_pattern());
@@ -2564,14 +2326,11 @@ unlink() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::rename_to
-//       Access: Published
-//  Description: Renames the file to the indicated new filename.  If
-//               the new filename is in a different directory, this
-//               will perform a move.  Returns true if successful,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Renames the file to the indicated new filename.  If the new filename is in a
+ * different directory, this will perform a move.  Returns true if successful,
+ * false on failure.
+ */
 bool Filename::
 rename_to(const Filename &other) const {
   assert(!get_pattern());
@@ -2666,15 +2425,11 @@ rename_to(const Filename &other) const {
   return false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::copy_to
-//       Access: Published
-//  Description: Copies the file to the indicated new filename, by
-//               reading the contents and writing it to the new file.
-//               Returns true if successful, false on failure.  The
-//               copy is always binary, regardless of the filename
-//               settings.
-////////////////////////////////////////////////////////////////////
+/**
+ * Copies the file to the indicated new filename, by reading the contents and
+ * writing it to the new file.  Returns true if successful, false on failure.
+ * The copy is always binary, regardless of the filename settings.
+ */
 bool Filename::
 copy_to(const Filename &other) const {
   Filename this_filename = Filename::binary_filename(*this);
@@ -2712,19 +2467,14 @@ copy_to(const Filename &other) const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::make_dir
-//       Access: Published
-//  Description: Creates all the directories in the path to the file
-//               specified in the filename, except for the basename
-//               itself.  This assumes that the Filename contains the
-//               name of a file, not a directory name; it ensures that
-//               the directory containing the file exists.
-//
-//               However, if the filename ends in a slash, it assumes
-//               the Filename represents the name of a directory, and
-//               creates all the paths.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates all the directories in the path to the file specified in the
+ * filename, except for the basename itself.  This assumes that the Filename
+ * contains the name of a file, not a directory name; it ensures that the
+ * directory containing the file exists.  However, if the filename ends in a
+ * slash, it assumes the Filename represents the name of a directory, and
+ * creates all the paths.
+ */
 bool Filename::
 make_dir() const {
   assert(!get_pattern());
@@ -2775,15 +2525,12 @@ make_dir() const {
   return (result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::mkdir
-//       Access: Published
-//  Description: Creates the directory named by this filename.  Unlike
-//               make_dir(), this assumes that the Filename contains
-//               the directory name itself.  Also, parent directories
-//               are not automatically created; this function fails if
-//               any parent directory is missing.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates the directory named by this filename.  Unlike make_dir(), this
+ * assumes that the Filename contains the directory name itself.  Also, parent
+ * directories are not automatically created; this function fails if any parent
+ * directory is missing.
+ */
 bool Filename::
 mkdir() const {
 #ifdef WIN32_VC
@@ -2797,12 +2544,10 @@ mkdir() const {
   return (result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::rmdir
-//       Access: Published
-//  Description: The inverse of mkdir(): this removes the directory
-//               named by this Filename, if it is in fact a directory.
-////////////////////////////////////////////////////////////////////
+/**
+ * The inverse of mkdir(): this removes the directory named by this Filename, if
+ * it is in fact a directory.
+ */
 bool Filename::
 rmdir() const {
 #ifdef WIN32_VC
@@ -2824,12 +2569,10 @@ rmdir() const {
   return (result == 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_hash
-//       Access: Published
-//  Description: Returns a hash code that attempts to be mostly unique
-//               for different Filenames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a hash code that attempts to be mostly unique for different
+ * Filenames.
+ */
 int Filename::
 get_hash() const {
   static const int primes[] = {
@@ -2862,45 +2605,25 @@ get_hash() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::atomic_compare_and_exchange_contents
-//       Access: Public
-//  Description: Uses native file-locking mechanisms to atomically
-//               replace the contents of a (small) file with the
-//               specified contents, assuming it hasn't changed since
-//               the last time the file was read.
-//
-//               This is designed to be similar to
-//               AtomicAdjust::compare_and_exchange().  The method
-//               writes new_contents to the file, completely replacing
-//               the original contents; but only if the original
-//               contents exactly matched old_contents.  If the file
-//               was modified, returns true.  If, however, the
-//               original contents of the file did not exactly match
-//               old_contents, then the file is not modified, and
-//               false is returned.  In either case, orig_contents is
-//               filled with the original contents of the file.
-//
-//               If the file does not exist, it is implicitly created,
-//               and its original contents are empty.
-//
-//               If an I/O error occurs on write, some of the file may
-//               or may not have been written, and false is returned.
-//
-//               Expressed in pseudo-code, the logic is:
-//
-//                 orig_contents = file.read();
-//                 if (orig_contents == old_contents) {
-//                   file.write(new_contents);
-//                   return true;
-//                 }
-//                 return false;
-//
-//               The operation is guaranteed to be atomic only if the
-//               only operations that read and write to this file are
-//               atomic_compare_and_exchange_contents() and
-//               atomic_read_contents().
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses native file-locking mechanisms to atomically replace the contents of a
+ * (small) file with the specified contents, assuming it hasn't changed since
+ * the last time the file was read.  This is designed to be similar to
+ * AtomicAdjust::compare_and_exchange().  The method writes new_contents to the
+ * file, completely replacing the original contents; but only if the original
+ * contents exactly matched old_contents.  If the file was modified, returns
+ * true.  If, however, the original contents of the file did not exactly match
+ * old_contents, then the file is not modified, and false is returned.  In
+ * either case, orig_contents is filled with the original contents of the file.
+ * If the file does not exist, it is implicitly created, and its original
+ * contents are empty.  If an I/O error occurs on write, some of the file may or
+ * may not have been written, and false is returned.  Expressed in pseudo-code,
+ * the logic is:  orig_contents = file.read(); if (orig_contents ==
+ * old_contents) { file.write(new_contents); return true; } return false;  The
+ * operation is guaranteed to be atomic only if the only operations that read
+ * and write to this file are atomic_compare_and_exchange_contents() and
+ * atomic_read_contents().
+ */
 bool Filename::
 atomic_compare_and_exchange_contents(string &orig_contents,
                                      const string &old_contents,
@@ -3027,23 +2750,15 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 #endif  // WIN32_VC
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::atomic_read_contents
-//       Access: Public
-//  Description: Uses native file-locking mechanisms to atomically
-//               read the contents of a (small) file.  This is the
-//               only way to read a file protected by
-//               atomic_compare_and_exchange_contents(), and be
-//               confident that the read operation is actually atomic
-//               with respect to that method.
-//
-//               If the file does not exist, it is implicitly created,
-//               and its contents are empty.
-//
-//               If the file is read successfully, fills its contents
-//               in the indicated string, and returns true.  If the
-//               file cannot be read, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses native file-locking mechanisms to atomically read the contents of a
+ * (small) file.  This is the only way to read a file protected by
+ * atomic_compare_and_exchange_contents(), and be confident that the read
+ * operation is actually atomic with respect to that method.  If the file does
+ * not exist, it is implicitly created, and its contents are empty.  If the file
+ * is read successfully, fills its contents in the indicated string, and returns
+ * true.  If the file cannot be read, returns false.
+ */
 bool Filename::
 atomic_read_contents(string &contents) const {
 #ifdef WIN32_VC
@@ -3132,13 +2847,11 @@ atomic_read_contents(string &contents) const {
 #endif  // WIN32_VC
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::locate_basename
-//       Access: Protected
-//  Description: After the string has been reassigned, search for the
-//               slash marking the beginning of the basename, and set
-//               _dirname_end and _basename_start correctly.
-////////////////////////////////////////////////////////////////////
+/**
+ * After the string has been reassigned, search for the slash marking the
+ * beginning of the basename, and set _dirname_end and _basename_start
+ * correctly.
+ */
 void Filename::
 locate_basename() {
   // Scan for the last slash, which marks the end of the directory
@@ -3184,15 +2897,11 @@ locate_basename() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::locate_extension
-//       Access: Protected
-//  Description: Once the end of the directory prefix has been found,
-//               and _dirname_end and _basename_start are set
-//               correctly, search for the dot marking the beginning
-//               of the extension, and set _basename_end and
-//               _extension_start correctly.
-////////////////////////////////////////////////////////////////////
+/**
+ * Once the end of the directory prefix has been found, and _dirname_end and
+ * _basename_start are set correctly, search for the dot marking the beginning
+ * of the extension, and set _basename_end and _extension_start correctly.
+ */
 void Filename::
 locate_extension() {
   // Now scan for the last dot after that slash.
@@ -3224,12 +2933,10 @@ locate_extension() {
   // there is no dot.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::locate_hash
-//       Access: Protected
-//  Description: Identifies the part of the filename that contains the
-//               sequence of hash marks, if any.
-////////////////////////////////////////////////////////////////////
+/**
+ * Identifies the part of the filename that contains the sequence of hash marks,
+ * if any.
+ */
 void Filename::
 locate_hash() {
   if (!get_pattern()) {
@@ -3258,14 +2965,11 @@ locate_hash() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_common_prefix
-//       Access: Protected
-//  Description: Returns the length of the longest common initial
-//               substring of this string and the other one that ends
-//               in a slash.  This is the lowest directory common to
-//               both filenames.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the length of the longest common initial substring of this string and
+ * the other one that ends in a slash.  This is the lowest directory common to
+ * both filenames.
+ */
 size_t Filename::
 get_common_prefix(const string &other) const {
   size_t len = 0;
@@ -3284,12 +2988,10 @@ get_common_prefix(const string &other) const {
   return len;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::count_slashes
-//       Access: Protected, Static
-//  Description: Returns the number of non-consecutive slashes in the
-//               indicated string, not counting a terminal slash.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of non-consecutive slashes in the indicated string, not
+ * counting a terminal slash.
+ */
 int Filename::
 count_slashes(const string &str) {
   int count = 0;
@@ -3319,11 +3021,9 @@ count_slashes(const string &str) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::r_make_canonical
-//       Access: Protected
-//  Description: The recursive implementation of make_canonical().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of make_canonical().
+ */
 bool Filename::
 r_make_canonical(const Filename &cwd) {
   if (get_fullpath() == "/") {
@@ -3379,4 +3079,3 @@ r_make_canonical(const Filename &cwd) {
   set_dirname(dir);
   return true;
 }
-

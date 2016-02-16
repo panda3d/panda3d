@@ -22,11 +22,9 @@
 class PhysxMotorDesc;
 class PhysxPulleyJointDesc;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxPulleyJoint
-// Description : A pulley joint simulates a rope between two
-//               objects passing over two pulleys.
-////////////////////////////////////////////////////////////////////
+/**
+ * A pulley joint simulates a rope between two objects passing over two pulleys.
+ */
 class EXPCL_PANDAPHYSX PhysxPulleyJoint : public PhysxJoint {
 
 PUBLISHED:
@@ -57,7 +55,7 @@ public:
   }
   static void init_type() {
     PhysxJoint::init_type();
-    register_type(_type_handle, "PhysxPulleyJoint", 
+    register_type(_type_handle, "PhysxPulleyJoint",
                   PhysxJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {

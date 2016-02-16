@@ -25,15 +25,12 @@
 
 class MutexSpinlockImpl;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarSpinlockImpl
-// Description : Uses a simple user-space spinlock to implement a
-//               condition variable.  It is usually not a good idea to
-//               use this implementation, unless you are building
-//               Panda for a specific application on a specific SMP
-//               machine, and you are confident that you have at least
-//               as many CPU's as you have threads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Uses a simple user-space spinlock to implement a condition variable.  It is
+ * usually not a good idea to use this implementation, unless you are building
+ * Panda for a specific application on a specific SMP machine, and you are
+ * confident that you have at least as many CPU's as you have threads.
+ */
 class EXPCL_PANDA_PIPELINE ConditionVarSpinlockImpl {
 public:
   INLINE ConditionVarSpinlockImpl(MutexSpinlockImpl &mutex);

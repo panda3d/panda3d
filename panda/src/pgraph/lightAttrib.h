@@ -22,13 +22,11 @@
 #include "ordered_vector.h"
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LightAttrib
-// Description : Indicates which set of lights should be considered
-//               "on" to illuminate geometry at this level and below.
-//               A LightAttrib can either add lights or remove lights
-//               from the total set of "on" lights.
-////////////////////////////////////////////////////////////////////
+/**
+ * Indicates which set of lights should be considered "on" to illuminate
+ * geometry at this level and below.  A LightAttrib can either add lights or
+ * remove lights from the total set of "on" lights.
+ */
 class EXPCL_PANDA_PGRAPH LightAttrib : public RenderAttrib {
 protected:
   INLINE LightAttrib();
@@ -44,14 +42,14 @@ PUBLISHED:
     O_add,
     O_remove
   };
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 Light *light);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 Light *light1, Light *light2);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 Light *light1, Light *light2,
                                 Light *light3);
-  static CPT(RenderAttrib) make(Operation op, 
+  static CPT(RenderAttrib) make(Operation op,
                                 Light *light1, Light *light2,
                                 Light *light3, Light *light4);
   static CPT(RenderAttrib) make_default();
@@ -152,7 +150,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -176,4 +174,3 @@ private:
 #include "lightAttrib.I"
 
 #endif
-

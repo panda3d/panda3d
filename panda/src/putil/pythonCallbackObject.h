@@ -21,12 +21,10 @@
 #include "py_panda.h"
 #include "callbackObject.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PythonCallbackObject
-// Description : This is a specialization on CallbackObject to allow
-//               a callback to directly call an arbitarary Python
-//               function.  Powerful!  But use with caution.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a specialization on CallbackObject to allow a callback to directly
+ * call an arbitarary Python function.  Powerful!  But use with caution.
+ */
 class PythonCallbackObject : public CallbackObject {
 PUBLISHED:
   PythonCallbackObject(PyObject *function = Py_None);

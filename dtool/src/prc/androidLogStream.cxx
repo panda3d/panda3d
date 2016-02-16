@@ -18,11 +18,9 @@
 
 #include <android/log.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStreamBuf::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AndroidLogStream::AndroidLogStreamBuf::
 AndroidLogStreamBuf(int priority) :
   _priority(priority) {
@@ -44,23 +42,18 @@ AndroidLogStreamBuf(int priority) :
   setp(0, 0);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStreamBuf::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AndroidLogStream::AndroidLogStreamBuf::
 ~AndroidLogStreamBuf() {
   sync();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStreamBuf::sync
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when the
-//               buffer should be flushed to output (for instance, on
-//               destruction).
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when the buffer should be flushed
+ * to output (for instance, on destruction).
+ */
 int AndroidLogStream::AndroidLogStreamBuf::
 sync() {
   streamsize n = pptr() - pbase();
@@ -74,12 +67,10 @@ sync() {
   return 0;  // EOF to indicate write full.
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStreamBuf::overflow
-//       Access: Public, Virtual
-//  Description: Called by the system ostream implementation when its
-//               internal buffer is filled, plus one character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by the system ostream implementation when its internal buffer is
+ * filled, plus one character.
+ */
 int AndroidLogStream::AndroidLogStreamBuf::
 overflow(int ch) {
   streamsize n = pptr() - pbase();
@@ -96,11 +87,9 @@ overflow(int ch) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStreamBuf::write_char
-//       Access: Private
-//  Description: Stores a single character.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores a single character.
+ */
 void AndroidLogStream::AndroidLogStreamBuf::
 write_char(char c) {
   if (c == '\n') {
@@ -112,32 +101,26 @@ write_char(char c) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStream::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AndroidLogStream::
 AndroidLogStream(int priority) :
   ostream(new AndroidLogStreamBuf(priority)) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStream::Destructor
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 AndroidLogStream::
 ~AndroidLogStream() {
   delete rdbuf();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AndroidLogStream::out
-//       Access: Public, Static
-//  Description: Returns an AndroidLogStream suitable for writing
-//               log messages with the indicated severity.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns an AndroidLogStream suitable for writing log messages with the
+ * indicated severity.
+ */
 ostream &AndroidLogStream::
 out(NotifySeverity severity) {
   static AndroidLogStream* streams[NS_fatal + 1] = {NULL};

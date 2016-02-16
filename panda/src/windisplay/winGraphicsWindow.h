@@ -37,19 +37,14 @@ typedef struct {
 }
 WINDOW_METRICS;
 
-////////////////////////////////////////////////////////////////////
-//       Class : WinGraphicsWindow
-// Description : An abstract base class for glGraphicsWindow and
-//               dxGraphicsWindow (and, in general, graphics windows
-//               that interface with the Microsoft Windows API).
-//
-//               This class includes all the code for manipulating
-//               windows themselves: opening them, closing them,
-//               responding to user keyboard and mouse input, and so
-//               on.  It does not make any 3-D rendering calls into
-//               the window; that is the province of the
-//               GraphicsStateGuardian.
-////////////////////////////////////////////////////////////////////
+/**
+ * An abstract base class for glGraphicsWindow and dxGraphicsWindow (and, in
+ * general, graphics windows that interface with the Microsoft Windows API).
+ * This class includes all the code for manipulating windows themselves: opening
+ * them, closing them, responding to user keyboard and mouse input, and so on.
+ * It does not make any 3-D rendering calls into the window; that is the
+ * province of the GraphicsStateGuardian.
+ */
 class EXPCL_PANDAWIN WinGraphicsWindow : public GraphicsWindow {
 public:
   WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
@@ -109,7 +104,7 @@ protected:
 
   virtual DWORD make_style(bool fullscreen);
 
-  virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size, 
+  virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size,
                                           DWORD &bitdepth);
 
   virtual void support_overlay_window(bool flag);
@@ -275,7 +270,7 @@ private:
       return get_class_type();
     }
     virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-    
+
   private:
     static TypeHandle _type_handle;
   };

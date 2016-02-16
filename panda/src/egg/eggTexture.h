@@ -24,17 +24,15 @@
 #include "luse.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTexture
-// Description : Defines a texture map that may be applied to
-//               geometry.
-////////////////////////////////////////////////////////////////////
+/**
+ * Defines a texture map that may be applied to geometry.
+ */
 class EXPCL_PANDAEGG EggTexture : public EggFilenameNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   EggTexture(const string &tref_name, const Filename &filename);
   EggTexture(const EggTexture &copy);
   EggTexture &operator = (const EggTexture &copy);
-  virtual ~EggTexture(); 
+  virtual ~EggTexture();
 
   virtual void write(ostream &out, int indent_level) const;
 
@@ -90,8 +88,8 @@ PUBLISHED:
     FT_linear_mipmap_linear,     // "mipmap trilinear"
   };
   enum EnvType {
-    ET_unspecified, 
-    ET_modulate, 
+    ET_unspecified,
+    ET_modulate,
     ET_decal,
     ET_blend,
     ET_replace,
@@ -456,13 +454,11 @@ private:
   static TypeHandle _type_handle;
 };
 
-////////////////////////////////////////////////////////////////////
-//       Class : UniqueEggTextures
-// Description : An STL function object for sorting textures into
-//               order by properties.  Returns true if the two
-//               referenced EggTexture pointers are in sorted order,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object for sorting textures into order by properties.
+ * Returns true if the two referenced EggTexture pointers are in sorted order,
+ * false otherwise.
+ */
 class EXPCL_PANDAEGG UniqueEggTextures {
 public:
   INLINE UniqueEggTextures(int eq = ~0);

@@ -19,11 +19,10 @@
 #include "callbackObject.h"
 #include "pointerTo.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CallbackNode
-// Description : A special node that can issue arbitrary callbacks to
-//               user code, either during the cull or draw traversals.
-////////////////////////////////////////////////////////////////////
+/**
+ * A special node that can issue arbitrary callbacks to user code, either during
+ * the cull or draw traversals.
+ */
 class EXPCL_PANDA_PGRAPHNODES CallbackNode : public PandaNode {
 PUBLISHED:
   CallbackNode(const string &name);

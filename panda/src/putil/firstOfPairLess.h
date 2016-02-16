@@ -16,12 +16,11 @@
 
 #include "pandabase.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FirstOfPairLess
-// Description : An STL function object class, this is intended to be
-//               used on any ordered collection of pairs of objects.
-//               It uses < to compare the first elements of the pair.
-////////////////////////////////////////////////////////////////////
+/**
+ * An STL function object class, this is intended to be used on any ordered
+ * collection of pairs of objects.  It uses < to compare the first elements of
+ * the pair.
+ */
 template<class ObjectType>
 class FirstOfPairLess {
 public:
@@ -31,4 +30,3 @@ public:
 #include "firstOfPairLess.I"
 
 #endif
-

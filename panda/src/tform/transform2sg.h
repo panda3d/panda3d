@@ -19,13 +19,10 @@
 #include "dataNode.h"
 #include "pandaNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : Transform2SG
-// Description : input: Transform (matrix)
-//
-//               output: none, but applies the matrix as the transform
-//               transition for a given arc of the scene graph.
-////////////////////////////////////////////////////////////////////
+/**
+ * input: Transform (matrix)  output: none, but applies the matrix as the
+ * transform transition for a given arc of the scene graph.
+ */
 class EXPCL_PANDA_TFORM Transform2SG : public DataNode {
 PUBLISHED:
   Transform2SG(const string &name);
@@ -65,4 +62,3 @@ private:
 };
 
 #endif
-

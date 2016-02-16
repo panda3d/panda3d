@@ -15,11 +15,9 @@
 #include "indent.h"
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: DocumentSpec::compare_to
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 int DocumentSpec::
 compare_to(const DocumentSpec &other) const {
   if (_flags != other._flags) {
@@ -48,13 +46,10 @@ compare_to(const DocumentSpec &other) const {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DocumentSpec::input
-//       Access: Published
-//  Description: Can be used to read in the DocumentSpec from a stream
-//               generated either by output() or write().  Returns
-//               true on success, false on failure.
-////////////////////////////////////////////////////////////////////
+/**
+ * Can be used to read in the DocumentSpec from a stream generated either by
+ * output() or write().  Returns true on success, false on failure.
+ */
 bool DocumentSpec::
 input(istream &in) {
   // First, clear the spec.
@@ -100,11 +95,9 @@ input(istream &in) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DocumentSpec::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DocumentSpec::
 output(ostream &out) const {
   out << "[ " << get_url();
@@ -117,11 +110,9 @@ output(ostream &out) const {
   out << " ]";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DocumentSpec::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void DocumentSpec::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)

@@ -18,15 +18,12 @@
 #include "referenceCount.h"
 #include "modelNode.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ModelRoot
-// Description : A node of this type is created automatically at the
-//               root of each model file that is loaded.  It may
-//               eventually contain some information about the
-//               contents of the model; at the moment, it contains no
-//               special information, but can be used as a flag to
-//               indicate the presence of a loaded model file.
-////////////////////////////////////////////////////////////////////
+/**
+ * A node of this type is created automatically at the root of each model file
+ * that is loaded.  It may eventually contain some information about the
+ * contents of the model; at the moment, it contains no special information, but
+ * can be used as a flag to indicate the presence of a loaded model file.
+ */
 class EXPCL_PANDA_PGRAPH ModelRoot : public ModelNode {
 PUBLISHED:
   INLINE ModelRoot(const string &name);
@@ -93,5 +90,3 @@ private:
 #include "modelRoot.I"
 
 #endif
-
-

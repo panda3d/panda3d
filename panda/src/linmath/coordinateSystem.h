@@ -52,4 +52,3 @@ EXPCL_PANDA_LINMATH istream &operator >> (istream &in, CoordinateSystem &cs);
 
 
 #endif
-

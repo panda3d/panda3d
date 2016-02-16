@@ -27,16 +27,13 @@
 
 class ParametricCurveDrawer;
 
-////////////////////////////////////////////////////////////////////
-//       Class : ParametricCurveCollection
-// Description : This is a set of zero or more ParametricCurves, which
-//               may or may not be related.  If they are related, the
-//               set should contain no more than one XYZ curve, no
-//               more than one HPR curve, and zero or more Timewarp
-//               curves, which can then be evaluated as a unit to
-//               return a single transformation matrix for a given
-//               unit of time.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a set of zero or more ParametricCurves, which may or may not be
+ * related.  If they are related, the set should contain no more than one XYZ
+ * curve, no more than one HPR curve, and zero or more Timewarp curves, which
+ * can then be evaluated as a unit to return a single transformation matrix for
+ * a given unit of time.
+ */
 class EXPCL_PANDA_PARAMETRICS ParametricCurveCollection : public ReferenceCount {
 PUBLISHED:
   ParametricCurveCollection();
@@ -118,5 +115,3 @@ operator << (ostream &out, const ParametricCurveCollection &col) {
 #include "parametricCurveCollection.I"
 
 #endif
-
-

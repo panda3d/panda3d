@@ -21,10 +21,9 @@
 #include "filename.h"
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltTexture
-// Description : Represents a single texture in the texture palette.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single texture in the texture palette.
+ */
 class FltTexture : public FltRecord {
 public:
   FltTexture(FltHeader *header);
@@ -251,5 +250,3 @@ private:
 };
 
 #endif
-
-

@@ -23,12 +23,10 @@
 class Datagram;
 class PStatClientVersion;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatClientControlMessage
-// Description : This kind of message is sent from the client to the
-//               server on the TCP socket to establish critical
-//               control information.
-////////////////////////////////////////////////////////////////////
+/**
+ * This kind of message is sent from the client to the server on the TCP socket
+ * to establish critical control information.
+ */
 class EXPCL_PANDA_PSTATCLIENT PStatClientControlMessage {
 public:
   PStatClientControlMessage();
@@ -62,4 +60,3 @@ public:
 
 
 #endif
-

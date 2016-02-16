@@ -14,12 +14,9 @@
 #include "configVariableSearchPath.h"
 #include "executionEnvironment.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableSearchPath::reload_search_path
-//       Access: Private
-//  Description: Recopies the config variable into the search path for
-//               returning its value.
-////////////////////////////////////////////////////////////////////
+/**
+ * Recopies the config variable into the search path for returning its value.
+ */
 void ConfigVariableSearchPath::
 reload_search_path() {
   nassertv(_core != (ConfigVariableCore *)NULL);
@@ -44,7 +41,7 @@ reload_search_path() {
     }
   }
 
-  if (_prefix.is_empty() && _postfix.is_empty() && 
+  if (_prefix.is_empty() && _postfix.is_empty() &&
       num_unique_references == 0) {
     // An empty search path implicitly has the default value.
     _cache = _default_value;

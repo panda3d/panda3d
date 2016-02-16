@@ -23,11 +23,9 @@
 DWORD ThreadWin32Impl::_pt_ptr_index = 0;
 bool ThreadWin32Impl::_got_pt_ptr_index = false;
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 ThreadWin32Impl::
 ~ThreadWin32Impl() {
   if (thread_cat->is_debug()) {
@@ -37,23 +35,18 @@ ThreadWin32Impl::
   CloseHandle(_thread);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::setup_main_thread
-//       Access: Public
-//  Description: Called for the main thread only, which has been
-//               already started, to fill in the values appropriate to
-//               that thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called for the main thread only, which has been already started, to fill in
+ * the values appropriate to that thread.
+ */
 void ThreadWin32Impl::
 setup_main_thread() {
   _status = S_running;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::start
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 bool ThreadWin32Impl::
 start(ThreadPriority priority, bool joinable) {
   _mutex.acquire();
@@ -76,7 +69,7 @@ start(ThreadPriority priority, bool joinable) {
   // Increment the parent object's reference count first.  The thread
   // will eventually decrement it when it terminates.
   _parent_obj->ref();
-  _thread = 
+  _thread =
     CreateThread(NULL, 0, &root_func, (void *)this, 0, &_thread_id);
 
   if (_thread_id == 0) {
@@ -112,13 +105,10 @@ start(ThreadPriority priority, bool joinable) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::join
-//       Access: Public
-//  Description: Blocks the calling process until the thread
-//               terminates.  If the thread has already terminated,
-//               this returns immediately.
-////////////////////////////////////////////////////////////////////
+/**
+ * Blocks the calling process until the thread terminates.  If the thread has
+ * already terminated, this returns immediately.
+ */
 void ThreadWin32Impl::
 join() {
   _mutex.acquire();
@@ -133,11 +123,9 @@ join() {
   _mutex.release();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::get_unique_id
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 string ThreadWin32Impl::
 get_unique_id() const {
   ostringstream strm;
@@ -146,11 +134,9 @@ get_unique_id() const {
   return strm.str();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::root_func
-//       Access: Private, Static
-//  Description: The entry point of each thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * The entry point of each thread.
+ */
 DWORD ThreadWin32Impl::
 root_func(LPVOID data) {
   TAU_REGISTER_THREAD();
@@ -160,7 +146,7 @@ root_func(LPVOID data) {
     ThreadWin32Impl *self = (ThreadWin32Impl *)data;
     BOOL result = TlsSetValue(_pt_ptr_index, self->_parent_obj);
     nassertr(result, 1);
-    
+
     {
       self->_mutex.acquire();
       nassertd(self->_status == S_start_called) {
@@ -171,15 +157,15 @@ root_func(LPVOID data) {
       self->_cv.notify();
       self->_mutex.release();
     }
-    
+
     self->_parent_obj->thread_main();
-    
+
     if (thread_cat->is_debug()) {
       thread_cat.debug()
-        << "Terminating thread " << self->_parent_obj->get_name() 
+        << "Terminating thread " << self->_parent_obj->get_name()
         << ", count = " << self->_parent_obj->get_ref_count() << "\n";
     }
-    
+
     {
       self->_mutex.acquire();
       nassertd(self->_status == S_running) {
@@ -190,7 +176,7 @@ root_func(LPVOID data) {
       self->_cv.notify();
       self->_mutex.release();
     }
-    
+
     // Now drop the parent object reference that we grabbed in start().
     // This might delete the parent object, and in turn, delete the
     // ThreadWin32Impl object.
@@ -200,12 +186,10 @@ root_func(LPVOID data) {
   return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::init_pt_ptr_index
-//       Access: Private, Static
-//  Description: Allocate a new index to store the Thread parent
-//               pointer as a piece of per-thread private data.
-////////////////////////////////////////////////////////////////////
+/**
+ * Allocate a new index to store the Thread parent pointer as a piece of per-
+ * thread private data.
+ */
 void ThreadWin32Impl::
 init_pt_ptr_index() {
   nassertv(!_got_pt_ptr_index);

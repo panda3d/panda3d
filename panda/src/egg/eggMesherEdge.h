@@ -21,13 +21,11 @@
 
 class EggMesherStrip;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMesherEdge
-// Description : Represents one edge of a triangle, as used by the
-//               EggMesher to discover connected triangles.  The edge
-//               is actually represented as a pair of vertex indices
-//               into the same vertex pool.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents one edge of a triangle, as used by the EggMesher to discover
+ * connected triangles.  The edge is actually represented as a pair of vertex
+ * indices into the same vertex pool.
+ */
 class EggMesherEdge {
 public:
   INLINE EggMesherEdge(int vi_a, int vi_b);

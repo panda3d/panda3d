@@ -18,12 +18,10 @@
 
 #include "imageFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : ImageTrans
-// Description : A program to read an image file and write an
-//               equivalent image file, possibly performing some minor
-//               operations along the way.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an image file and write an equivalent image file, possibly
+ * performing some minor operations along the way.
+ */
 class ImageTrans : public ImageFilter {
 public:
   ImageTrans();
@@ -45,7 +43,7 @@ private:
     C_b,
     C_a
   };
-    
+
   Channels _channels;
   LColor _color_scale;
   bool _has_color_scale;
@@ -53,4 +51,3 @@ private:
 };
 
 #endif
-

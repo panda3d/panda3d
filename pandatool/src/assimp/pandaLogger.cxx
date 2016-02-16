@@ -17,12 +17,10 @@
 
 PandaLogger *PandaLogger::_ptr = NULL;
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaLogger::set_default
-//       Access: Public
-//  Description: Makes sure there's a global PandaLogger object and
-//               makes sure that it is Assimp's default logger.
-////////////////////////////////////////////////////////////////////
+/**
+ * Makes sure there's a global PandaLogger object and makes sure that it is
+ * Assimp's default logger.
+ */
 void PandaLogger::
 set_default() {
   if (_ptr == NULL) {
@@ -33,38 +31,30 @@ set_default() {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaLogger::OnDebug
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PandaLogger::OnDebug(const char *message) {
   assimp_cat.debug() << message << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaLogger::OnError
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PandaLogger::OnError(const char *message) {
   assimp_cat.error() << message << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaLogger::OnInfo
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PandaLogger::OnInfo(const char *message) {
   assimp_cat.info() << message << "\n";
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PandaLogger::OnWarn
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void PandaLogger::OnWarn(const char *message) {
   assimp_cat.warning() << message << "\n";
 }

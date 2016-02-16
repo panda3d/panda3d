@@ -19,23 +19,21 @@
 #include "cycleData.h"
 #include "pipelineCycler.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : CycleDataLockedStageReader
-// Description : This class is similar to CycleDataLockedReader,
-//               except it allows reading from a particular stage of
-//               the pipeline.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is similar to CycleDataLockedReader, except it allows reading from
+ * a particular stage of the pipeline.
+ */
 template<class CycleDataType>
 class CycleDataLockedStageReader {
 public:
   // By hiding this template from interrogate, we improve compile-time
   // speed and memory utilization.
 #ifndef CPPPARSER
-  INLINE CycleDataLockedStageReader(const PipelineCycler<CycleDataType> &cycler, 
+  INLINE CycleDataLockedStageReader(const PipelineCycler<CycleDataType> &cycler,
                                     int stage, Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataLockedStageReader(const CycleDataLockedStageReader<CycleDataType> &copy);
   INLINE void operator = (const CycleDataLockedStageReader<CycleDataType> &copy);
-  
+
   INLINE ~CycleDataLockedStageReader();
 
   INLINE const CycleDataType *operator -> () const;

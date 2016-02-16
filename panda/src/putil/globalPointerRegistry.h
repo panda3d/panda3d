@@ -20,44 +20,27 @@
 
 #include "pmap.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : GlobalPointerRegistry
-// Description : This class maintains a one-to-one mapping from
-//               TypeHandle to a void * pointer.  Its purpose is to
-//               store a pointer to some class data for a given class.
-//
-//               Normally, one would simply use a static data member
-//               to store class data.  However, when the static data
-//               is associated with a template class, the dynamic
-//               loader may have difficulty in properly resolving the
-//               statics.
-//
-//               Consider: class foo<int> defines a static member, _a.
-//               There should be only one instance of _a shared
-//               between all instances of foo<int>, and there will be
-//               a different instance of _a shared between all
-//               instances of foo<float>.
-//
-//               Now suppose that two different shared libraries
-//               instantiate foo<int>.  In each .so, there exists a
-//               different foo<int>::_a.  It is the loader's job to
-//               recognize this and collapse them together when both
-//               libraries are loaded.  This usually works, but
-//               sometimes it doesn't, and you end up with two
-//               different instances of foo<int>::_a; some functions
-//               see one instance, while others see the other.  We
-//               have particularly seen this problem occur under Linux
-//               with gcc.
-//
-//               This class attempts to circumvent the problem by
-//               managing pointers to data based on TypeHandle.  Since
-//               the TypeHandle will already be unique based on the
-//               string name supplied to the init_type() function, it
-//               can be used to differentiate foo<int> from
-//               foo<float>, while allowing different instances of
-//               foo<int> to guarantee that they share the same static
-//               data.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class maintains a one-to-one mapping from TypeHandle to a void *
+ * pointer.  Its purpose is to store a pointer to some class data for a given
+ * class.  Normally, one would simply use a static data member to store class
+ * data.  However, when the static data is associated with a template class, the
+ * dynamic loader may have difficulty in properly resolving the statics.
+ * Consider: class foo<int> defines a static member, _a.  There should be only
+ * one instance of _a shared between all instances of foo<int>, and there will
+ * be a different instance of _a shared between all instances of foo<float>.
+ * Now suppose that two different shared libraries instantiate foo<int>.  In
+ * each .so, there exists a different foo<int>::_a.  It is the loader's job to
+ * recognize this and collapse them together when both libraries are loaded.
+ * This usually works, but sometimes it doesn't, and you end up with two
+ * different instances of foo<int>::_a; some functions see one instance, while
+ * others see the other.  We have particularly seen this problem occur under
+ * Linux with gcc.  This class attempts to circumvent the problem by managing
+ * pointers to data based on TypeHandle.  Since the TypeHandle will already be
+ * unique based on the string name supplied to the init_type() function, it can
+ * be used to differentiate foo<int> from foo<float>, while allowing different
+ * instances of foo<int> to guarantee that they share the same static data.
+ */
 class EXPCL_PANDA_PUTIL GlobalPointerRegistry {
 public:
   INLINE static void *get_pointer(TypeHandle type);
@@ -81,4 +64,3 @@ private:
 #include "globalPointerRegistry.I"
 
 #endif
-

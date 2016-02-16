@@ -25,11 +25,9 @@
 #include "pointerTo.h"
 #include "mutexImpl.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMountHTTP
-// Description : Maps a web page (URL root) into the
-//               VirtualFileSystem.
-////////////////////////////////////////////////////////////////////
+/**
+ * Maps a web page (URL root) into the VirtualFileSystem.
+ */
 class EXPCL_PANDAEXPRESS VirtualFileMountHTTP : public VirtualFileMount {
 PUBLISHED:
   VirtualFileMountHTTP(const URLSpec &root, HTTPClient *http = HTTPClient::get_global_ptr());
@@ -42,7 +40,7 @@ PUBLISHED:
 
 public:
   virtual PT(VirtualFile) make_virtual_file(const Filename &local_filename,
-                                            const Filename &original_filename, 
+                                            const Filename &original_filename,
                                             bool implicit_pz_file,
                                             int open_flags);
 
@@ -55,7 +53,7 @@ public:
   virtual streamsize get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;
 
-  virtual bool scan_directory(vector_string &contents, 
+  virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
   virtual void output(ostream &out) const;

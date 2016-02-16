@@ -17,4 +17,3 @@
 #undef Window
 #undef Cursor
 #undef Connection
-

@@ -26,16 +26,12 @@ class EggWriter;
 class EggNode;
 class PathReplace;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggSingleBase
-// Description : This specialization of EggBase is intended for
-//               programs that read and/or write a single egg file.
-//               (See EggMultiBase for programs that operate on
-//               multiple egg files at once.)
-//
-//               This is just a base class; see EggReader, EggWriter,
-//               or EggFilter according to your particular I/O needs.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization of EggBase is intended for programs that read and/or
+ * write a single egg file.  (See EggMultiBase for programs that operate on
+ * multiple egg files at once.)  This is just a base class; see EggReader,
+ * EggWriter, or EggFilter according to your particular I/O needs.
+ */
 class EggSingleBase : public EggBase {
 public:
   EggSingleBase();
@@ -51,5 +47,3 @@ protected:
 };
 
 #endif
-
-

@@ -16,15 +16,12 @@
 TypeHandle BulletContactCallbackData::_type_handle;
 
 /*
-////////////////////////////////////////////////////////////////////
-//     Function: BulletContactCallbackData::enable_feedback
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void BulletContactCallbackData::
 enable_feedback(bool value) {
 
   ptr()->enableFeedback(value);
 }
 */
-

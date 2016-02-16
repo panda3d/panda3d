@@ -26,13 +26,11 @@
 
 #else
 
-////////////////////////////////////////////////////////////////////
-//       Class : plist
-// Description : This is our own Panda specialization on the default
-//               STL list.  Its main purpose is to call the hooks
-//               for MemoryUsage to properly track STL-allocated
-//               memory.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is our own Panda specialization on the default STL list.  Its main
+ * purpose is to call the hooks for MemoryUsage to properly track STL-allocated
+ * memory.
+ */
 template<class Type>
 class plist : public list<Type, pallocator_single<Type> > {
 public:

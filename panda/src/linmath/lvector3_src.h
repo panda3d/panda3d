@@ -11,16 +11,13 @@
  * @date 1999-09-24
  */
 
-////////////////////////////////////////////////////////////////////
-//       Class : LVector3
-// Description : This is a three-component vector distance (as opposed
-//               to a three-component point, which represents a
-//               particular point in space).  Some of the methods are
-//               slightly different between LPoint3 and LVector3; in
-//               particular, subtraction of two points yields a
-//               vector, while addition of a vector and a point yields
-//               a point.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a three-component vector distance (as opposed to a three-component
+ * point, which represents a particular point in space).  Some of the methods
+ * are slightly different between LPoint3 and LVector3; in particular,
+ * subtraction of two points yields a vector, while addition of a vector and a
+ * point yields a point.
+ */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector3) : public FLOATNAME(LVecBase3) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3)() DEFAULT_CTOR;

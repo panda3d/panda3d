@@ -19,11 +19,9 @@
 
 #include "physx_includes.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PhysxForceFieldShapeDesc
-// Description : Abstract base class for descriptors for force 
-//               field shapes descriptors.
-////////////////////////////////////////////////////////////////////
+/**
+ * Abstract base class for descriptors for force field shapes descriptors.
+ */
 class EXPCL_PANDAPHYSX PhysxForceFieldShapeDesc {
 
 PUBLISHED:

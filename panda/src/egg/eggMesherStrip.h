@@ -22,13 +22,11 @@
 
 class EggMesherEdge;
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggMesherStrip
-// Description : Represents a triangle strip or quad strip in
-//               progress, as assembled by the mesher.  It might also
-//               represent a single polygon such as a triangle or
-//               quad, since that's how strips generally start out.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a triangle strip or quad strip in progress, as assembled by the
+ * mesher.  It might also represent a single polygon such as a triangle or quad,
+ * since that's how strips generally start out.
+ */
 class EggMesherStrip {
 public:
   enum PrimType {
@@ -44,10 +42,10 @@ public:
   };
 
   enum MesherOrigin {
-    MO_unknown, 
-    MO_user, 
-    MO_firstquad, 
-    MO_fanpoly, 
+    MO_unknown,
+    MO_user,
+    MO_firstquad,
+    MO_fanpoly,
     MO_mate
   };
 
@@ -128,9 +126,9 @@ public:
   Verts _verts;
 
   enum MesherStatus {
-    MS_alive, 
-    MS_dead, 
-    MS_done, 
+    MS_alive,
+    MS_dead,
+    MS_done,
     MS_paired
   };
 

@@ -28,12 +28,10 @@
 
 class PStatReader;
 
-////////////////////////////////////////////////////////////////////
-//       Class : PStatClientData
-// Description : The data associated with a particular client, but not
-//               with any one particular frame or thread: the list of
-//               collectors and threads, for instance.
-////////////////////////////////////////////////////////////////////
+/**
+ * The data associated with a particular client, but not with any one particular
+ * frame or thread: the list of collectors and threads, for instance.
+ */
 class PStatClientData : public PStatClientVersion {
 public:
   PStatClientData(PStatReader *reader);
@@ -85,7 +83,7 @@ private:
 
   typedef vector_int ToplevelCollectors;
   ToplevelCollectors _toplevel_collectors;
-  
+
   class Thread {
   public:
     string _name;
@@ -99,4 +97,3 @@ private:
 };
 
 #endif
-

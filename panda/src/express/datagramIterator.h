@@ -19,13 +19,11 @@
 #include "datagram.h"
 #include "numeric_types.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : DatagramIterator
-// Description : A class to retrieve the individual data elements
-//               previously stored in a Datagram.  Elements may be
-//               retrieved one at a time; it is up to the caller to
-//               know the correct type and order of each element.
-////////////////////////////////////////////////////////////////////
+/**
+ * A class to retrieve the individual data elements previously stored in a
+ * Datagram.  Elements may be retrieved one at a time; it is up to the caller to
+ * know the correct type and order of each element.
+ */
 class EXPCL_PANDAEXPRESS DatagramIterator {
 public:
   INLINE void assign(Datagram &datagram, size_t offset = 0);

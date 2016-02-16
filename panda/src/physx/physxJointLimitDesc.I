@@ -11,21 +11,17 @@
  * @date 2009-09-28
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointLimitDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointLimitDesc::
 PhysxJointLimitDesc() {
 
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointLimitDesc::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointLimitDesc::
 PhysxJointLimitDesc(float value, float restitution, float hardness) {
 
@@ -34,13 +30,10 @@ PhysxJointLimitDesc(float value, float restitution, float hardness) {
   _desc.hardness = hardness;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxJointLimitDesc::Destructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PhysxJointLimitDesc::
 ~PhysxJointLimitDesc() {
 
 }
-

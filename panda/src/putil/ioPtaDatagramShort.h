@@ -24,14 +24,11 @@ class BamWriter;
 class Datagram;
 class DatagramIterator;
 
-////////////////////////////////////////////////////////////////////
-//       Class : IoPtaDatagramShort
-// Description : This class is used to read and write a PTA_ushort
-//               from a Datagram, in support of Bam.  It's not
-//               intended to be constructed; it's just a convenient
-//               place to scope these static methods which should be
-//               called directly.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class is used to read and write a PTA_ushort from a Datagram, in support
+ * of Bam.  It's not intended to be constructed; it's just a convenient place to
+ * scope these static methods which should be called directly.
+ */
 class EXPCL_PANDA_PUTIL IoPtaDatagramShort {
 public:
   static void write_datagram(BamWriter *manager, Datagram &dest, CPTA_ushort array);

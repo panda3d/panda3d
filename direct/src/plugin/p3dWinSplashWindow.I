@@ -11,24 +11,19 @@
  * @date 2009-06-17
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::WinImageData::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline P3DWinSplashWindow::WinImageData::
 WinImageData() {
   _filename_changed = false;
   _bitmap = NULL;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::WinImageData::Destructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 inline P3DWinSplashWindow::WinImageData::
 ~WinImageData() {
   dump_image();
 }
-

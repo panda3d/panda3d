@@ -22,12 +22,10 @@
 
 class Ramfile;
 
-////////////////////////////////////////////////////////////////////
-//       Class : Decompressor
-// Description : This manages run-time decompression of a
-//               zlib-compressed stream, as a background or foreground
-//               task.
-////////////////////////////////////////////////////////////////////
+/**
+ * This manages run-time decompression of a zlib-compressed stream, as a
+ * background or foreground task.
+ */
 class EXPCL_PANDAEXPRESS Decompressor {
 PUBLISHED:
   Decompressor();

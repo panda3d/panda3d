@@ -21,20 +21,14 @@
 #include "samplerState.h"
 #include "savedContext.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : SamplerContext
-// Description : This is a special class object that holds a handle
-//               to the sampler state object given by the graphics
-//               back-end for a particular combination of texture
-//               sampling settings.
-//
-//               Some graphics back-ends (like OpenGL) use mutable
-//               sampler objects, whereas others (Direct3D 10+) use
-//               immutable ones.  In Panda3D, each unique sampler
-//               state has its own SamplerContext, which simplifies
-//               the implementation and makes redundant sampler
-//               objects impossible.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special class object that holds a handle to the sampler state
+ * object given by the graphics back-end for a particular combination of texture
+ * sampling settings.  Some graphics back-ends (like OpenGL) use mutable sampler
+ * objects, whereas others (Direct3D 10+) use immutable ones.  In Panda3D, each
+ * unique sampler state has its own SamplerContext, which simplifies the
+ * implementation and makes redundant sampler objects impossible.
+ */
 class EXPCL_PANDA_GOBJ SamplerContext : public SavedContext, public SimpleLruPage {
 public:
   INLINE SamplerContext(const SamplerState &sampler);
@@ -70,4 +64,3 @@ inline ostream &operator << (ostream &out, const SamplerContext &context) {
 #include "samplerContext.I"
 
 #endif
-

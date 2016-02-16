@@ -17,19 +17,17 @@
 #include "pandabase.h"
 #include "queryContext.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : OcclusionQueryContext
-// Description : Returned from a GSG in response to
-//               begin_occlusion_query() .. end_occlusion_query(),
-//               this records the number of fragments (pixels) that
-//               passed the depth test between the bracketing calls.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returned from a GSG in response to begin_occlusion_query() ..
+ * end_occlusion_query(), this records the number of fragments (pixels) that
+ * passed the depth test between the bracketing calls.
+ */
 class EXPCL_PANDA_GOBJ OcclusionQueryContext : public QueryContext {
 public:
   INLINE OcclusionQueryContext();
 
   virtual int get_num_fragments() const=0;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -53,4 +51,3 @@ private:
 #include "occlusionQueryContext.I"
 
 #endif
-

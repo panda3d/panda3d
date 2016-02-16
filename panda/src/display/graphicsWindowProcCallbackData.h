@@ -20,12 +20,11 @@
 
 class GraphicsWindow;
 
-////////////////////////////////////////////////////////////////////
-//       Class : GraphicsWindowProcCallbackData
-// Description : This specialization on CallbackData is passed when
-//               the callback is initiated from from an implementation
-//               of the GraphicsWindowProc class, such as PythonGraphicsWindowProc.
-////////////////////////////////////////////////////////////////////
+/**
+ * This specialization on CallbackData is passed when the callback is initiated
+ * from from an implementation of the GraphicsWindowProc class, such as
+ * PythonGraphicsWindowProc.
+ */
 class EXPCL_PANDA_DISPLAY GraphicsWindowProcCallbackData : public CallbackData {
 public:
   INLINE GraphicsWindowProcCallbackData(GraphicsWindow* graphicsWindow);

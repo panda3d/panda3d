@@ -16,14 +16,11 @@
 
 #include <stdio.h>  // for sscanf, sprintf
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsGuid::parse_string
-//       Access: Public
-//  Description: Parses the hex representation in the indicated string
-//               and stores it in the WindowsGuid object.  Returns
-//               true if successful, false if the string
-//               representation is malformed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Parses the hex representation in the indicated string and stores it in the
+ * WindowsGuid object.  Returns true if successful, false if the string
+ * representation is malformed.
+ */
 bool WindowsGuid::
 parse_string(const string &str) {
   unsigned long data1;
@@ -52,16 +49,14 @@ parse_string(const string &str) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsGuid::format_string
-//       Access: Public
-//  Description: Returns a hex representation of the GUID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a hex representation of the GUID.
+ */
 string WindowsGuid::
 format_string() const {
   static const int buf_length = 128;  // Actually, we only need 36 + 1 == 37.
   char buffer[buf_length];
-  sprintf(buffer, 
+  sprintf(buffer,
           "%08lx-%04hx-%04hx-%02x%02x-%02x%02x%02x%02x%02x%02x",
           _data1, _data2, _data3,
           _b1, _b2, _b3, _b4, _b5, _b6, _b7, _b8);
@@ -70,11 +65,9 @@ format_string() const {
   return string(buffer);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: WindowsGuid::output
-//       Access: Public
-//  Description: Outputs a hex representation of the GUID.
-////////////////////////////////////////////////////////////////////
+/**
+ * Outputs a hex representation of the GUID.
+ */
 void WindowsGuid::
 output(ostream &out) const {
   out << format_string();

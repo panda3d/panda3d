@@ -25,14 +25,11 @@
 typedef vector<int> vector_int;
 #endif
 
-////////////////////////////////////////////////////////////////////
-//       Class : PrimeNumberGenerator
-// Description : This class generates a table of prime numbers, up to
-//               the limit of an int.  For a given integer n, it will
-//               return the nth prime number.  This will involve a
-//               recompute step only if n is greater than any previous
-//               n.
-////////////////////////////////////////////////////////////////////
+/**
+ * This class generates a table of prime numbers, up to the limit of an int.
+ * For a given integer n, it will return the nth prime number.  This will
+ * involve a recompute step only if n is greater than any previous n.
+ */
 class PrimeNumberGenerator {
 public:
   PrimeNumberGenerator();

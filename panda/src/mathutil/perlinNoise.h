@@ -20,13 +20,11 @@
 #include "luse.h"
 #include "randomizer.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PerlinNoise
-// Description : This is the base class for PerlinNoise2 and
-//               PerlinNoise3, different dimensions of Perlin noise
-//               implementation.  The base class just collects the
-//               common functionality.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is the base class for PerlinNoise2 and PerlinNoise3, different
+ * dimensions of Perlin noise implementation.  The base class just collects the
+ * common functionality.
+ */
 class EXPCL_PANDA_MATHUTIL PerlinNoise {
 protected:
   PerlinNoise(int table_size, unsigned long seed);

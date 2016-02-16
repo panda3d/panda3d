@@ -27,5 +27,3 @@ bool mkfile_complete_w(const wstring &dirname, ostream &logfile);
 #endif  // _WIN32
 
 #endif
-
-

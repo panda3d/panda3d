@@ -27,11 +27,9 @@
 
 #include <stdio.h>
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPalettize::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 EggPalettize::
 EggPalettize() : EggMultiFilter(true) {
   set_program_brief("pack textures from various .egg models into palette images");
@@ -221,14 +219,11 @@ EggPalettize() : EggMultiFilter(true) {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPalettize::handle_args
-//       Access: Protected, Virtual
-//  Description: Does something with the additional arguments on the
-//               command line (after all the -options have been
-//               parsed).  Returns true if the arguments are good,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
+/**
+ * Does something with the additional arguments on the command line (after all
+ * the -options have been parsed).  Returns true if the arguments are good,
+ * false otherwise.
+ */
 bool EggPalettize::
 handle_args(ProgramBase::Args &args) {
   if (_describe_input_file) {
@@ -247,11 +242,9 @@ handle_args(ProgramBase::Args &args) {
   return EggMultiFilter::handle_args(args);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPalettize::describe_input_file
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggPalettize::
 describe_input_file() {
   nout <<
@@ -568,11 +561,9 @@ describe_input_file() {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggPalettize::run
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void EggPalettize::
 run() {
   // Fiddle with the loader severity, so we don't confuse the user
@@ -606,13 +597,13 @@ run() {
         _txa_filename = maybe;
       }
     }
-    
+
     if (!_txa_filename.exists()) {
       nout << FilenameUnifier::make_user_filename(_txa_filename)
            << " does not exist; cannot run.\n";
       exit(1);
     }
-    
+
     FilenameUnifier::set_txa_filename(_txa_filename);
 
     state_filename = _txa_filename;
@@ -834,7 +825,7 @@ run() {
       }
     }
   }
-    
+
   if (okflag) {
     if (!pal->write_eggs()) {
       okflag = false;
@@ -851,7 +842,7 @@ run() {
       dirname = ".";
     }
     Filename temp_filename = Filename::temporary(dirname, "pi");
-    
+
     if (!state_file.open_write(temp_filename) ||
         !state_file.write_object(pal)) {
       nout << "Unable to write palettization information to "
@@ -859,7 +850,7 @@ run() {
            << "\n";
       exit(1);
     }
-    
+
     state_file.close();
     state_filename.unlink();
     if (!temp_filename.rename_to(state_filename)) {
@@ -885,5 +876,3 @@ main(int argc, char *argv[]) {
   prog.run();
   return 0;
 }
-
-

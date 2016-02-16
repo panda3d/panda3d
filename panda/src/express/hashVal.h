@@ -23,11 +23,10 @@
 #include "streamWriter.h"
 #include "streamReader.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : HashVal
-// Description : Stores a 128-bit value that represents the hashed
-//               contents (typically MD5) of a file or buffer.
-////////////////////////////////////////////////////////////////////
+/**
+ * Stores a 128-bit value that represents the hashed contents (typically MD5) of
+ * a file or buffer.
+ */
 class EXPCL_PANDAEXPRESS HashVal {
 PUBLISHED:
   INLINE HashVal();

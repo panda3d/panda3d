@@ -16,13 +16,11 @@
 
 #include "nppanda3d_common.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : PPToplevelObject
-// Description : This is a special object fed to Mozilla as the
-//               toplevel scripting object for the instance.  It has
-//               only one property, "main", which corresponds to the
-//               appRunner.main object from Python.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a special object fed to Mozilla as the toplevel scripting object for
+ * the instance.  It has only one property, "main", which corresponds to the
+ * appRunner.main object from Python.
+ */
 class PPToplevelObject : public NPObject {
 public:
   static PPToplevelObject *make_new(PPInstance *inst);
@@ -76,4 +74,3 @@ public:
 #include "ppToplevelObject.I"
 
 #endif
-

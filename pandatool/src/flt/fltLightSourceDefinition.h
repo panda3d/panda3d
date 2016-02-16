@@ -20,13 +20,11 @@
 
 #include "luse.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : FltLightSourceDefinition
-// Description : Represents a single entry in the light source
-//               palette.  This completely defines the color, etc. of
-//               a single light source, which may be referenced later
-//               by a FltLightSource bead in the hierarchy.
-////////////////////////////////////////////////////////////////////
+/**
+ * Represents a single entry in the light source palette.  This completely
+ * defines the color, etc.  of a single light source, which may be referenced
+ * later by a FltLightSource bead in the hierarchy.
+ */
 class FltLightSourceDefinition : public FltRecord {
 public:
   FltLightSourceDefinition(FltHeader *header);
@@ -81,5 +79,3 @@ private:
 };
 
 #endif
-
-

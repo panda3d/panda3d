@@ -16,10 +16,9 @@
 
 #include "linearForce.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LinearFrictionForce
-// Description : Friction-based drag force
-////////////////////////////////////////////////////////////////////
+/**
+ * Friction-based drag force
+ */
 class EXPCL_PANDAPHYSICS LinearFrictionForce : public LinearForce {
 PUBLISHED:
   LinearFrictionForce(PN_stdfloat coef = 1.0f, PN_stdfloat a = 1.0f, bool m = false);
@@ -28,7 +27,7 @@ PUBLISHED:
 
   INLINE void set_coef(PN_stdfloat coef);
   INLINE PN_stdfloat get_coef() const;
-  
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

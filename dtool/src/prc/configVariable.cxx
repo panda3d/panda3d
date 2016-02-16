@@ -14,13 +14,10 @@
 #include "configVariable.h"
 #include "config_prc.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariable::report_unconstructed
-//       Access: Protected
-//  Description: Displays a suitable error message when an
-//               unconstructed ConfigVariable is attempted to be used.
-//               This normally indicates a static-init ordering issue.
-////////////////////////////////////////////////////////////////////
+/**
+ * Displays a suitable error message when an unconstructed ConfigVariable is
+ * attempted to be used.  This normally indicates a static-init ordering issue.
+ */
 void ConfigVariable::
 report_unconstructed() const {
   prc_cat->error()
@@ -28,4 +25,3 @@ report_unconstructed() const {
     << " accessed before its constructor has run!\n";
   record_unconstructed();
 }
-

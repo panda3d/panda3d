@@ -13,12 +13,9 @@
 
 #include "checksumHashGenerator.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: ChecksumHashGenerator::add_string
-//       Access: Public
-//  Description: Adds a string to the hash, by breaking it down into a
-//               sequence of integers.
-////////////////////////////////////////////////////////////////////
+/**
+ * Adds a string to the hash, by breaking it down into a sequence of integers.
+ */
 void ChecksumHashGenerator::
 add_string(const string &str) {
   add_int(str.length());

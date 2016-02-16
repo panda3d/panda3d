@@ -16,11 +16,9 @@
 
 #include "cppSimpleType.h"
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPTBDType::
 CPPTBDType(CPPIdentifier *ident) :
   CPPType(CPPFile()),
@@ -29,14 +27,11 @@ CPPTBDType(CPPIdentifier *ident) :
   _subst_decl_recursive_protect = false;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::resolve_type
-//       Access: Public, Virtual
-//  Description: If this CPPType object is a forward reference or
-//               other nonspecified reference to a type that might now
-//               be known a real type, returns the real type.
-//               Otherwise returns the type itself.
-////////////////////////////////////////////////////////////////////
+/**
+ * If this CPPType object is a forward reference or other nonspecified reference
+ * to a type that might now be known a real type, returns the real type.
+ * Otherwise returns the type itself.
+ */
 CPPType *CPPTBDType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPType *type = _ident->find_type(current_scope, global_scope);
@@ -46,60 +41,47 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   return this;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::is_tbd
-//       Access: Public, Virtual
-//  Description: Returns true if the type, or any nested type within
-//               the type, is a CPPTBDType and thus isn't fully
-//               determined right now.  In this case, calling
-//               resolve_type() may or may not resolve the type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns true if the type, or any nested type within the type, is a CPPTBDType
+ * and thus isn't fully determined right now.  In this case, calling
+ * resolve_type() may or may not resolve the type.
+ */
 bool CPPTBDType::
 is_tbd() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::get_simple_name
-//       Access: Public, Virtual
-//  Description: Returns a fundametal one-word name for the type.
-//               This name will not include any scoping operators or
-//               template parameters, so it may not be a compilable
-//               reference to the type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns a fundametal one-word name for the type.  This name will not include
+ * any scoping operators or template parameters, so it may not be a compilable
+ * reference to the type.
+ */
 string CPPTBDType::
 get_simple_name() const {
   return _ident->get_simple_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::get_local_name
-//       Access: Public, Virtual
-//  Description: Returns the compilable, correct name for this type
-//               within the indicated scope.  If the scope is NULL,
-//               within the scope the type is declared in.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the compilable, correct name for this type within the indicated
+ * scope.  If the scope is NULL, within the scope the type is declared in.
+ */
 string CPPTBDType::
 get_local_name(CPPScope *scope) const {
   return _ident->get_local_name(scope);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::get_fully_scoped_name
-//       Access: Public, Virtual
-//  Description: Returns the compilable, correct name for the type,
-//               with completely explicit scoping.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the compilable, correct name for the type, with completely explicit
+ * scoping.
+ */
 string CPPTBDType::
 get_fully_scoped_name() const {
   return _ident->get_fully_scoped_name();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::substitute_decl
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration *CPPTBDType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
@@ -142,43 +124,35 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::output
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void CPPTBDType::
 output(ostream &out, int, CPPScope *, bool) const {
   out /* << "typename " */ << *_ident;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::get_subtype
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPDeclaration::SubType CPPTBDType::
 get_subtype() const {
   return ST_tbd;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::as_tbd_type
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 CPPTBDType *CPPTBDType::
 as_tbd_type() {
   return this;
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::is_equal
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration() to determine whether this type is
-//               equivalent to another type of the same type.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration() to determine whether this type is equivalent to
+ * another type of the same type.
+ */
 bool CPPTBDType::
 is_equal(const CPPDeclaration *other) const {
   const CPPTBDType *ot = ((CPPDeclaration *)other)->as_tbd_type();
@@ -188,13 +162,10 @@ is_equal(const CPPDeclaration *other) const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: CPPTBDType::is_less
-//       Access: Protected, Virtual
-//  Description: Called by CPPDeclaration() to determine whether this type
-//               should be ordered before another type of the same
-//               type, in an arbitrary but fixed ordering.
-////////////////////////////////////////////////////////////////////
+/**
+ * Called by CPPDeclaration() to determine whether this type should be ordered
+ * before another type of the same type, in an arbitrary but fixed ordering.
+ */
 bool CPPTBDType::
 is_less(const CPPDeclaration *other) const {
   const CPPTBDType *ot = ((CPPDeclaration *)other)->as_tbd_type();

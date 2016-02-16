@@ -19,12 +19,10 @@
 #include "pvector.h"
 #include <stdio.h>
 
-////////////////////////////////////////////////////////////////////
-//       Class : MultiplexStreamBuf
-// Description : Used by MultiplexStream to implement an ostream that
-//               sends what is written to it to any number of
-//               additional sources, like other ostreams.
-////////////////////////////////////////////////////////////////////
+/**
+ * Used by MultiplexStream to implement an ostream that sends what is written to
+ * it to any number of additional sources, like other ostreams.
+ */
 class EXPCL_PANDAEXPRESS MultiplexStreamBuf : public streambuf {
 public:
   MultiplexStreamBuf();

@@ -18,12 +18,10 @@
 
 #include "eggMultiFilter.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : EggTrans
-// Description : A program to read an egg file and write an equivalent
-//               egg file, with stripping prefix for now, but more
-//               along the way.
-////////////////////////////////////////////////////////////////////
+/**
+ * A program to read an egg file and write an equivalent egg file, with
+ * stripping prefix for now, but more along the way.
+ */
 class EggRename : public EggMultiFilter {
 public:
   EggRename();
@@ -34,4 +32,3 @@ public:
 };
 
 #endif
-

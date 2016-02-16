@@ -23,10 +23,9 @@ class CPPType;
 class CPPPreprocessor;
 class CPPFunctionGroup;
 
-////////////////////////////////////////////////////////////////////
-//       Class : CPPExpression
-// Description :
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 class CPPExpression : public CPPDeclaration {
 public:
   enum Type {

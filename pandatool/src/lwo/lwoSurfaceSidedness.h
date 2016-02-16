@@ -18,12 +18,10 @@
 
 #include "lwoChunk.h"
 
-////////////////////////////////////////////////////////////////////
-//       Class : LwoSurfaceSidedness
-// Description : Records whether polygons are frontfacing only or
-//               backfacing also.  This is associated with the
-//               LwoSurface chunk.
-////////////////////////////////////////////////////////////////////
+/**
+ * Records whether polygons are frontfacing only or backfacing also.  This is
+ * associated with the LwoSurface chunk.
+ */
 class LwoSurfaceSidedness : public LwoChunk {
 public:
   enum Sidedness {
@@ -56,5 +54,3 @@ private:
 };
 
 #endif
-
-

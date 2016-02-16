@@ -19,14 +19,12 @@
 #include "plane.h"
 
 
-////////////////////////////////////////////////////////////////////
-//       Class : Triangulator3
-// Description : This is an extension of Triangulator to handle
-//               polygons with three-dimensional points.  It assumes
-//               all of the points lie in a single plane, and
-//               internally projects the supplied points into 2-D for
-//               passing to the underlying Triangulator object.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is an extension of Triangulator to handle polygons with three-
+ * dimensional points.  It assumes all of the points lie in a single plane, and
+ * internally projects the supplied points into 2-D for passing to the
+ * underlying Triangulator object.
+ */
 class EXPCL_PANDA_MATHUTIL Triangulator3 : public Triangulator {
 PUBLISHED:
   Triangulator3();

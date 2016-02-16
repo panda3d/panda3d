@@ -11,24 +11,18 @@
  * @date 2000-07-11
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::Default Constructor
-//       Access: Private
-//  Description: Normally, this constructor is called only from
-//               PStatClient.  Use one of the constructors below to
-//               create your own Thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normally, this constructor is called only from PStatClient.  Use one of the
+ * constructors below to create your own Thread.
+ */
 INLINE PStatThread::
 PStatThread() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::Constructor
-//       Access: Published
-//  Description: Normally, this constructor is called only from
-//               PStatClient.  Use one of the constructors below to
-//               create your own Thread.
-////////////////////////////////////////////////////////////////////
+/**
+ * Normally, this constructor is called only from PStatClient.  Use one of the
+ * constructors below to create your own Thread.
+ */
 INLINE PStatThread::
 PStatThread(PStatClient *client, int index) :
   _client(client),
@@ -36,13 +30,10 @@ PStatThread(PStatClient *client, int index) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::Constructor
-//       Access: Public
-//  Description: Creates a new named thread.  This will be used to
-//               unify tasks that share a common thread, and
-//               differentiate tasks that occur in different threads.
-////////////////////////////////////////////////////////////////////
+/**
+ * Creates a new named thread.  This will be used to unify tasks that share a
+ * common thread, and differentiate tasks that occur in different threads.
+ */
 INLINE PStatThread::
 PStatThread(Thread *thread, PStatClient *client) {
 #ifdef DO_PSTATS
@@ -65,11 +56,9 @@ PStatThread(Thread *thread, PStatClient *client) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE PStatThread::
 PStatThread(const PStatThread &copy) :
   _client(copy._client),
@@ -77,29 +66,21 @@ PStatThread(const PStatThread &copy) :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE void PStatThread::
 operator = (const PStatThread &copy) {
   _client = copy._client;
   _index = copy._index;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::new_frame
-//       Access: Public
-//  Description: This must be called at the start of every "frame",
-//               whatever a frame may be deemed to be, to accumulate
-//               all the stats that have collected so far for the
-//               thread and ship them off to the server.
-//
-//               Calling PStatClient::thread_tick() will automatically
-//               call this for any threads with the indicated sync
-//               name.
-////////////////////////////////////////////////////////////////////
+/**
+ * This must be called at the start of every "frame", whatever a frame may be
+ * deemed to be, to accumulate all the stats that have collected so far for the
+ * thread and ship them off to the server.  Calling PStatClient::thread_tick()
+ * will automatically call this for any threads with the indicated sync name.
+ */
 INLINE void PStatThread::
 new_frame() {
 #ifdef DO_PSTATS
@@ -107,12 +88,10 @@ new_frame() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::add_frame
-//       Access: Public
-//  Description: This is a slightly lower-level version of new_frame
-//               that also specifies the data to send for this frame.
-////////////////////////////////////////////////////////////////////
+/**
+ * This is a slightly lower-level version of new_frame that also specifies the
+ * data to send for this frame.
+ */
 INLINE void PStatThread::
 add_frame(const PStatFrameData &frame_data) {
 #ifdef DO_PSTATS
@@ -120,12 +99,9 @@ add_frame(const PStatFrameData &frame_data) {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PStatThread::get_index
-//       Access: Published
-//  Description: Returns the index number of this particular thread
-//               within the PStatClient.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the index number of this particular thread within the PStatClient.
+ */
 INLINE int PStatThread::
 get_index() const {
   return _index;

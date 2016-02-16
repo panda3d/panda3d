@@ -11,42 +11,34 @@
  * @date 2011-09-19
  */
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileMountRamdisk::FileBase::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VirtualFileMountRamdisk::FileBase::
 FileBase(const string &basename) : _basename(basename), _timestamp(time(NULL)) {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileMountRamdisk::FileBase::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE bool VirtualFileMountRamdisk::FileBase::
 operator < (const FileBase &other) const {
   return _basename < other._basename;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileMountRamdisk::File::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VirtualFileMountRamdisk::File::
-File(const string &basename) : 
+File(const string &basename) :
   FileBase(basename),
   _wrapper(&_data, false, true)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileMountRamdisk::Directory::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 INLINE VirtualFileMountRamdisk::Directory::
 Directory(const string &basename) : FileBase(basename) {
 }

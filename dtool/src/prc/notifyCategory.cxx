@@ -27,19 +27,17 @@
 
 long NotifyCategory::_server_delta = 0;
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::Constructor
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 NotifyCategory::
 NotifyCategory(const string &fullname, const string &basename,
                NotifyCategory *parent) :
   _fullname(fullname),
   _basename(basename),
   _parent(parent),
-  _severity(get_config_name(), NS_unspecified, 
-            "Default severity of this notify category", 
+  _severity(get_config_name(), NS_unspecified,
+            "Default severity of this notify category",
             ConfigVariable::F_dynamic),
   _local_modified(initial_invalid_cache())
 {
@@ -51,16 +49,12 @@ NotifyCategory(const string &fullname, const string &basename,
   nassertv(_parent != (NotifyCategory *)NULL || _fullname.empty());
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::out
-//       Access: Published
-//  Description: Begins a new message to this Category at the
-//               indicated severity level.  If the indicated severity
-//               level is enabled, this writes a prefixing string to
-//               the Notify::out() stream and returns that.  If the
-//               severity level is disabled, this returns
-//               Notify::null().
-////////////////////////////////////////////////////////////////////
+/**
+ * Begins a new message to this Category at the indicated severity level.  If
+ * the indicated severity level is enabled, this writes a prefixing string to
+ * the Notify::out() stream and returns that.  If the severity level is
+ * disabled, this returns Notify::null().
+ */
 ostream &NotifyCategory::
 out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
@@ -118,48 +112,37 @@ out(NotifySeverity severity, bool prefix) const {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::get_num_children
-//       Access: Published
-//  Description: Returns the number of child Categories of this
-//               particular Category.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the number of child Categories of this particular Category.
+ */
 size_t NotifyCategory::
 get_num_children() const {
   return _children.size();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::get_child
-//       Access: Published
-//  Description: Returns the nth child Category of this particular
-//               Category.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the nth child Category of this particular Category.
+ */
 NotifyCategory *NotifyCategory::
 get_child(size_t i) const {
   assert(i < _children.size());
   return _children[i];
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::set_server_delta
-//       Access: Published, Static
-//  Description: Sets a global delta (in seconds) between the local
-//               time and the server's time, for the purpose of
-//               synchronizing the time stamps in the log messages of
-//               the client with that of a known server.
-////////////////////////////////////////////////////////////////////
+/**
+ * Sets a global delta (in seconds) between the local time and the server's
+ * time, for the purpose of synchronizing the time stamps in the log messages of
+ * the client with that of a known server.
+ */
 void NotifyCategory::
 set_server_delta(long delta) {
   _server_delta = delta;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::get_config_name
-//       Access: Private
-//  Description: Returns the name of the config variable that controls
-//               this category.  This is called at construction time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the name of the config variable that controls this category.  This is
+ * called at construction time.
+ */
 string NotifyCategory::
 get_config_name() const {
   string config_name;
@@ -173,11 +156,9 @@ get_config_name() const {
   return config_name;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::update_severity_cache
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void NotifyCategory::
 update_severity_cache() {
   if (_severity == NS_unspecified) {
@@ -197,18 +178,14 @@ update_severity_cache() {
   } else {
     _severity_cache = _severity;
   }
-  mark_cache_valid(_local_modified);  
+  mark_cache_valid(_local_modified);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::get_notify_timestamp
-//       Access: Private, Static
-//  Description: Returns the value of the notify-timestamp
-//               ConfigVariable.  This is defined using a method
-//               accessor rather than a static ConfigVariableBool, to
-//               protect against the variable needing to be accessed
-//               at static init time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the notify-timestamp ConfigVariable.  This is defined
+ * using a method accessor rather than a static ConfigVariableBool, to protect
+ * against the variable needing to be accessed at static init time.
+ */
 bool NotifyCategory::
 get_notify_timestamp() {
   static ConfigVariableBool *notify_timestamp = NULL;
@@ -220,15 +197,11 @@ get_notify_timestamp() {
   return *notify_timestamp;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NotifyCategory::get_check_debug_notify_protect
-//       Access: Private, Static
-//  Description: Returns the value of the check-debug-notify-protect
-//               ConfigVariable.  This is defined using a method
-//               accessor rather than a static ConfigVariableBool, to
-//               protect against the variable needing to be accessed
-//               at static init time.
-////////////////////////////////////////////////////////////////////
+/**
+ * Returns the value of the check-debug-notify-protect ConfigVariable.  This is
+ * defined using a method accessor rather than a static ConfigVariableBool, to
+ * protect against the variable needing to be accessed at static init time.
+ */
 bool NotifyCategory::
 get_check_debug_notify_protect() {
   static ConfigVariableBool *check_debug_notify_protect = NULL;

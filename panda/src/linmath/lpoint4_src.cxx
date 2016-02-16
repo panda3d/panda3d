@@ -13,11 +13,9 @@
 
 TypeHandle FLOATNAME(LPoint4)::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: LPoint4::init_type
-//       Access: Public, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+
+ */
 void FLOATNAME(LPoint4)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
@@ -26,4 +24,3 @@ init_type() {
                   FLOATNAME(LVecBase4)::get_class_type());
   }
 }
-
