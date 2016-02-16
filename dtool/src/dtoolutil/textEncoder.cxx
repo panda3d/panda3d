@@ -220,13 +220,14 @@ decode_text_impl(StringDecoder &decoder) {
   return result;
 }
 
-/*
+
 /**
  * Given that we have just read an ampersand from the StringDecoder, and that we
  * have expand_amp in effect and are therefore expected to expand the sequence
  * that this ampersand begins into a single unicode character, do the expansion
  * and return the character.
  */
+ /*
 int TextEncoder::
 expand_amp_sequence(StringDecoder &decoder) const {
   int result = 0;
