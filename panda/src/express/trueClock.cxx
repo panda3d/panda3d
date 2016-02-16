@@ -123,10 +123,10 @@ get_short_raw_time() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TrueClock::set_cpu_affinity, Win32 implementation
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 typedef BOOL (WINAPI * PFNSETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
-typedef BOOL (WINAPI * PFNGETPROCESSAFFINITYMASK)(HANDLE, PDWORD_PTR, PDWORD_PTR);
+typedef BOOL (WINAPI * PFNGETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR*, DWORD_PTR*);
 
 bool TrueClock::
 set_cpu_affinity(PN_uint32 mask) const {
